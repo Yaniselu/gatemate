@@ -14,6 +14,7 @@ export const environment: AppEnvironment = {
   apiUrl: `${api}/api/v1`,
   allowedApiOrigins: [api],
   auth: {
+    appleEnabled: false,
     appleServiceId: 'app.gatemate.signin',
     appleRedirectUrl: '',
     googleWebClientId: '',

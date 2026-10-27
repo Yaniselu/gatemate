@@ -9,9 +9,11 @@
       <h1 style="--i: 0">Welcome aboard</h1>
       <p class="lead" style="--i: 1">Sign in to see your flights, alerts and trip chats.</p>
 
+      @if (socialAvailable) {
       <gm-social-buttons style="--i: 2; display: block" />
 
       <div class="divider" style="--i: 3">or with email</div>
+      }
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate style="--i: 4">
         @if (error()) {

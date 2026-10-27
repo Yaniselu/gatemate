@@ -8,6 +8,7 @@ export const environment: AppEnvironment = {
   apiUrl: 'http://localhost:8080/api/v1',
   allowedApiOrigins: ['http://localhost:8080'],
   auth: {
+    appleEnabled: false,
     // Public OAuth client identifiers only. Secrets never belong in the app bundle.
     appleServiceId: 'app.gatemate.signin',
     appleRedirectUrl: '',

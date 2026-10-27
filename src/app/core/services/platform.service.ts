@@ -5,6 +5,7 @@ import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 @Injectable({ providedIn: 'root' })
 export class PlatformService {
   readonly isNative = Capacitor.isNativePlatform();
+  readonly isIos = Capacitor.getPlatform() === 'ios';
   readonly platform = Capacitor.getPlatform() as 'ios' | 'android' | 'web';
   readonly reducedMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 

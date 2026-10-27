@@ -7,6 +7,8 @@ export interface AppEnvironment {
   /** Bearer tokens are only ever attached to requests for these origins. */
   allowedApiOrigins: string[];
   auth: {
+    /** Turn on once the app has the Sign in with Apple capability (paid Apple Developer account). */
+    appleEnabled: boolean;
     appleServiceId: string;
     appleRedirectUrl: string;
     googleWebClientId: string;

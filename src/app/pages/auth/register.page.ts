@@ -19,6 +19,7 @@ import { SocialButtonsComponent } from '../../shared/components/social-buttons.c
 export class RegisterPage {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
+  readonly socialAvailable = this.auth.providerAvailable('apple') || this.auth.providerAvailable('google');
   private nav = inject(NavController);
   private platform = inject(PlatformService);
 

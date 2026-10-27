@@ -6,9 +6,11 @@
       <h1 style="--i: 0">Create your account</h1>
       <p class="lead" style="--i: 1">Join in seconds — your trips sync securely across devices.</p>
 
+      @if (socialAvailable) {
       <gm-social-buttons style="--i: 2; display: block" />
 
       <div class="divider" style="--i: 3">or sign up with email</div>
+      }
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate style="--i: 4">
         @if (error()) {

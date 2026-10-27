@@ -11,10 +11,13 @@ import { ToastService } from '../../core/services/toast.service';
   imports: [IonIcon],
   template: `
     <div class="social">
+      @if (apple) {
       <button class="apple" type="button" (click)="signIn('apple')" [disabled]="busy()">
         @if (busy() === 'apple') { <span class="spin"></span> } @else { <ion-icon name="logo-apple" /> }
         {{ verb() }} with Apple
       </button>
+      }
+      @if (google) {
       <button class="google" type="button" (click)="signIn('google')" [disabled]="busy()">
         @if (busy() === 'google') {
           <span class="spin dark"></span>
@@ -28,6 +31,7 @@ import { ToastService } from '../../core/services/toast.service';
         }
         {{ verb() }} with Google
       </button>
+      }
     </div>
   `,
   styleUrl: '../../pages/auth/auth.scss',
@@ -38,6 +42,10 @@ import { ToastService } from '../../core/services/toast.service';
 })
 export class SocialButtonsComponent {
   private auth = inject(AuthService);
+  readonly apple = this.auth.providerAvailable('apple');
+  readonly google = this.auth.providerAvailable('google');
+  /** False when this build offers no social sign-in (the page then hides the divider too). */
+  readonly any = this.apple || this.google;
   private nav = inject(NavController);
   private toast = inject(ToastService);
 

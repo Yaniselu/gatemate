@@ -140,10 +140,7 @@ export class AuthService {
     if (environment.useMocks && !this.platform.isNative) {
       credential = { provider, idToken: 'mock-id-token', nonce, displayName: 'Alex Morgan' };
     } else {
-      const configured = provider === 'apple'
-        ? !!environment.auth.appleServiceId && (this.platform.isNative || !!environment.auth.appleRedirectUrl)
-        : !!environment.auth.googleWebClientId && !environment.auth.googleWebClientId.startsWith('REPLACE_ME');
-      if (!configured) {
+      if (!this.providerAvailable(provider)) {
         throw new ApiError(`${provider === 'apple' ? 'Apple' : 'Google'} sign-in isn’t set up for this build yet. Use email for now.`, 0, 'provider_not_configured');
       }
       await this.initSocial();
@@ -161,6 +158,18 @@ export class AuthService {
       }
     }
     await this.accept(await this.api.loginWithSocial(credential));
+  }
+
+  /**
+   * Whether this build can offer the provider. Apple on iOS needs the Sign in with Apple capability (paid Apple
+   * Developer account); elsewhere both need client IDs. Demo builds always show both.
+   */
+  providerAvailable(provider: SocialCredential['provider']): boolean {
+    if (environment.useMocks && !this.platform.isNative) return true;
+    const a = environment.auth;
+    if (provider === 'apple') return a.appleEnabled && !!a.appleServiceId && (this.platform.isNative || !!a.appleRedirectUrl);
+    const id = this.platform.isNative && this.platform.isIos ? a.googleIosClientId : a.googleWebClientId;
+    return !!id && !id.startsWith('REPLACE_ME');
   }
 
   private initSocial(): Promise<void> {

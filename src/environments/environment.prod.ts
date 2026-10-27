@@ -4,13 +4,15 @@ export const environment: AppEnvironment = {
   production: true,
   useMocks: false,
   hashRouting: false,
-  apiUrl: 'https://api.gatemate.app/api/v1',
-  allowedApiOrigins: ['https://api.gatemate.app'],
+  // Render deployment (see render.yaml). Change both lines when you move to your own domain.
+  apiUrl: 'https://gatemate-api.onrender.com/api/v1',
+  allowedApiOrigins: ['https://gatemate-api.onrender.com'],
   auth: {
+    appleEnabled: false,
     appleServiceId: 'app.gatemate.signin',
     appleRedirectUrl: '',
-    googleWebClientId: 'REPLACE_ME.apps.googleusercontent.com',
-    googleIosClientId: 'REPLACE_ME.apps.googleusercontent.com',
+    googleWebClientId: '',
+    googleIosClientId: '',
   },
   push: false,
   maps: {
