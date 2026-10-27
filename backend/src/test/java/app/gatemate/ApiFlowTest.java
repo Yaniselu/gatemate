@@ -59,7 +59,14 @@ class ApiFlowTest {
         mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + access)).andExpect(status().isOk()).andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
         mvc.perform(get("/api/v1/me")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + access + "x")).andExpect(status().isUnauthorized());
+        // Tamper with the payload (e.g. try to change the subject): the signature no longer matches.
+        String[] parts = access.split("\\.");
+        String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1])).replaceFirst("\"sub\":\"[^\"]+\"", "\"sub\":\"" + UUID.randomUUID() + "\"");
+        String forged = parts[0] + "." + java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes()) + "." + parts[2];
+        mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + forged)).andExpect(status().isUnauthorized());
+        // An unsigned token ("alg":"none") is rejected too.
+        String none = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString("{\"alg\":\"none\"}".getBytes()) + "." + parts[1] + ".";
+        mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + none)).andExpect(status().isUnauthorized());
 
         post("/api/v1/auth/login", null, "{\"email\":\"" + email + "\",\"password\":\"wrong-password\"}", 401);
         post("/api/v1/auth/login", null, "{\"email\":\"" + email + "\",\"password\":\"Correct-Horse-42!\"}", 200);

@@ -24,6 +24,6 @@ services:
         generateValue: true
       # JWT_PRIVATE_KEY / JWT_PUBLIC_KEY (RSA PEM) are added after creation so sessions survive restarts.
       - key: JWT_ISSUER
-        value: https://gatemate-api.onrender.com
+        value: https://gatemate-api-2n16.onrender.com
       - key: CORS_ORIGINS
         value: capacitor://localhost,https://localhost,http://localhost

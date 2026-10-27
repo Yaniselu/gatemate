@@ -14,21 +14,43 @@ import org.springframework.stereotype.Component;
 @Component
 public class TokenCipher {
     private final SecretKeySpec key;
+    private final boolean ephemeral;
     private final SecureRandom rng = new SecureRandom();
 
     public TokenCipher(GatemateProperties props) {
         String k = props.security().tokenEncryptionKey();
         byte[] raw;
-        if (k == null || k.isBlank()) {
+        ephemeral = k == null || k.isBlank();
+        if (ephemeral) {
             // Dev only: an ephemeral key means stored third-party tokens become unreadable after a restart.
             org.slf4j.LoggerFactory.getLogger(TokenCipher.class).warn("TOKEN_ENCRYPTION_KEY not set — using an ephemeral key. Never do this in production.");
             raw = new byte[32];
             rng.nextBytes(raw);
         } else {
-            raw = Base64.getDecoder().decode(k);
+            raw = decodeKey(k.trim());
         }
-        if (raw.length != 32) throw new IllegalStateException("gatemate.security.token-encryption-key must be 32 bytes (base64)");
         this.key = new SecretKeySpec(raw, "AES");
+    }
+
+    /** Accepts a base64 32-byte key (openssl rand -base64 32); any other secret string is stretched with SHA-256. */
+    private static byte[] decodeKey(String k) {
+        try {
+            byte[] b = Base64.getDecoder().decode(k);
+            if (b.length == 32) return b;
+        } catch (IllegalArgumentException notBase64) {
+            // fall through
+        }
+        if (k.length() < 32) throw new IllegalStateException("TOKEN_ENCRYPTION_KEY is too short (use openssl rand -base64 32)");
+        try {
+            return java.security.MessageDigest.getInstance("SHA-256").digest(k.getBytes(StandardCharsets.UTF_8));
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /** True when no TOKEN_ENCRYPTION_KEY is configured: anything encrypted now is unreadable after a restart. */
+    public boolean isEphemeral() {
+        return ephemeral;
     }
 
     public String encrypt(String plain) {
