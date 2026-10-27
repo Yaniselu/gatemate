@@ -30,6 +30,8 @@ export class LoginPage {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly submitted = signal(false);
+  /** Shown when the server takes a while (a free-tier server waking up). */
+  readonly slow = signal(false);
 
   invalid(name: 'email' | 'password'): boolean {
     const c = this.form.controls[name];
@@ -44,6 +46,7 @@ export class LoginPage {
       return;
     }
     this.loading.set(true);
+    const slowTimer = setTimeout(() => this.slow.set(true), 6000);
     try {
       const { email, password } = this.form.getRawValue();
       await this.auth.loginWithPassword(email, password);
@@ -56,6 +59,8 @@ export class LoginPage {
       // The banner explains what went wrong; don't also flag the now-empty field as a validation error.
       this.submitted.set(false);
     } finally {
+      clearTimeout(slowTimer);
+      this.slow.set(false);
       this.loading.set(false);
     }
   }

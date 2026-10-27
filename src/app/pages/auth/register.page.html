@@ -79,6 +79,7 @@
         <button class="gm-btn" type="submit" [disabled]="loading()" style="margin-top: 8px">
           @if (loading()) { <span class="spinner"></span> } @else { Create account <ion-icon name="sparkles" /> }
         </button>
+        @if (slow()) { <p class="slow-hint">Waking up the server — the first sign-in can take up to a minute.</p> }
       </form>
     </div>
 

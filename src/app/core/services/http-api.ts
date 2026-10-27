@@ -6,7 +6,7 @@ import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, P
 import { ApiError, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
 // Generous: a free-tier server can take ~50 s to wake up after being idle.
-const REQUEST_TIMEOUT_MS = 60_000;
+const REQUEST_TIMEOUT_MS = 120_000;
 
 /** Real backend client. Endpoints are the contract the Spring Boot API will implement. */
 @Injectable()
@@ -144,6 +144,6 @@ function toApiError(e: unknown): ApiError {
       : 'Request failed.';
     return new ApiError(msg, e.status, e.error?.code, retryAfter);
   }
-  if (e instanceof Error && e.name === 'TimeoutError') return new ApiError('The request timed out.', 408);
+  if (e instanceof Error && e.name === 'TimeoutError') return new ApiError('The server is waking up. Please try again in a moment.', 408);
   return new ApiError('Unexpected error.', 0);
 }

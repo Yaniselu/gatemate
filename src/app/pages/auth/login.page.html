@@ -50,6 +50,7 @@
         <button class="gm-btn" type="submit" [disabled]="loading()">
           @if (loading()) { <span class="spinner"></span> } @else { Sign in <ion-icon name="arrow-forward" /> }
         </button>
+        @if (slow()) { <p class="slow-hint">Waking up the server — the first sign-in can take up to a minute.</p> }
       </form>
     </div>
 

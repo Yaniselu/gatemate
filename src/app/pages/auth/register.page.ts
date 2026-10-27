@@ -40,6 +40,8 @@ export class RegisterPage {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly submitted = signal(false);
+  /** Shown when the server takes a while (a free-tier server waking up). */
+  readonly slow = signal(false);
 
   invalid(name: 'name' | 'email' | 'password' | 'age' | 'terms'): boolean {
     const c = this.form.controls[name];
@@ -57,6 +59,7 @@ export class RegisterPage {
       return;
     }
     this.loading.set(true);
+    const slowTimer = setTimeout(() => this.slow.set(true), 6000);
     try {
       const { name, email, password } = this.form.getRawValue();
       await this.auth.register(name, email, password);
@@ -66,6 +69,8 @@ export class RegisterPage {
       this.platform.error();
       this.error.set(e instanceof ApiError ? e.message : 'Could not create your account. Please try again.');
     } finally {
+      clearTimeout(slowTimer);
+      this.slow.set(false);
       this.loading.set(false);
     }
   }

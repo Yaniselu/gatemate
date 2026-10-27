@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, NgZone } from '@ang
 import { Router } from '@angular/router';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { environment } from '../environments/environment';
 import { PrefsService } from './core/services/prefs.service';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { AppLockService } from './core/security/app-lock.service';
@@ -34,6 +35,14 @@ export class App {
       root.classList.toggle('gm-reduce-motion', this.prefs.reduceMotion());
       root.classList.toggle('gm-high-contrast', this.prefs.highContrast());
     });
+    // Wake a sleeping (free-tier) server while the user is still on the welcome / sign-in screen.
+    if (!environment.useMocks) {
+      try {
+        void fetch(new URL(environment.apiUrl).origin + '/actuator/health', { cache: 'no-store' }).catch(() => {});
+      } catch {
+        /* bad URL in config */
+      }
+    }
     // Universal / App Links: only our own invite paths are routed; anything else is ignored.
     if (Capacitor.isNativePlatform()) {
       const router = inject(Router);

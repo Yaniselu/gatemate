@@ -12,6 +12,9 @@ server:
 spring:
   application:
     name: gatemate
+  main:
+    # Beans are created on first use: much faster cold starts on small instances.
+    lazy-initialization: true
   threads:
     virtual:
       enabled: true
