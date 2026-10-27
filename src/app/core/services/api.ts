@@ -1,4 +1,4 @@
-import { AirportInfo, AuthProvider, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { AuthProvider, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 
 export interface SocialCredential {
   provider: Exclude<AuthProvider, 'password'>;
@@ -76,6 +76,9 @@ export abstract class GatemateApi {
   /** Personal forwarding address; mail is accepted only from the account's verified email with valid airline DKIM. */
   abstract getImportEmail(): Promise<string>;
   abstract createInvite(tripOrChatId: string): Promise<string>;
+  /** Single-use invite token from a shared link; joins the trip or chat it points to. */
+  abstract registerPushToken(token: string, platform: 'ios' | 'android'): Promise<void>;
+  abstract acceptInvite(token: string): Promise<{ type: 'trip' | 'chat'; id: string }>;
   abstract toggleChecklistItem(tripId: string, itemId: string, done: boolean): Promise<void>;
   abstract addExpense(tripId: string, expense: Omit<Expense, 'id' | 'createdAt'>): Promise<Expense>;
   abstract getFlightStatus(flightId: string): Promise<Flight>;
@@ -94,7 +97,6 @@ export abstract class GatemateApi {
   abstract createThread(input: { title: string; emoji: string; tripId?: string }): Promise<ChatThread>;
 
   // Airport & profile
-  abstract getAirportInfo(code: string): Promise<AirportInfo>;
   abstract getStats(): Promise<TravelStats>;
 }
 

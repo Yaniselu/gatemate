@@ -34,3 +34,20 @@ export const welcomeGuard: CanActivateFn = async () => {
   if (auth.status() === 'signed-in') return router.parseUrl('/tabs/home');
   return true;
 };
+
+/** Invite links: remember the token across sign-in, then come back to it. */
+export const PENDING_INVITE = 'gm_pending_invite';
+export const inviteGuard: CanActivateFn = (route) => {
+  const router = inject(Router);
+  return whenAuthKnown().pipe(
+    map((s) => {
+      if (s === 'signed-in') return true;
+      try {
+        sessionStorage.setItem(PENDING_INVITE, route.paramMap.get('token') ?? '');
+      } catch {
+        /* storage unavailable */
+      }
+      return router.parseUrl('/welcome');
+    }),
+  );
+};

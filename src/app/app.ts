@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, NgZone } from '@angular/core';
+import { Router } from '@angular/router';
+import { App as CapApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { PrefsService } from './core/services/prefs.service';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 import { AppLockService } from './core/security/app-lock.service';
@@ -31,5 +34,19 @@ export class App {
       root.classList.toggle('gm-reduce-motion', this.prefs.reduceMotion());
       root.classList.toggle('gm-high-contrast', this.prefs.highContrast());
     });
+    // Universal / App Links: only our own invite paths are routed; anything else is ignored.
+    if (Capacitor.isNativePlatform()) {
+      const router = inject(Router);
+      const zone = inject(NgZone);
+      void CapApp.addListener('appUrlOpen', ({ url }) => {
+        try {
+          const u = new URL(url);
+          const m = u.pathname.match(/^\/invite\/([A-Za-z0-9_-]{16,64})$/);
+          if (u.hostname === 'gatemate.app' && m) zone.run(() => void router.navigateByUrl(`/invite/${m[1]}`));
+        } catch {
+          /* malformed link */
+        }
+      });
+    }
   }
 }

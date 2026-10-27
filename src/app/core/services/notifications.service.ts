@@ -1,5 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { Capacitor } from '@capacitor/core';
+import { environment } from '../../../environments/environment';
+import { GatemateApi } from './api';
 import { AlertKind, Flight, FlightAlert, NotificationPrefs } from '../models';
 import { PlatformService } from './platform.service';
 import { PrefsService } from './prefs.service';
@@ -12,11 +16,31 @@ import { PrefsService } from './prefs.service';
 export class NotificationsService {
   private platform = inject(PlatformService);
   private prefs = inject(PrefsService);
+  private api = inject(GatemateApi);
+  private pushRegistered = false;
 
   async requestPermission(): Promise<boolean> {
     if (!this.platform.isNative) return false;
     const res = await LocalNotifications.requestPermissions().catch(() => null);
-    return res?.display === 'granted';
+    const granted = res?.display === 'granted';
+    if (granted) void this.registerPush();
+    return granted;
+  }
+
+  /** Gate changes and delays come from the server as push notifications; the device token is sent only to our API. */
+  private async registerPush(): Promise<void> {
+    if (!environment.push || this.pushRegistered) return;
+    this.pushRegistered = true;
+    try {
+      const perm = await PushNotifications.requestPermissions();
+      if (perm.receive !== 'granted') return;
+      await PushNotifications.addListener('registration', ({ value }) => {
+        void this.api.registerPushToken(value, Capacitor.getPlatform() === 'ios' ? 'ios' : 'android').catch(() => {});
+      });
+      await PushNotifications.register();
+    } catch {
+      this.pushRegistered = false;
+    }
   }
 
   /** Schedules device reminders (check-in, leave for the airport, boarding…) as local notifications. */

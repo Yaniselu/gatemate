@@ -13,6 +13,7 @@ export const environment: AppEnvironment = {
     googleWebClientId: '',
     googleIosClientId: '',
   },
+  push: false,
   maps: {
     satelliteTiles: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     labelTiles: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',

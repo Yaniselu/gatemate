@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import {
-  createMockAirportInfo,
   createMockAlerts,
   createMockMessages,
   createMockStats,
@@ -8,7 +7,7 @@ import {
   createMockTrips,
   AIRPORTS,
 } from '../data/mock-data';
-import { AirportInfo, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 import { AIRLINES, sampleBaggage } from '../data/airlines';
 import { parseBcbp } from '../utils/bcbp';
 import { matchPassengerName } from '../utils/name-match';
@@ -233,8 +232,20 @@ export class MockApi extends GatemateApi {
     return this.delay(`trips+${(this.user?.id ?? 'demo').slice(-8).toLowerCase()}@in.gatemate.app`, 200, 400);
   }
 
+  private invites = new Map<string, { type: 'trip' | 'chat'; id: string }>();
+
   async createInvite(id: string): Promise<string> {
-    return this.delay(`https://gatemate.app/join/${randomId().slice(0, 10)}?t=${encodeURIComponent(id.slice(0, 12))}`, 300, 600);
+    const token = randomId().replace(/[^a-zA-Z0-9]/g, '').slice(0, 22);
+    this.invites.set(token, { type: this.ensureTrips().some((t) => t.id === id) ? 'trip' : 'chat', id });
+    return this.delay(`https://gatemate.app/invite/${token}`, 300, 600);
+  }
+
+  async registerPushToken(): Promise<void> {}
+
+  async acceptInvite(token: string) {
+    const target = this.invites.get(token);
+    if (!target) throw new ApiError('This invite has expired. Ask for a new link.', 410, 'invite_expired');
+    return this.delay(target, 300, 600);
   }
 
   private tripFor(flight: Flight): Trip {
@@ -400,10 +411,6 @@ export class MockApi extends GatemateApi {
   }
 
   // ---------- Airport & profile ----------
-  async getAirportInfo(code: string): Promise<AirportInfo> {
-    return this.delay(createMockAirportInfo(code), 600, 1200);
-  }
-
   async getStats(): Promise<TravelStats> {
     return this.delay(createMockStats(), 500, 1000);
   }

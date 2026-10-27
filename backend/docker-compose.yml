@@ -1,0 +1,23 @@
+# Local development: Postgres + API. Copy .env.example to .env and fill in the secrets.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: gatemate
+      POSTGRES_USER: gatemate
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-gatemate}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    ports: ["127.0.0.1:5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gatemate"]
+      interval: 5s
+  api:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/gatemate
+    depends_on:
+      db: { condition: service_healthy }
+    ports: ["127.0.0.1:8080:8080"]
+volumes:
+  pgdata:

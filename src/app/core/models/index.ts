@@ -179,32 +179,6 @@ export interface ChatMessage {
 
 export type PoiCategory = 'food' | 'lounge' | 'charging' | 'pharmacy' | 'shopping' | 'restroom' | 'wifi' | 'family';
 
-export interface AirportPoi {
-  id: string;
-  name: string;
-  category: PoiCategory;
-  terminal: string;
-  near: string;
-  walkMinutes: number;
-  open: boolean;
-  rating?: number;
-}
-
-export interface SecurityLane {
-  id: string;
-  name: string;
-  waitMinutes: number;
-  trend: 'up' | 'down' | 'flat';
-}
-
-export interface AirportInfo {
-  airport: Airport;
-  lanes: SecurityLane[];
-  pois: AirportPoi[];
-  wifiName: string;
-  walkToGateMinutes?: number;
-}
-
 export interface TravelStats {
   flights: number;
   distanceKm: number;

@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { IonIcon, IonLabel, IonTabBar, IonTabButton, IonTabs } from '@ionic/angular/standalone';
 import { PlatformService } from '../../core/services/platform.service';
 import { ChatService } from '../../core/services/chat.service';
+import { Router } from '@angular/router';
+import { PENDING_INVITE } from '../../core/guards/auth.guards';
 
 interface TabDef {
   id: string;
@@ -37,6 +39,18 @@ interface TabDef {
 export class TabsPage {
   private platform = inject(PlatformService);
   private chat = inject(ChatService);
+  private router = inject(Router);
+
+  constructor() {
+    let pending: string | null = null;
+    try {
+      pending = sessionStorage.getItem(PENDING_INVITE);
+      sessionStorage.removeItem(PENDING_INVITE);
+    } catch {
+      /* storage unavailable */
+    }
+    if (pending) setTimeout(() => void this.router.navigateByUrl(`/invite/${encodeURIComponent(pending!)}`), 400);
+  }
 
   readonly tabs: TabDef[] = [
     { id: 'home', label: 'Home', icon: 'home-outline', iconActive: 'home' },

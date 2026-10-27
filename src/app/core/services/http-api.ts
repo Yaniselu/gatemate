@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AirportInfo, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 import { ApiError, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -63,6 +63,12 @@ export class HttpApi extends GatemateApi {
   async createInvite(id: string) {
     return (await this.call(this.http.post<{ url: string }>(`${this.base}/invites`, { targetId: id }))).url;
   }
+  async registerPushToken(token: string, platform: 'ios' | 'android') {
+    await this.call(this.http.post<void>(`${this.base}/push-tokens`, { token, platform }));
+  }
+  acceptInvite(token: string) {
+    return this.call(this.http.post<{ type: 'trip' | 'chat'; id: string }>(`${this.base}/invites/${enc(token)}/accept`, {}));
+  }
   createThread(input: { title: string; emoji: string; tripId?: string }) {
     return this.call(this.http.post<ChatThread>(`${this.base}/chats`, input));
   }
@@ -109,9 +115,6 @@ export class HttpApi extends GatemateApi {
     await this.call(this.http.delete<void>(`${this.base}/chats/${enc(threadId)}/membership`));
   }
 
-  getAirportInfo(code: string) {
-    return this.call(this.http.get<AirportInfo>(`${this.base}/airports/${enc(code)}`));
-  }
   getStats() {
     return this.call(this.http.get<TravelStats>(`${this.base}/me/stats`));
   }

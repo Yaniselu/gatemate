@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { AirportInfo, Expense, Flight, FlightAlert, TravelStats, Trip } from '../models';
+import { Expense, Flight, FlightAlert, TravelStats, Trip } from '../models';
 import { GatemateApi, NewFlightInput } from './api';
 import { Preferences } from '@capacitor/preferences';
 import { buildAlerts } from './alerts-engine';
@@ -46,8 +46,6 @@ export class TravelStore {
   );
   readonly alertsState = signal<LoadState>('idle');
   readonly stats = signal<TravelStats | null>(null);
-  readonly airport = signal<AirportInfo | null>(null);
-  readonly airportState = signal<LoadState>('idle');
 
   readonly upcomingTrips = computed(() =>
     this.trips()
@@ -122,17 +120,6 @@ export class TravelStore {
     this.stats.set(await this.api.getStats());
   }
 
-  async loadAirport(code: string, force = false): Promise<void> {
-    if (!force && this.airport()?.airport.code === code) return;
-    this.airportState.set('loading');
-    try {
-      this.airport.set(await this.api.getAirportInfo(code));
-      this.airportState.set('ready');
-    } catch {
-      this.airportState.set('error');
-    }
-  }
-
   trip(id: string): Trip | undefined {
     return this.trips().find((t) => t.id === id);
   }
@@ -180,7 +167,5 @@ export class TravelStore {
     this.serverAlerts.set([]);
     this.alertsState.set('idle');
     this.stats.set(null);
-    this.airport.set(null);
-    this.airportState.set('idle');
   }
 }

@@ -1,0 +1,44 @@
+package app.gatemate.trip;
+
+import jakarta.validation.constraints.*;
+import java.util.List;
+import tools.jackson.databind.JsonNode;
+
+/** Shapes mirror the app's models (src/app/core/models). The signed-in user is always "me". */
+public final class TripDtos {
+    private TripDtos() {}
+
+    public record AirportDto(String code, String city, String name, String country, String timezone, String imageUrl) {}
+
+    public record FlightDto(String id, String airline, String airlineCode, String number, AirportDto from, AirportDto to, String departure,
+            String arrival, String boardingTime, String gate, String terminal, String seat, String cabin, String bookingRef, String passengerName,
+            String status, int durationMinutes, int distanceKm, String fareName, JsonNode baggage, JsonNode verification) {}
+
+    public record Traveller(String id, String name, String initials, String color) {}
+
+    public record ChecklistDto(String id, String label, boolean done, String category) {}
+
+    public record ExpenseDto(String id, String label, double amount, String currency, String paidBy, List<String> splitWith, String createdAt) {}
+
+    public record TripDto(String id, String title, AirportDto destination, String coverGradient, String emoji, String startDate, String endDate,
+            List<FlightDto> flights, List<Traveller> travellers, List<ChecklistDto> checklist, List<ExpenseDto> expenses, String chatId) {}
+
+    public record NewFlight(
+            @NotBlank @Pattern(regexp = "[A-Z0-9]{2,3}") String carrier,
+            @NotBlank @Pattern(regexp = "\\d{1,4}[A-Z]?") String flightNumber,
+            @NotBlank String date,
+            @NotBlank @Pattern(regexp = "[A-Z]{3}") String from,
+            @NotBlank @Pattern(regexp = "[A-Z]{3}") String to,
+            @Pattern(regexp = "\\d{1,3}[A-K]") String seat,
+            @Pattern(regexp = "[A-Z0-9]{5,8}") String bookingRef,
+            @Size(max = 60) String passengerName) {}
+
+    public record ChecklistPatch(boolean done) {}
+
+    public record NewExpense(
+            @NotBlank @Size(max = 60) String label,
+            @Positive @Max(100000) double amount,
+            @NotBlank @Pattern(regexp = "[A-Z]{3}") String currency,
+            @NotBlank String paidBy,
+            @NotEmpty @Size(max = 20) List<String> splitWith) {}
+}

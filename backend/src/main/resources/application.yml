@@ -1,0 +1,90 @@
+# Secrets are read from environment variables only. Nothing sensitive is committed.
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  error:
+    include-message: never
+    include-stacktrace: never
+  servlet:
+    session:
+      tracking-modes: []
+
+spring:
+  application:
+    name: gatemate
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/gatemate}
+    username: ${DATABASE_USER:gatemate}
+    password: ${DATABASE_PASSWORD:gatemate}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  cache:
+    cache-names: airportMaps,destinations
+    caffeine:
+      spec: maximumSize=2000,expireAfterWrite=6h
+  servlet:
+    multipart:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+gatemate:
+  public-url: ${PUBLIC_URL:https://gatemate.app}
+  cors-origins: ${CORS_ORIGINS:capacitor://localhost,https://localhost,http://localhost,http://localhost:4200,http://localhost:8100}
+  jwt:
+    issuer: ${JWT_ISSUER:https://api.gatemate.app}
+    access-ttl: PT15M
+    refresh-ttl: P60D
+    private-key-pem: ${JWT_PRIVATE_KEY:}
+    public-key-pem: ${JWT_PUBLIC_KEY:}
+  apple:
+    audiences: ${APPLE_AUDIENCES:app.gatemate.ios,app.gatemate.web}
+    team-id: ${APPLE_TEAM_ID:}
+    key-id: ${APPLE_KEY_ID:}
+    client-id: ${APPLE_CLIENT_ID:app.gatemate.ios}
+    private-key-pem: ${APPLE_PRIVATE_KEY:}
+  google:
+    audiences: ${GOOGLE_AUDIENCES:}
+  security:
+    token-encryption-key: ${TOKEN_ENCRYPTION_KEY:}
+    max-login-attempts: 5
+    lockout: PT15M
+  booking:
+    sandbox: false
+    inbound-secret: ${INBOUND_EMAIL_SECRET:}
+    airline-email-domains: ${AIRLINE_EMAIL_DOMAINS:wizzair.com,ryanair.com,lufthansa.com,tarom.ro,easyjet.com,britishairways.com,klm.com,airfrance.fr,emirates.com,qatarairways.com,turkishairlines.com}
+    import-domain: ${IMPORT_EMAIL_DOMAIN:}
+  mail:
+    from: ${MAIL_FROM:no-reply@gatemate.app}
+    reset-url: ${RESET_URL:https://gatemate.app/reset}
+  integrations:
+    unsplash-access-key: ${UNSPLASH_ACCESS_KEY:}
+    aero-data-box-key: ${AERODATABOX_KEY:}
+    public-data-enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:gatemate;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password: ""
+gatemate:
+  booking:
+    sandbox: true

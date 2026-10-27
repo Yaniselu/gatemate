@@ -13,6 +13,8 @@ export interface AppEnvironment {
     googleIosClientId: string;
   };
   /** Satellite map tiles (Esri World Imagery in dev; use a keyed/licensed provider in production). */
+  /** Remote push (APNs/FCM). Enable only once GoogleService-Info.plist / google-services.json are added. */
+  push: boolean;
   maps: {
     satelliteTiles: string;
     labelTiles: string;

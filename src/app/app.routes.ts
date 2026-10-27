@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, welcomeGuard } from './core/guards/auth.guards';
+import { authGuard, inviteGuard, guestGuard, welcomeGuard } from './core/guards/auth.guards';
 import { unsavedChangesGuard } from './core/guards/unsaved.guard';
 
 export const routes: Routes = [
@@ -46,6 +46,7 @@ export const routes: Routes = [
   { path: 'settings/notifications', canActivate: [authGuard], loadComponent: () => import('./pages/settings/notification-settings.page').then((m) => m.NotificationSettingsPage) },
   { path: 'settings/accessibility', canActivate: [authGuard], loadComponent: () => import('./pages/settings/accessibility.page').then((m) => m.AccessibilityPage) },
   { path: 'settings/security', canActivate: [authGuard], loadComponent: () => import('./pages/settings/security-settings.page').then((m) => m.SecuritySettingsPage) },
+  { path: 'invite/:token', canActivate: [inviteGuard], loadComponent: () => import('./pages/invite/invite.page').then((m) => m.InvitePage) },
   { path: 'legal/:doc', loadComponent: () => import('./pages/legal/legal.page').then((m) => m.LegalPage) },
   { path: '**', redirectTo: 'welcome' },
 ];

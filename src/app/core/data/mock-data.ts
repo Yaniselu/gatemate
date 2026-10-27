@@ -1,6 +1,5 @@
 import {
   Airport,
-  AirportInfo,
   ChatMessage,
   ChatThread,
   Flight,
@@ -309,29 +308,6 @@ export const MOCK_REPLIES = [
   'See you at B12 ✈️',
   'Already through security 🙌',
 ];
-
-export function createMockAirportInfo(code: string): AirportInfo {
-  const airport = AIRPORTS[code] ?? AIRPORTS['OTP'];
-  return {
-    airport,
-    wifiName: `${airport.code}-Free-WiFi`,
-    walkToGateMinutes: 9,
-    lanes: [
-      { id: 's1', name: 'Security · Terminal 1', waitMinutes: 8, trend: 'down' },
-      { id: 's2', name: 'Fast Track', waitMinutes: 2, trend: 'flat' },
-      { id: 's3', name: 'Passport control · Non-Schengen', waitMinutes: 17, trend: 'up' },
-    ],
-    pois: [
-      { id: 'p1', name: 'Runway Coffee Bar', category: 'food', terminal: 'T1', near: 'Gate B10', walkMinutes: 3, open: true, rating: 4.6 },
-      { id: 'p2', name: 'Business Lounge', category: 'lounge', terminal: 'T1', near: 'Gate B3', walkMinutes: 6, open: true, rating: 4.4 },
-      { id: 'p3', name: 'Charging station', category: 'charging', terminal: 'T1', near: 'Gate B12', walkMinutes: 1, open: true },
-      { id: 'p4', name: 'Airport Pharmacy', category: 'pharmacy', terminal: 'T1', near: 'Departures hall', walkMinutes: 7, open: true },
-      { id: 'p5', name: 'Duty Free', category: 'shopping', terminal: 'T1', near: 'After security', walkMinutes: 2, open: true, rating: 4.1 },
-      { id: 'p6', name: 'Restrooms & baby care', category: 'family', terminal: 'T1', near: 'Gate B11', walkMinutes: 1, open: true },
-      { id: 'p7', name: 'Pasta Volo', category: 'food', terminal: 'T1', near: 'Gate B5', walkMinutes: 5, open: false, rating: 4.3 },
-    ],
-  };
-}
 
 export function createMockStats(): TravelStats {
   return {
