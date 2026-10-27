@@ -2,15 +2,35 @@
 
 ## Ce e pornit acum
 
-Nimic nu rulează permanent încă. Proiectul are trei părți:
-
-| Parte | Tehnologie | Unde e în proiect |
+| Parte | Unde rulează | Adresă |
 |---|---|---|
-| Aplicația (ce vezi pe telefon) | Ionic + Angular + Capacitor | `src/`, `ios/`, `android/` |
-| Serverul (API) | Java 21 + Spring Boot | `backend/` |
-| Baza de date | PostgreSQL 17 | pornită de `backend/docker-compose.yml` |
+| Serverul (Java + Spring Boot) | Render, plan gratuit, Frankfurt | https://gatemate-api-2n16.onrender.com |
+| Baza de date (PostgreSQL 18) | Render, `gatemate-db`, gratuit | expiră pe **26 noiembrie 2026**; înainte de data asta faci upgrade (~6 $/lună) sau o muți pe Neon (gratuit) |
+| Codul | GitHub, `Yaniselu/gatemate` (privat) | fiecare push pe `main` face redeploy automat pe Render |
 
-Preview-ul din Claude folosește **date demo, direct în browser**. Nu are server și nu are bază de date. Tot el blochează site-urile externe, așa că acolo nu se văd harta din satelit, pozele reale și vremea. Pe calculatorul și pe telefonul tău se încarcă normal.
+Planul gratuit Render „adoarme” serverul după 15 minute fără activitate. Prima cerere după aceea durează ~50 de secunde, apoi merge normal.
+
+## 0. Pe iPhone, din Xcode (cel mai rapid)
+
+Ai nevoie de un Mac cu **Xcode**, **Node.js 22** și un **Apple ID** (merge și unul gratuit).
+
+```bash
+git clone https://github.com/Yaniselu/gatemate.git
+cd gatemate
+npm install
+npm run cap:sync        # build pentru producție (legat de serverul de pe Render) + copiere în proiectul iOS
+npx cap open ios
+```
+
+În Xcode:
+1. Selectezi proiectul **App** → tab-ul **Signing & Capabilities** → bifezi „Automatically manage signing” → la **Team** alegi Apple ID-ul tău (Add Account… dacă nu apare).
+2. Conectezi iPhone-ul prin cablu, îl alegi sus (lângă ▶) și apeși **▶ Run**.
+3. Prima dată, pe iPhone: Setări → General → VPN & Device Management → contul tău de developer → **Trust**. Pe iOS 16+ trebuie activat și Setări → Confidențialitate și securitate → **Developer Mode**.
+4. Îți faci cont în aplicație cu email și parolă. Datele se salvează pe server.
+
+Cu Apple ID gratuit, aplicația rămâne pe telefon 7 zile, apoi o reinstalezi din Xcode. Cu Apple Developer (99 $/an) dispare limita și poți activa Sign in with Apple.
+
+Dacă Xcode spune că identificatorul `com.velosyntech.gatemate` e ocupat, îl schimbi în Signing & Capabilities → Bundle Identifier (de ex. `com.numele-tau.gatemate`).
 
 ---
 
