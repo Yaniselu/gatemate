@@ -71,6 +71,15 @@ class ApiFlowTest {
     }
 
     @Test
+    void corsPreflightAllowsConfiguredOriginsOnly() throws Exception {
+        mvc.perform(options("/api/v1/auth/register").header("Origin", "http://localhost:4200").header("Access-Control-Request-Method", "POST")
+                .header("Access-Control-Request-Headers", "content-type")).andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:4200"));
+        mvc.perform(options("/api/v1/auth/register").header("Origin", "https://evil.example").header("Access-Control-Request-Method", "POST"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void weakPasswordsAreRejected() throws Exception {
         post("/api/v1/auth/register", null, "{\"name\":\"X\",\"email\":\"weak@example.com\",\"password\":\"password123\"}", 400);
     }
@@ -122,6 +131,12 @@ class ApiFlowTest {
         String outsider = register("out+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
         mvc.perform(get("/api/v1/chats/" + chatId + "/messages").header("Authorization", "Bearer " + outsider)).andExpect(status().isNotFound());
 
+        // Add a checklist item (members only).
+        String tripId = trip.path("id").asString();
+        post("/api/v1/trips/" + tripId + "/checklist", access, "{\"label\":\"Plug adapter\",\"category\":\"packing\"}", 200);
+        post("/api/v1/trips/" + tripId + "/checklist", register("x+" + UUID.randomUUID() + "@example.com").get("accessToken").asString(),
+                "{\"label\":\"Nope\",\"category\":\"packing\"}", 404);
+
         // Invite → accept → member.
         String url = post("/api/v1/invites", access, "{\"targetId\":\"" + trip.path("id").asString() + "\"}", 200).path("url").asString();
         String token = url.substring(url.lastIndexOf('/') + 1);
@@ -143,6 +158,14 @@ class ApiFlowTest {
     void adminRoutesNeedAdmin() throws Exception {
         String access = register("adm+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
         mvc.perform(get("/api/v1/admin/reports").header("Authorization", "Bearer " + access)).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void publicDataEndpointsValidateInput() throws Exception {
+        mvc.perform(get("/api/v1/fx").param("from", "EUR").param("to", "XXX")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/v1/fx").param("from", "EUR").param("to", "EUR")).andExpect(status().isOk()).andExpect(jsonPath("$.rate").value(1.0));
+        mvc.perform(get("/api/v1/countries/ES/holidays").param("year", "2026")).andExpect(status().isOk());
+        mvc.perform(get("/api/v1/destinations/BCN/sights")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test

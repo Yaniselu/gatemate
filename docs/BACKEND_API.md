@@ -19,9 +19,10 @@ Types are defined in `src/app/core/models/index.ts`; the client lives in `src/ap
 | GET | `/me/export` | — | JSON file |
 | GET | `/me/stats` | — | `TravelStats` |
 | GET | `/trips` | — | `Trip[]` |
-| POST | `/flights` | `NewFlightInput` | `Trip` |
+| POST | `/flights` | `NewFlightInput` (`date` = local time at the departure airport) | `Trip` (unverified) |
 | GET | `/flights/{id}/status` | — | `Flight` |
 | PATCH | `/trips/{id}/checklist/{itemId}` | `{done}` | 204 |
+| POST | `/trips/{id}/checklist` | `{label, category}` | `ChecklistItem` |
 | POST | `/trips/{id}/expenses` | `{label, amount, currency, paidBy, splitWith}` | `Expense` |
 | GET | `/alerts` · POST `/alerts/read` | `{ids}` | `FlightAlert[]` · 204 |
 | GET | `/chats` | — | `ChatThread[]` |
@@ -31,7 +32,10 @@ Types are defined in `src/app/core/models/index.ts`; the client lives in `src/ap
 | POST | `/moderation/blocks` | `{userId}` | 204 |
 | GET | `/airports?q=` · `/airports/{code}` | — | airport search / record (5,300+ airports) |
 | GET | `/airports/{code}/map` | — | gates, terminals, facilities (OpenStreetMap) |
-| GET | `/destinations/{code}?home=EUR` | — | `DestinationInfo` (summary, photo, weather, FX, country facts) |
+| GET | `/destinations/{code}?home=EUR` | — | `DestinationInfo` (summary + city coordinates, photo, weather, FX, country facts) |
+| GET | `/destinations/{code}/sights` | — | `Sight[]` top attractions (Wikidata, CC0) |
+| GET | `/countries/{CC}/holidays?year=` | — | `Holiday[]` (Nager.Date) |
+| GET | `/fx?from=EUR&to=RON` | — | `{base, currency, rate, date}` ECB reference rate |
 | POST | `/bookings/lookup` | `{airline, bookingRef, lastName}` | `BookingLookupResult` · 404 same message for wrong ref or name · 429 |
 | POST | `/flights/claim` | `{method:'pass', barcode}` or `{method:'booking', airline, bookingRef, lastName, flightIds}` | `Trip` · 403 `name_mismatch` · 409 `already_claimed` · 422 `legal_name_missing` |
 | GET | `/me/import-email` | — | `{address}` personal forwarding address |

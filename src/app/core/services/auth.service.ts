@@ -140,6 +140,12 @@ export class AuthService {
     if (environment.useMocks && !this.platform.isNative) {
       credential = { provider, idToken: 'mock-id-token', nonce, displayName: 'Alex Morgan' };
     } else {
+      const configured = provider === 'apple'
+        ? !!environment.auth.appleServiceId && (this.platform.isNative || !!environment.auth.appleRedirectUrl)
+        : !!environment.auth.googleWebClientId && !environment.auth.googleWebClientId.startsWith('REPLACE_ME');
+      if (!configured) {
+        throw new ApiError(`${provider === 'apple' ? 'Apple' : 'Google'} sign-in isn’t set up for this build yet. Use email for now.`, 0, 'provider_not_configured');
+      }
       await this.initSocial();
       if (provider === 'apple') {
         const res = await SocialLogin.login({ provider: 'apple', options: { scopes: ['email', 'name'], nonce } });

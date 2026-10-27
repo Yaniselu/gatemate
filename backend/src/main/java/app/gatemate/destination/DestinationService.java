@@ -69,7 +69,7 @@ public class DestinationService {
         if (countryName != null) titles.add(a.city() + ", " + countryName);
         for (String t : titles) {
             try {
-                JsonNode j = http.get().uri("https://en.wikipedia.org/api/rest_v1/page/summary/" + URLEncoder.encode(t.replace(' ', '_'), StandardCharsets.UTF_8).replace("+", "%20"))
+                JsonNode j = http.get().uri(java.net.URI.create("https://en.wikipedia.org/api/rest_v1/page/summary/" + URLEncoder.encode(t.replace(' ', '_'), StandardCharsets.UTF_8).replace("+", "%20")))
                         .retrieve().body(JsonNode.class);
                 if (j == null || "disambiguation".equals(j.path("type").asString("")) || j.path("extract").asString("").isBlank()) continue;
                 String page = j.path("content_urls").path("mobile").path("page").asString(j.path("content_urls").path("desktop").path("page").asString(""));
@@ -78,6 +78,8 @@ public class DestinationService {
                 if (j.hasNonNull("description")) summary.put("description", j.get("description").asString());
                 summary.put("extract", j.path("extract").asString(""));
                 summary.put("pageUrl", page);
+                JsonNode co = j.path("coordinates");
+                if (co.has("lat") && co.has("lon")) summary.put("coords", Map.of("lat", co.get("lat").asDouble(), "lon", co.get("lon").asDouble()));
                 var res = new LinkedHashMap<String, Object>();
                 res.put("summary", summary);
                 JsonNode orig = j.path("originalimage");

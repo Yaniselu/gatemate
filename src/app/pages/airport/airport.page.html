@@ -86,6 +86,8 @@
             </div>
           }
         </div>
+      } @else if (gatesError()) {
+        <div class="muted card pad offline"><ion-icon name="cloud-offline-outline" /> Facilities need an internet connection. <button (click)="select(airport()!)">Retry</button></div>
       } @else {
         <p class="muted card pad">No facilities are mapped for this airport yet.</p>
       }

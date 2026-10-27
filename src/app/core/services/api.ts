@@ -1,4 +1,4 @@
-import { AuthProvider, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { AuthProvider, ChecklistItem, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 
 export interface SocialCredential {
   provider: Exclude<AuthProvider, 'password'>;
@@ -13,7 +13,10 @@ export interface SocialCredential {
 
 export interface NewFlightInput {
   carrier: string;
+  /** Display name when the carrier is known (e.g. "Wizz Air"). */
+  airlineName?: string;
   flightNumber: string;
+  /** Local wall-clock departure time at the departure airport, e.g. "2026-11-01T06:10". */
   date: string;
   from: string;
   to: string;
@@ -79,6 +82,7 @@ export abstract class GatemateApi {
   /** Single-use invite token from a shared link; joins the trip or chat it points to. */
   abstract registerPushToken(token: string, platform: 'ios' | 'android'): Promise<void>;
   abstract acceptInvite(token: string): Promise<{ type: 'trip' | 'chat'; id: string }>;
+  abstract addChecklistItem(tripId: string, label: string, category: ChecklistItem['category']): Promise<ChecklistItem>;
   abstract toggleChecklistItem(tripId: string, itemId: string, done: boolean): Promise<void>;
   abstract addExpense(tripId: string, expense: Omit<Expense, 'id' | 'createdAt'>): Promise<Expense>;
   abstract getFlightStatus(flightId: string): Promise<Flight>;

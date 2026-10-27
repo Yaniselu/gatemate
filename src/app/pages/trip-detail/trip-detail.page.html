@@ -43,7 +43,7 @@
                 </div>
                 <div class="timeline">
                   <div class="tl-point">
-                    <b>{{ f.departure | clock }}</b>
+                    <b>{{ f.departure | clock: f.from.timezone }}</b>
                     <span class="code">{{ f.from.code }}</span>
                     <small>{{ f.from.city }} · {{ f.terminal ?? '—' }}</small>
                   </div>
@@ -52,13 +52,13 @@
                     <i><ion-icon name="airplane" /></i>
                   </div>
                   <div class="tl-point right">
-                    <b>{{ f.arrival | clock: f.to.timezone }}</b>
+                    <b>@if (f.verification?.method === 'manual') {<span class="est" title="Estimated from distance">≈</span>}{{ f.arrival | clock: f.to.timezone }}</b>
                     <span class="code">{{ f.to.code }}</span>
                     <small>{{ f.to.city }}</small>
                   </div>
                 </div>
                 <div class="f-facts">
-                  <span><small>Date</small>{{ f.departure | shortDate }}</span>
+                  <span><small>Date</small>{{ f.departure | shortDate: false : f.from.timezone }}</span>
                   <span><small>Gate</small>{{ f.gate ?? 'TBA' }}</span>
                   <span><small>Seat</small>{{ f.seat ?? '—' }}</span>
                   <span><small>Distance</small>{{ f.distanceKm | number }} km</span>
@@ -179,6 +179,11 @@
 
         @case ('guide') {
           <div class="section">
+            <a class="explore-cta card" [routerLink]="['/explore', t.destination.code]" [queryParams]="{ trip: t.id }" gmPressable>
+              <span class="gm-well accent"><ion-icon name="compass-outline" /></span>
+              <span class="txt"><b>Explore {{ t.destination.city }}</b><small>Top sights, holidays on your dates, phrases, money and what to pack</small></span>
+              <ion-icon name="chevron-forward" class="chev" />
+            </a>
             <gm-destination-guide [iata]="t.destination.code" />
           </div>
         }

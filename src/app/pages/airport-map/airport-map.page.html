@@ -10,7 +10,11 @@
     <gm-sat-map class="full" [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [zoom]="15.5" (gateTap)="pick($event)" />
 
     <div class="gate-bar glass" slot="fixed">
-      <span class="gm-label">{{ gateList().length ? 'Choose your gate' : features() === null ? 'Loading gates…' : 'No gates mapped here yet' }}</span>
+      @if (gatesError()) {
+        <div class="err-row"><span class="gm-label">Gate data needs an internet connection</span><button (click)="loadGates()">Retry</button></div>
+      } @else {
+        <span class="gm-label" [class.shimmer]="features() === null">{{ gateList().length ? 'Choose your gate' : features() === null ? 'Loading gates…' : 'No gates mapped at this airport yet' }}</span>
+      }
       @if (gateList().length) {
         <div class="chips">
           @for (g of gateList(); track g.ref + g.lat) {

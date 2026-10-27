@@ -1,0 +1,144 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/home" text="" icon="chevron-back" /></ion-buttons>
+    <ion-title>Travel tools</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <nav class="seg" role="tablist">
+      @for (t of tools; track t.id) {
+        <button role="tab" [class.on]="tool() === t.id" [attr.aria-selected]="tool() === t.id" (click)="select(t.id)">
+          <ion-icon [name]="t.icon" /><span>{{ t.label }}</span>
+        </button>
+      }
+    </nav>
+
+    @switch (tool()) {
+      @case ('money') {
+        <section class="card pad anim-fade-up">
+          <div class="cur-row">
+            <label class="cur">
+              <span class="gm-label">From</span>
+              <select [ngModel]="from()" (ngModelChange)="from.set($event)" aria-label="From currency">
+                @for (c of currencies; track c) { <option [value]="c">{{ c }}</option> }
+              </select>
+              <small class="cname">{{ currencyName(from()) }}</small>
+            </label>
+            <button class="swap" (click)="swap()" aria-label="Swap"><ion-icon name="swap-horizontal" /></button>
+            <label class="cur">
+              <span class="gm-label">To</span>
+              <select [ngModel]="to()" (ngModelChange)="to.set($event)" aria-label="To currency">
+                @for (c of currencies; track c) { <option [value]="c">{{ c }}</option> }
+              </select>
+              <small class="cname">{{ currencyName(to()) }}</small>
+            </label>
+          </div>
+          <input class="amount" type="number" inputmode="decimal" min="0" [ngModel]="amount()" (ngModelChange)="setAmount($event)" aria-label="Amount" />
+          <div class="result">
+            @switch (fxState()) {
+              @case ('ready') {
+                <b>{{ result() | number: (result()! < 100 ? '1.2-2' : '1.0-0') }} <span>{{ to() }}</span></b>
+                <small>1 {{ from() }} = {{ fx()!.rate | number: '1.2-4' }} {{ to() }} · ECB reference rate, {{ fx()!.date }}</small>
+              }
+              @case ('error') { <small class="err">Exchange rates need an internet connection.</small> }
+              @default { <small>Getting today’s rate…</small> }
+            }
+          </div>
+          <p class="fine">Banks and exchange desks add a margin — paying by card in the local currency is usually cheaper than accepting the terminal’s conversion.</p>
+        </section>
+      }
+
+      @case ('time') {
+        <section class="card pad anim-fade-up">
+          <div class="clocks">
+            <button class="clock-card" (click)="picking.set('home')">
+              <span class="gm-label">Home · {{ home()?.iata }}</span>
+              <b>{{ home() ? clock(home()!.tz) : '--:--' }}</b>
+              <small>{{ home()?.city }} <ion-icon name="chevron-down" /></small>
+            </button>
+            <button class="clock-card" (click)="picking.set('away')">
+              <span class="gm-label">Destination · {{ away()?.iata }}</span>
+              <b>{{ away() ? clock(away()!.tz) : '--:--' }}</b>
+              <small>{{ away()?.city }} <ion-icon name="chevron-down" /></small>
+            </button>
+          </div>
+          <p class="diff">
+            @if (offsetH() === 0) { Same time zone }
+            @else { {{ away()?.city }} is {{ offsetH() > 0 ? offsetH() : -offsetH() }} h {{ offsetH() > 0 ? 'ahead' : 'behind' }} }
+          </p>
+          <label class="slider">
+            <span>When it’s <b>{{ fmtHour(hour()) }}</b> at home, it’s <b>{{ fmtHour(awayHour()) }}</b> in {{ away()?.city }}</span>
+            <input type="range" min="0" max="23" [ngModel]="hour()" (ngModelChange)="hour.set(+$event)" aria-label="Hour at home" />
+          </label>
+        </section>
+
+        <section class="card pad anim-fade-up" style="animation-delay: 80ms">
+          <h3 class="h"><ion-icon name="moon-outline" /> Jet lag plan</h3>
+          @if (jetlag().level === 'none') {
+            <p class="muted">Less than 3 hours’ difference — most people adjust within a day. Just sleep on local time.</p>
+          } @else {
+            <p class="muted">Flying {{ jetlag().east ? 'east' : 'west' }} across {{ offsetH() > 0 ? offsetH() : -offsetH() }} time zones. Most people need about {{ jetlag().recovery }} day{{ jetlag().recovery === 1 ? '' : 's' }} to adjust{{ jetlag().east ? ' (east is harder)' : '' }}.</p>
+            <ol class="steps">
+              @for (s of jetlag().steps; track $index; let i = $index) { <li [gmReveal]="i">{{ s }}</li> }
+            </ol>
+          }
+          <p class="fine">General guidance, not medical advice.</p>
+        </section>
+      }
+
+      @case ('cabin') {
+        <div class="search anim-fade-up">
+          <ion-icon name="search-outline" />
+          <input type="search" placeholder="Power bank, liquids, razor…" [ngModel]="ruleQuery()" (ngModelChange)="ruleQuery.set($event)" aria-label="Search items" />
+        </div>
+        <section class="card rules">
+          @for (r of filteredRules(); track r.item; let i = $index) {
+            <button class="rule" [class.open]="openRule() === r.item" (click)="openRule.set(openRule() === r.item ? null : r.item)" [gmReveal]="i">
+              <span class="gm-well"><ion-icon [name]="r.icon" /></span>
+              <span class="r-main">
+                <b>{{ r.item }}</b>
+                <span class="tags">
+                  <em [attr.data-v]="r.cabin">Cabin {{ r.cabin === 'yes' ? '✓' : r.cabin === 'no' ? '✕' : 'limits' }}</em>
+                  <em [attr.data-v]="r.hold">Checked {{ r.hold === 'yes' ? '✓' : r.hold === 'no' ? '✕' : 'limits' }}</em>
+                </span>
+                @if (openRule() === r.item) { <small class="note">{{ r.note }}</small> }
+              </span>
+              <ion-icon name="chevron-down" class="chev" />
+            </button>
+          } @empty {
+            <p class="muted pad">No match. When in doubt, ask your airline before you fly.</p>
+          }
+        </section>
+        <p class="fine">Based on ICAO/IATA dangerous-goods rules and EU/UK/US screening. Airlines and airports can be stricter — check before you fly.</p>
+      }
+
+      @case ('distance') {
+        <section class="card pad anim-fade-up">
+          <div class="clocks">
+            <button class="clock-card" (click)="picking.set('from')">
+              <span class="gm-label">From</span><b>{{ a()?.iata ?? '—' }}</b><small>{{ a()?.city }} <ion-icon name="chevron-down" /></small>
+            </button>
+            <button class="clock-card" (click)="picking.set('to')">
+              <span class="gm-label">To</span><b>{{ b()?.iata ?? '—' }}</b><small>{{ b()?.city }} <ion-icon name="chevron-down" /></small>
+            </button>
+          </div>
+          @if (km() !== null) {
+            <div class="dist-grid">
+              <div><span class="gm-label">Great-circle</span><b>{{ km() | number: '1.0-0' }} km</b></div>
+              <div><span class="gm-label">Typical flight</span><b>{{ (minutes()! / 60) | number: '1.0-0' }}h {{ minutes()! % 60 }}m</b></div>
+              <div><span class="gm-label">EU261 delay band</span><b>up to €{{ eu261() }}</b></div>
+            </div>
+            <p class="fine">Flight time is an estimate (taxi + cruise at ~800 km/h); your airline’s schedule is what counts. EU261 applies to flights from the EU, or into the EU on an EU airline.</p>
+          }
+        </section>
+      }
+    }
+    <div class="gm-bottom-spacer"></div>
+  </div>
+
+  @if (picking()) {
+    <gm-airport-picker (picked)="picked($event)" (closed)="picking.set(null)" />
+  }
+</ion-content>

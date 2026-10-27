@@ -17,7 +17,7 @@
   </ion-header>
 
   <div class="page">
-    <div class="segment glass" role="tablist" [style.--x]="segment() === 'upcoming' ? 0 : 1">
+    <div class="segment" role="tablist" [style.--x]="segment() === 'upcoming' ? 0 : 1">
       <span class="thumb"></span>
       <button role="tab" [attr.aria-selected]="segment() === 'upcoming'" [class.on]="segment() === 'upcoming'" (click)="select('upcoming')">
         Upcoming <em>{{ store.upcomingTrips().length }}</em>
@@ -29,7 +29,7 @@
 
     @if (store.tripsState() !== 'ready') {
       @for (i of [1, 2]; track i) {
-        <div class="trip-skel glass flat">
+        <div class="trip-skel card">
           <gm-skeleton height="130px" radius="22px" />
           <div class="pad">
             <gm-skeleton width="55%" height="18px" />
@@ -68,7 +68,7 @@
                 <div class="leg">
                   <span class="gm-label">{{ f.number }}</span>
                   <b>{{ f.from.code }} <ion-icon name="arrow-forward" /> {{ f.to.code }}</b>
-                  <small>{{ f.departure | shortDate: false }} · {{ f.departure | clock }}</small>
+                  <small>{{ f.departure | shortDate: false : f.from.timezone }} · {{ f.departure | clock: f.from.timezone }}</small>
                 </div>
               }
             </div>

@@ -26,7 +26,7 @@ spring:
   flyway:
     enabled: true
   cache:
-    cache-names: airportMaps,destinations
+    cache-names: airportMaps,destinations,sights,holidays,fx
     caffeine:
       spec: maximumSize=2000,expireAfterWrite=6h
   servlet:
@@ -86,5 +86,6 @@ spring:
     username: sa
     password: ""
 gatemate:
+  cors-origins: http://localhost:*,http://127.0.0.1:*,http://192.168.*.*:*,http://10.*.*.*:*,http://172.*.*.*:*,capacitor://localhost,https://localhost
   booking:
     sandbox: true

@@ -34,8 +34,8 @@ import { ClockPipe, ShortDatePipe } from '../pipes/time.pipes';
         <div class="grid">
           <div><small>Passenger</small><b>{{ flight().passengerName }}</b></div>
           <div><small>Flight</small><b>{{ flight().number }}</b></div>
-          <div><small>Date</small><b>{{ flight().departure | shortDate: false }}</b></div>
-          <div><small>Boarding</small><b>{{ flight().boardingTime | clock }}</b></div>
+          <div><small>Date</small><b>{{ flight().departure | shortDate: false : flight().from.timezone }}</b></div>
+          <div><small>Boarding</small><b>{{ flight().boardingTime | clock: flight().from.timezone }}</b></div>
           <div><small>Gate</small><b>{{ flight().gate ?? 'TBA' }}</b></div>
           <div><small>Seat</small><b>{{ flight().seat ?? '—' }}</b></div>
         </div>

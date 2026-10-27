@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { Expense, Flight, FlightAlert, TravelStats, Trip } from '../models';
+import { ChecklistItem, Expense, Flight, FlightAlert, TravelStats, Trip } from '../models';
 import { GatemateApi, NewFlightInput } from './api';
 import { Preferences } from '@capacitor/preferences';
 import { buildAlerts } from './alerts-engine';
@@ -144,6 +144,22 @@ export class TravelStore {
     this.trips.update((list) =>
       list.map((t) => (t.id !== tripId ? t : { ...t, checklist: t.checklist.map((c) => (c.id === itemId ? { ...c, done: !c.done } : c)) })),
     );
+  }
+
+  /** Adds items that aren't on the list yet (case-insensitive); returns how many were added. */
+  async addChecklistItems(tripId: string, items: { label: string; category: ChecklistItem['category'] }[]): Promise<number> {
+    const trip = this.trip(tripId);
+    if (!trip) return 0;
+    const have = new Set(trip.checklist.map((c) => c.label.toLowerCase()));
+    let added = 0;
+    for (const it of items) {
+      if (have.has(it.label.toLowerCase())) continue;
+      const created = await this.api.addChecklistItem(tripId, it.label, it.category);
+      have.add(it.label.toLowerCase());
+      this.trips.update((list) => list.map((t) => (t.id === tripId ? { ...t, checklist: [...t.checklist, created] } : t)));
+      added++;
+    }
+    return added;
   }
 
   async addExpense(tripId: string, expense: Omit<Expense, 'id' | 'createdAt'>): Promise<void> {

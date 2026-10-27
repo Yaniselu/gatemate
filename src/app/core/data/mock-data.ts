@@ -68,6 +68,7 @@ function flight(partial: Partial<Flight> & Pick<Flight, 'id' | 'from' | 'to' | '
 }
 
 export function createMockTrips(passengerName: string): Trip[] {
+  TRAVELLERS[0].initials = passengerName.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('') || 'ME';
   const barcelona: Trip = {
     id: 'trip-bcn',
     title: 'Barcelona with friends',

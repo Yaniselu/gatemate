@@ -1,20 +1,18 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { KeychainAccess, SecureStorage } from '@aparajita/capacitor-secure-storage';
-import { environment } from '../../../environments/environment';
 
 /**
  * Secrets (refresh tokens) live in the iOS Keychain / Android Keystore-backed storage.
- * On the web build nothing sensitive is persisted: values stay in memory for the tab only,
- * so an XSS or a shared computer cannot lift a long-lived token from localStorage.
- * Exception: the mock-data web preview keeps its fake session in sessionStorage so a page
- * reload does not sign you out. Builds talking to the real API never do this.
+ * On the web nothing is written to localStorage: the session lives in sessionStorage, which is scoped to
+ * the tab and erased when it closes, so a reload keeps you signed in but a shared computer doesn't.
+ * Refresh tokens rotate on every use and reuse revokes the whole session family server-side.
  */
 @Injectable({ providedIn: 'root' })
 export class SecureStorageService {
   private readonly native = Capacitor.isNativePlatform();
   private readonly memory = new Map<string, string>();
-  private readonly mockWebSession = !this.native && environment.useMocks;
+  private readonly webSession = !this.native;
   private ready: Promise<void> | null = null;
 
   private init(): Promise<void> {
@@ -23,7 +21,7 @@ export class SecureStorageService {
   }
 
   async get(key: string): Promise<string | null> {
-    if (this.mockWebSession) return this.session('get', key);
+    if (this.webSession) return this.session('get', key);
     if (!this.native) return this.memory.get(key) ?? null;
     await this.init();
     try {
@@ -35,7 +33,7 @@ export class SecureStorageService {
   }
 
   async set(key: string, value: string): Promise<void> {
-    if (this.mockWebSession) {
+    if (this.webSession) {
       this.session('set', key, value);
       return;
     }
@@ -50,7 +48,7 @@ export class SecureStorageService {
 
   async remove(key: string): Promise<void> {
     this.memory.delete(key);
-    if (this.mockWebSession) this.session('remove', key);
+    if (this.webSession) this.session('remove', key);
     if (!this.native) return;
     await this.init();
     await SecureStorage.remove(key).catch(() => false);
@@ -58,7 +56,7 @@ export class SecureStorageService {
 
   async clear(): Promise<void> {
     this.memory.clear();
-    if (this.mockWebSession) this.session('clear');
+    if (this.webSession) this.session('clear');
     if (!this.native) return;
     await this.init();
     await SecureStorage.clear().catch(() => {});
@@ -66,11 +64,11 @@ export class SecureStorageService {
 
   private session(op: 'get' | 'set' | 'remove' | 'clear', key = '', value = ''): string | null {
     try {
-      const k = 'gm_mock_' + key;
+      const k = 'gm_s_' + key;
       if (op === 'get') return sessionStorage.getItem(k);
       if (op === 'set') sessionStorage.setItem(k, value);
       if (op === 'remove') sessionStorage.removeItem(k);
-      if (op === 'clear') Object.keys(sessionStorage).filter((x) => x.startsWith('gm_mock_')).forEach((x) => sessionStorage.removeItem(x));
+      if (op === 'clear') Object.keys(sessionStorage).filter((x) => x.startsWith('gm_s_')).forEach((x) => sessionStorage.removeItem(x));
     } catch {
       /* storage blocked: fall back to in-memory only */
       if (op === 'get') return this.memory.get(key) ?? null;

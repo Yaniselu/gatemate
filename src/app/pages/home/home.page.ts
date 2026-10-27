@@ -10,7 +10,6 @@ import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { CountdownComponent } from '../../shared/components/countdown.component';
 import { RouteArcComponent } from '../../shared/components/route-arc.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
-import { SheenDirective } from '../../shared/directives/sheen.directive';
 import { CityImageComponent } from '../../shared/components/city-image.component';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { DestinationInfo, DestinationService, weatherLabel } from '../../core/services/destination.service';
@@ -38,7 +37,7 @@ export const ALERT_ICONS: Record<AlertKind, { icon: string; color: string }> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink,
-    SkeletonComponent, CountdownComponent, RouteArcComponent, RevealDirective, PressableDirective, SheenDirective, CityImageComponent,
+    SkeletonComponent, CountdownComponent, RouteArcComponent, RevealDirective, PressableDirective, CityImageComponent,
     ClockPipe, RelativeTimePipe, FlightStatusPipe,
   ],
   templateUrl: './home.page.html',
@@ -93,7 +92,7 @@ export class HomePage implements OnInit {
     { label: 'In-flight', icon: 'game-controller-outline', link: '/inflight' },
     { label: 'Baggage', icon: 'bag-handle-outline', link: 'bags' },
     { label: 'Checklist', icon: 'checkmark-done', link: 'checklist' },
-    { label: 'Trip chat', icon: 'chatbubbles-outline', link: '/tabs/chat' },
+    { label: 'Trip chat', icon: 'chatbubbles-outline', link: 'trip-chat' },
     { label: 'Your rights', icon: 'shield-checkmark-outline', link: '/rights' },
   ];
 
@@ -134,7 +133,9 @@ export class HomePage implements OnInit {
   open(link: string) {
     const next = this.next();
     const sections = ['pass', 'checklist', 'bags', 'guide'];
-    if (sections.includes(link) && next) {
+    if (link === 'trip-chat') {
+      void this.nav.navigateForward(next?.trip.chatId ? `/chat/${next.trip.chatId}` : '/tabs/chat');
+    } else if (sections.includes(link) && next) {
       void this.nav.navigateForward(`/trip/${next.trip.id}`, { queryParams: { tab: link } });
     } else if (sections.includes(link)) {
       void this.nav.navigateForward('/add-flight');

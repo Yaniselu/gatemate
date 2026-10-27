@@ -52,6 +52,8 @@ export class LoginPage {
       this.platform.error();
       this.error.set(e instanceof ApiError ? e.message : 'Could not sign in. Please try again.');
       this.form.controls.password.reset('');
+      // The banner explains what went wrong; don't also flag the now-empty field as a validation error.
+      this.submitted.set(false);
     } finally {
       this.loading.set(false);
     }

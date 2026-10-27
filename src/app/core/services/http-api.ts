@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 import { ApiError, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -66,6 +66,9 @@ export class HttpApi extends GatemateApi {
   async registerPushToken(token: string, platform: 'ios' | 'android') {
     await this.call(this.http.post<void>(`${this.base}/push-tokens`, { token, platform }));
   }
+  addChecklistItem(tripId: string, label: string, category: ChecklistItem['category']) {
+    return this.call(this.http.post<ChecklistItem>(`${this.base}/trips/${enc(tripId)}/checklist`, { label, category }));
+  }
   acceptInvite(token: string) {
     return this.call(this.http.post<{ type: 'trip' | 'chat'; id: string }>(`${this.base}/invites/${enc(token)}/accept`, {}));
   }
@@ -126,9 +129,12 @@ function toApiError(e: unknown): ApiError {
   if (e instanceof ApiError) return e;
   if (e instanceof HttpErrorResponse) {
     const retryAfter = Number(e.headers?.get('Retry-After')) || undefined;
-    // Only surface server messages we expect; never echo raw bodies.
+    // Our API returns {code, message} with messages written for users; anything else (proxies, HTML error
+    // pages) is never echoed.
+    const api = typeof e.error?.code === 'string' && typeof e.error?.message === 'string' && e.status < 500;
     const msg =
       e.status === 0 ? 'No connection. Check your internet and try again.'
+      : api ? e.error.message.slice(0, 200)
       : e.status === 401 ? 'Your session has expired. Please sign in again.'
       : e.status === 403 ? 'You do not have access to this.'
       : e.status === 429 ? 'Too many attempts. Please wait a moment.'

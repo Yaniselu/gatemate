@@ -222,7 +222,7 @@
 
 .f-facts {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1.3fr 0.8fr 0.8fr 1.1fr;
   gap: 8px;
   font-size: 14px;
   font-weight: 700;
@@ -747,4 +747,39 @@
     background: rgba(47, 209, 138, 0.1);
     color: #138a57;
   }
+}
+
+.explore-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  color: var(--gm-ink);
+  text-decoration: none;
+
+  .txt {
+    flex: 1;
+    min-width: 0;
+
+    b {
+      display: block;
+      font-size: 15.5px;
+    }
+    small {
+      display: block;
+      font-size: 12.5px;
+      color: var(--gm-ink-3);
+      margin-top: 2px;
+    }
+  }
+  .chev {
+    color: var(--gm-ink-3);
+  }
+}
+
+.est {
+  margin-right: 2px;
+  color: var(--gm-ink-3);
+  font-weight: 500;
 }

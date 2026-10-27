@@ -45,6 +45,7 @@ export class AirportPage implements OnInit {
   readonly airport = signal<AirportRecord | null>(null);
   readonly features = signal<MapFeature[] | null>(null);
   readonly picking = signal(false);
+  readonly gatesError = signal(false);
   readonly category = signal<PoiKind | 'all'>('all');
   readonly openRule = signal<string | null>(null);
   private now = signal(Date.now());
@@ -109,7 +110,12 @@ export class AirportPage implements OnInit {
     this.airport.set(a);
     this.features.set(null);
     this.category.set('all');
-    void this.gatesSvc.get(a).then((f) => this.airport()?.iata === a.iata && this.features.set(f));
+    this.gatesError.set(false);
+    void this.gatesSvc.get(a).then((f) => this.airport()?.iata === a.iata && this.features.set(f)).catch(() => {
+      if (this.airport()?.iata !== a.iata) return;
+      this.gatesError.set(true);
+      this.features.set([]);
+    });
   }
 
   async refresh(ev: CustomEvent) {

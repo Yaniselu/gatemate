@@ -52,7 +52,22 @@ export class AirportMapPage implements OnInit, OnDestroy {
     const a = this.db.get(this.iata() ?? this.prefs.homeAirport()) ?? this.db.get('OTP')!;
     this.airport.set(a);
     if (this.gate()) this.selected.set(this.gate()!);
-    this.features.set(await this.gates.get(a));
+    await this.loadGates();
+  }
+
+  readonly gatesError = signal(false);
+
+  async loadGates() {
+    const a = this.airport();
+    if (!a) return;
+    this.gatesError.set(false);
+    this.features.set(null);
+    try {
+      this.features.set(await this.gates.get(a));
+    } catch {
+      this.gatesError.set(true);
+      this.features.set([]);
+    }
   }
 
   ngOnDestroy() {

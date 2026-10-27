@@ -48,33 +48,6 @@
   }
 }
 
-.wave {
-  display: inline-block;
-  transform-origin: 70% 70%;
-  animation: wave 2.4s ease-in-out 0.6s 2;
-}
-
-@keyframes wave {
-  0%,
-  60%,
-  100% {
-    transform: rotate(0);
-  }
-  10%,
-  30% {
-    transform: rotate(14deg);
-  }
-  20% {
-    transform: rotate(-8deg);
-  }
-  40% {
-    transform: rotate(-4deg);
-  }
-  50% {
-    transform: rotate(10deg);
-  }
-}
-
 .gm-label.light {
   color: rgba(255, 255, 255, 0.62);
 }
@@ -83,22 +56,49 @@
 .hero {
   position: relative;
   margin-top: 10px;
-  padding: 92px 10px 10px;
-  border-radius: 26px;
+  border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 26px 50px rgba(8, 30, 48, 0.22);
+  background: #0f2233;
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(8, 30, 48, 0.16);
   cursor: pointer;
 
+  .cover {
+    position: relative;
+    height: 128px;
+  }
   .hero-bg {
     position: absolute;
     inset: 0;
   }
+  .cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(15, 34, 51, 0) 30%, rgba(15, 34, 51, 0.92) 100%);
+  }
+  .cover-txt {
+    position: absolute;
+    left: 16px;
+    bottom: 10px;
+    z-index: 1;
+
+    span {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    b {
+      font-size: 22px;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+    }
+  }
 }
 
 .panel {
-  padding: 16px 16px 14px;
-  border-radius: 20px;
-  transition: transform 0.2s;
+  padding: 14px 16px 14px;
 
   header {
     display: flex;
@@ -435,78 +435,40 @@
 }
 
 /* ---------- In-flight ---------- */
-.inflight {
+.rows {
+  margin-top: 22px;
+  padding: 0 14px;
+}
+
+.row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
-  margin-top: 22px;
-  padding: 14px;
+  padding: 12px 0;
+  background: none;
   text-align: left;
   color: var(--gm-ink);
-  border-radius: var(--gm-radius-lg);
+  border-bottom: 1px solid var(--gm-line);
 
-  .inflight-art {
-    position: relative;
-    flex: none;
-    width: 58px;
-    height: 58px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: #fff;
-    background: linear-gradient(135deg, #12304a, #0a6e80);
-    overflow: hidden;
-
-    ion-icon {
-      position: relative;
-    }
+  &:last-child {
+    border-bottom: 0;
   }
 
-  .orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(6px);
-    animation: gm-drift 6s ease-in-out infinite alternate;
-  }
-  .o1 {
-    width: 30px;
-    height: 30px;
-    background: #22c7d3;
-    top: -6px;
-    left: -6px;
-  }
-  .o2 {
-    width: 26px;
-    height: 26px;
-    background: #8b7cf6;
-    bottom: -8px;
-    right: -4px;
-    animation-delay: -2s;
-  }
-  .o3 {
-    width: 16px;
-    height: 16px;
-    background: #ffb36b;
-    top: 20px;
-    right: 6px;
-    animation-delay: -4s;
-  }
-
-  .inflight-text {
+  .row-text {
     flex: 1;
     min-width: 0;
 
     b {
       display: block;
       font-size: 15.5px;
-      margin-top: 2px;
+      font-weight: 650;
     }
     small {
+      display: block;
       color: var(--gm-ink-3);
-      font-size: 12.5px;
+      font-size: 13px;
+      margin-top: 1px;
     }
   }
 

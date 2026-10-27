@@ -14,7 +14,7 @@
       <div class="top">
         <div class="hello anim-fade-up">
           <span class="gm-label">{{ today }}</span>
-          <h1 class="gm-page-title">{{ greeting() }},<br />{{ auth.firstName() }} <span class="wave">👋</span></h1>
+          <h1 class="gm-page-title">{{ greeting() }},<br />{{ auth.firstName() }}</h1>
         </div>
         <div class="top-actions">
           <a class="gm-icon-btn" routerLink="/alerts" aria-label="Alerts">
@@ -42,9 +42,15 @@
         <gm-skeleton height="100%" radius="22px" />
       </div>
     } @else if (next(); as n) {
-      <article class="hero anim-scale-in" (click)="open('/trip/' + n.trip.id)">
-        <gm-city-image class="hero-bg" [code]="n.flight.to.code" [src]="n.flight.to.imageUrl" />
-        <div class="panel glass smoke" gmSheen="3">
+      <article class="hero anim-scale-in" gmPressable (click)="open('/trip/' + n.trip.id)">
+        <div class="cover">
+          <gm-city-image class="hero-bg" [code]="n.flight.to.code" [src]="n.flight.to.imageUrl" [alt]="n.flight.to.city" />
+          <div class="cover-txt">
+            <span>Next flight</span>
+            <b>{{ n.flight.to.city }}</b>
+          </div>
+        </div>
+        <div class="panel">
           <header>
             <div class="flight-id">
               <span class="carrier">{{ n.flight.airlineCode }}</span>
@@ -64,7 +70,7 @@
           <div class="route">
             <div>
               <div class="code">{{ n.flight.from.code }}</div>
-              <div class="meta">{{ n.flight.departure | clock }} · {{ n.flight.from.city }}</div>
+              <div class="meta">{{ n.flight.departure | clock: n.flight.from.timezone }} · {{ n.flight.from.city }}</div>
             </div>
             <gm-route-arc class="arc" [progress]="flightProgress()" />
             <div class="right">
@@ -137,18 +143,25 @@
     }
 
     <!-- In-flight -->
-    <button class="inflight glass" gmSheen gmReveal (click)="open('/inflight')">
-      <div class="inflight-art" aria-hidden="true">
-        <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
-        <ion-icon name="game-controller-outline" />
-      </div>
-      <div class="inflight-text">
-        <span class="gm-label">In-flight</span>
-        <b>Games, calm breathing & stretches</b>
-        <small>Works offline — download nothing.</small>
-      </div>
-      <ion-icon name="chevron-forward" class="chev" />
-    </button>
+    <div class="rows card" gmReveal>
+      @if (next(); as n) {
+        <button class="row" gmPressable (click)="open('/explore/' + n.flight.to.code + '?trip=' + n.trip.id)">
+          <span class="gm-well accent"><ion-icon name="compass-outline" /></span>
+          <span class="row-text"><b>Explore {{ n.flight.to.city }}</b><small>Sights, holidays, phrases, money and weather</small></span>
+          <ion-icon name="chevron-forward" class="chev" />
+        </button>
+      }
+      <button class="row" gmPressable (click)="open('/inflight')">
+        <span class="gm-well"><ion-icon name="game-controller-outline" /></span>
+        <span class="row-text"><b>In-flight</b><small>7 games, breathing and seat stretches · works offline</small></span>
+        <ion-icon name="chevron-forward" class="chev" />
+      </button>
+      <button class="row" gmPressable (click)="open('/tools')">
+        <span class="gm-well"><ion-icon name="construct-outline" /></span>
+        <span class="row-text"><b>Travel tools</b><small>Currency, time zones, jet lag and liquids</small></span>
+        <ion-icon name="chevron-forward" class="chev" />
+      </button>
+    </div>
 
     <!-- Live updates -->
     <div class="gm-section-title">

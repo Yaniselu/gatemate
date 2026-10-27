@@ -276,8 +276,10 @@ export class AddFlightPage {
     try {
       const trip = await this.store.addFlight({
         carrier: v.carrier,
+        airlineName: AIRLINES.find((a) => a.code === v.carrier)?.name,
         flightNumber: v.flightNumber,
-        date: new Date(v.date).toISOString(),
+        // Departure time as printed on the ticket: local time at the departure airport.
+        date: v.date.slice(0, 16),
         from: v.from,
         to: v.to,
         seat: v.seat || undefined,

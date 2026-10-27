@@ -11,8 +11,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   padding: 5px;
-  border-radius: 18px;
+  border-radius: 14px;
   margin: 8px 0 18px;
+  background: #eef1f4;
 
   .thumb {
     position: absolute;
@@ -20,9 +21,9 @@
     bottom: 5px;
     left: 5px;
     width: calc(50% - 5px);
-    border-radius: 14px;
+    border-radius: 10px;
     background: #fff;
-    box-shadow: 0 4px 14px rgba(11, 40, 60, 0.1);
+    box-shadow: 0 1px 3px rgba(11, 40, 60, 0.12);
     transform: translateX(calc(var(--x) * 100%));
     transition: transform 0.5s var(--gm-ease-spring);
     z-index: 1;
@@ -31,7 +32,7 @@
   button {
     position: relative;
     z-index: 4;
-    height: 40px;
+    height: 36px;
     background: none;
     font-size: 15px;
     font-weight: 650;
@@ -117,13 +118,11 @@
   padding: 6px 11px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 650;
   color: #fff;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.12));
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-  backdrop-filter: blur(14px) saturate(180%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  background: rgba(10, 22, 32, 0.42);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 
   &.count {
     left: 12px;
@@ -226,8 +225,9 @@
   margin-right: 6px;
 
   ion-fab-button {
-    --background: linear-gradient(135deg, #22c7d3, #0a93a6);
-    --box-shadow: 0 14px 30px var(--gm-accent-glow);
+    --background: var(--gm-accent-strong);
+    --background-activated: var(--gm-accent-deep);
+    --box-shadow: 0 8px 20px rgba(10, 147, 166, 0.3);
     width: 60px;
     height: 60px;
     animation: gm-pop 0.6s var(--gm-ease-spring) 0.4s both;

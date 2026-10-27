@@ -102,7 +102,7 @@ public class TripService {
         int minutes = estimateMinutes(km);
         var f = new FlightEntity();
         f.airlineCode = in.carrier();
-        f.airlineName = in.carrier();
+        f.airlineName = in.airlineName() == null || in.airlineName().isBlank() ? in.carrier() : Text.clean(in.airlineName(), 40);
         f.flightNumber = in.carrier() + " " + in.flightNumber();
         f.fromIata = from.iata();
         f.toIata = to.iata();
@@ -128,6 +128,20 @@ public class TripService {
         var c = checklist.findById(itemId).filter(x -> x.tripId.equals(tripId)).orElseThrow(() -> ApiException.notFound("Item"));
         c.done = done;
         checklist.save(c);
+    }
+
+    @Transactional
+    public TripDtos.ChecklistDto addChecklistItem(UUID me, UUID tripId, TripDtos.NewChecklistItem in) {
+        requireMember(tripId, me);
+        var items = checklist.findByTripIdOrderByPosition(tripId);
+        if (items.size() >= 200) throw ApiException.badRequest("too_many", "This checklist is full.");
+        var c = new ChecklistItemEntity();
+        c.tripId = tripId;
+        c.label = Text.maskProfanity(Text.clean(in.label(), 80)).text();
+        c.category = in.category() == null ? "packing" : in.category();
+        c.position = items.isEmpty() ? 0 : items.get(items.size() - 1).position + 1;
+        checklist.save(c);
+        return new TripDtos.ChecklistDto(c.id.toString(), c.label, c.done, c.category);
     }
 
     @Transactional

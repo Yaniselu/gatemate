@@ -25,6 +25,7 @@ public final class TripDtos {
 
     public record NewFlight(
             @NotBlank @Pattern(regexp = "[A-Z0-9]{2,3}") String carrier,
+            @Size(max = 40) String airlineName,
             @NotBlank @Pattern(regexp = "\\d{1,4}[A-Z]?") String flightNumber,
             @NotBlank String date,
             @NotBlank @Pattern(regexp = "[A-Z]{3}") String from,
@@ -32,6 +33,9 @@ public final class TripDtos {
             @Pattern(regexp = "\\d{1,3}[A-K]") String seat,
             @Pattern(regexp = "[A-Z0-9]{5,8}") String bookingRef,
             @Size(max = 60) String passengerName) {}
+
+    public record NewChecklistItem(@jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 80) String label,
+            @jakarta.validation.constraints.Pattern(regexp = "documents|packing|tasks") String category) {}
 
     public record ChecklistPatch(boolean done) {}
 

@@ -117,3 +117,24 @@
   font-size: 12.5px;
   color: var(--gm-ink-3);
 }
+
+.err-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-right: 10px;
+
+  .gm-label {
+    margin: 0;
+  }
+  button {
+    height: 30px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-weight: 650;
+    font-size: 13px;
+    color: #fff;
+    background: var(--gm-ink);
+  }
+}

@@ -35,8 +35,9 @@ export class DurationPipe implements PipeTransform {
 
 @Pipe({ name: 'shortDate' })
 export class ShortDatePipe implements PipeTransform {
-  transform(value: string | undefined | null, withWeekday = true): string {
+  /** Pass the airport's time zone for flight dates so a 23:50 departure isn't shown on the wrong day. */
+  transform(value: string | undefined | null, withWeekday = true, timeZone?: string): string {
     if (!value) return '';
-    return new Date(value).toLocaleDateString('en-GB', { weekday: withWeekday ? 'short' : undefined, day: 'numeric', month: 'short' });
+    return new Date(value).toLocaleDateString('en-GB', { weekday: withWeekday ? 'short' : undefined, day: 'numeric', month: 'short', timeZone });
   }
 }

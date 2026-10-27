@@ -30,9 +30,10 @@ export class GatesService {
 
   get(a: AirportRecord): Promise<MapFeature[]> {
     if (!this.cache.has(a.iata)) {
-      const p = this.fetch(a).catch(() => {
+      const p = this.fetch(a).catch((e) => {
+        // Don't cache failures and don't pretend the airport has no gates: let the page say it's offline.
         this.cache.delete(a.iata);
-        return [] as MapFeature[];
+        throw e;
       });
       this.cache.set(a.iata, p);
     }
@@ -46,6 +47,7 @@ export class GatesService {
     const near = `(around:4000,${a.lat},${a.lon})`;
     const q = `[out:json][timeout:25];(node["aeroway"="gate"]${near};way["aeroway"="terminal"]${near};node["amenity"~"^(cafe|restaurant|fast_food|bar|pharmacy|toilets|atm|bureau_de_change|charging_station)$"]${near};node["shop"]["name"]${near};node["tourism"="information"]${near};);out center tags 400;`;
     const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    if (!r.ok) throw new Error('overpass ' + r.status);
     const j = await r.json();
     return (j.elements as { type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[])
       .map((e): MapFeature => {

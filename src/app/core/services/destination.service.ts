@@ -14,7 +14,7 @@ export interface WeatherDay {
 export interface DestinationInfo {
   airport: AirportRecord;
   country?: CountryFacts;
-  summary?: { title: string; description?: string; extract: string; pageUrl: string };
+  summary?: { title: string; description?: string; extract: string; pageUrl: string; coords?: { lat: number; lon: number } };
   photo?: { url: string; credit: string; link: string };
   weather?: { temp: number; code: number; wind: number; days: WeatherDay[] };
   fx?: { base: string; currency: string; rate: number; date: string };
@@ -100,7 +100,7 @@ export class DestinationService {
       const img = orig && orig.width <= 1280 ? orig.source : (j.thumbnail?.source as string | undefined)?.replace(/\/\d+px-/, '/1280px-') ?? orig?.source;
       const pageUrl = j.content_urls?.mobile?.page ?? j.content_urls?.desktop?.page;
       return {
-        summary: { title: j.title, description: j.description, extract: j.extract, pageUrl },
+        summary: { title: j.title, description: j.description, extract: j.extract, pageUrl, coords: j.coordinates ? { lat: j.coordinates.lat, lon: j.coordinates.lon } : undefined },
         photo: img ? { url: img, credit: 'Photo: Wikipedia / Wikimedia Commons', link: pageUrl } : undefined,
       };
     }

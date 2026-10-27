@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .frameOptions(f -> f.deny())
                 .httpStrictTransportSecurity(s -> s.includeSubDomains(true).maxAgeInSeconds(31536000)))
             .authorizeHttpRequests(a -> a
-                .requestMatchers("/api/v1/auth/**", "/actuator/health", "/api/v1/airports/**", "/api/v1/destinations/**").permitAll()
+                .requestMatchers("/api/v1/auth/**", "/actuator/health", "/api/v1/airports/**", "/api/v1/destinations/**", "/api/v1/countries/**", "/api/v1/fx").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/inbound/email").permitAll()
                 .requestMatchers("/ws/**").permitAll() // authenticated on STOMP CONNECT
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
@@ -82,9 +82,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    CorsConfigurationSource cors(GatemateProperties props) {
+    // Must be named corsConfigurationSource: that is the bean Spring Security's .cors() looks up.
+    CorsConfigurationSource corsConfigurationSource(GatemateProperties props) {
         var c = new CorsConfiguration();
-        c.setAllowedOrigins(props.corsOrigins() == null ? List.of() : props.corsOrigins());
+        // Patterns so a dev profile can allow the LAN (e.g. http://192.168.*:4200) for testing on a phone.
+        c.setAllowedOriginPatterns(props.corsOrigins() == null ? List.of() : props.corsOrigins());
         c.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         c.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         c.setExposedHeaders(List.of("Retry-After"));

@@ -15,10 +15,10 @@ import { Traveller } from '../../core/models';
   styles: `
     :host { display: inline-flex; align-items: center; }
     .av {
-      width: var(--size, 30px); height: var(--size, 30px); border-radius: 50%;
+      flex: none; width: var(--size, 30px); height: var(--size, 30px); border-radius: 50%; letter-spacing: -.02em; position: relative; z-index: calc(10 - var(--i, 0));
       display: inline-flex; align-items: center; justify-content: center;
       color: #fff; font-size: 11px; font-weight: 700; border: 2px solid #fff;
-      margin-left: -9px; box-shadow: 0 2px 6px rgba(11,27,43,.12);
+      margin-left: -7px;
       animation: gm-pop .5s var(--gm-ease-spring) both; animation-delay: calc(var(--i) * 70ms);
     }
     .av:first-child { margin-left: 0; }

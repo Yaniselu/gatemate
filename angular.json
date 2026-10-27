@@ -137,6 +137,17 @@
                 "input": "src/index.preview.html",
                 "output": "index.html"
               }
+            },
+            "local": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -152,6 +163,9 @@
             },
             "preview": {
               "buildTarget": "gatemate:build:preview"
+            },
+            "local": {
+              "buildTarget": "gatemate:build:local"
             }
           },
           "defaultConfiguration": "development"

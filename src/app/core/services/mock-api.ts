@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { AirportDbService, haversineKm } from './airport-db.service';
+import { zonedToUtc } from '../utils/tz';
 import {
   createMockAlerts,
   createMockMessages,
@@ -7,7 +9,7 @@ import {
   createMockTrips,
   AIRPORTS,
 } from '../data/mock-data';
-import { ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 import { AIRLINES, sampleBaggage } from '../data/airlines';
 import { parseBcbp } from '../utils/bcbp';
 import { matchPassengerName } from '../utils/name-match';
@@ -277,28 +279,38 @@ export class MockApi extends GatemateApi {
     return this.delay(this.ensureTrips(), 600, 1300);
   }
 
+  private airportDb = inject(AirportDbService);
+
   async addFlight(input: NewFlightInput): Promise<Trip> {
     const trips = this.ensureTrips();
-    const from = AIRPORTS[input.from] ?? { code: input.from, city: input.from, name: `${input.from} Airport`, country: '', timezone: 'UTC' };
-    const to = AIRPORTS[input.to] ?? { code: input.to, city: input.to, name: `${input.to} Airport`, country: '', timezone: 'UTC' };
-    const departure = new Date(input.date);
+    await this.airportDb.load();
+    const ra = this.airportDb.get(input.from), rb = this.airportDb.get(input.to);
+    if (!ra || !rb) throw new ApiError('Unknown airport code.', 400, 'unknown_airport');
+    const ap = (r: typeof ra) => ({ code: r.iata, city: r.city, name: r.name, country: this.airportDb.countryName(r.country), timezone: r.tz });
+    const from = ap(ra), to = ap(rb);
+    // Same rules as the server: wall-clock time at the departure airport; block time = 30 min + cruise at 800 km/h.
+    const departure = /Z$|[+-]\d\d:\d\d$/.test(input.date) ? new Date(input.date) : zonedToUtc(input.date, ra.tz);
+    if (isNaN(departure.getTime())) throw new ApiError('Enter a valid departure date and time.', 400, 'bad_date');
+    const km = Math.round(haversineKm(ra.lat, ra.lon, rb.lat, rb.lon));
+    const minutes = Math.round(30 + (km / 800) * 60);
     const flight: Flight = {
       id: randomId('fl_'),
-      airline: input.carrier,
+      airline: input.airlineName ?? input.carrier,
       airlineCode: input.carrier,
       number: `${input.carrier} ${input.flightNumber}`,
       from,
       to,
       departure: departure.toISOString(),
-      arrival: new Date(departure.getTime() + 150 * 60_000).toISOString(),
+      arrival: new Date(departure.getTime() + minutes * 60_000).toISOString(),
       boardingTime: new Date(departure.getTime() - 40 * 60_000).toISOString(),
       seat: input.seat,
       cabin: 'Economy',
       bookingRef: input.bookingRef ?? '',
       passengerName: input.passengerName,
       status: 'scheduled',
-      durationMinutes: 150,
-      distanceKm: 1500,
+      durationMinutes: minutes,
+      distanceKm: km,
+      verification: { status: 'unverified', method: 'manual', checkedAt: new Date().toISOString(), checks: [] },
     };
     const trip: Trip = {
       id: randomId('trip_'),
@@ -318,6 +330,12 @@ export class MockApi extends GatemateApi {
     };
     trips.push(trip);
     return this.delay(trip, 700, 1000);
+  }
+
+  async addChecklistItem(tripId: string, label: string, category: ChecklistItem['category']): Promise<ChecklistItem> {
+    const item: ChecklistItem = { id: randomId('chk_'), label, done: false, category };
+    this.ensureTrips().find((t) => t.id === tripId)?.checklist.push(item);
+    return this.delay(item, 150, 300);
   }
 
   async toggleChecklistItem(tripId: string, itemId: string, done: boolean): Promise<void> {

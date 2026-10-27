@@ -42,6 +42,11 @@ public class TripController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/trips/{tripId}/checklist")
+    public TripDtos.ChecklistDto addChecklist(@PathVariable UUID tripId, @Valid @RequestBody TripDtos.NewChecklistItem in) {
+        return trips.addChecklistItem(CurrentUser.id(), tripId, in);
+    }
+
     @PostMapping("/trips/{tripId}/expenses")
     public TripDtos.ExpenseDto expense(@PathVariable UUID tripId, @Valid @RequestBody TripDtos.NewExpense in) {
         return trips.addExpense(CurrentUser.id(), tripId, in);

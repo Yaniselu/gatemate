@@ -1,0 +1,231 @@
+<ion-header class="detail-header" [class.solid]="scrollY() > 170">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/home" text="" icon="chevron-back" /></ion-buttons>
+    <div class="mini-title">{{ airport()?.city }}</div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)">
+  <div class="cover" [style.transform]="'translateY(' + scrollY() * 0.45 + 'px)'">
+    <gm-city-image [code]="iata().toUpperCase()" [alt]="airport()?.city ?? ''" [showCredit]="true" />
+    <div class="cover-shade"></div>
+    <div class="cover-txt" [style.opacity]="1 - scrollY() / 220">
+      <span class="kicker">{{ country()?.name }}</span>
+      <h1>{{ airport()?.city }}</h1>
+      @if (localTime()) {
+        <span class="sub"><ion-icon name="time-outline" /> {{ localTime() }} local time</span>
+      }
+    </div>
+  </div>
+
+  <div class="sheet">
+    <nav class="chips" role="tablist">
+      @for (s of sections; track s.id) {
+        <button role="tab" [class.on]="section() === s.id" (click)="go(s.id)"><ion-icon [name]="s.icon" />{{ s.label }}</button>
+      }
+    </nav>
+
+    @if (infoError() && !airport()) {
+      <div class="card notice"><ion-icon name="alert-circle-outline" /><p>We don’t know this airport code.</p></div>
+    }
+
+    <!-- About -->
+    @if (info()?.summary; as s) {
+      <p class="lead anim-fade-up">{{ s.description ? s.description + '. ' : '' }}{{ s.extract.split('. ').slice(0, 2).join('. ') }}{{ s.extract.split('. ').length > 2 ? '.' : '' }}</p>
+    }
+
+    <!-- Sights -->
+    <section id="ex-sights" class="block">
+      <header><h2>Top sights</h2><small>Most notable first</small></header>
+      @if (sights(); as list) {
+        @if (list.length) {
+          <div class="sights">
+            @for (s of visibleSights(); track s.id; let i = $index) {
+              <a class="sight card" [href]="mapsUrl(s)" target="_blank" rel="noopener" [gmReveal]="i % 8" gmPressable>
+                <div class="thumb">
+                  @if (s.image) {
+                    <img [src]="s.image" [alt]="s.name" loading="lazy" referrerpolicy="no-referrer" (error)="$any($event.target).remove()" />
+                  }
+                  <ion-icon name="image-outline" class="ph" />
+                  <span class="rank">{{ i + 1 }}</span>
+                </div>
+                <div class="s-txt">
+                  <b>{{ s.name }}</b>
+                  @if (s.description) { <small>{{ s.description }}</small> }
+                  <span class="dist"><ion-icon name="navigate-outline" /> {{ s.distanceKm | number: '1.0-1' }} km from centre</span>
+                </div>
+              </a>
+            }
+          </div>
+          @if (list.length > 8) {
+            <button class="more" (click)="showAllSights.set(!showAllSights())">{{ showAllSights() ? 'Show fewer' : 'Show all ' + list.length }}</button>
+          }
+          <p class="src">Data: Wikidata (CC0) · Photos: Wikimedia Commons · Opens in Maps</p>
+        } @else {
+          <div class="card notice"><ion-icon name="map-outline" /><p>No well-known landmarks are mapped near this airport’s city yet.</p></div>
+        }
+      } @else if (sightsError() || infoError()) {
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>Sights need an internet connection. Pull down to retry when you’re online.</p></div>
+      } @else {
+        <div class="sights">
+          @for (i of [1, 2, 3, 4]; track i) { <div class="sight card"><gm-skeleton height="100%" radius="12px" /></div> }
+        </div>
+      }
+    </section>
+
+    <!-- Days & holidays -->
+    <section id="ex-when" class="block">
+      <header><h2>Days & holidays</h2><small>{{ tripData() ? 'During your trip' : 'Next 30 days' }}</small></header>
+      <div class="card sunbox">
+        @if (sun(); as s) {
+          <div class="sunrow">
+            <div><ion-icon name="sunny-outline" /><span class="gm-label">Sunrise</span><b>{{ s.today.rise }}</b></div>
+            <div><ion-icon name="moon-outline" /><span class="gm-label">Sunset</span><b>{{ s.today.set }}</b></div>
+            <div><ion-icon name="hourglass-outline" /><span class="gm-label">Daylight</span><b>{{ s.today.hours | number: '1.0-1' }} h</b></div>
+          </div>
+          @if (s.trip; as t) {
+            <p class="hint">On your arrival day: sunrise {{ t.rise }}, sunset {{ t.set }}.</p>
+          }
+        }
+      </div>
+      @if (tripHolidays(); as th) {
+        <div class="card list">
+          @for (h of th; track h.date + h.name) {
+            <div class="hol">
+              <span class="date">{{ holidayDate(h.date) }}</span>
+              <div><b>{{ h.name }}</b><small>{{ h.localName }}{{ h.national ? '' : ' · regional' }}</small></div>
+            </div>
+          } @empty {
+            <div class="hol none"><ion-icon name="checkmark-circle-outline" /><div><b>No public holidays</b><small>Shops and offices keep normal hours{{ tripData() ? ' during your trip' : '' }}.</small></div></div>
+          }
+        </div>
+        @if (th.length) {
+          <p class="hint">On public holidays many shops, banks and museums close or keep Sunday hours — book ahead.</p>
+        } @else if (nextHolidays().length) {
+          <p class="hint">Next: {{ nextHolidays()[0].name }} on {{ holidayDate(nextHolidays()[0].date) }}.</p>
+        }
+      } @else if (holidaysError()) {
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>Holiday calendar needs an internet connection.</p></div>
+      } @else {
+        <gm-skeleton height="90px" radius="14px" />
+      }
+    </section>
+
+    <!-- Phrases -->
+    <section id="ex-phrases" class="block">
+      <header>
+        <h2>Phrases</h2>
+        <small>{{ phrases() ? phrases()!.language + ' · ' + phrases()!.set.native : '' }}</small>
+      </header>
+      @if (phrases(); as p) {
+        <div class="card list phrases">
+          @for (ph of p.set.phrases; track $index; let i = $index) {
+            <button class="phrase" (click)="speak(ph[0])" [attr.aria-label]="'Play ' + phraseKeys[i]">
+              <span class="en">{{ phraseKeys[i] }}</span>
+              <span class="native"><b>{{ ph[0] }}</b>@if (ph[1]) { <small>{{ ph[1] }}</small> }</span>
+              <ion-icon name="volume-medium-outline" />
+            </button>
+          }
+        </div>
+        @if (p.set.note) { <p class="hint">{{ p.set.note }}</p> }
+        <p class="hint">Tap a phrase to hear it (uses your phone’s voice for {{ p.language }}).</p>
+      } @else {
+        <div class="card notice"><ion-icon name="language-outline" /><p>English is widely used here{{ country()?.languages?.length ? ' (' + country()!.languages.slice(0, 3).join(', ') + ')' : '' }}.</p></div>
+      }
+    </section>
+
+    <!-- Money -->
+    <section id="ex-money" class="block">
+      <header><h2>Money</h2><small>{{ currencyName(country()?.currency?.[0]) }}</small></header>
+      @if (info()?.fx; as fx) {
+        <div class="card fx">
+          <div class="fx-row">
+            <label>
+              <span class="gm-label">{{ reverse() ? fx.currency : fx.base }}</span>
+              <input type="number" inputmode="decimal" min="0" [ngModel]="amount()" (ngModelChange)="setAmount($event)" aria-label="Amount" />
+            </label>
+            <button class="swap" (click)="flip()" aria-label="Swap currencies"><ion-icon name="swap-vertical" /></button>
+            <div class="out">
+              <span class="gm-label">{{ reverse() ? fx.base : fx.currency }}</span>
+              <b>{{ converted() | number: (converted()! < 100 ? '1.2-2' : '1.0-0') }}</b>
+            </div>
+          </div>
+          <div class="quick">
+            @for (q of quick; track q) { <button (click)="setAmount(q)" [class.on]="amount() === q">{{ q }}</button> }
+          </div>
+          <p class="src">1 {{ fx.base }} = {{ fx.rate | number: '1.2-4' }} {{ fx.currency }} · ECB reference rate {{ fx.date }}. Card and exchange-desk rates differ.</p>
+        </div>
+      } @else if (info() && !otherCurrency()) {
+        <div class="card notice"><ion-icon name="checkmark-circle-outline" /><p>Same currency as at home ({{ homeCurrency() }}).</p></div>
+      } @else if (info()) {
+        <div class="card notice"><ion-icon name="cash-outline" /><p>Local currency: {{ country()?.currency?.join(', ') }}. Live exchange rate isn’t available for this currency.</p></div>
+      } @else if (infoError()) {
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>Exchange rates need an internet connection.</p></div>
+      } @else {
+        <gm-skeleton height="120px" radius="14px" />
+      }
+    </section>
+
+    <!-- Pack -->
+    <section id="ex-pack" class="block">
+      <header><h2>Pack for the weather</h2><small>From the 5-day forecast</small></header>
+      @if (info(); as d) {
+        @if (d.weather; as w) {
+          <div class="days card">
+            @for (day of w.days; track day.date; let i = $index) {
+              <div class="day" [style.--i]="i">
+                <span class="gm-label">{{ i === 0 ? 'Today' : weekday(day.date) }}</span>
+                <ion-icon [name]="wl(day.code).icon" />
+                <b>{{ day.max }}°</b><small>{{ day.min }}°</small>
+              </div>
+            }
+          </div>
+        }
+        <div class="card list">
+          @for (p of packList(); track p.label) {
+            <div class="pack"><ion-icon name="checkmark-outline" /><div><b>{{ p.label }}</b><small>{{ p.why }}</small></div></div>
+          }
+        </div>
+        @if (tripData()) {
+          <button class="gm-btn full" (click)="addToChecklist(packList())"><ion-icon name="add-circle-outline" /> Add all to trip checklist</button>
+        }
+      } @else if (infoError()) {
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>The forecast needs an internet connection.</p></div>
+      } @else {
+        <gm-skeleton height="140px" radius="14px" />
+      }
+    </section>
+
+    <!-- Essentials -->
+    <section id="ex-essentials" class="block">
+      <header><h2>Essentials</h2></header>
+      @if (country(); as c) {
+        <div class="card list">
+          @if (c.sos; as sos) {
+            <a class="ess" [href]="'tel:' + (sos.general ?? sos.police)">
+              <span class="gm-well danger"><ion-icon name="call-outline" /></span>
+              <div><b>Emergency {{ sos.general ?? sos.police }}</b><small>@if (sos.ambulance) {Ambulance {{ sos.ambulance }} · }@if (sos.fire) {Fire {{ sos.fire }}}</small></div>
+              <ion-icon name="chevron-forward" class="chev" />
+            </a>
+          }
+          @if (c.plugs) {
+            <div class="ess">
+              <span class="gm-well" [class.warn]="needsAdapter()"><ion-icon name="flash-outline" /></span>
+              <div><b>Type {{ c.plugs }} · {{ c.volts }} V</b><small>{{ needsAdapter() ? 'Bring a plug adapter' : 'Same plugs as at home' }}</small></div>
+            </div>
+          }
+          <div class="ess">
+            <span class="gm-well"><ion-icon name="car-outline" /></span>
+            <div><b>Drives on the {{ c.left ? 'left' : 'right' }}</b><small>Look {{ c.left ? 'right' : 'left' }} first when crossing</small></div>
+          </div>
+          <div class="ess">
+            <span class="gm-well"><ion-icon name="call-outline" /></span>
+            <div><b>Country code +{{ c.phone[0] }}</b><small>Capital: {{ c.capital || '—' }}</small></div>
+          </div>
+        </div>
+        <p class="hint">Check entry and visa rules with your government’s official travel advice before you go.</p>
+      }
+    </section>
+    <div class="gm-bottom-spacer"></div>
+  </div>
+</ion-content>

@@ -17,6 +17,7 @@ import { cleanText } from '../../core/security/sanitize';
 import { BoardingPassComponent } from '../../shared/components/boarding-pass.component';
 import { AvatarStackComponent } from '../../shared/components/avatar-stack.component';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
+import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { ClockPipe, DurationPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
 import { FlightStatusPipe } from '../../shared/pipes/status.pipe';
@@ -28,7 +29,7 @@ type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' 
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonIcon, RouterLink, FormsModule, DecimalPipe,
-    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, RevealDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
+    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
   ],
   templateUrl: './trip-detail.page.html',
   styleUrl: './trip-detail.page.scss',
