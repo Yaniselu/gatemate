@@ -3,6 +3,7 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, Io
 import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
+import { AchievementsService } from '../../core/services/achievements.service';
 
 type Cell = 'P' | 'C' | null; // P = plane (you), C = cloud (autopilot)
 const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
@@ -68,7 +69,7 @@ function minimax(b: Cell[], turn: 'C' | 'P'): number {
     .cell { aspect-ratio: 1; border-radius: 18px; background: rgba(255,255,255,.65); border: 1px solid rgba(11,27,43,.05); font-size: 44px; display: flex; align-items: center; justify-content: center; transition: background .3s, transform .3s var(--gm-ease-spring); }
     .cell:active { transform: scale(.94); }
     .cell ion-icon { animation: gm-pop .45s var(--gm-ease-spring); }
-    .p { color: var(--gm-accent-strong); transform: rotate(45deg); }
+    .p { color: var(--gm-accent-strong); }
     .c { color: #8b9fb4; }
     .cell.win { background: var(--gm-accent-soft); animation: gm-bounce-icon .6s var(--gm-ease-spring); }
     .status { text-align: center; font-weight: 700; font-size: 16px; margin: 16px 0; min-height: 22px; }
@@ -78,6 +79,7 @@ export class TicTacToePage {
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   private scores = inject(ScoresService);
+  private achievements = inject(AchievementsService);
 
   readonly levels = [{ id: 'easy', label: 'Easy' }, { id: 'pilot', label: 'Pilot' }, { id: 'ace', label: 'Ace' }] as const;
   readonly level = signal<'easy' | 'pilot' | 'ace'>('pilot');
@@ -142,6 +144,7 @@ export class TicTacToePage {
       this.scores.submit('ttt', this.wins());
       this.platform.success();
       this.confetti.burst(0.5, 0.45, 70);
+      this.achievements.track('ttt_win');
     } else if (w?.who === 'C') {
       this.result.set('loss');
       this.losses.update((n) => n + 1);
@@ -150,6 +153,7 @@ export class TicTacToePage {
       this.result.set('draw');
       this.draws.update((n) => n + 1);
     }
+    if (this.result()) this.achievements.track('game_played');
     return !!this.result();
   }
 }

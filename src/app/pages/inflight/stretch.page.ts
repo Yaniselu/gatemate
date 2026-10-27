@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signa
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
+import { AchievementsService } from '../../core/services/achievements.service';
 
 const MOVES = [
   { title: 'Ankle circles', body: 'Lift your feet slightly and draw circles with your toes — 10 each direction.', icon: 'sync-outline' },
@@ -76,6 +77,7 @@ const SECS = 30;
 export class StretchPage {
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
+  private achievements = inject(AchievementsService);
   readonly moves = MOVES;
   readonly secs = SECS;
   readonly index = signal(0);
@@ -109,6 +111,7 @@ export class StretchPage {
         this.finished.set(true);
         this.platform.success();
         this.confetti.burst();
+        this.achievements.track('stretch_done');
       }
     }, 1000);
   }

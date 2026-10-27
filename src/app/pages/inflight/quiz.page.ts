@@ -3,6 +3,7 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, Io
 import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
+import { AchievementsService } from '../../core/services/achievements.service';
 
 const CODES: [string, string][] = [
   ['OTP', 'Bucharest'], ['CLJ', 'Cluj-Napoca'], ['IAS', 'Iași'], ['TSR', 'Timișoara'], ['LHR', 'London'], ['CDG', 'Paris'],
@@ -88,6 +89,8 @@ export class QuizPage {
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   protected scores = inject(ScoresService);
+  private achievements = inject(AchievementsService);
+  private correct = 0;
   protected readonly Math = Math;
 
   readonly rounds = ROUNDS;
@@ -110,6 +113,7 @@ export class QuizPage {
     this.score.set(0);
     this.streak.set(0);
     this.used.clear();
+    this.correct = 0;
     this.next();
   }
 
@@ -131,6 +135,7 @@ export class QuizPage {
     this.picked.set(option);
     if (option === q.answer) {
       this.streak.update((s) => s + 1);
+      this.correct++;
       this.score.update((s) => s + 5 + Math.min(this.streak(), 5));
       this.platform.success();
     } else {
@@ -142,6 +147,8 @@ export class QuizPage {
       if (this.round() < ROUNDS) this.next();
       else {
         this.record.set(this.scores.submit('quiz', this.score()));
+        this.achievements.track('game_played');
+        if (this.correct === ROUNDS) this.achievements.track('quiz_perfect');
         if (this.score() >= 60) this.confetti.burst();
       }
     }, 1100);

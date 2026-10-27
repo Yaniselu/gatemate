@@ -15,6 +15,7 @@ import { PrefsService } from './core/services/prefs.service';
 import { AppLockService } from './core/security/app-lock.service';
 import { PlatformService } from './core/services/platform.service';
 import { ReviewService } from './core/services/review.service';
+import { AchievementsService } from './core/services/achievements.service';
 import { gatemateNavAnimation } from './shared/animations/page-transition';
 import { registerIcons } from './icons';
 
@@ -35,10 +36,12 @@ export const appConfig: ApplicationConfig = {
       const lock = inject(AppLockService);
       const platform = inject(PlatformService);
       void inject(ReviewService).init();
+      const achievements = inject(AchievementsService);
       await prefs.load();
       await auth.init();
       await lock.init();
       lock.lockIfEnabled();
+      if (auth.status() === 'signed-in') void achievements.openedToday();
       if (platform.isNative) {
         StatusBar.setStyle({ style: Style.Light }).catch(() => {});
         SplashScreen.hide({ fadeOutDuration: 300 }).catch(() => {});

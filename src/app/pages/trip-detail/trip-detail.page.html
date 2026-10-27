@@ -12,7 +12,7 @@
 <ion-content [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)">
   @if (trip(); as t) {
     <div class="cover" [style.transform]="'translateY(' + scrollY() * 0.4 + 'px) scale(' + (1 + scrollY() / 1200) + ')'">
-      <gm-city-image [code]="t.destination.code" [src]="t.destination.imageUrl" [alt]="t.destination.city" />
+      <gm-city-image [code]="t.destination.code" [src]="t.destination.imageUrl" [alt]="t.destination.city" [showCredit]="true" />
     </div>
 
     <div class="sheet">
@@ -174,6 +174,12 @@
               }
             </div>
             <p class="hint">Allowances come from your booking. Airlines can change rules — check your airline's website before you fly.</p>
+          </div>
+        }
+
+        @case ('guide') {
+          <div class="section">
+            <gm-destination-guide [iata]="t.destination.code" />
           </div>
         }
 

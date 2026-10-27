@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { PlatformService } from '../../core/services/platform.service';
+import { AchievementsService } from '../../core/services/achievements.service';
 
 const PHASES = [
   { label: 'Breathe in', secs: 4, scale: 1 },
@@ -50,6 +51,8 @@ const PHASES = [
 })
 export class BreathePage {
   private platform = inject(PlatformService);
+  private achievements = inject(AchievementsService);
+  private counted = false;
   readonly running = signal(false);
   readonly phase = signal(PHASES[0].label);
   readonly scale = signal(0.55);
@@ -73,7 +76,13 @@ export class BreathePage {
         this.left.update((l) => l - 1);
         if (this.left() <= 0) {
           this.i = (this.i + 1) % PHASES.length;
-          if (this.i === 0) this.cycles.update((c) => c + 1);
+          if (this.i === 0) {
+            this.cycles.update((c) => c + 1);
+            if (this.cycles() === 3 && !this.counted) {
+              this.counted = true;
+              this.achievements.track('breathe_session');
+            }
+          }
           this.enter();
         }
       }, 1000);

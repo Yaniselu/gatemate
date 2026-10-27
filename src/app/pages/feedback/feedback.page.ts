@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { ToastService } from '../../core/services/toast.service';
 import { cleanText } from '../../core/security/sanitize';
+import { AchievementsService } from '../../core/services/achievements.service';
 
 @Component({
   selector: 'gm-feedback',
@@ -88,6 +89,7 @@ export class FeedbackPage {
   private platform = inject(PlatformService);
   private toast = inject(ToastService);
   protected nav = inject(NavController);
+  private achievements = inject(AchievementsService);
 
   readonly faces = [
     { v: 1, e: '😣', label: 'Bad' },
@@ -116,6 +118,7 @@ export class FeedbackPage {
     try {
       await this.api.sendFeedback({ topic: this.topic(), message, rating: this.rating() ?? undefined, contactEmail: this.contact() ? this.auth.user()?.email : undefined });
       this.sent.set(true);
+      void this.achievements.track('feedback_sent');
       this.platform.success();
     } catch {
       await this.toast.show('Could not send feedback. Please try again.', 'error');

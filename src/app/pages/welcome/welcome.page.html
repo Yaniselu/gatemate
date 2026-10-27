@@ -36,11 +36,14 @@
   </div>
 
   <div class="content">
-    <h1 aria-label="Gatemate">
-      @for (ch of title; track $index) {
-        <span [style.--i]="$index">{{ ch }}</span>
-      }
-    </h1>
+    <div class="brand">
+      <h1 aria-label="Gatemate">
+        @for (ch of title; track $index) {
+          <span [style.--i]="$index">{{ ch }}</span>
+        }
+      </h1>
+      <p class="powered">powered by <b>Velosyntech</b></p>
+    </div>
     <gm-swipe-button class="swipe" label="Get started" (completed)="takeOff()" />
   </div>
 

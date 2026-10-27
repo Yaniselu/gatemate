@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { DestinationService } from '../../core/services/destination.service';
 
 interface Palette {
   sky: [string, string];
@@ -172,8 +173,11 @@ const PALETTES: Record<string, Palette> = {
         <path d="M60 80 q5 -5 10 0 q5 -5 10 0" /><path d="M86 70 q4 -4 8 0 q4 -4 8 0" />
       </g>
     </svg>
-    @if (src() && !failed()) {
-      <img [src]="src()" [alt]="alt()" loading="lazy" decoding="async" [class.ready]="loaded()" (load)="loaded.set(true)" (error)="failed.set(true)" />
+    @if (url() && !failed()) {
+      <img [src]="url()" [alt]="alt()" loading="lazy" decoding="async" referrerpolicy="no-referrer" [class.ready]="loaded()" (load)="loaded.set(true)" (error)="failed.set(true)" />
+      @if (showCredit() && loaded() && credit()) {
+        <span class="credit">{{ credit() }}</span>
+      }
     }
   `,
   styles: `
@@ -181,6 +185,7 @@ const PALETTES: Record<string, Palette> = {
     svg, img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
     img { object-fit: cover; opacity: 0; transform: scale(1.04); transition: opacity .6s ease, transform 1.2s cubic-bezier(.22,1,.36,1); }
     img.ready { opacity: 1; transform: none; }
+    .credit { position: absolute; right: 8px; bottom: 6px; font-size: 9.5px; color: rgba(255,255,255,.85); text-shadow: 0 1px 3px rgba(0,0,0,.5); pointer-events: none; }
     .clouds { animation: drift 30s linear infinite alternate; }
     .birds { animation: birds 12s ease-in-out infinite alternate; }
     .sun { animation: glow 6s ease-in-out infinite; transform-origin: 300px 70px; }
@@ -197,6 +202,23 @@ export class CityImageComponent {
   /** Optional licensed photo URL from the backend. */
   readonly src = input<string | undefined>();
   readonly alt = input('');
+  readonly showCredit = input(false);
+
+  private dest = inject(DestinationService);
+  private fetched = signal<{ url: string; credit: string } | undefined>(undefined);
+  /** Backend/licensed photo first, otherwise the destination's lead photo; the illustration stays underneath as fallback. */
+  readonly url = computed(() => this.src() ?? this.fetched()?.url);
+  readonly credit = computed(() => (this.src() ? '' : this.fetched()?.credit ?? ''));
+
+  constructor() {
+    effect(() => {
+      const code = this.code();
+      if (this.src()) return;
+      this.loaded.set(false);
+      this.failed.set(false);
+      void this.dest.photo(code).then((p) => this.fetched.set(p ? { url: p.url, credit: p.credit } : undefined)).catch(() => {});
+    });
+  }
 
   readonly loaded = signal(false);
   readonly failed = signal(false);

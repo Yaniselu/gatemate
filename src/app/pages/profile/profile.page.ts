@@ -14,6 +14,8 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { SheenDirective } from '../../shared/directives/sheen.directive';
 import { ReviewService } from '../../core/services/review.service';
+import { AchievementsService } from '../../core/services/achievements.service';
+import { AirportDbService, haversineKm } from '../../core/services/airport-db.service';
 
 @Component({
   selector: 'gm-profile',
@@ -32,6 +34,30 @@ export class ProfilePage implements OnInit {
   private toast = inject(ToastService);
   private lock = inject(AppLockService);
   protected review = inject(ReviewService);
+  protected ach = inject(AchievementsService);
+  private db = inject(AirportDbService);
+
+  /** Computed from the user's own completed flights — no estimates. */
+  readonly travel = computed(() => {
+    this.db.ready();
+    const flights = this.store.trips().flatMap((t) => t.flights).filter((f) => new Date(f.arrival).getTime() < Date.now());
+    const countries = new Set<string>();
+    let km = 0;
+    let minutes = 0;
+    for (const f of flights) {
+      const a = this.db.get(f.from.code), b = this.db.get(f.to.code);
+      if (b) countries.add(b.country);
+      km += a && b ? haversineKm(a.lat, a.lon, b.lat, b.lon) : f.distanceKm;
+      minutes += f.durationMinutes;
+    }
+    return { flights: flights.length, km: Math.round(km), countries: countries.size, hours: Math.round(minutes / 60) };
+  });
+  readonly recentBadges = computed(() => {
+    const list = this.ach.badges();
+    const earned = list.filter((b) => b.earned).sort((x, y) => (y.earnedAt ?? '').localeCompare(x.earnedAt ?? ''));
+    const next = list.filter((b) => !b.earned).sort((x, y) => y.progress - x.progress);
+    return [...earned, ...next].slice(0, 6);
+  });
 
   readonly exporting = signal(false);
   readonly initials = computed(() =>
@@ -44,10 +70,11 @@ export class ProfilePage implements OnInit {
   );
   readonly providerLabel = computed(() => ({ apple: 'Apple ID', google: 'Google', password: 'Email' })[this.auth.user()?.provider ?? 'password']);
   readonly version = '1.0.0';
-  readonly earnedCount = computed(() => this.store.stats()?.badges.filter((b) => b.earned).length ?? 0);
 
   ngOnInit(): void {
-    void this.store.loadStats();
+    void this.store.loadTrips();
+    void this.db.load();
+    void this.ach.load();
   }
 
   async exportData() {

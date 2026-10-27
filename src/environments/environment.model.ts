@@ -12,6 +12,12 @@ export interface AppEnvironment {
     googleWebClientId: string;
     googleIosClientId: string;
   };
+  /** Satellite map tiles (Esri World Imagery in dev; use a keyed/licensed provider in production). */
+  maps: {
+    satelliteTiles: string;
+    labelTiles: string;
+    attribution: string;
+  };
   security: {
     idleLockMinutes: number;
     maxLoginAttemptsBeforeBackoff: number;

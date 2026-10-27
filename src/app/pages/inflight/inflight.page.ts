@@ -36,11 +36,11 @@ import { DurationPipe } from '../../shared/pipes/time.pipes';
         <div class="gm-section-title"><h2>Games</h2></div>
         <div class="games">
           @for (g of games; track g.link; let i = $index) {
-            <a class="game card" [routerLink]="g.link" [gmReveal]="i" gmPressable>
+            <a class="game card" [class.wide]="g.wide" [routerLink]="g.link" [gmReveal]="i" gmPressable>
               <div class="art" [style.background]="g.bg"><ion-icon [name]="g.icon" /></div>
               <b>{{ g.title }}</b>
               <small>{{ g.desc }}</small>
-              @if (scores.best()[g.key] !== undefined) {
+              @if (g.bestLabel && scores.best()[g.key] !== undefined) {
                 <span class="best"><ion-icon name="trophy-outline" /> {{ g.bestLabel }} {{ scores.best()[g.key] }}</span>
               }
             </a>
@@ -76,11 +76,12 @@ import { DurationPipe } from '../../shared/pipes/time.pipes';
     @keyframes twinkle { 50% { opacity: .2; } }
     .plane-track { position: relative; height: 26px; margin-top: 18px; }
     .plane-track .line { position: absolute; left: 0; right: 0; top: 12px; border-top: 2px dashed rgba(255,255,255,.3); }
-    .plane-track ion-icon { position: absolute; top: 2px; font-size: 22px; color: #9cf2f7; transform: rotate(90deg); animation: cruise 8s ease-in-out infinite alternate; }
+    .plane-track ion-icon { position: absolute; top: 2px; font-size: 22px; color: #9cf2f7; animation: cruise 8s ease-in-out infinite alternate; }
     @keyframes cruise { from { left: 0; } to { left: calc(100% - 22px); } }
     .games { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .game { display: flex; flex-direction: column; padding: 12px; text-decoration: none; color: var(--gm-ink); }
-    .game:nth-child(3) { grid-column: span 2; }
+    .game.wide { grid-column: span 2; }
+    .game.wide .art { height: 96px; }
     .art { height: 84px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 34px; margin-bottom: 10px; }
     .art ion-icon { animation: gm-float 3s ease-in-out infinite; }
     .game b { font-size: 15px; }
@@ -106,9 +107,13 @@ export class InflightPage implements OnInit {
   readonly stars = Array.from({ length: 26 }, (_, i) => ({ x: (i * 37) % 100, y: (i * 61) % 100, d: (i % 7) * 0.4 }));
 
   readonly games = [
-    { key: 'memory', link: '/inflight/memory', title: 'Boarding Memory', desc: 'Match the travel pairs', icon: 'albums-outline', bg: 'linear-gradient(135deg,#22c7d3,#0a6e80)', bestLabel: 'Best:' },
+    { key: 'dodge', link: '/inflight/dodge', title: 'Sky Dodge', desc: 'Steer through storms, grab stars', icon: 'thunderstorm', bg: 'linear-gradient(135deg,#5ec8ff,#2f6aa0)', bestLabel: 'Best:', wide: true },
+    { key: 'memory', link: '/inflight/memory', title: 'Boarding Memory', desc: 'Match the travel pairs', icon: 'albums-outline', bg: 'linear-gradient(135deg,#22c7d3,#0a6e80)', bestLabel: 'Best moves:' },
+    { key: '2048', link: '/inflight/2048', title: '2048 Altitude', desc: 'Swipe & merge to 2048', icon: 'trending-up', bg: 'linear-gradient(135deg,#ffb36b,#ff6b8b)', bestLabel: 'Best:' },
     { key: 'quiz', link: '/inflight/quiz', title: 'Code Quiz', desc: 'Guess the airport code', icon: 'earth', bg: 'linear-gradient(135deg,#12304a,#2f6aa0)', bestLabel: 'Best:' },
-    { key: 'ttt', link: '/inflight/tictactoe', title: 'Planes & Clouds', desc: 'Tic-tac-toe against the autopilot', icon: 'grid-outline', bg: 'linear-gradient(135deg,#8b7cf6,#5ec8ff)', bestLabel: 'Wins:' },
+    { key: 'flags', link: '/inflight/flags', title: 'Flag Quiz', desc: 'Name the country', icon: 'flag', bg: 'linear-gradient(135deg,#2fd18a,#0a93a6)', bestLabel: 'Best:' },
+    { key: 'hangman', link: '/inflight/guess-city', title: 'Guess the City', desc: 'Keep the plane in the air', icon: 'search', bg: 'linear-gradient(135deg,#8b7cf6,#5ec8ff)', bestLabel: '' },
+    { key: 'ttt', link: '/inflight/tictactoe', title: 'Planes & Clouds', desc: 'Tic-tac-toe vs the autopilot', icon: 'grid-outline', bg: 'linear-gradient(135deg,#0b1b2b,#12304a)', bestLabel: 'Wins:', wide: true },
   ];
   readonly wellbeing = [
     { link: '/inflight/breathe', title: 'Calm breathing', desc: 'Box breathing for take-off nerves', icon: 'leaf-outline' },

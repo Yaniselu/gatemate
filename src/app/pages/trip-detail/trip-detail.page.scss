@@ -202,7 +202,7 @@
     animation: cross 3.2s var(--gm-ease-in-out) infinite;
 
     ion-icon {
-      transform: rotate(90deg);
+      transform: none;
       font-size: 14px;
     }
   }

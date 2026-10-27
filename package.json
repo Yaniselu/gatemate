@@ -52,6 +52,7 @@
     "@capgo/capacitor-social-login": "^8.7.5",
     "@ionic/angular": "^8.8.19",
     "ionicons": "^8.1.0",
+    "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -64,6 +65,8 @@
     "@capacitor/cli": "^8.5.3",
     "@capacitor/ios": "^8.5.3",
     "@types/jasmine": "~5.1.0",
+    "@types/leaflet": "1.9",
+    "countries-list": "^3.4.1",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

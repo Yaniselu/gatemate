@@ -19,6 +19,10 @@ export class PrefsService {
   readonly biometricLock = signal(false);
   readonly notifications = signal<NotificationPrefs>(DEFAULT_NOTIFS);
   readonly homeAirport = signal('OTP');
+  /** Accessibility: content zoom (1 = default), reduced motion, high contrast. */
+  readonly textScale = signal(1);
+  readonly reduceMotion = signal(false);
+  readonly highContrast = signal(false);
 
   private loaded: Promise<void> | null = null;
 
@@ -27,6 +31,10 @@ export class PrefsService {
       this.onboarded.set((await this.read('onboarded')) === '1');
       this.biometricLock.set((await this.read('biometricLock')) === '1');
       this.homeAirport.set((await this.read('homeAirport')) || 'OTP');
+      const scale = Number(await this.read('textScale'));
+      if ([1, 1.15, 1.3].includes(scale)) this.textScale.set(scale);
+      this.reduceMotion.set((await this.read('reduceMotion')) === '1');
+      this.highContrast.set((await this.read('highContrast')) === '1');
       try {
         const n = JSON.parse((await this.read('notifications')) || 'null');
         if (n && typeof n === 'object') this.notifications.set({ ...DEFAULT_NOTIFS, ...pickBooleans(n) });
@@ -55,6 +63,21 @@ export class PrefsService {
   async setHomeAirport(code: string): Promise<void> {
     this.homeAirport.set(code);
     await this.write('homeAirport', code);
+  }
+
+  async setAccessibility(p: { textScale?: number; reduceMotion?: boolean; highContrast?: boolean }): Promise<void> {
+    if (p.textScale !== undefined) {
+      this.textScale.set(p.textScale);
+      await this.write('textScale', String(p.textScale));
+    }
+    if (p.reduceMotion !== undefined) {
+      this.reduceMotion.set(p.reduceMotion);
+      await this.write('reduceMotion', p.reduceMotion ? '1' : '0');
+    }
+    if (p.highContrast !== undefined) {
+      this.highContrast.set(p.highContrast);
+      await this.write('highContrast', p.highContrast ? '1' : '0');
+    }
   }
 
   async reset(): Promise<void> {

@@ -16,6 +16,7 @@ import { cleanText } from '../../core/security/sanitize';
 import { Trip } from '../../core/models';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ReviewService } from '../../core/services/review.service';
+import { AchievementsService } from '../../core/services/achievements.service';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { SheenDirective } from '../../shared/directives/sheen.directive';
@@ -50,6 +51,7 @@ export class AddFlightPage {
   private reader = inject(PassReaderService);
   private confetti = inject(ConfettiService);
   private review = inject(ReviewService);
+  private achievements = inject(AchievementsService);
   private nav = inject(NavController);
 
   readonly step = signal<Step>('choose');
@@ -242,6 +244,7 @@ export class AddFlightPage {
       this.platform.success();
       this.confetti.burst(0.5, 0.3, 120);
       void this.review.positiveMoment(2500);
+      void this.achievements.track('booking_verified');
       void this.notifications.requestPermission().then(() => this.notifications.scheduleForFlight(trip.flights[0]));
     } catch (e) {
       this.checks.update((cs) => cs.map((c) => (c.state === 'run' ? { ...c, state: 'bad' } : c)));

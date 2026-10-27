@@ -143,10 +143,10 @@ export class AuthService {
       await this.initSocial();
       if (provider === 'apple') {
         const res = await SocialLogin.login({ provider: 'apple', options: { scopes: ['email', 'name'], nonce } });
-        const r = res.result as { idToken: string | null; profile?: { givenName?: string | null; familyName?: string | null } };
+        const r = res.result as { idToken: string | null; authorizationCode?: string | null; profile?: { givenName?: string | null; familyName?: string | null } };
         if (!r.idToken) throw new ApiError('Apple sign-in was cancelled.', 0, 'cancelled');
         const displayName = [r.profile?.givenName, r.profile?.familyName].filter(Boolean).join(' ') || undefined;
-        credential = { provider, idToken: r.idToken, nonce, displayName };
+        credential = { provider, idToken: r.idToken, nonce, displayName, authorizationCode: r.authorizationCode ?? undefined };
       } else {
         const res = await SocialLogin.login({ provider: 'google', options: { scopes: ['email', 'profile'], nonce } });
         const r = res.result as { idToken?: string | null; profile?: { name?: string | null } };

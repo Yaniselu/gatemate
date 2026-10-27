@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { Flight } from '../models';
+import { AlertKind, Flight, FlightAlert, NotificationPrefs } from '../models';
 import { PlatformService } from './platform.service';
 import { PrefsService } from './prefs.service';
 
@@ -17,6 +17,28 @@ export class NotificationsService {
     if (!this.platform.isNative) return false;
     const res = await LocalNotifications.requestPermissions().catch(() => null);
     return res?.display === 'granted';
+  }
+
+  /** Schedules device reminders (check-in, leave for the airport, boarding…) as local notifications. */
+  async syncReminders(alerts: FlightAlert[]): Promise<void> {
+    if (!this.platform.isNative) return;
+    const perm = await LocalNotifications.checkPermissions().catch(() => null);
+    if (perm?.display !== 'granted') return;
+    const prefs = this.prefs.notifications();
+    const pref: Record<AlertKind, keyof NotificationPrefs> = {
+      boarding: 'boarding', leave: 'boarding', gate: 'gateChanges', delay: 'delays', weather: 'delays', checkin: 'checkIn',
+      documents: 'checkIn', bags: 'checkIn', checklist: 'checkIn', baggage: 'baggage', chat: 'chat', info: 'tips',
+    };
+    const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
+    const ours = pending.notifications.filter((n) => n.extra?.gm === true);
+    if (ours.length) await LocalNotifications.cancel({ notifications: ours.map((n) => ({ id: n.id })) }).catch(() => {});
+    const due = alerts
+      .filter((a) => a.source === 'device' && a.scheduledFor && +new Date(a.scheduledFor) > Date.now() && prefs[pref[a.kind]])
+      .slice(0, 60);
+    if (!due.length) return;
+    await LocalNotifications.schedule({
+      notifications: due.map((a) => ({ id: hash(a.id) + 7, title: a.title, body: a.body, schedule: { at: new Date(a.scheduledFor!), allowWhileIdle: true }, extra: { gm: true, flightId: a.flightId } })),
+    });
   }
 
   async scheduleForFlight(flight: Flight): Promise<void> {

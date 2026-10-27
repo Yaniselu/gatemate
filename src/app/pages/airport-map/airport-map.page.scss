@@ -1,208 +1,14 @@
-.map-content {
-  --background: #f4f8fb;
-}
-
-.map {
+.full {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  touch-action: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(150px + env(safe-area-inset-top)) 12px calc(140px + env(safe-area-inset-bottom));
-
-  svg {
-    width: auto;
-    height: 100%;
-    max-width: 100%;
-    transform-origin: center;
-    transition: transform 0.08s linear;
-  }
 }
 
-.building {
-  fill: #fff;
-  stroke: #d6e2ea;
-  stroke-width: 1.2;
-}
-
-.zones {
-  rect {
-    fill: #e8eff4;
-  }
-  .lane {
-    fill: #ffb020;
-    opacity: 0.6;
-  }
-}
-
-.zone-label {
-  font-size: 8.5px;
-  font-weight: 700;
-  fill: #8a9aac;
-  text-anchor: middle;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.walk line {
-  stroke: #e1eaf0;
-  stroke-width: 14;
-  stroke-linecap: round;
-}
-
-.gate {
-  cursor: pointer;
-
-  rect {
-    fill: #fff;
-    stroke: #cfdbe4;
-    stroke-width: 1;
-    transition: fill 0.3s, stroke 0.3s;
-  }
-  text {
-    font-size: 6.5px;
-    font-weight: 750;
-    text-anchor: middle;
-    fill: var(--gm-ink-2);
-  }
-  &.on {
-    rect {
-      fill: var(--gm-navy);
-      stroke: var(--gm-navy);
-    }
-    text {
-      fill: #fff;
-    }
-  }
-}
-
-.poi {
-  cursor: pointer;
-
-  circle {
-    fill: #fff;
-    stroke: var(--c, #8b7cf6);
-    stroke-width: 1.6;
-  }
-  .core {
-    fill: var(--c, #8b7cf6);
-    stroke: none;
-  }
-  &[data-kind='food'] {
-    --c: #ff8a5b;
-  }
-  &[data-kind='restroom'] {
-    --c: #5ec8ff;
-  }
-  &[data-kind='lounge'] {
-    --c: #8b7cf6;
-  }
-  &[data-kind='pharmacy'] {
-    --c: #ff5a5f;
-  }
-  &[data-kind='charging'] {
-    --c: #2fd18a;
-  }
-  &[data-kind='shop'] {
-    --c: #ffb020;
-  }
-  &[data-kind='info'] {
-    --c: #0fb5c3;
-  }
-}
-
-.route-glow {
-  fill: none;
-  stroke: rgba(15, 181, 195, 0.25);
-  stroke-width: 12;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.route {
-  fill: none;
-  stroke: var(--gm-accent);
-  stroke-width: 4.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 100;
-  animation: draw 1.4s var(--gm-ease-out) both;
-}
-
-@keyframes draw {
-  from {
-    stroke-dashoffset: 100;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.walker {
-  fill: #fff;
-  stroke: var(--gm-accent-strong);
-  stroke-width: 2.5;
-  offset-rotate: 0deg;
-  animation: walk 4.5s linear infinite 1.2s;
-  offset-distance: 0%;
-}
-
-@keyframes walk {
-  from {
-    offset-distance: 0%;
-  }
-  to {
-    offset-distance: 100%;
-  }
-}
-
-.dest {
-  .pin {
-    fill: var(--gm-navy);
-    stroke: #fff;
-    stroke-width: 3;
-  }
-  .pulse {
-    fill: rgba(11, 27, 43, 0.15);
-    animation: pulse 1.8s var(--gm-ease-out) infinite;
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-}
-
-.me {
-  .dot {
-    fill: #2f80ff;
-    stroke: #fff;
-    stroke-width: 3;
-  }
-  .halo {
-    fill: rgba(47, 128, 255, 0.18);
-    animation: pulse 2s var(--gm-ease-out) infinite;
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-}
-
-@keyframes pulse {
-  from {
-    transform: scale(0.5);
-    opacity: 1;
-  }
-  to {
-    transform: scale(1.4);
-    opacity: 0;
-  }
-}
-
-/* Floating glass UI */
 .gate-bar {
   position: absolute;
-  top: calc(64px + env(safe-area-inset-top));
-  left: 12px;
-  right: 12px;
+  top: calc(60px + env(safe-area-inset-top));
+  left: 10px;
+  right: 10px;
+  z-index: 800;
   padding: 10px 0 10px 14px;
   border-radius: 20px;
   animation: gm-fade-up 0.5s var(--gm-ease-out) both;
@@ -212,7 +18,7 @@
   }
 }
 
-.gate-chips {
+.chips {
   display: flex;
   gap: 6px;
   overflow-x: auto;
@@ -221,123 +27,70 @@
 
   button {
     flex: none;
-    min-width: 44px;
+    min-width: 42px;
     height: 32px;
     padding: 0 10px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(11, 27, 43, 0.06);
+    background: rgba(255, 255, 255, 0.65);
     font-weight: 700;
     font-size: 13px;
     color: var(--gm-ink-2);
     transition: all 0.3s var(--gm-ease-spring);
 
     &.on {
-      background: var(--gm-navy);
+      background: var(--gm-accent-strong);
       color: #fff;
       transform: scale(1.06);
     }
   }
 }
 
-.zoom {
+.tools {
   position: absolute;
-  right: 12px;
-  top: calc(150px + env(safe-area-inset-top));
+  right: 10px;
+  top: calc(146px + env(safe-area-inset-top));
+  z-index: 800;
   display: flex;
   flex-direction: column;
   border-radius: 16px;
-  animation: gm-fade-up 0.5s var(--gm-ease-out) both 0.1s;
 
   button {
     width: 44px;
     height: 44px;
     background: none;
-    color: var(--gm-ink);
     font-size: 20px;
+    color: var(--gm-ink);
     border-bottom: 1px solid rgba(11, 27, 43, 0.06);
 
     &:last-child {
       border-bottom: 0;
+    }
+    &.loc {
       color: #2f80ff;
     }
-    &.busy ion-icon {
-      animation: gm-spin 1s linear infinite;
-    }
-  }
-}
-
-.poi-card {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: calc(300px + env(safe-area-inset-bottom));
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 18px;
-  animation: gm-scale-in 0.35s var(--gm-ease-spring);
-
-  > div {
-    flex: 1;
-  }
-  b {
-    display: block;
-  }
-  small {
-    color: var(--gm-ink-3);
-  }
-  button {
-    background: none;
-    font-size: 22px;
-    color: var(--gm-ink-3);
   }
 }
 
 .sheet {
   position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: calc(8px + env(safe-area-inset-bottom));
-  max-height: 46vh;
-  padding: 6px 16px 16px;
-  border-radius: 26px;
-  overflow-y: auto;
-  transform: translateY(calc(100% - 118px));
-  transition: transform 0.55s var(--gm-ease-spring);
-
-  &.open {
-    transform: none;
-  }
+  left: 10px;
+  right: 10px;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  z-index: 800;
+  padding: 14px 16px;
+  border-radius: 24px;
+  animation: gm-fade-up 0.5s var(--gm-ease-out) both 0.1s;
 }
 
-.handle {
-  display: block;
-  width: 100%;
-  padding: 6px 0 10px;
-  background: none;
-
-  span {
-    display: block;
-    width: 40px;
-    height: 5px;
-    margin: 0 auto;
-    border-radius: 3px;
-    background: rgba(11, 27, 43, 0.18);
-  }
-}
-
-.summary {
+.sum {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 
   b {
     display: block;
-    font-size: 16px;
-    margin-top: 2px;
+    font-size: 15.5px;
   }
   .big {
     font-size: 30px;
@@ -349,68 +102,18 @@
     color: var(--gm-ink-3);
     font-size: 12.5px;
   }
-}
-
-.from-seg {
-  display: flex;
-  padding: 3px;
-  border-radius: 12px;
-  background: rgba(11, 27, 43, 0.06);
-
-  button {
-    padding: 7px 10px;
-    border-radius: 9px;
-    background: none;
-    font-size: 12.5px;
-    font-weight: 650;
-    color: var(--gm-ink-3);
-    transition: all 0.3s;
-
-    &.on {
-      background: #fff;
-      color: var(--gm-ink);
-      box-shadow: 0 2px 8px rgba(11, 40, 60, 0.1);
-    }
+  .walk {
+    font-size: 34px;
+    color: var(--gm-accent-strong);
+    animation: gm-float 2s ease-in-out infinite;
+  }
+  .gm-btn {
+    flex: none;
   }
 }
 
 .note {
-  display: flex;
-  gap: 6px;
-  align-items: center;
   margin: 10px 0 0;
   font-size: 12.5px;
-  color: #2f80ff;
-}
-
-.steps {
-  list-style: none;
-  margin: 14px 0 0;
-  padding: 0;
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 9px 0;
-    border-top: 1px solid rgba(11, 27, 43, 0.06);
-    animation: gm-fade-up 0.4s var(--gm-ease-out) both;
-    animation-delay: calc(var(--i) * 60ms);
-
-    .gm-well {
-      width: 34px;
-      height: 34px;
-      font-size: 17px;
-    }
-    .txt {
-      flex: 1;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .m {
-      font-size: 12.5px;
-      color: var(--gm-ink-3);
-      font-variant-numeric: tabular-nums;
-    }
-  }
+  color: var(--gm-ink-3);
 }

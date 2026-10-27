@@ -12,6 +12,7 @@ import { cleanText } from '../../core/security/sanitize';
 import { compressAvatar } from '../../core/utils/image';
 import { ProfilePatch, SeatPreference } from '../../core/models';
 import { HasUnsavedChanges } from '../../core/guards/unsaved.guard';
+import { AchievementsService } from '../../core/services/achievements.service';
 
 const PHONE = /^\+?[1-9]\d{6,14}$/;
 const LEGAL = /^[\p{L}][\p{L}\p{M}' -]{0,39}$/u;
@@ -30,6 +31,7 @@ export class ProfileEditPage implements HasUnsavedChanges {
   private platform = inject(PlatformService);
   private alerts = inject(AlertController);
   private nav = inject(NavController);
+  private achievements = inject(AchievementsService);
 
   private user = this.auth.user()!;
   readonly airports = Object.values(AIRPORTS);
@@ -125,6 +127,7 @@ export class ProfileEditPage implements HasUnsavedChanges {
       this.form.markAsPristine();
       this.form.setValue(this.form.getRawValue()); // re-evaluate the diff against the saved user
       this.saved.set(true);
+      if (this.user.legalFirstName && this.user.legalLastName && this.user.avatarUrl && this.user.homeAirport) void this.achievements.track('profile_complete');
       this.platform.success();
       setTimeout(() => this.saved.set(false), 1800);
     } catch {

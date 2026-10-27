@@ -10,6 +10,7 @@ import { ChatThread } from '../../core/models';
 import { cleanText } from '../../core/security/sanitize';
 import { InvitePanelComponent } from '../../shared/components/invite-panel.component';
 import { ConfettiService } from '../../shared/components/confetti.service';
+import { AchievementsService } from '../../core/services/achievements.service';
 
 const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', '🌴', '💼', '🎓', '❤️', '✈️'];
 
@@ -98,6 +99,7 @@ export class ChatNewPage implements OnInit {
   private platform = inject(PlatformService);
   private toast = inject(ToastService);
   private confetti = inject(ConfettiService);
+  private achievements = inject(AchievementsService);
   private nav = inject(NavController);
 
   readonly emojis = EMOJIS;
@@ -134,6 +136,7 @@ export class ChatNewPage implements OnInit {
       this.created.set(thread);
       this.platform.success();
       this.confetti.burst(0.5, 0.25, 60);
+      void this.achievements.track('group_created');
     } catch {
       await this.toast.show('Could not create the group. Please try again.', 'error');
     } finally {

@@ -9,8 +9,10 @@ import { PlatformService } from '../../core/services/platform.service';
 import { BaggageAllowance, BagItem, Trip, VerificationMethod } from '../../core/models';
 import { CityImageComponent } from '../../shared/components/city-image.component';
 import { InvitePanelComponent } from '../../shared/components/invite-panel.component';
+import { DestinationGuideComponent } from '../../shared/components/destination-guide.component';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ReviewService } from '../../core/services/review.service';
+import { AchievementsService } from '../../core/services/achievements.service';
 import { cleanText } from '../../core/security/sanitize';
 import { BoardingPassComponent } from '../../shared/components/boarding-pass.component';
 import { AvatarStackComponent } from '../../shared/components/avatar-stack.component';
@@ -19,14 +21,14 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { ClockPipe, DurationPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
 import { FlightStatusPipe } from '../../shared/pipes/status.pipe';
 
-type Section = 'flights' | 'pass' | 'bags' | 'checklist' | 'expenses' | 'people';
+type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' | 'people';
 
 @Component({
   selector: 'gm-trip-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonIcon, RouterLink, FormsModule, DecimalPipe,
-    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, SkeletonComponent, RevealDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
+    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, RevealDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
   ],
   templateUrl: './trip-detail.page.html',
   styleUrl: './trip-detail.page.scss',
@@ -41,6 +43,7 @@ export class TripDetailPage implements OnInit {
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   private review = inject(ReviewService);
+  private achievements = inject(AchievementsService);
 
   readonly trip = computed<Trip | undefined>(() => this.store.trip(this.id()));
   readonly section = signal<Section>('flights');
@@ -48,6 +51,7 @@ export class TripDetailPage implements OnInit {
     { id: 'flights', label: 'Flights', icon: 'airplane' },
     { id: 'pass', label: 'Pass', icon: 'qr-code-outline' },
     { id: 'bags', label: 'Bags', icon: 'bag-handle-outline' },
+    { id: 'guide', label: 'City guide', icon: 'compass-outline' },
     { id: 'checklist', label: 'Checklist', icon: 'checkmark-done' },
     { id: 'expenses', label: 'Expenses', icon: 'wallet-outline' },
     { id: 'people', label: 'People', icon: 'people-outline' },
@@ -102,6 +106,7 @@ export class TripDetailPage implements OnInit {
   select(s: Section) {
     this.platform.selection();
     this.section.set(s);
+    if (s === 'guide') void this.achievements.track('guide_opened');
   }
 
   toggle(itemId: string) {
@@ -113,6 +118,7 @@ export class TripDetailPage implements OnInit {
         this.platform.success();
         this.confetti.burst(0.5, 0.35);
         void this.review.positiveMoment();
+        void this.achievements.track('checklist_complete');
       }, 150);
     }
   }

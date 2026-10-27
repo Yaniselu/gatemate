@@ -613,6 +613,9 @@
   gap: 16px;
   padding: 16px;
   align-items: center;
+  width: 100%;
+  text-align: left;
+  color: var(--gm-ink);
 
   .weather {
     display: flex;

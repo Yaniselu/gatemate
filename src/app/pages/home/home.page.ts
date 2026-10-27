@@ -12,6 +12,8 @@ import { RouteArcComponent } from '../../shared/components/route-arc.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { SheenDirective } from '../../shared/directives/sheen.directive';
 import { CityImageComponent } from '../../shared/components/city-image.component';
+import { AchievementsService } from '../../core/services/achievements.service';
+import { DestinationInfo, DestinationService, weatherLabel } from '../../core/services/destination.service';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { ClockPipe, RelativeTimePipe } from '../../shared/pipes/time.pipes';
 import { FlightStatusPipe } from '../../shared/pipes/status.pipe';
@@ -24,6 +26,11 @@ export const ALERT_ICONS: Record<AlertKind, { icon: string; color: string }> = {
   baggage: { icon: 'bag-handle-outline', color: '#FF8A5B' },
   chat: { icon: 'chatbubbles', color: '#5EC8FF' },
   info: { icon: 'information-circle', color: '#74859A' },
+  leave: { icon: 'car-outline', color: '#2F80FF' },
+  documents: { icon: 'id-card-outline', color: '#8B7CF6' },
+  weather: { icon: 'rainy', color: '#5EC8FF' },
+  bags: { icon: 'bag-handle-outline', color: '#FF8A5B' },
+  checklist: { icon: 'checkmark-done', color: '#2FD18A' },
 };
 
 @Component({
@@ -42,6 +49,10 @@ export class HomePage implements OnInit {
   protected store = inject(TravelStore);
   private chat = inject(ChatService);
   private notifications = inject(NotificationsService);
+  private destinations = inject(DestinationService);
+  private achievements = inject(AchievementsService);
+  readonly glance = signal<DestinationInfo | null>(null);
+  protected wl = weatherLabel;
   private nav = inject(NavController);
 
   protected readonly alertIcons = ALERT_ICONS;
@@ -102,13 +113,17 @@ export class HomePage implements OnInit {
   }
 
   ngOnInit(): void {
+    void this.achievements.openedToday();
     void this.load();
   }
 
   private async load(force = false) {
     await Promise.all([this.store.loadTrips(force), this.store.loadAlerts(force), this.chat.loadThreads(force)]);
     const next = this.next();
-    if (next) void this.notifications.scheduleForFlight(next.flight);
+    if (next) {
+      void this.notifications.syncReminders(this.store.upcomingReminders());
+      this.destinations.get(next.flight.to.code).then((d) => this.glance.set(d)).catch(() => {});
+    }
   }
 
   async refresh(ev: CustomEvent) {
@@ -118,7 +133,7 @@ export class HomePage implements OnInit {
 
   open(link: string) {
     const next = this.next();
-    const sections = ['pass', 'checklist', 'bags'];
+    const sections = ['pass', 'checklist', 'bags', 'guide'];
     if (sections.includes(link) && next) {
       void this.nav.navigateForward(`/trip/${next.trip.id}`, { queryParams: { tab: link } });
     } else if (sections.includes(link)) {

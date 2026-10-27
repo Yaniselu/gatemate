@@ -7,6 +7,8 @@ export interface SocialCredential {
   nonce: string;
   /** Apple only sends the name on the very first sign-in. */
   displayName?: string;
+  /** Apple authorization code: the server exchanges it for a refresh token so it can revoke it when the account is deleted. */
+  authorizationCode?: string;
 }
 
 export interface NewFlightInput {

@@ -32,7 +32,7 @@ import { IonIcon } from '@ionic/angular/standalone';
       box-shadow: 0 6px 16px rgba(0,0,0,.18);
       font-size: 17px;
     }
-    .plane ion-icon { transform: rotate(90deg); }
+    .plane ion-icon { transform: none; }
   `,
 })
 export class RouteArcComponent implements OnInit {

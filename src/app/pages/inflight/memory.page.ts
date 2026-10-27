@@ -3,6 +3,7 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, Io
 import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
+import { AchievementsService } from '../../core/services/achievements.service';
 
 interface Card {
   id: number;
@@ -67,6 +68,7 @@ export class MemoryPage {
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   protected scores = inject(ScoresService);
+  private achievements = inject(AchievementsService);
 
   readonly cards = signal<Card[]>([]);
   readonly moves = signal(0);
@@ -132,6 +134,8 @@ export class MemoryPage {
     this.won.set(true);
     this.record.set(this.scores.submit('memory', this.moves(), true));
     this.confetti.burst(0.5, 0.4);
+    this.achievements.track('memory_win');
+    this.achievements.track('game_played');
   }
 
   private update(i: number, patch: Partial<Card>) {

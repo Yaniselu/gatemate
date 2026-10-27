@@ -1,5 +1,5 @@
 .page {
-  padding: 0 18px;
+  padding: 0 16px;
 }
 
 .head {
@@ -11,233 +11,148 @@
   align-items: center;
   gap: 6px;
   max-width: 100%;
-  margin-top: 4px;
-  padding: 7px 12px;
+  margin-top: 6px;
+  padding: 8px 13px;
   border-radius: 999px;
   background: var(--gm-accent-soft);
   color: var(--gm-accent-deep);
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.grid2 {
+.map-card {
+  position: relative;
+  display: block;
+  height: 230px;
+  margin-top: 10px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(8, 30, 48, 0.2);
+  text-decoration: none;
+
+  gm-sat-map {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+.map-overlay {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+  b {
+    display: block;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  small {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .open {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 17px;
+  }
+}
+
+.gate {
+  margin-top: 12px;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+
+  .gate-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .gate-no {
+    display: block;
+    font-size: 30px;
+    font-weight: 850;
+    letter-spacing: -0.02em;
+    margin-top: 2px;
+  }
+  .dist {
+    text-align: right;
+    b {
+      display: block;
+      font-size: 22px;
+      color: var(--gm-accent-strong);
+    }
+    small {
+      color: var(--gm-ink-3);
+    }
+  }
+  .gm-btn {
+    width: 100%;
+    text-decoration: none;
+  }
+}
+
+.muted {
+  color: var(--gm-ink-3);
+  font-size: 13.5px;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.pad {
+  padding: 14px;
+}
+
+.facts {
+  margin-top: 12px;
+  padding: 14px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin-top: 10px;
-}
-
-.walk,
-.wifi {
-  padding: 16px;
-  border-radius: 22px;
-  text-decoration: none;
-  min-height: 150px;
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  overflow: hidden;
-
-  small {
-    font-size: 12.5px;
-    font-weight: 600;
-    opacity: 0.85;
-  }
-  b {
-    font-size: 26px;
-    font-weight: 850;
-    margin-top: 2px;
-  }
-}
-
-.walk {
-  .path {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: auto 0 8px;
-  }
-  .dot {
-    flex: none;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #fff;
-
-    &.b {
-      width: 26px;
-      height: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gm-navy);
-      font-size: 14px;
-      box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.2);
-    }
-  }
-  .line {
-    position: relative;
-    flex: 1;
-    height: 2px;
-    background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.6) 0 5px, transparent 5px 10px);
-
-    i {
-      position: absolute;
-      top: -3px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #fff;
-      animation: walk 2.4s linear infinite;
-
-      &:nth-child(2) {
-        animation-delay: 0.8s;
-      }
-      &:nth-child(3) {
-        animation-delay: 1.6s;
-      }
-    }
-  }
-  .min {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 700;
-    font-size: 14px;
-  }
-}
-
-@keyframes walk {
-  from {
-    left: 0;
-    opacity: 0;
-  }
-  20%,
-  80% {
-    opacity: 1;
-  }
-  to {
-    left: 100%;
-    opacity: 0;
-  }
-}
-
-.wifi {
-  color: var(--gm-ink);
 
   b {
-    font-size: 15px;
-    word-break: break-all;
-    margin-top: 4px;
-  }
-
-  .waves {
-    position: relative;
-    width: 44px;
-    height: 34px;
-    margin-bottom: 8px;
-
-    span {
-      position: absolute;
-      left: 50%;
-      bottom: 0;
-      border: 3px solid var(--gm-accent);
-      border-color: var(--gm-accent) transparent transparent transparent;
-      border-radius: 50%;
-      transform: translateX(-50%);
-      animation: wifi 1.8s ease-in-out infinite;
-
-      &:nth-child(1) {
-        width: 12px;
-        height: 12px;
-        bottom: 0;
-      }
-      &:nth-child(2) {
-        width: 28px;
-        height: 28px;
-        bottom: -8px;
-        animation-delay: 0.2s;
-      }
-      &:nth-child(3) {
-        width: 44px;
-        height: 44px;
-        bottom: -16px;
-        animation-delay: 0.4s;
-      }
-    }
-  }
-
-  .copy {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: auto;
-    font-size: 12.5px;
-    color: var(--gm-accent-strong);
-    font-weight: 650;
-  }
-}
-
-@keyframes wifi {
-  0%,
-  100% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.lanes {
-  display: grid;
-  gap: 10px;
-}
-
-.lane {
-  padding: 14px 16px;
-
-  .lane-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: block;
     font-size: 14.5px;
-    font-weight: 600;
-
-    b {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 15px;
-    }
+    margin-top: 3px;
   }
-
-  .meter {
-    margin-top: 10px;
-    height: 8px;
-    border-radius: 8px;
-    background: #edf2f6;
-    overflow: hidden;
-
-    span {
-      display: block;
-      height: 100%;
-      width: calc(var(--w) * 100%);
-      border-radius: inherit;
-      transform-origin: left;
-      animation: gm-grow-x 1.3s var(--gm-ease-out) both 0.2s;
-    }
+  .full {
+    grid-column: span 2;
+    width: 100%;
   }
+}
+
+.src {
+  font-size: 11px;
+  color: var(--gm-ink-3);
 }
 
 .cats {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  margin: 0 -18px 8px;
-  padding: 2px 18px 6px;
+  margin: 0 -16px 10px;
+  padding: 2px 16px 4px;
   scrollbar-width: none;
 
   button {
@@ -251,62 +166,54 @@
     font-weight: 650;
     background: var(--gm-surface);
     color: var(--gm-ink-2);
-    transition: background 0.3s, color 0.3s, transform 0.25s var(--gm-ease-spring);
+    transition: all 0.3s var(--gm-ease-spring);
 
     &.on {
-      background: var(--c, var(--gm-ink));
+      background: var(--gm-navy);
       color: #fff;
       transform: scale(1.04);
     }
   }
 }
 
+.pois {
+  padding: 2px 14px;
+}
+
 .poi {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 2px;
+  padding: 11px 0;
   border-bottom: 1px solid var(--gm-line);
 
-  .ic {
-    flex: none;
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 21px;
-    color: var(--c);
-    background: color-mix(in srgb, var(--c) 13%, white);
+  &:last-child {
+    border-bottom: 0;
   }
-
+  .gm-well {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
   .grow {
     flex: 1;
     min-width: 0;
     b {
       display: block;
-      font-size: 15px;
+      font-size: 14.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     small {
       color: var(--gm-ink-3);
-      font-size: 13px;
+      font-size: 12px;
     }
   }
-
-  .side {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
-
-    small {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      font-size: 12px;
-      color: var(--gm-ink-3);
-    }
+  .m {
+    font-size: 12.5px;
+    color: var(--gm-ink-3);
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -325,7 +232,7 @@
     align-items: center;
     gap: 12px;
     width: 100%;
-    padding: 16px;
+    padding: 15px;
     background: none;
     font-size: 15px;
     font-weight: 650;
@@ -345,18 +252,16 @@
     }
   }
 
-  // Smooth height animation via grid rows.
   .answer {
     display: grid;
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.45s var(--gm-ease-out);
-
     > div {
       overflow: hidden;
     }
     p {
       margin: 0;
-      padding: 0 16px 16px 48px;
+      padding: 0 16px 16px 47px;
       font-size: 14px;
       line-height: 1.5;
       color: var(--gm-ink-2);
@@ -374,7 +279,7 @@
 }
 
 .disclaimer {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--gm-ink-3);
   text-align: center;
   margin: 14px 10px 0;

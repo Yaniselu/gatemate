@@ -227,10 +227,9 @@ export function createMockTrips(passengerName: string): Trip[] {
 
 export function createMockAlerts(): FlightAlert[] {
   return [
-    { id: 'a1', kind: 'gate', title: 'Gate assigned · B12', body: 'AE 415 to Barcelona departs from gate B12, Terminal 1. About 9 min walk from security.', createdAt: iso(-12 * MIN), read: false, flightId: 'fl-out' },
+    { id: 'a1', kind: 'gate', title: 'Gate assigned · B12', body: 'AE 415 to Barcelona departs from gate B12, Terminal 1.', createdAt: iso(-12 * MIN), read: false, flightId: 'fl-out' },
     { id: 'a2', kind: 'checkin', title: 'You are checked in', body: 'Seat 14C confirmed. Your boarding pass is saved offline.', createdAt: iso(-3 * 60 * MIN), read: false, flightId: 'fl-out' },
     { id: 'a3', kind: 'chat', title: 'Ana in Barcelona with friends', body: 'Who brings the speaker? 🔊', createdAt: iso(-40 * MIN), read: true },
-    { id: 'a4', kind: 'info', title: 'Security is moving fast', body: 'Current wait at OTP Terminal 1 is about 8 minutes.', createdAt: iso(-90 * MIN), read: true },
   ];
 }
 

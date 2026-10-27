@@ -1,6 +1,10 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AirportInfo, Expense, Flight, FlightAlert, TravelStats, Trip } from '../models';
 import { GatemateApi, NewFlightInput } from './api';
+import { Preferences } from '@capacitor/preferences';
+import { buildAlerts } from './alerts-engine';
+import { AirportDbService, haversineKm } from './airport-db.service';
+import { LocationService } from './location.service';
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -8,10 +12,38 @@ export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 @Injectable({ providedIn: 'root' })
 export class TravelStore {
   private api = inject(GatemateApi);
+  private db = inject(AirportDbService);
+  private location = inject(LocationService);
+  /** Server alerts (gate changes, delays, chat) — device reminders are derived from trips below. */
+  private serverAlerts = signal<FlightAlert[]>([]);
+  private readIds = signal<Set<string>>(new Set());
+  private dismissedIds = signal<Set<string>>(new Set());
+  private clock = signal(Date.now());
 
   readonly trips = signal<Trip[]>([]);
   readonly tripsState = signal<LoadState>('idle');
-  readonly alerts = signal<FlightAlert[]>([]);
+  /** Everything that is due (past or now), newest first. */
+  readonly alerts = computed<FlightAlert[]>(() => {
+    const now = this.clock();
+    this.db.ready();
+    const device = buildAlerts(this.trips(), {
+      now,
+      countryOf: (c) => this.db.get(c)?.country,
+      kmToAirport: (c) => {
+        const f = this.location.fix(), a = this.db.get(c);
+        return f && a ? haversineKm(f.lat, f.lon, a.lat, a.lon) : undefined;
+      },
+    });
+    const read = this.readIds(), gone = this.dismissedIds();
+    return [...this.serverAlerts(), ...device]
+      .filter((a) => !gone.has(a.id))
+      .map((a) => ({ ...a, read: a.read || read.has(a.id) }))
+      .sort((x, y) => +new Date(y.createdAt) - +new Date(x.createdAt));
+  });
+  readonly dueAlerts = computed(() => this.alerts().filter((a) => +new Date(a.createdAt) <= this.clock()));
+  readonly upcomingReminders = computed(() =>
+    this.alerts().filter((a) => +new Date(a.createdAt) > this.clock()).sort((x, y) => +new Date(x.createdAt) - +new Date(y.createdAt)),
+  );
   readonly alertsState = signal<LoadState>('idle');
   readonly stats = signal<TravelStats | null>(null);
   readonly airport = signal<AirportInfo | null>(null);
@@ -38,7 +70,29 @@ export class TravelStore {
     }
     return best;
   });
-  readonly unreadAlerts = computed(() => this.alerts().filter((a) => !a.read).length);
+  readonly unreadAlerts = computed(() => this.dueAlerts().filter((a) => !a.read).length);
+
+  constructor() {
+    setInterval(() => this.clock.set(Date.now()), 60_000);
+    void Preferences.get({ key: 'gm_alerts_state' })
+      .then(({ value }) => {
+        if (!value) return;
+        const v = JSON.parse(value) as { read: string[]; gone: string[] };
+        this.readIds.set(new Set(v.read));
+        this.dismissedIds.set(new Set(v.gone));
+      })
+      .catch(() => {});
+  }
+
+  private saveAlertState() {
+    const value = JSON.stringify({ read: [...this.readIds()].slice(-300), gone: [...this.dismissedIds()].slice(-300) });
+    Preferences.set({ key: 'gm_alerts_state', value }).catch(() => {});
+  }
+
+  dismissAlert(id: string) {
+    this.dismissedIds.update((s) => new Set(s).add(id));
+    this.saveAlertState();
+  }
 
   async loadTrips(force = false): Promise<void> {
     if (!force && this.tripsState() === 'ready') return;
@@ -55,7 +109,8 @@ export class TravelStore {
     if (!force && this.alertsState() === 'ready') return;
     if (!force) this.alertsState.set('loading');
     try {
-      this.alerts.set(await this.api.getAlerts());
+      void this.db.load();
+      this.serverAlerts.set((await this.api.getAlerts()).map((a) => ({ ...a, source: 'server' as const })));
       this.alertsState.set('ready');
     } catch {
       this.alertsState.set('error');
@@ -110,16 +165,19 @@ export class TravelStore {
   }
 
   async markAllAlertsRead(): Promise<void> {
-    const ids = this.alerts().filter((a) => !a.read).map((a) => a.id);
-    if (!ids.length) return;
-    this.alerts.update((list) => list.map((a) => ({ ...a, read: true })));
-    await this.api.markAlertsRead(ids).catch(() => {});
+    const due = this.dueAlerts().filter((a) => !a.read);
+    if (!due.length) return;
+    this.readIds.update((s) => new Set([...s, ...due.map((a) => a.id)]));
+    this.saveAlertState();
+    this.serverAlerts.update((list) => list.map((a) => ({ ...a, read: true })));
+    const serverIds = due.filter((a) => a.source === 'server').map((a) => a.id);
+    if (serverIds.length) await this.api.markAlertsRead(serverIds).catch(() => {});
   }
 
   reset(): void {
     this.trips.set([]);
     this.tripsState.set('idle');
-    this.alerts.set([]);
+    this.serverAlerts.set([]);
     this.alertsState.set('idle');
     this.stats.set(null);
     this.airport.set(null);

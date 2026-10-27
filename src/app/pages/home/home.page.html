@@ -164,7 +164,7 @@
           </div>
         }
       } @else {
-        @for (a of store.alerts().slice(0, 3); track a.id; let i = $index) {
+        @for (a of store.dueAlerts().slice(0, 3); track a.id; let i = $index) {
           <div class="alert" [gmReveal]="i" [class.unread]="!a.read">
             <span class="gm-well" [style.color]="alertIcons[a.kind].color"><ion-icon [name]="alertIcons[a.kind].icon" /></span>
             <div class="grow">
@@ -190,19 +190,27 @@
     </div>
 
     @if (next(); as n) {
-      <div class="gm-section-title"><h2>{{ n.flight.to.city }} at a glance</h2></div>
-      <div class="dest card" gmReveal>
-        <div class="weather">
-          <ion-icon name="sunny" class="sun-icon" />
-          <div><b>24°</b><small>Sunny</small></div>
-        </div>
-        <div class="dest-facts">
-          <span><span class="gm-label">Local time</span>{{ n.flight.arrival | clock: n.flight.to.timezone }}</span>
-          <span><span class="gm-label">Currency</span>Euro (€)</span>
-          <span><span class="gm-label">Plugs</span>Type C / F</span>
-          <span><span class="gm-label">Emergency</span>112</span>
-        </div>
-      </div>
+      <div class="gm-section-title"><h2>{{ n.flight.to.city }} at a glance</h2><a (click)="open('guide')">City guide</a></div>
+      <button class="dest card" gmReveal gmPressable (click)="open('guide')">
+        @if (glance(); as g) {
+          <div class="weather">
+            @if (g.weather; as w) {
+              <ion-icon [name]="wl(w.code).icon" class="sun-icon" />
+              <div><b>{{ w.temp }}°</b><small>{{ wl(w.code).label }}</small></div>
+            } @else {
+              <ion-icon name="compass-outline" class="sun-icon" />
+            }
+          </div>
+          <div class="dest-facts">
+            <span><span class="gm-label">Local time</span>{{ n.flight.arrival | clock: n.flight.to.timezone }} on landing</span>
+            <span><span class="gm-label">Currency</span>{{ g.country?.currency?.[0] ?? '—' }}</span>
+            <span><span class="gm-label">Plugs</span>{{ g.country?.plugs ? 'Type ' + g.country?.plugs : '—' }}</span>
+            <span><span class="gm-label">Emergency</span>{{ g.country?.sos?.general ?? g.country?.sos?.police ?? '—' }}</span>
+          </div>
+        } @else {
+          <gm-skeleton height="64px" radius="12px" />
+        }
+      </button>
     }
 
     <div class="gm-bottom-spacer"></div>

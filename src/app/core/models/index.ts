@@ -136,7 +136,7 @@ export interface Expense {
   createdAt: string;
 }
 
-export type AlertKind = 'boarding' | 'gate' | 'delay' | 'checkin' | 'baggage' | 'chat' | 'info';
+export type AlertKind = 'boarding' | 'gate' | 'delay' | 'checkin' | 'baggage' | 'chat' | 'info' | 'leave' | 'documents' | 'weather' | 'bags' | 'checklist';
 
 export interface FlightAlert {
   id: string;
@@ -146,6 +146,10 @@ export interface FlightAlert {
   createdAt: string;
   read: boolean;
   flightId?: string;
+  tripId?: string;
+  /** For reminders generated on the device: when the notification fires. */
+  scheduledFor?: string;
+  source?: 'server' | 'device';
 }
 
 export interface ChatThread {
