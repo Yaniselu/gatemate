@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { environment } from '../../../environments/environment';
-import { Session, User } from '../models';
+import { ProfilePatch, Session, User } from '../models';
 import { createNonce } from '../security/crypto.util';
 import { SecureStorageService } from '../security/secure-storage.service';
 import { ApiError, GatemateApi, SocialCredential } from './api';
@@ -66,6 +66,13 @@ export class AuthService {
 
   async loginWithGoogle(): Promise<void> {
     await this.loginWithProvider('google');
+  }
+
+  /** Saves only the changed fields and swaps the user in place (no reload of other data). */
+  async updateProfile(patch: ProfilePatch): Promise<User> {
+    const user = await this.api.updateProfile(patch);
+    this.session.update((s) => (s ? { ...s, user } : s));
+    return user;
   }
 
   requestPasswordReset(email: string): Promise<void> {

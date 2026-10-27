@@ -9,6 +9,7 @@ import {
   TravelStats,
   Trip,
 } from '../models';
+import { sampleBaggage } from './airlines';
 
 // Demo content for the front-end-first phase. Times are relative to "now" so the
 // countdowns, boarding alerts and statuses always look alive.
@@ -39,7 +40,20 @@ export const TRAVELLERS: Traveller[] = [
 
 function flight(partial: Partial<Flight> & Pick<Flight, 'id' | 'from' | 'to' | 'departure' | 'durationMinutes'>): Flight {
   const dep = new Date(partial.departure).getTime();
+  const { fareName, baggage } = sampleBaggage('W6', 1);
   return {
+    fareName,
+    baggage,
+    verification: {
+      status: 'verified',
+      method: 'airline',
+      checkedAt: new Date(Date.now() - 3 * DAY).toISOString(),
+      checks: [
+        { label: 'Booking confirmed with the airline', ok: true },
+        { label: 'Passenger name matches your legal name', ok: true },
+        { label: 'Not added by another Gatemate account', ok: true },
+      ],
+    },
     airline: 'Skyways',
     airlineCode: 'SK',
     number: 'SK 1234',

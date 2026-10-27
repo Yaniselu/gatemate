@@ -4,6 +4,10 @@
  */
 export interface BoardingPassData {
   passengerName: string;
+  firstName: string;
+  lastName: string;
+  /** Raw barcode payload, kept so the backend can check the airline's digital signature when present. */
+  raw: string;
   bookingRef: string;
   from: string;
   to: string;
@@ -35,6 +39,9 @@ export function parseBcbp(raw: string, today = new Date()): BoardingPassData {
   const seatRaw = field(48, 4);
   return {
     passengerName: titleCase(`${first} ${last}`.trim()),
+    firstName: first.trim(),
+    lastName: last.trim(),
+    raw: data,
     bookingRef: field(23, 7),
     from,
     to,

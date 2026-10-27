@@ -8,9 +8,12 @@ import {
   createMockTrips,
   AIRPORTS,
 } from '../data/mock-data';
-import { AirportInfo, ChatMessage, ChatThread, Expense, Flight, FlightAlert, Session, TravelStats, Trip, User } from '../models';
+import { AirportInfo, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { AIRLINES, sampleBaggage } from '../data/airlines';
+import { parseBcbp } from '../utils/bcbp';
+import { matchPassengerName } from '../utils/name-match';
 import { randomId } from '../security/crypto.util';
-import { ApiError, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { ApiError, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
 const ACCESS_TTL_MS = 15 * 60_000;
 
@@ -39,13 +42,20 @@ export class MockApi extends GatemateApi {
     };
   }
 
+  private claimed = new Set<string>();
+  private lookupAttempts: number[] = [];
+
   private makeUser(name: string, email: string, provider: User['provider']): User {
     const palette = ['#0FB5C3', '#8B7CF6', '#FF8A5B', '#2FD18A', '#5EC8FF'];
+    const [first, ...rest] = name.trim().split(/\s+/);
     return {
       id: randomId('usr_'),
       name,
       email,
       provider,
+      legalFirstName: first,
+      legalLastName: rest.join(' ') || undefined,
+      seatPreference: 'window',
       avatarColor: palette[email.length % palette.length],
       homeAirport: 'OTP',
       createdAt: new Date().toISOString(),
@@ -106,10 +116,144 @@ export class MockApi extends GatemateApi {
     return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   }
 
-  async updateProfile(patch: Partial<Pick<User, 'name' | 'homeAirport'>>): Promise<User> {
+  async updateProfile(patch: ProfilePatch): Promise<User> {
     if (!this.user) throw new ApiError('Not signed in.', 401);
     this.user = { ...this.user, ...patch };
-    return this.delay(this.user, 300, 600);
+    return this.delay(this.user, 400, 800);
+  }
+
+  async sendFeedback(_input: FeedbackInput): Promise<void> {
+    await this.delay(null, 500, 900);
+  }
+
+  // ---------- Booking import & ownership ----------
+  async lookupBooking(req: BookingLookup): Promise<BookingLookupResult> {
+    await this.delay(null, 1200, 1800);
+    // Booking references are guessable: the real API rate-limits per account and IP.
+    const now = Date.now();
+    this.lookupAttempts = this.lookupAttempts.filter((t) => now - t < 10 * 60_000);
+    if (this.lookupAttempts.length >= 5) throw new ApiError('Too many lookups. Try again in a few minutes.', 429, 'rate_limited', 300);
+    this.lookupAttempts.push(now);
+
+    const legalLast = this.user?.legalLastName ?? '';
+    const match = matchPassengerName(this.user?.legalFirstName ?? '', req.lastName, this.user?.legalFirstName ?? '', legalLast);
+    if (!/^[A-Z0-9]{6}$/.test(req.bookingRef) || !match.lastNameOk) {
+      // Same message whether the reference or the name is wrong (no enumeration).
+      throw new ApiError('We could not find a booking with this reference and last name.', 404, 'not_found');
+    }
+    const airline = AIRLINES.find((a) => a.code === req.airline);
+    const seed = [...req.bookingRef].reduce((n, c) => n + c.charCodeAt(0), 0);
+    const { fareName, baggage } = sampleBaggage(req.airline, seed);
+    const dep = new Date(Date.now() + (12 + (seed % 20)) * 86_400_000);
+    dep.setHours(6 + (seed % 12), (seed * 7) % 60, 0, 0);
+    const dests = ['FCO', 'LIS', 'BCN', 'CDG', 'ATH'];
+    const to = AIRPORTS[dests[seed % dests.length]];
+    const num = `${req.airline} ${100 + (seed % 899)}`;
+    const flight: Flight = {
+      id: randomId('fl_'),
+      airline: airline?.name ?? req.airline,
+      airlineCode: req.airline,
+      number: num,
+      from: AIRPORTS['OTP'],
+      to,
+      departure: dep.toISOString(),
+      arrival: new Date(dep.getTime() + 165 * 60_000).toISOString(),
+      boardingTime: new Date(dep.getTime() - 40 * 60_000).toISOString(),
+      cabin: 'Economy',
+      bookingRef: req.bookingRef,
+      passengerName: `${this.user?.legalFirstName ?? ''} ${legalLast}`.trim(),
+      status: 'scheduled',
+      durationMinutes: 165,
+      distanceKm: 1800,
+      fareName,
+      baggage,
+      seat: `${10 + (seed % 20)}${'ABCDEF'[seed % 6]}`,
+    };
+    return this.delay({ passengerFirstName: this.user?.legalFirstName ?? '', passengerLastName: legalLast, flights: [flight] }, 0, 0);
+  }
+
+  async claimFlight(req: ClaimRequest): Promise<Trip> {
+    await this.delay(null, 900, 1400);
+    const user = this.user;
+    if (!user?.legalFirstName || !user.legalLastName) throw new ApiError('Add your legal name in your profile first.', 422, 'legal_name_missing');
+
+    let flight: Flight;
+    let checks: { label: string; ok: boolean }[];
+    if (req.method === 'pass') {
+      const p = parseBcbp(req.barcode);
+      const m = matchPassengerName(p.firstName, p.lastName, user.legalFirstName, user.legalLastName);
+      const key = `${p.bookingRef}|${p.carrier}${p.flightNumber}|${p.julianDate}|${p.lastName}`;
+      checks = [
+        { label: 'Valid IATA boarding pass barcode', ok: true },
+        { label: 'Passenger name matches your legal name', ok: m.ok },
+        { label: 'Not added by another Gatemate account', ok: !this.claimed.has(key) },
+      ];
+      if (!m.ok) throw new ApiError('This boarding pass is in another passenger’s name. Ask them to add it and invite you to the trip.', 403, 'name_mismatch');
+      if (this.claimed.has(key)) throw new ApiError('This flight is already linked to another account.', 409, 'already_claimed');
+      this.claimed.add(key);
+      const dep = new Date(p.flightDate);
+      dep.setUTCHours(9, 0);
+      const { fareName, baggage } = sampleBaggage(p.carrier, p.bookingRef.length + p.julianDate);
+      flight = {
+        id: randomId('fl_'),
+        airline: AIRLINES.find((a) => a.code === p.carrier)?.name ?? p.carrier,
+        airlineCode: p.carrier,
+        number: `${p.carrier} ${p.flightNumber}`,
+        from: AIRPORTS[p.from] ?? { code: p.from, city: p.from, name: `${p.from} Airport`, country: '', timezone: 'UTC' },
+        to: AIRPORTS[p.to] ?? { code: p.to, city: p.to, name: `${p.to} Airport`, country: '', timezone: 'UTC' },
+        departure: dep.toISOString(),
+        arrival: new Date(dep.getTime() + 150 * 60_000).toISOString(),
+        boardingTime: new Date(dep.getTime() - 40 * 60_000).toISOString(),
+        seat: p.seat,
+        cabin: 'Economy',
+        bookingRef: p.bookingRef,
+        passengerName: p.passengerName,
+        status: 'scheduled',
+        durationMinutes: 150,
+        distanceKm: 1500,
+        fareName,
+        baggage: { ...baggage, source: 'boarding-pass' },
+      };
+    } else {
+      const res = await this.lookupBooking(req);
+      flight = res.flights[0];
+      checks = [
+        { label: 'Booking confirmed with the airline', ok: true },
+        { label: 'Passenger name matches your legal name', ok: true },
+        { label: 'Not added by another Gatemate account', ok: true },
+      ];
+    }
+    flight.verification = { status: 'verified', method: req.method === 'pass' ? 'boarding-pass' : 'airline', checkedAt: new Date().toISOString(), checks };
+    const trip = this.tripFor(flight);
+    this.ensureTrips().push(trip);
+    return this.delay(trip, 0, 0);
+  }
+
+  async getImportEmail(): Promise<string> {
+    return this.delay(`trips+${(this.user?.id ?? 'demo').slice(-8).toLowerCase()}@in.gatemate.app`, 200, 400);
+  }
+
+  async createInvite(id: string): Promise<string> {
+    return this.delay(`https://gatemate.app/join/${randomId().slice(0, 10)}?t=${encodeURIComponent(id.slice(0, 12))}`, 300, 600);
+  }
+
+  private tripFor(flight: Flight): Trip {
+    return {
+      id: randomId('trip_'),
+      title: `Trip to ${flight.to.city}`,
+      destination: flight.to,
+      coverGradient: 'linear-gradient(135deg, #22C7D3 0%, #8B7CF6 100%)',
+      emoji: '🧳',
+      startDate: flight.departure,
+      endDate: flight.arrival,
+      flights: [flight],
+      travellers: [{ id: 'me', name: 'You', initials: 'ME', color: '#0FB5C3' }],
+      checklist: [
+        { id: randomId(), label: 'Passport or ID card', done: false, category: 'documents' },
+        { id: randomId(), label: 'Online check-in', done: false, category: 'tasks' },
+      ],
+      expenses: [],
+    };
   }
 
   // ---------- Trips ----------
@@ -231,6 +375,23 @@ export class MockApi extends GatemateApi {
   async blockUser(userId: string): Promise<void> {
     this.blocked.add(userId);
     await this.delay(null, 300, 600);
+  }
+
+  async createThread(input: { title: string; emoji: string; tripId?: string }): Promise<ChatThread> {
+    const thread: ChatThread = {
+      id: randomId('chat_'),
+      title: input.title,
+      subtitle: 'Only you so far · invite friends',
+      emoji: input.emoji,
+      gradient: 'linear-gradient(135deg, #22C7D3, #0A6E80)',
+      members: [{ id: 'me', name: 'You', initials: 'ME', color: '#0FB5C3' }],
+      unread: 0,
+      isPublic: false,
+      muted: false,
+    };
+    this.threads.unshift(thread);
+    this.messages.set(thread.id, []);
+    return this.delay(thread, 500, 800);
   }
 
   async leaveThread(threadId: string): Promise<void> {

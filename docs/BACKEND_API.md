@@ -26,7 +26,21 @@ Types are defined in `src/app/core/models/index.ts`; the client lives in `src/ap
 | DELETE | `/chats/{id}/membership` | — | 204 |
 | POST | `/moderation/reports` | `{messageId, reason}` | 204 |
 | POST | `/moderation/blocks` | `{userId}` | 204 |
-| GET | `/airports/{code}` | — | `AirportInfo` |
+| GET | `/airports/{code}` | — | `AirportInfo` (+ indoor map from the map provider) |
+| POST | `/bookings/lookup` | `{airline, bookingRef, lastName}` | `BookingLookupResult` · 404 same message for wrong ref or name · 429 |
+| POST | `/flights/claim` | `{method:'pass', barcode}` or `{method:'booking', airline, bookingRef, lastName, flightIds}` | `Trip` · 403 `name_mismatch` · 409 `already_claimed` · 422 `legal_name_missing` |
+| GET | `/me/import-email` | — | `{address}` personal forwarding address |
+| POST | `/invites` | `{targetId}` | `{url}` single-use, 7-day link |
+| POST | `/chats` | `{title, emoji, tripId?}` | `ChatThread` |
+| POST | `/feedback` | `{topic, message, rating?, contactEmail?}` | 204 |
 
 `Session = { user, accessToken, expiresAt (epoch ms), refreshToken }`.
 Errors: `{ code, message }` with proper HTTP status. Real-time chat & alerts: WebSocket/STOMP at `/ws` + APNs/FCM push.
+
+## Ticket ownership rules (server-side, mandatory)
+1. Compare the passenger name (ticket/booking) with the account's **legal** first/last name after normalising (diacritics, titles, BCBP 20-char truncation).
+2. `booking`: confirm reference + last name with the airline/aggregator (NDC/GDS partner). Never store airline account passwords.
+3. `pass`: parse IATA BCBP; when the airline signature block is present, verify it with the airline's published key.
+4. Email import: accept only mail sent **from the account's verified email**, with a valid **DKIM** signature from the airline's domain.
+5. A (PNR, flight, date, passenger) tuple can be claimed by **one** account; others join via trip invites.
+6. Rate-limit lookups (5 / 10 min per account and per IP) — booking references are guessable.

@@ -35,7 +35,7 @@
 
       <div class="grid2">
         <!-- Walk to gate -->
-        <div class="walk glass tinted anim-scale-in" gmPressable>
+        <a class="walk glass smoke anim-scale-in" routerLink="/airport-map" gmPressable>
           <small>Walk to gate</small>
           <b>{{ gate() ?? 'B12' }}</b>
           <div class="path" aria-hidden="true">
@@ -43,8 +43,8 @@
             <span class="line"><i></i><i></i><i></i></span>
             <span class="dot b"><ion-icon name="airplane" /></span>
           </div>
-          <span class="min"><ion-icon name="walk-outline" /> {{ i.walkToGateMinutes }} min</span>
-        </div>
+          <span class="min"><ion-icon name="map-outline" /> {{ i.walkToGateMinutes }} min · Open map</span>
+        </a>
 
         <!-- Wi-Fi -->
         <button class="wifi glass anim-scale-in" style="animation-delay: 80ms" (click)="copyWifi(i.wifiName)">
@@ -59,7 +59,7 @@
       <div class="gm-section-title"><h2>Live queue times</h2><span class="gm-chip success"><span class="gm-dot live"></span> Live</span></div>
       <div class="lanes">
         @for (l of i.lanes; track l.id; let idx = $index) {
-          <div class="lane glass flat" [gmReveal]="idx">
+          <div class="lane card" [gmReveal]="idx">
             <div class="lane-top">
               <span>{{ l.name }}</span>
               <b [style.color]="waitColor(l.waitMinutes)">
@@ -100,7 +100,7 @@
 
       <!-- Rules -->
       <div class="gm-section-title"><h2>Security rules</h2></div>
-      <div class="rules glass flat">
+      <div class="rules card">
         @for (r of rules; track r.id) {
           <div class="rule" [class.open]="openRule() === r.id">
             <button (click)="toggleRule(r.id)" [attr.aria-expanded]="openRule() === r.id">

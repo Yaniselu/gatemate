@@ -12,11 +12,13 @@ import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { CountUpDirective } from '../../shared/directives/count-up.directive';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
+import { SheenDirective } from '../../shared/directives/sheen.directive';
+import { ReviewService } from '../../core/services/review.service';
 
 @Component({
   selector: 'gm-profile',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, RouterLink, SkeletonComponent, CountUpDirective, RevealDirective, PressableDirective],
+  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, RouterLink, SkeletonComponent, CountUpDirective, RevealDirective, PressableDirective, SheenDirective],
   templateUrl: './profile.page.html',
   styleUrl: './profile.page.scss',
 })
@@ -29,6 +31,7 @@ export class ProfilePage implements OnInit {
   private alerts = inject(AlertController);
   private toast = inject(ToastService);
   private lock = inject(AppLockService);
+  protected review = inject(ReviewService);
 
   readonly exporting = signal(false);
   readonly initials = computed(() =>

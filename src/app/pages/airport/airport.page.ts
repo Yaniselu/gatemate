@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { IonContent, IonHeader, IonIcon, IonRefresher, IonRefresherContent, IonTitle, IonToolbar, ActionSheetController } from '@ionic/angular/standalone';
 import { TravelStore } from '../../core/services/travel.store';
 import { PrefsService } from '../../core/services/prefs.service';
@@ -24,7 +25,7 @@ const CATEGORY_META: Record<PoiCategory, { label: string; icon: string; color: s
 @Component({
   selector: 'gm-airport',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, SkeletonComponent, RevealDirective, PressableDirective],
+  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink, SkeletonComponent, RevealDirective, PressableDirective],
   templateUrl: './airport.page.html',
   styleUrl: './airport.page.scss',
 })

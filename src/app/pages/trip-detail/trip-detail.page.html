@@ -11,8 +11,8 @@
 
 <ion-content [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onScroll($event)">
   @if (trip(); as t) {
-    <div class="cover" [style.background]="t.coverGradient" [style.transform]="'translateY(' + scrollY() * 0.4 + 'px)'">
-      <span class="emoji" [style.transform]="'scale(' + (1 + scrollY() / 900) + ')'">{{ t.emoji }}</span>
+    <div class="cover" [style.transform]="'translateY(' + scrollY() * 0.4 + 'px) scale(' + (1 + scrollY() / 1200) + ')'">
+      <gm-city-image [code]="t.destination.code" [src]="t.destination.imageUrl" [alt]="t.destination.city" />
     </div>
 
     <div class="sheet">
@@ -36,7 +36,7 @@
         @case ('flights') {
           <div class="section">
             @for (f of t.flights; track f.id; let i = $index) {
-              <div class="flight glass flat" [gmReveal]="i">
+              <div class="flight card" [gmReveal]="i">
                 <div class="f-head">
                   <span class="gm-chip neutral">{{ f.number }}</span>
                   <span class="gm-chip" [class.success]="f.status === 'on-time' || f.status === 'landed'" [class.warning]="f.status === 'delayed'">{{ f.status | flightStatus }}</span>
@@ -63,6 +63,21 @@
                   <span><small>Seat</small>{{ f.seat ?? '—' }}</span>
                   <span><small>Distance</small>{{ f.distanceKm | number }} km</span>
                 </div>
+                @if (f.verification; as v) {
+                  <details class="verify" [class.ok]="v.status === 'verified'">
+                    <summary>
+                      <ion-icon [name]="v.status === 'verified' ? 'shield-checkmark' : 'shield-outline'" />
+                      {{ v.status === 'verified' ? 'Ticket verified as yours' : 'Verification pending' }}
+                      <span class="method">{{ methodLabel(v.method) }}</span>
+                      <ion-icon name="chevron-down" class="chev" />
+                    </summary>
+                    <ul>
+                      @for (c of v.checks; track c.label) {
+                        <li [class.bad]="!c.ok"><ion-icon [name]="c.ok ? 'checkmark-circle' : 'close-circle'" /> {{ c.label }}</li>
+                      }
+                    </ul>
+                  </details>
+                }
               </div>
             }
             <a class="gm-btn ghost" routerLink="/add-flight"><ion-icon name="add-circle-outline" /> Add another flight</a>
@@ -89,9 +104,82 @@
           </div>
         }
 
+        @case ('bags') {
+          <div class="section">
+            @for (f of t.flights; track f.id) {
+              @if (f.baggage; as b) {
+                <div class="fare card">
+                  <div>
+                    <span class="gm-label">{{ f.number }} · {{ f.from.code }} → {{ f.to.code }}</span>
+                    <b>{{ f.fareName ?? 'Your fare' }}</b>
+                  </div>
+                  <span class="gm-chip" [class.neutral]="b.source !== 'airline'">{{ b.source === 'airline' ? 'From airline booking' : 'Estimated' }}</span>
+                </div>
+                <div class="bag-grid">
+                  @for (item of bagList(b); track item.kind; let i = $index) {
+                    <div class="bag-card card" [class.off]="!item.bag" [gmReveal]="i">
+                      <div class="bag-art" [attr.data-kind]="item.kind">
+                        <svg viewBox="0 0 80 80" aria-hidden="true">
+                          @switch (item.kind) {
+                            @case ('personal') {
+                              <rect x="16" y="26" width="48" height="38" rx="8" />
+                              <path d="M30 26 v-6 a10 10 0 0 1 20 0 v6" fill="none" stroke-width="4" />
+                            }
+                            @case ('cabin') {
+                              <rect x="20" y="16" width="40" height="50" rx="7" />
+                              <path d="M32 16 V8 H48 V16" fill="none" stroke-width="4" />
+                              <circle cx="28" cy="70" r="4" /><circle cx="52" cy="70" r="4" />
+                            }
+                            @case ('checked') {
+                              <rect x="12" y="18" width="56" height="48" rx="8" />
+                              <path d="M30 18 V10 H50 V18" fill="none" stroke-width="4" />
+                              <path d="M12 34 H68 M12 50 H68" stroke-width="2.5" opacity=".35" />
+                            }
+                          }
+                        </svg>
+                      </div>
+                      <b>{{ item.title }}</b>
+                      @if (item.bag; as bag) {
+                        <span class="dims">{{ bag.dimensionsCm[1] ? bag.dimensionsCm.join(' × ') + ' cm' : 'Up to ' + bag.dimensionsCm[0] + ' cm total' }}</span>
+                        <span class="kg">{{ bag.maxKg ? bag.count + ' × ' + bag.maxKg + ' kg' : 'Under the seat' }}</span>
+                        <span class="gm-chip success"><ion-icon name="checkmark" /> Included</span>
+                      } @else {
+                        <span class="dims">Not in your fare</span>
+                        <span class="gm-chip neutral">Add with airline</span>
+                      }
+                    </div>
+                  }
+                </div>
+                @if (b.notes.length) {
+                  <ul class="notes">
+                    @for (n of b.notes; track n) { <li><ion-icon name="information-circle-outline" /> {{ n }}</li> }
+                  </ul>
+                }
+              }
+            }
+
+            <h3 class="sub">Will my bag fit?</h3>
+            <div class="fit card">
+              <div class="fit-inputs">
+                <label>L<input type="number" inputmode="numeric" min="1" max="200" [(ngModel)]="fitL" (ngModelChange)="checkFit()" /></label>
+                <label>W<input type="number" inputmode="numeric" min="1" max="200" [(ngModel)]="fitW" (ngModelChange)="checkFit()" /></label>
+                <label>H<input type="number" inputmode="numeric" min="1" max="200" [(ngModel)]="fitH" (ngModelChange)="checkFit()" /></label>
+                <label>kg<input type="number" inputmode="decimal" min="0" max="50" [(ngModel)]="fitKg" (ngModelChange)="checkFit()" /></label>
+              </div>
+              @if (fitResult(); as r) {
+                <div class="fit-result" [class.yes]="r.ok" [attr.data-key]="r.label">
+                  <ion-icon [name]="r.ok ? 'checkmark-circle' : 'alert-circle'" />
+                  <div><b>{{ r.label }}</b><small>{{ r.detail }}</small></div>
+                </div>
+              }
+            </div>
+            <p class="hint">Allowances come from your booking. Airlines can change rules — check your airline's website before you fly.</p>
+          </div>
+        }
+
         @case ('checklist') {
           <div class="section">
-            <div class="ring-row glass flat anim-scale-in">
+            <div class="ring-row card anim-scale-in">
               <svg viewBox="0 0 80 80" class="ring">
                 <circle cx="40" cy="40" r="34" class="bg" />
                 <circle cx="40" cy="40" r="34" class="fg" [style.stroke-dashoffset]="214 - 214 * checklistRatio()" />
@@ -145,7 +233,7 @@
             }
 
             @if (addingExpense()) {
-              <form class="add-exp glass flat anim-fade-up" (ngSubmit)="saveExpense()">
+              <form class="add-exp card anim-fade-up" (ngSubmit)="saveExpense()">
                 <input name="label" [(ngModel)]="expenseLabel" placeholder="What was it?" maxlength="60" required />
                 <input name="amount" [(ngModel)]="expenseAmount" type="number" inputmode="decimal" min="0.01" max="100000" step="0.01" placeholder="€0.00" required />
                 <button class="gm-btn small" type="submit">Add</button>
@@ -168,7 +256,7 @@
               @if (t.chatId) {
                 <a class="gm-btn" [routerLink]="['/chat', t.chatId]"><ion-icon name="chatbubbles-outline" /> Open group chat</a>
               }
-              <button class="gm-btn ghost" (click)="invite()"><ion-icon name="person-add-outline" /> Invite friends</button>
+              <gm-invite-panel [targetId]="t.id" [title]="t.title" />
             </div>
           </div>
         }

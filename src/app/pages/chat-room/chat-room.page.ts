@@ -6,6 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { ChatMessage } from '../../core/models';
+import { InviteService } from '../../core/services/invite.service';
 import { containsLink, containsSensitiveNumber, MAX_MESSAGE_LENGTH } from '../../core/security/sanitize';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { ClockPipe } from '../../shared/pipes/time.pipes';
@@ -38,6 +39,7 @@ export class ChatRoomPage implements OnInit {
   private toast = inject(ToastService);
   private platform = inject(PlatformService);
   private nav = inject(NavController);
+  private invites = inject(InviteService);
   private content = viewChild(IonContent);
 
   readonly maxLength = MAX_MESSAGE_LENGTH;
@@ -154,6 +156,7 @@ export class ChatRoomPage implements OnInit {
       header: t.title,
       cssClass: 'gm-sheet',
       buttons: [
+        ...(!t.isPublic ? [{ text: 'Invite via WhatsApp', icon: 'logo-whatsapp', handler: () => void this.inviteWhatsapp() }] : []),
         { text: t.muted ? 'Unmute notifications' : 'Mute notifications', icon: t.muted ? 'volume-high-outline' : 'volume-mute-outline', handler: () => this.chat.toggleMute(t.id) },
         { text: 'Community Guidelines', icon: 'shield-checkmark-outline', handler: () => void this.nav.navigateForward('/legal/guidelines') },
         { text: t.isPublic ? 'Leave lounge' : 'Leave group', icon: 'exit-outline', role: 'destructive', handler: () => void this.leave() },
@@ -161,6 +164,12 @@ export class ChatRoomPage implements OnInit {
       ],
     });
     await sheet.present();
+  }
+
+  private async inviteWhatsapp() {
+    const t = this.thread();
+    if (!t) return;
+    this.invites.whatsapp(t.title, await this.invites.link(t.id));
   }
 
   private async leave() {

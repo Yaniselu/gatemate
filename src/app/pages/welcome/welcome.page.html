@@ -36,33 +36,12 @@
   </div>
 
   <div class="content">
-    <div class="brand">
-      <div class="mark"><ion-icon name="airplane" /></div>
-      <h1 aria-label="Gatemate">
-        @for (ch of title; track $index) {
-          <span [style.--i]="$index">{{ ch }}</span>
-        }
-      </h1>
-      <p class="tagline">Your calm co‑pilot from curb to gate.</p>
-    </div>
-
-    <div class="features">
-      @for (f of features; track f.label; let i = $index) {
-        <div class="pill" [style.--i]="i">
-          <ion-icon [name]="f.icon" />{{ f.label }}
-        </div>
+    <h1 aria-label="Gatemate">
+      @for (ch of title; track $index) {
+        <span [style.--i]="$index">{{ ch }}</span>
       }
-    </div>
-
-    <button class="start" (click)="takeOff()" [disabled]="takingOff()">
-      <span>Get Started</span>
-      <span class="arrow"><ion-icon name="arrow-forward" /></span>
-    </button>
-
-    <p class="legal">
-      By continuing you agree to our <a routerLink="/legal/terms">Terms</a> and
-      <a routerLink="/legal/privacy">Privacy Policy</a>.
-    </p>
+    </h1>
+    <gm-swipe-button class="swipe" label="Get started" (completed)="takeOff()" />
   </div>
 
   <div class="reveal" #reveal aria-hidden="true"></div>

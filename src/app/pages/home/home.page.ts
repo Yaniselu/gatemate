@@ -10,8 +10,10 @@ import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { CountdownComponent } from '../../shared/components/countdown.component';
 import { RouteArcComponent } from '../../shared/components/route-arc.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { SheenDirective } from '../../shared/directives/sheen.directive';
+import { CityImageComponent } from '../../shared/components/city-image.component';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
-import { ClockPipe, DurationPipe, RelativeTimePipe } from '../../shared/pipes/time.pipes';
+import { ClockPipe, RelativeTimePipe } from '../../shared/pipes/time.pipes';
 import { FlightStatusPipe } from '../../shared/pipes/status.pipe';
 
 export const ALERT_ICONS: Record<AlertKind, { icon: string; color: string }> = {
@@ -29,8 +31,8 @@ export const ALERT_ICONS: Record<AlertKind, { icon: string; color: string }> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink,
-    SkeletonComponent, CountdownComponent, RouteArcComponent, RevealDirective, PressableDirective,
-    ClockPipe, DurationPipe, RelativeTimePipe, FlightStatusPipe,
+    SkeletonComponent, CountdownComponent, RouteArcComponent, RevealDirective, PressableDirective, SheenDirective, CityImageComponent,
+    ClockPipe, RelativeTimePipe, FlightStatusPipe,
   ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',
@@ -74,20 +76,25 @@ export class HomePage implements OnInit {
   });
 
   readonly actions = [
-    { label: 'Add flight', icon: 'scan-outline', link: '/add-flight', color: '#0FB5C3' },
-    { label: 'Boarding pass', icon: 'qr-code-outline', link: 'pass', color: '#8B7CF6' },
-    { label: 'Airport', icon: 'map-outline', link: '/tabs/airport', color: '#FF8A5B' },
-    { label: 'Trip chat', icon: 'chatbubbles-outline', link: '/tabs/chat', color: '#5EC8FF' },
-    { label: 'Checklist', icon: 'checkmark-done', link: 'checklist', color: '#2FD18A' },
-    { label: 'Your rights', icon: 'shield-checkmark-outline', link: '/rights', color: '#FFB020' },
+    { label: 'Add booking', icon: 'add-circle-outline', link: '/add-flight' },
+    { label: 'Pass', icon: 'qr-code-outline', link: 'pass' },
+    { label: 'Airport map', icon: 'map-outline', link: '/airport-map' },
+    { label: 'In-flight', icon: 'game-controller-outline', link: '/inflight' },
+    { label: 'Baggage', icon: 'bag-handle-outline', link: 'bags' },
+    { label: 'Checklist', icon: 'checkmark-done', link: 'checklist' },
+    { label: 'Trip chat', icon: 'chatbubbles-outline', link: '/tabs/chat' },
+    { label: 'Your rights', icon: 'shield-checkmark-outline', link: '/rights' },
   ];
 
   readonly tips = [
-    { title: 'Liquids rule', body: 'Containers up to 100 ml, in one clear 1 L bag.', icon: 'water-outline', bg: 'linear-gradient(135deg,#22C7D3,#5EC8FF)' },
-    { title: 'Power banks', body: 'Cabin bag only — never in checked luggage.', icon: 'battery-charging-outline', bg: 'linear-gradient(135deg,#8B7CF6,#5EC8FF)' },
-    { title: 'Arrive early', body: '2 h for Schengen, 3 h for long-haul flights.', icon: 'time-outline', bg: 'linear-gradient(135deg,#FFB36B,#FF6B8B)' },
-    { title: 'Stay hydrated', body: 'Cabin air is dry — refill a bottle after security.', icon: 'heart-outline', bg: 'linear-gradient(135deg,#2FD18A,#22C7D3)' },
+    { title: 'Liquids rule', body: 'Containers up to 100 ml, in one clear 1-litre bag.', icon: 'water-outline' },
+    { title: 'Power banks', body: 'Cabin bag only — never in checked luggage.', icon: 'battery-charging-outline' },
+    { title: 'Arrive early', body: '2 h for Schengen, 3 h for long-haul flights.', icon: 'time-outline' },
+    { title: 'Stay hydrated', body: 'Cabin air is dry — refill a bottle after security.', icon: 'heart-outline' },
   ];
+  readonly initials = computed(() =>
+    (this.auth.user()?.name ?? '?').split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase(),
+  );
 
   constructor() {
     const id = setInterval(() => this.now.set(Date.now()), 30_000);
@@ -111,9 +118,10 @@ export class HomePage implements OnInit {
 
   open(link: string) {
     const next = this.next();
-    if ((link === 'pass' || link === 'checklist') && next) {
-      void this.nav.navigateForward(`/trip/${next.trip.id}`, { queryParams: { tab: link === 'pass' ? 'pass' : 'checklist' } });
-    } else if (link === 'pass' || link === 'checklist') {
+    const sections = ['pass', 'checklist', 'bags'];
+    if (sections.includes(link) && next) {
+      void this.nav.navigateForward(`/trip/${next.trip.id}`, { queryParams: { tab: link } });
+    } else if (sections.includes(link)) {
       void this.nav.navigateForward('/add-flight');
     } else {
       void this.nav.navigateForward(link);

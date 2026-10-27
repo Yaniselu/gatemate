@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { IonContent, IonIcon, NavController } from '@ionic/angular/standalone';
+import { IonContent, NavController } from '@ionic/angular/standalone';
 import { PlaneComponent } from '../../shared/components/plane.component';
+import { SwipeButtonComponent } from '../../shared/components/swipe-button.component';
 import { PlatformService } from '../../core/services/platform.service';
 import { PrefsService } from '../../core/services/prefs.service';
 
 @Component({
   selector: 'gm-welcome',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, PlaneComponent, RouterLink],
+  imports: [IonContent, PlaneComponent, SwipeButtonComponent],
   templateUrl: './welcome.page.html',
   styleUrl: './welcome.page.scss',
 })
@@ -22,17 +22,10 @@ export class WelcomePage {
 
   readonly takingOff = signal(false);
   readonly title = 'Gatemate'.split('');
-  readonly features = [
-    { icon: 'notifications', label: 'Boarding alerts' },
-    { icon: 'ticket', label: 'Boarding passes' },
-    { icon: 'chatbubbles', label: 'Trip chats' },
-    { icon: 'map', label: 'Airport guide' },
-  ];
 
   async takeOff(): Promise<void> {
     if (this.takingOff()) return;
     this.takingOff.set(true);
-    this.platform.impact();
     void this.prefs.setOnboarded();
 
     if (this.platform.reducedMotion) {

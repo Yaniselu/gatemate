@@ -9,7 +9,7 @@ import { LockScreenComponent } from './shared/components/lock-screen.component';
   imports: [IonApp, IonRouterOutlet, LockScreenComponent],
   template: `
     <ion-app>
-      <div class="gm-ambient"></div>
+      <div class="gm-ambient" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>
       <ion-router-outlet />
       @if (lock.locked()) {
         <gm-lock-screen />

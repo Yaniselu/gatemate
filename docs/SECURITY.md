@@ -17,6 +17,10 @@
 | User content | Control/bidi-override characters stripped, 1 000-char cap, profanity masking, payment-card detection warning, link warning in public lounges, local send rate-limit, report & block. |
 | Input validation | IATA/flight/seat/PNR patterns, boarding-pass barcode parsed and validated on-device. |
 | Data at rest (Android) | `allowBackup=false`, data-extraction rules exclude everything from cloud backup / device transfer. |
+| Ticket ownership | Tickets are only added after the passenger name matches the account's legal name (diacritics/titles normalised); one booking can belong to one account; booking lookup rate-limited; generic "not found" message (no enumeration). |
+| Profile photos | Re-encoded on device (320 px WebP) which strips EXIF/GPS metadata before upload. |
+| Location | "When in use" only, coarse check that you are at the airport; never stored. |
+| Invites | Single-use, expiring links; joining requires sign-in. |
 | Release builds | No source maps, Capacitor logging off, WebView debugging off. |
 
 ## Required on the Java backend (next phase)

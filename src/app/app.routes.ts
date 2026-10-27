@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard, welcomeGuard } from './core/guards/auth.guards';
+import { unsavedChangesGuard } from './core/guards/unsaved.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'welcome', pathMatch: 'full' },
@@ -17,7 +18,23 @@ export const routes: Routes = [
   { path: 'tabs', canActivate: [authGuard], loadChildren: () => import('./pages/tabs/tabs.routes').then((m) => m.TABS_ROUTES) },
   { path: 'trip/:id', canActivate: [authGuard], loadComponent: () => import('./pages/trip-detail/trip-detail.page').then((m) => m.TripDetailPage) },
   { path: 'add-flight', canActivate: [authGuard], loadComponent: () => import('./pages/add-flight/add-flight.page').then((m) => m.AddFlightPage) },
+  { path: 'chat/new', canActivate: [authGuard], loadComponent: () => import('./pages/chat-new/chat-new.page').then((m) => m.ChatNewPage) },
   { path: 'chat/:id', canActivate: [authGuard], loadComponent: () => import('./pages/chat-room/chat-room.page').then((m) => m.ChatRoomPage) },
+  { path: 'profile/edit', canActivate: [authGuard], canDeactivate: [unsavedChangesGuard], loadComponent: () => import('./pages/profile-edit/profile-edit.page').then((m) => m.ProfileEditPage) },
+  { path: 'airport-map', canActivate: [authGuard], loadComponent: () => import('./pages/airport-map/airport-map.page').then((m) => m.AirportMapPage) },
+  { path: 'feedback', canActivate: [authGuard], loadComponent: () => import('./pages/feedback/feedback.page').then((m) => m.FeedbackPage) },
+  {
+    path: 'inflight',
+    canActivate: [authGuard],
+    children: [
+      { path: '', loadComponent: () => import('./pages/inflight/inflight.page').then((m) => m.InflightPage) },
+      { path: 'memory', loadComponent: () => import('./pages/inflight/memory.page').then((m) => m.MemoryPage) },
+      { path: 'quiz', loadComponent: () => import('./pages/inflight/quiz.page').then((m) => m.QuizPage) },
+      { path: 'tictactoe', loadComponent: () => import('./pages/inflight/tictactoe.page').then((m) => m.TicTacToePage) },
+      { path: 'breathe', loadComponent: () => import('./pages/inflight/breathe.page').then((m) => m.BreathePage) },
+      { path: 'stretch', loadComponent: () => import('./pages/inflight/stretch.page').then((m) => m.StretchPage) },
+    ],
+  },
   { path: 'alerts', canActivate: [authGuard], loadComponent: () => import('./pages/alerts/alerts.page').then((m) => m.AlertsPage) },
   { path: 'rights', canActivate: [authGuard], loadComponent: () => import('./pages/rights/rights.page').then((m) => m.RightsPage) },
   { path: 'settings/notifications', canActivate: [authGuard], loadComponent: () => import('./pages/settings/notification-settings.page').then((m) => m.NotificationSettingsPage) },

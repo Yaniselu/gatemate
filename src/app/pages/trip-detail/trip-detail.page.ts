@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnInit, signal, untracked } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,7 +6,11 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonToolbar }
 import { TravelStore } from '../../core/services/travel.store';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
-import { Trip } from '../../core/models';
+import { BaggageAllowance, BagItem, Trip, VerificationMethod } from '../../core/models';
+import { CityImageComponent } from '../../shared/components/city-image.component';
+import { InvitePanelComponent } from '../../shared/components/invite-panel.component';
+import { ConfettiService } from '../../shared/components/confetti.service';
+import { ReviewService } from '../../core/services/review.service';
 import { cleanText } from '../../core/security/sanitize';
 import { BoardingPassComponent } from '../../shared/components/boarding-pass.component';
 import { AvatarStackComponent } from '../../shared/components/avatar-stack.component';
@@ -15,14 +19,14 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { ClockPipe, DurationPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
 import { FlightStatusPipe } from '../../shared/pipes/status.pipe';
 
-type Section = 'flights' | 'pass' | 'checklist' | 'expenses' | 'people';
+type Section = 'flights' | 'pass' | 'bags' | 'checklist' | 'expenses' | 'people';
 
 @Component({
   selector: 'gm-trip-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonIcon, RouterLink, FormsModule, DecimalPipe,
-    BoardingPassComponent, AvatarStackComponent, SkeletonComponent, RevealDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
+    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, SkeletonComponent, RevealDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
   ],
   templateUrl: './trip-detail.page.html',
   styleUrl: './trip-detail.page.scss',
@@ -35,12 +39,15 @@ export class TripDetailPage implements OnInit {
   private store = inject(TravelStore);
   private toast = inject(ToastService);
   private platform = inject(PlatformService);
+  private confetti = inject(ConfettiService);
+  private review = inject(ReviewService);
 
   readonly trip = computed<Trip | undefined>(() => this.store.trip(this.id()));
   readonly section = signal<Section>('flights');
   readonly sections: { id: Section; label: string; icon: string }[] = [
     { id: 'flights', label: 'Flights', icon: 'airplane' },
     { id: 'pass', label: 'Pass', icon: 'qr-code-outline' },
+    { id: 'bags', label: 'Bags', icon: 'bag-handle-outline' },
     { id: 'checklist', label: 'Checklist', icon: 'checkmark-done' },
     { id: 'expenses', label: 'Expenses', icon: 'wallet-outline' },
     { id: 'people', label: 'People', icon: 'people-outline' },
@@ -75,10 +82,17 @@ export class TripDetailPage implements OnInit {
   expenseLabel = '';
   expenseAmount: number | null = null;
 
+  constructor() {
+    effect(() => {
+      if (this.trip()) untracked(() => this.checkFit());
+    });
+  }
+
   ngOnInit(): void {
     void this.store.loadTrips();
     const t = this.tab();
     if (t && this.sections.some((s) => s.id === t)) this.section.set(t);
+    this.checkFit();
   }
 
   onScroll(ev: CustomEvent) {
@@ -92,8 +106,58 @@ export class TripDetailPage implements OnInit {
 
   toggle(itemId: string) {
     this.platform.tap();
+    const wasDone = this.trip()?.checklist.find((c) => c.id === itemId)?.done;
     void this.store.toggleChecklist(this.id(), itemId);
-    if (this.checklistDone() + 1 === this.trip()?.checklist.length) setTimeout(() => this.platform.success(), 200);
+    if (!wasDone && this.checklistDone() === this.trip()?.checklist.length) {
+      setTimeout(() => {
+        this.platform.success();
+        this.confetti.burst(0.5, 0.35);
+        void this.review.positiveMoment();
+      }, 150);
+    }
+  }
+
+  methodLabel(m: VerificationMethod): string {
+    return { airline: 'via airline', 'boarding-pass': 'via boarding pass', email: 'via airline email', manual: 'manual' }[m];
+  }
+
+  bagList(b: BaggageAllowance): { kind: 'personal' | 'cabin' | 'checked'; title: string; bag: BagItem | null }[] {
+    return [
+      { kind: 'personal', title: 'Personal item', bag: b.personalItem },
+      { kind: 'cabin', title: 'Cabin bag', bag: b.cabinBag },
+      { kind: 'checked', title: 'Checked bag', bag: b.checked[0] ?? null },
+    ];
+  }
+
+  // Interactive "will it fit" checker against the next flight's allowance.
+  fitL: number | null = 40;
+  fitW: number | null = 30;
+  fitH: number | null = 20;
+  fitKg: number | null = 6;
+  readonly fitResult = signal<{ ok: boolean; label: string; detail: string } | null>(null);
+
+  checkFit() {
+    const b = this.trip()?.flights.find((f) => f.baggage)?.baggage;
+    const dims = [this.fitL, this.fitW, this.fitH].map((n) => Number(n) || 0).sort((a, z) => z - a);
+    const kg = Number(this.fitKg) || 0;
+    if (!b || dims.some((d) => d <= 0)) {
+      this.fitResult.set(null);
+      return;
+    }
+    const fits = (item: BagItem | null) => {
+      if (!item) return false;
+      const limit = [...item.dimensionsCm].sort((a, z) => z - a);
+      const sizeOk = limit[1] ? dims.every((d, i) => d <= limit[i]) : dims.reduce((a, d) => a + d, 0) <= limit[0];
+      return sizeOk && (!item.maxKg || kg <= item.maxKg);
+    };
+    const prev = this.fitResult()?.label;
+    let res: { ok: boolean; label: string; detail: string };
+    if (fits(b.personalItem)) res = { ok: true, label: 'Fits as your personal item', detail: 'Free — keep it under the seat in front of you.' };
+    else if (fits(b.cabinBag)) res = { ok: true, label: 'Fits as your cabin bag', detail: 'Goes in the overhead locker.' };
+    else if (b.checked.some((c) => fits(c))) res = { ok: true, label: 'Check it in', detail: 'Too big for the cabin, but within your checked allowance.' };
+    else res = { ok: false, label: 'Too big for your fare', detail: 'Add a bag with your airline before the airport — it is cheaper online.' };
+    if (prev && prev !== res.label) this.platform.selection();
+    this.fitResult.set(res);
   }
 
   async saveExpense() {
@@ -115,22 +179,6 @@ export class TripDetailPage implements OnInit {
     this.expenseAmount = null;
     this.addingExpense.set(false);
     await this.toast.show('Expense added and split equally', 'success');
-  }
-
-  async invite() {
-    const t = this.trip();
-    if (!t) return;
-    // Invite links are single-use tokens issued by the backend; this is the front-end placeholder.
-    const text = `Join "${t.title}" on Gatemate ✈️`;
-    try {
-      if (navigator.share) await navigator.share({ title: 'Gatemate', text });
-      else {
-        await navigator.clipboard.writeText(text);
-        await this.toast.show('Invite copied to clipboard', 'success');
-      }
-    } catch {
-      /* share sheet dismissed */
-    }
   }
 
   personName(id: string): string {

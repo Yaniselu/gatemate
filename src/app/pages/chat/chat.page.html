@@ -10,6 +10,7 @@
   <ion-header collapse="condense" class="gm-glass-header">
     <ion-toolbar>
       <div class="head">
+        <a class="new-btn anim-scale-in" routerLink="/chat/new" aria-label="New group"><ion-icon name="create-outline" /></a>
         <h1 class="gm-page-title anim-fade-up">Chats</h1>
         <p class="gm-subtitle anim-fade-up" style="animation-delay: 60ms">Plan together with the people you travel with.</p>
       </div>
@@ -79,7 +80,7 @@
       }
     }
 
-    <div class="safety glass flat" gmReveal>
+    <div class="safety card" gmReveal>
       <ion-icon name="shield-checkmark-outline" />
       <div>
         <b>Safe & respectful</b>

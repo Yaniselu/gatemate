@@ -17,7 +17,7 @@ interface TabDef {
   template: `
     <ion-tabs (ionTabsDidChange)="changed($event.tab)">
       <ion-tab-bar slot="bottom" class="gm-tabbar" [style.--index]="index()">
-        <div class="indicator" aria-hidden="true"></div>
+        <div class="indicator" [class.moving]="moving()" aria-hidden="true"></div>
         @for (t of tabs; track t.id) {
           <ion-tab-button [tab]="t.id" [class.active]="active() === t.id">
             <span class="icon-wrap">
@@ -49,8 +49,17 @@ export class TabsPage {
   readonly index = computed(() => Math.max(0, this.tabs.findIndex((t) => t.id === this.active())));
   readonly unread = computed(() => this.chat.threads().reduce((n, t) => n + (t.muted ? 0 : t.unread), 0));
 
+  readonly moving = signal(false);
+  private movingTimer?: ReturnType<typeof setTimeout>;
+
   changed(tab: string) {
-    if (tab !== this.active()) this.platform.selection();
+    if (tab !== this.active()) {
+      this.platform.selection();
+      this.moving.set(false);
+      requestAnimationFrame(() => this.moving.set(true));
+      clearTimeout(this.movingTimer);
+      this.movingTimer = setTimeout(() => this.moving.set(false), 650);
+    }
     this.active.set(tab);
   }
 }

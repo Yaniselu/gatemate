@@ -1,14 +1,26 @@
 export type AuthProvider = 'password' | 'apple' | 'google';
 
+export type SeatPreference = 'window' | 'aisle' | 'no-preference';
+
 export interface User {
   id: string;
   name: string;
   email: string;
   avatarColor: string;
+  /** Small, EXIF-stripped WebP data URL or CDN URL. */
+  avatarUrl?: string;
   provider: AuthProvider;
   homeAirport?: string;
+  /** Exactly as printed in the passport / ID — used to prove a ticket belongs to this account. */
+  legalFirstName?: string;
+  legalLastName?: string;
+  phone?: string;
+  seatPreference?: SeatPreference;
+  bio?: string;
   createdAt: string;
 }
+
+export type ProfilePatch = Partial<Pick<User, 'name' | 'homeAirport' | 'legalFirstName' | 'legalLastName' | 'phone' | 'seatPreference' | 'bio' | 'avatarUrl'>>;
 
 export interface Session {
   user: User;
@@ -24,6 +36,8 @@ export interface Airport {
   name: string;
   country: string;
   timezone: string;
+  /** Licensed destination photo served by the backend. */
+  imageUrl?: string;
 }
 
 export type FlightStatus = 'scheduled' | 'on-time' | 'boarding' | 'delayed' | 'departed' | 'landed' | 'cancelled';
@@ -50,6 +64,37 @@ export interface Flight {
   durationMinutes: number;
   distanceKm: number;
   aircraft?: string;
+  fareName?: string;
+  baggage?: BaggageAllowance;
+  verification?: FlightVerification;
+}
+
+export interface BagItem {
+  label: string;
+  /** Length × width × height in cm. */
+  dimensionsCm: [number, number, number];
+  maxKg?: number;
+  count: number;
+  included: boolean;
+}
+
+export interface BaggageAllowance {
+  personalItem: BagItem;
+  cabinBag: BagItem | null;
+  checked: BagItem[];
+  notes: string[];
+  /** Where the allowance came from — the airline booking is authoritative. */
+  source: 'airline' | 'boarding-pass' | 'manual';
+}
+
+export type VerificationStatus = 'verified' | 'pending' | 'mismatch' | 'unverified';
+export type VerificationMethod = 'airline' | 'boarding-pass' | 'email' | 'manual';
+
+export interface FlightVerification {
+  status: VerificationStatus;
+  method: VerificationMethod;
+  checkedAt: string;
+  checks: { label: string; ok: boolean }[];
 }
 
 export interface Trip {

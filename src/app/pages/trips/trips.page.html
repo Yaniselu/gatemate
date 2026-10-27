@@ -40,30 +40,42 @@
       }
     } @else {
       @for (t of list(); track t.id; let i = $index) {
-        <a class="trip glass flat" [routerLink]="['/trip', t.id]" [gmReveal]="i" gmPressable>
-          <div class="cover" [style.background]="t.coverGradient">
-            <span class="emoji">{{ t.emoji }}</span>
-            <div class="cover-route">
-              <b>{{ t.flights[0].from.code }}</b>
-              <span class="dash"><ion-icon name="airplane" /></span>
-              <b>{{ t.destination.code }}</b>
-            </div>
+        <a class="trip card" [routerLink]="['/trip', t.id]" [gmReveal]="i" gmPressable>
+          <div class="cover">
+            <gm-city-image [code]="t.destination.code" [src]="t.destination.imageUrl" [alt]="t.destination.city" />
+            <div class="shade"></div>
             @if (segment() === 'upcoming') {
-              <span class="count">{{ countdownLabel(t) }}</span>
+              <span class="count glass-chip">{{ countdownLabel(t) }}</span>
             }
+            @if (verified(t)) {
+              <span class="verified glass-chip"><ion-icon name="shield-checkmark" /> Verified</span>
+            }
+            <div class="cover-text">
+              <span class="city">{{ t.destination.city }}</span>
+              <span class="country">{{ t.destination.country }}</span>
+            </div>
           </div>
           <div class="body">
             <div class="row">
-              <div>
+              <div class="min0">
                 <h3>{{ t.title }}</h3>
-                <p>{{ t.startDate | shortDate }} – {{ t.endDate | shortDate }} · {{ t.flights.length }} {{ t.flights.length === 1 ? 'flight' : 'flights' }}</p>
+                <p>{{ t.startDate | shortDate }} – {{ t.endDate | shortDate }}</p>
               </div>
               <gm-avatar-stack [people]="t.travellers" />
+            </div>
+            <div class="legs">
+              @for (f of t.flights.slice(0, 2); track f.id) {
+                <div class="leg">
+                  <span class="gm-label">{{ f.number }}</span>
+                  <b>{{ f.from.code }} <ion-icon name="arrow-forward" /> {{ f.to.code }}</b>
+                  <small>{{ f.departure | shortDate: false }} · {{ f.departure | clock }}</small>
+                </div>
+              }
             </div>
             @if (segment() === 'upcoming' && t.checklist.length) {
               <div class="progress">
                 <div class="bar"><span [style.transform]="'scaleX(' + checklistProgress(t) + ')'"></span></div>
-                <small>{{ (checklistProgress(t) * 100).toFixed(0) }}% ready</small>
+                <small>{{ (checklistProgress(t) * 100).toFixed(0) }}% packed</small>
               </div>
             }
           </div>

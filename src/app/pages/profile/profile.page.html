@@ -11,12 +11,18 @@
 
   <div class="page">
     @if (auth.user(); as u) {
-      <div class="card glass anim-scale-in">
+      <div class="card-hero glass anim-scale-in" gmSheen="3">
         <div class="avatar-ring">
-          <div class="avatar" [style.background]="u.avatarColor">{{ initials() }}</div>
+          @if (u.avatarUrl) {
+            <img class="avatar" [src]="u.avatarUrl" alt="" />
+          } @else {
+            <div class="avatar" [style.background]="u.avatarColor">{{ initials() }}</div>
+          }
         </div>
         <h2>{{ u.name }}</h2>
         <p class="email selectable">{{ u.email }}</p>
+        @if (u.bio) { <p class="bio">{{ u.bio }}</p> }
+        <a class="edit-btn" routerLink="/profile/edit"><ion-icon name="create-outline" /> Edit profile</a>
         <div class="chips">
           <span class="gm-chip"><ion-icon [name]="u.provider === 'apple' ? 'logo-apple' : u.provider === 'google' ? 'logo-google' : 'mail-outline'" /> {{ providerLabel() }}</span>
           <span class="gm-chip neutral"><ion-icon name="location-outline" /> Home · {{ prefs.homeAirport() }}</span>
@@ -27,10 +33,10 @@
     <div class="gm-section-title"><h2>Your travel</h2></div>
     @if (store.stats(); as s) {
       <div class="stats">
-        <div class="stat glass flat" gmReveal="0"><ion-icon name="airplane" /><b [gmCountUp]="s.flights"></b><small>Flights</small></div>
-        <div class="stat glass flat" gmReveal="1"><ion-icon name="globe-outline" /><b [gmCountUp]="s.distanceKm"></b><small>Kilometres</small></div>
-        <div class="stat glass flat" gmReveal="2"><ion-icon name="earth" /><b [gmCountUp]="s.countries"></b><small>Countries</small></div>
-        <div class="stat glass flat" gmReveal="3"><ion-icon name="time-outline" /><b [gmCountUp]="s.hoursInAir"></b><small>Hours in air</small></div>
+        <div class="stat card" gmReveal="0"><ion-icon name="airplane" /><b [gmCountUp]="s.flights"></b><small>Flights</small></div>
+        <div class="stat card" gmReveal="1"><ion-icon name="globe-outline" /><b [gmCountUp]="s.distanceKm"></b><small>Kilometres</small></div>
+        <div class="stat card" gmReveal="2"><ion-icon name="earth" /><b [gmCountUp]="s.countries"></b><small>Countries</small></div>
+        <div class="stat card" gmReveal="3"><ion-icon name="time-outline" /><b [gmCountUp]="s.hoursInAir"></b><small>Hours in air</small></div>
       </div>
 
       <div class="gm-section-title"><h2>Badges</h2><span class="gm-chip">{{ earnedCount() }}/{{ s.badges.length }}</span></div>
@@ -51,7 +57,7 @@
     }
 
     <div class="gm-section-title"><h2>Settings</h2></div>
-    <div class="group glass flat">
+    <div class="group card">
       <a class="item" routerLink="/settings/notifications" gmPressable>
         <span class="ic" style="--c: #0FB5C3"><ion-icon name="notifications-outline" /></span>Notifications<ion-icon name="chevron-forward" class="chev" />
       </a>
@@ -67,7 +73,7 @@
       </button>
     </div>
 
-    <div class="group glass flat">
+    <div class="group card">
       <a class="item" routerLink="/legal/privacy" gmPressable>
         <span class="ic" style="--c: #5EC8FF"><ion-icon name="document-lock-outline" /></span>Privacy Policy<ion-icon name="chevron-forward" class="chev" />
       </a>
@@ -77,9 +83,12 @@
       <a class="item" routerLink="/legal/guidelines" gmPressable>
         <span class="ic" style="--c: #FF8A5B"><ion-icon name="people-outline" /></span>Community Guidelines<ion-icon name="chevron-forward" class="chev" />
       </a>
-      <a class="item" href="mailto:support@gatemate.app" gmPressable>
-        <span class="ic" style="--c: #0FB5C3"><ion-icon name="help-circle-outline" /></span>Help & support<ion-icon name="chevron-forward" class="chev" />
+      <a class="item" routerLink="/feedback" gmPressable>
+        <span class="ic" style="--c: #0FB5C3"><ion-icon name="chatbox-ellipses-outline" /></span>Send feedback<ion-icon name="chevron-forward" class="chev" />
       </a>
+      <button class="item" (click)="review.openStorePage()" gmPressable>
+        <span class="ic" style="--c: #FFB020"><ion-icon name="star-outline" /></span>Rate Gatemate<ion-icon name="chevron-forward" class="chev" />
+      </button>
     </div>
 
     <button class="gm-btn ghost" (click)="signOut()"><ion-icon name="log-out-outline" /> Sign out</button>

@@ -1,0 +1,46 @@
+.page {
+  padding: 8px 16px 40px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+
+  > div {
+    flex: 1;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  b {
+    display: block;
+    font-size: 20px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.end {
+  text-align: center;
+  padding: 26px 18px;
+  margin-top: 14px;
+  animation: gm-scale-in 0.5s var(--gm-ease-spring);
+
+  .trophy {
+    font-size: 54px;
+    color: #ffb020;
+    animation: gm-float 2.4s ease-in-out infinite;
+  }
+  h2 {
+    margin: 8px 0 4px;
+    font-size: 24px;
+    font-weight: 800;
+  }
+  p {
+    color: var(--gm-ink-3);
+    margin: 0 0 16px;
+  }
+}

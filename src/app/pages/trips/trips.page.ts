@@ -7,7 +7,8 @@ import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { AvatarStackComponent } from '../../shared/components/avatar-stack.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
-import { ShortDatePipe } from '../../shared/pipes/time.pipes';
+import { ClockPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
+import { CityImageComponent } from '../../shared/components/city-image.component';
 import { PlatformService } from '../../core/services/platform.service';
 
 @Component({
@@ -15,7 +16,7 @@ import { PlatformService } from '../../core/services/platform.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonFab, IonFabButton, IonRefresher, IonRefresherContent,
-    RouterLink, SkeletonComponent, AvatarStackComponent, RevealDirective, PressableDirective, ShortDatePipe,
+    RouterLink, SkeletonComponent, AvatarStackComponent, RevealDirective, PressableDirective, ShortDatePipe, ClockPipe, CityImageComponent,
   ],
   templateUrl: './trips.page.html',
   styleUrl: './trips.page.scss',
@@ -48,6 +49,10 @@ export class TripsPage implements OnInit {
     const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     const days = Math.round((midnight(start) - midnight(new Date())) / 86_400_000);
     return days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `in ${days} days`;
+  }
+
+  verified(t: Trip): boolean {
+    return t.flights.length > 0 && t.flights.every((f) => f.verification?.status === 'verified');
   }
 
   checklistProgress(t: Trip): number {

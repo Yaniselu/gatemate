@@ -14,6 +14,7 @@ import { AuthService } from './core/services/auth.service';
 import { PrefsService } from './core/services/prefs.service';
 import { AppLockService } from './core/security/app-lock.service';
 import { PlatformService } from './core/services/platform.service';
+import { ReviewService } from './core/services/review.service';
 import { gatemateNavAnimation } from './shared/animations/page-transition';
 import { registerIcons } from './icons';
 
@@ -33,6 +34,7 @@ export const appConfig: ApplicationConfig = {
       const auth = inject(AuthService);
       const lock = inject(AppLockService);
       const platform = inject(PlatformService);
+      void inject(ReviewService).init();
       await prefs.load();
       await auth.init();
       await lock.init();

@@ -1,0 +1,117 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back" /></ion-buttons>
+    <ion-title>Edit profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <input id="avatar-file" type="file" accept="image/*" hidden (change)="onPhoto($event)" />
+  <form class="page" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="avatar-block anim-scale-in">
+      <button type="button" class="avatar" (click)="pickPhoto()" [class.busy]="avatarBusy()" aria-label="Change profile photo">
+        @if (avatar(); as a) {
+          <img [src]="a" alt="" />
+        } @else {
+          <span [style.background]="auth.user()?.avatarColor">{{ initials() }}</span>
+        }
+        <i class="cam"><ion-icon name="camera-outline" /></i>
+      </button>
+      <div class="avatar-actions">
+        <button type="button" class="link" (click)="pickPhoto()">{{ avatar() ? 'Change photo' : 'Add photo' }}</button>
+        @if (avatar()) {
+          <button type="button" class="link danger" (click)="removePhoto()">Remove</button>
+        }
+      </div>
+      <small class="muted">Resized to 320 px and stripped of location data before upload.</small>
+    </div>
+
+    <section class="group">
+      <span class="gm-label">Public profile</span>
+      <div class="card fields">
+        <div class="gm-field" [class.invalid]="bad('name')">
+          <label for="name">Display name</label>
+          <div class="gm-input-wrap"><input id="name" formControlName="name" maxlength="60" autocomplete="nickname" /></div>
+          @if (bad('name')) { <span class="gm-error">Use letters only (2–60 characters).</span> }
+        </div>
+        <div class="gm-field">
+          <label for="bio">About you <small>{{ bioLength() }}/160</small></label>
+          <div class="gm-input-wrap area"><textarea id="bio" formControlName="bio" rows="2" maxlength="160" placeholder="Window-seat person. Always early."></textarea></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="group">
+      <span class="gm-label">Name on your passport</span>
+      <div class="card fields">
+        <p class="explain"><ion-icon name="shield-checkmark-outline" /><span>We compare this with the name on tickets you import, so only <b>your</b> tickets can be added to your account. Never shown to others.</span></p>
+        <div class="two">
+          <div class="gm-field" [class.invalid]="bad('legalFirstName')">
+            <label for="lfn">First name(s)</label>
+            <div class="gm-input-wrap"><input id="lfn" formControlName="legalFirstName" maxlength="40" autocomplete="given-name" /></div>
+          </div>
+          <div class="gm-field" [class.invalid]="bad('legalLastName')">
+            <label for="lln">Last name</label>
+            <div class="gm-input-wrap"><input id="lln" formControlName="legalLastName" maxlength="40" autocomplete="family-name" /></div>
+          </div>
+        </div>
+        @if (bad('legalFirstName') || bad('legalLastName')) { <span class="gm-error">Enter your names exactly as in your passport (letters only).</span> }
+      </div>
+    </section>
+
+    <section class="group">
+      <span class="gm-label">Account</span>
+      <div class="card fields">
+        <div class="gm-field">
+          <label>Email</label>
+          <div class="gm-input-wrap readonly">
+            <ion-icon [name]="auth.user()?.provider === 'apple' ? 'logo-apple' : auth.user()?.provider === 'google' ? 'logo-google' : 'mail-outline'" />
+            <input [value]="auth.user()?.email" readonly aria-readonly="true" />
+            <ion-icon name="lock-closed-outline" class="lock" />
+          </div>
+        </div>
+        <div class="gm-field" [class.invalid]="bad('phone')">
+          <label for="phone">Phone <small>optional · for SMS gate alerts</small></label>
+          <div class="gm-input-wrap"><ion-icon name="call-outline" /><input id="phone" type="tel" formControlName="phone" inputmode="tel" autocomplete="tel" placeholder="+40 7xx xxx xxx" maxlength="16" /></div>
+          @if (bad('phone')) { <span class="gm-error">Use international format, e.g. +40712345678.</span> }
+        </div>
+      </div>
+    </section>
+
+    <section class="group">
+      <span class="gm-label">Travel preferences</span>
+      <div class="card fields">
+        <div class="gm-field">
+          <label for="home">Home airport</label>
+          <div class="gm-input-wrap select">
+            <ion-icon name="location-outline" />
+            <select id="home" formControlName="homeAirport">
+              @for (a of airports; track a.code) { <option [value]="a.code">{{ a.code }} · {{ a.city }}</option> }
+            </select>
+            <ion-icon name="chevron-down" class="lock" />
+          </div>
+        </div>
+        <label class="seat-label">Seat preference</label>
+        <div class="seg" [style.--x]="seatIndex()">
+          <span class="thumb"></span>
+          @for (s of seats; track s.id) {
+            <button type="button" [class.on]="form.controls.seatPreference.value === s.id" (click)="setSeat(s.id)"><ion-icon [name]="s.icon" /> {{ s.label }}</button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <div class="spacer"></div>
+  </form>
+
+  <div class="save-bar glass strong" [class.show]="dirty() || saved()" slot="fixed">
+    @if (saved()) {
+      <span class="saved"><ion-icon name="checkmark-circle" /> Saved</span>
+    } @else {
+      <span class="changes">{{ dirty() ? 'Unsaved changes' : '' }}</span>
+      <button class="gm-btn small" (click)="save()" [disabled]="saving() || !dirty()">
+        @if (saving()) { <i class="spin"></i> } @else { Save }
+      </button>
+    }
+  </div>
+</ion-content>

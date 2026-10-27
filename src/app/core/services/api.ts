@@ -1,4 +1,4 @@
-import { AirportInfo, AuthProvider, ChatMessage, ChatThread, Expense, Flight, FlightAlert, Session, TravelStats, Trip, User } from '../models';
+import { AirportInfo, AuthProvider, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 
 export interface SocialCredential {
   provider: Exclude<AuthProvider, 'password'>;
@@ -20,6 +20,35 @@ export interface NewFlightInput {
   passengerName: string;
 }
 
+export interface BookingLookup {
+  airline: string;
+  bookingRef: string;
+  lastName: string;
+}
+
+export interface BookingLookupResult {
+  passengerFirstName: string;
+  passengerLastName: string;
+  flights: Flight[];
+}
+
+/**
+ * How the user proves the ticket is theirs. The backend re-checks everything:
+ * - `pass`: raw IATA barcode (airline digital signature verified when present) + legal-name match;
+ * - `booking`: reference + last name confirmed with the airline/aggregator;
+ * - every flight can be claimed by one account only (others must be invited to the trip).
+ */
+export type ClaimRequest =
+  | { method: 'pass'; barcode: string }
+  | { method: 'booking'; airline: string; bookingRef: string; lastName: string; flightIds: string[] };
+
+export interface FeedbackInput {
+  topic: string;
+  message: string;
+  rating?: number;
+  contactEmail?: string;
+}
+
 /**
  * Contract between the app and the Gatemate Java backend.
  * `MockApi` implements it in-memory for the front-end phase; `HttpApi` talks to the real server.
@@ -34,11 +63,17 @@ export abstract class GatemateApi {
   abstract requestPasswordReset(email: string): Promise<void>;
   abstract deleteAccount(): Promise<void>;
   abstract exportMyData(): Promise<Blob>;
-  abstract updateProfile(patch: Partial<Pick<User, 'name' | 'homeAirport'>>): Promise<User>;
+  abstract updateProfile(patch: ProfilePatch): Promise<User>;
+  abstract sendFeedback(input: FeedbackInput): Promise<void>;
 
   // Trips & flights
   abstract getTrips(): Promise<Trip[]>;
   abstract addFlight(input: NewFlightInput): Promise<Trip>;
+  abstract lookupBooking(req: BookingLookup): Promise<BookingLookupResult>;
+  abstract claimFlight(req: ClaimRequest): Promise<Trip>;
+  /** Personal forwarding address; mail is accepted only from the account's verified email with valid airline DKIM. */
+  abstract getImportEmail(): Promise<string>;
+  abstract createInvite(tripOrChatId: string): Promise<string>;
   abstract toggleChecklistItem(tripId: string, itemId: string, done: boolean): Promise<void>;
   abstract addExpense(tripId: string, expense: Omit<Expense, 'id' | 'createdAt'>): Promise<Expense>;
   abstract getFlightStatus(flightId: string): Promise<Flight>;
@@ -54,6 +89,7 @@ export abstract class GatemateApi {
   abstract reportMessage(messageId: string, reason: string): Promise<void>;
   abstract blockUser(userId: string): Promise<void>;
   abstract leaveThread(threadId: string): Promise<void>;
+  abstract createThread(input: { title: string; emoji: string; tripId?: string }): Promise<ChatThread>;
 
   // Airport & profile
   abstract getAirportInfo(code: string): Promise<AirportInfo>;

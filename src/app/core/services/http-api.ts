@@ -2,8 +2,8 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AirportInfo, ChatMessage, ChatThread, Expense, Flight, FlightAlert, Session, TravelStats, Trip, User } from '../models';
-import { ApiError, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { AirportInfo, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { ApiError, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
 const REQUEST_TIMEOUT_MS = 15_000;
 
@@ -45,8 +45,26 @@ export class HttpApi extends GatemateApi {
   exportMyData() {
     return this.call(this.http.get(`${this.base}/me/export`, { responseType: 'blob' }));
   }
-  updateProfile(patch: Partial<Pick<User, 'name' | 'homeAirport'>>) {
+  updateProfile(patch: ProfilePatch) {
     return this.call(this.http.patch<User>(`${this.base}/me`, patch));
+  }
+  async sendFeedback(input: FeedbackInput) {
+    await this.call(this.http.post<void>(`${this.base}/feedback`, input));
+  }
+  lookupBooking(req: BookingLookup) {
+    return this.call(this.http.post<BookingLookupResult>(`${this.base}/bookings/lookup`, req));
+  }
+  claimFlight(req: ClaimRequest) {
+    return this.call(this.http.post<Trip>(`${this.base}/flights/claim`, req));
+  }
+  async getImportEmail() {
+    return (await this.call(this.http.get<{ address: string }>(`${this.base}/me/import-email`))).address;
+  }
+  async createInvite(id: string) {
+    return (await this.call(this.http.post<{ url: string }>(`${this.base}/invites`, { targetId: id }))).url;
+  }
+  createThread(input: { title: string; emoji: string; tripId?: string }) {
+    return this.call(this.http.post<ChatThread>(`${this.base}/chats`, input));
   }
 
   getTrips() {
