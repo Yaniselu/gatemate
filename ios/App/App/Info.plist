@@ -76,11 +76,6 @@
 	<false/>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
-	<key>WKAppBoundDomains</key>
-	<array>
-		<string>gatemate.app</string>
-		<string>api.gatemate.app</string>
-	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

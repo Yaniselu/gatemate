@@ -5,7 +5,8 @@ import { environment } from '../../../environments/environment';
 import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 import { ApiError, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
-const REQUEST_TIMEOUT_MS = 15_000;
+// Generous: a free-tier server can take ~50 s to wake up after being idle.
+const REQUEST_TIMEOUT_MS = 60_000;
 
 /** Real backend client. Endpoints are the contract the Spring Boot API will implement. */
 @Injectable()

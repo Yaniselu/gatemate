@@ -1,0 +1,31 @@
+# Render Blueprint: Gatemate API + PostgreSQL. Secrets are set in the Render dashboard, never here.
+databases:
+  - name: gatemate-db
+    plan: free
+    region: frankfurt
+    databaseName: gatemate
+    user: gatemate
+
+services:
+  - type: web
+    name: gatemate-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase: { name: gatemate-db, property: connectionString }
+      - key: JWT_PRIVATE_KEY
+        sync: false
+      - key: JWT_PUBLIC_KEY
+        sync: false
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: JWT_ISSUER
+        value: https://gatemate-api.onrender.com
+      - key: CORS_ORIGINS
+        value: capacitor://localhost,https://localhost,http://localhost

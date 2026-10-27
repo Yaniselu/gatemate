@@ -16,7 +16,6 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: 'never',
-    limitsNavigationsToAppBoundDomains: true,
     webContentsDebuggingEnabled: !isProd,
   },
   android: {
