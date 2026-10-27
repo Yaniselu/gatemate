@@ -1,0 +1,183 @@
+export type AuthProvider = 'password' | 'apple' | 'google';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatarColor: string;
+  provider: AuthProvider;
+  homeAirport?: string;
+  createdAt: string;
+}
+
+export interface Session {
+  user: User;
+  accessToken: string;
+  /** Epoch ms when the access token expires. */
+  expiresAt: number;
+  refreshToken: string;
+}
+
+export interface Airport {
+  code: string;
+  city: string;
+  name: string;
+  country: string;
+  timezone: string;
+}
+
+export type FlightStatus = 'scheduled' | 'on-time' | 'boarding' | 'delayed' | 'departed' | 'landed' | 'cancelled';
+
+export interface Flight {
+  id: string;
+  airline: string;
+  airlineCode: string;
+  number: string;
+  from: Airport;
+  to: Airport;
+  departure: string;
+  arrival: string;
+  boardingTime: string;
+  gate?: string;
+  terminal?: string;
+  seat?: string;
+  cabin: 'Economy' | 'Premium' | 'Business' | 'First';
+  bookingRef: string;
+  passengerName: string;
+  status: FlightStatus;
+  delayMinutes?: number;
+  baggageBelt?: string;
+  durationMinutes: number;
+  distanceKm: number;
+  aircraft?: string;
+}
+
+export interface Trip {
+  id: string;
+  title: string;
+  destination: Airport;
+  coverGradient: string;
+  emoji: string;
+  startDate: string;
+  endDate: string;
+  flights: Flight[];
+  travellers: Traveller[];
+  checklist: ChecklistItem[];
+  expenses: Expense[];
+  chatId?: string;
+}
+
+export interface Traveller {
+  id: string;
+  name: string;
+  initials: string;
+  color: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  label: string;
+  done: boolean;
+  category: 'documents' | 'packing' | 'tasks';
+}
+
+export interface Expense {
+  id: string;
+  label: string;
+  amount: number;
+  currency: string;
+  paidBy: string;
+  splitWith: string[];
+  createdAt: string;
+}
+
+export type AlertKind = 'boarding' | 'gate' | 'delay' | 'checkin' | 'baggage' | 'chat' | 'info';
+
+export interface FlightAlert {
+  id: string;
+  kind: AlertKind;
+  title: string;
+  body: string;
+  createdAt: string;
+  read: boolean;
+  flightId?: string;
+}
+
+export interface ChatThread {
+  id: string;
+  title: string;
+  subtitle: string;
+  emoji: string;
+  gradient: string;
+  members: Traveller[];
+  lastMessage?: ChatMessage;
+  unread: number;
+  /** Public flight lounges are opt-in and moderated. */
+  isPublic: boolean;
+  muted: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  threadId: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  createdAt: string;
+  status: 'sending' | 'sent' | 'failed';
+  flagged?: boolean;
+}
+
+export type PoiCategory = 'food' | 'lounge' | 'charging' | 'pharmacy' | 'shopping' | 'restroom' | 'wifi' | 'family';
+
+export interface AirportPoi {
+  id: string;
+  name: string;
+  category: PoiCategory;
+  terminal: string;
+  near: string;
+  walkMinutes: number;
+  open: boolean;
+  rating?: number;
+}
+
+export interface SecurityLane {
+  id: string;
+  name: string;
+  waitMinutes: number;
+  trend: 'up' | 'down' | 'flat';
+}
+
+export interface AirportInfo {
+  airport: Airport;
+  lanes: SecurityLane[];
+  pois: AirportPoi[];
+  wifiName: string;
+  walkToGateMinutes?: number;
+}
+
+export interface TravelStats {
+  flights: number;
+  distanceKm: number;
+  countries: number;
+  hoursInAir: number;
+  badges: Badge[];
+}
+
+export interface Badge {
+  id: string;
+  title: string;
+  icon: string;
+  earned: boolean;
+  description: string;
+}
+
+export interface NotificationPrefs {
+  boarding: boolean;
+  gateChanges: boolean;
+  delays: boolean;
+  checkIn: boolean;
+  baggage: boolean;
+  chat: boolean;
+  tips: boolean;
+}

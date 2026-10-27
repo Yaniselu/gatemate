@@ -1,0 +1,159 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Home</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingIcon="airplane" refreshingSpinner="crescent" />
+  </ion-refresher>
+
+  <ion-header collapse="condense" class="gm-glass-header">
+    <ion-toolbar>
+      <div class="top">
+        <div class="hello anim-fade-up">
+          <p class="gm-subtitle">{{ today }}</p>
+          <h1 class="gm-page-title">{{ greeting() }},<br />{{ auth.firstName() }} <span class="wave">👋</span></h1>
+        </div>
+        <a class="gm-icon-btn" routerLink="/alerts" aria-label="Alerts">
+          <ion-icon name="notifications-outline" />
+          @if (store.unreadAlerts() > 0) {
+            <span class="badge"></span>
+          }
+        </a>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="page">
+    <!-- Next flight hero -->
+    @if (loading()) {
+      <div class="hero-skel glass flat">
+        <div class="row"><gm-skeleton width="90px" height="22px" radius="11px" /><gm-skeleton width="70px" height="22px" radius="11px" /></div>
+        <div class="row big"><gm-skeleton width="80px" height="44px" /><gm-skeleton width="80px" height="44px" /></div>
+        <gm-skeleton height="54px" radius="16px" />
+        <div class="row"><gm-skeleton width="30%" height="34px" radius="12px" /><gm-skeleton width="30%" height="34px" radius="12px" /><gm-skeleton width="30%" height="34px" radius="12px" /></div>
+      </div>
+    } @else if (next(); as n) {
+      <article class="hero glass tinted anim-scale-in" gmPressable (click)="open('/trip/' + n.trip.id)">
+        <div class="hero-glow"></div>
+        <header>
+          <span class="flight-no"><ion-icon name="airplane" /> {{ n.flight.number }}</span>
+          <span class="status" [class]="n.flight.status">
+            <span class="gm-dot live"></span>{{ n.flight.status | flightStatus }}
+          </span>
+        </header>
+
+        <div class="route">
+          <div>
+            <div class="code">{{ n.flight.from.code }}</div>
+            <div class="meta">{{ n.flight.departure | clock }} · {{ n.flight.from.city }}</div>
+          </div>
+          <div class="right">
+            <div class="code">{{ n.flight.to.code }}</div>
+            <div class="meta">{{ n.flight.to.city }} · {{ n.flight.arrival | clock: n.flight.to.timezone }}</div>
+          </div>
+        </div>
+        <gm-route-arc [progress]="flightProgress()" />
+        <div class="duration">{{ n.flight.durationMinutes | duration }} · {{ n.flight.aircraft }}</div>
+
+        <div class="board">
+          <div>
+            <small>Boarding in</small>
+            <gm-countdown [target]="n.flight.boardingTime" doneLabel="Boarding now" />
+          </div>
+          <div class="facts">
+            <span><small>Gate</small><b>{{ n.flight.gate ?? 'TBA' }}</b></span>
+            <span><small>Term.</small><b>{{ n.flight.terminal ?? '—' }}</b></span>
+            <span><small>Seat</small><b>{{ n.flight.seat ?? '—' }}</b></span>
+          </div>
+        </div>
+
+        <div class="steps" [style.--progress]="stepIndex() / (steps.length - 1)">
+          <div class="bar"><span></span></div>
+          @for (s of steps; track s; let i = $index) {
+            <div class="step" [class.done]="i < stepIndex()" [class.current]="i === stepIndex()">
+              <i></i><small>{{ s }}</small>
+            </div>
+          }
+        </div>
+      </article>
+    } @else {
+      <div class="empty-hero glass anim-scale-in">
+        <div class="float-plane"><ion-icon name="airplane" /></div>
+        <h3>No upcoming flights</h3>
+        <p>Scan your boarding pass to get live gate and boarding alerts.</p>
+        <a class="gm-btn small" routerLink="/add-flight"><ion-icon name="scan-outline" /> Add a flight</a>
+      </div>
+    }
+
+    <!-- Quick actions -->
+    <div class="gm-section-title"><h2>Quick actions</h2></div>
+    <div class="actions">
+      @for (a of actions; track a.label; let i = $index) {
+        <button class="action glass flat" [gmReveal]="i" gmPressable (click)="open(a.link)">
+          <span class="ic" [style.--c]="a.color"><ion-icon [name]="a.icon" /></span>
+          <span class="lbl">{{ a.label }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Live updates -->
+    <div class="gm-section-title">
+      <h2>Live updates</h2>
+      <a routerLink="/alerts">See all</a>
+    </div>
+    <div class="alerts">
+      @if (store.alertsState() !== 'ready') {
+        @for (i of [1, 2, 3]; track i) {
+          <div class="alert glass flat">
+            <gm-skeleton width="42px" height="42px" radius="14px" />
+            <div class="grow"><gm-skeleton width="60%" height="14px" /><gm-skeleton width="90%" height="12px" style="margin-top: 8px" /></div>
+          </div>
+        }
+      } @else {
+        @for (a of store.alerts().slice(0, 3); track a.id; let i = $index) {
+          <div class="alert glass flat" [gmReveal]="i" [class.unread]="!a.read">
+            <span class="ic" [style.--c]="alertIcons[a.kind].color"><ion-icon [name]="alertIcons[a.kind].icon" /></span>
+            <div class="grow">
+              <div class="t">{{ a.title }} <time>{{ a.createdAt | relTime }}</time></div>
+              <div class="b">{{ a.body }}</div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Tips carousel -->
+    <div class="gm-section-title"><h2>Before you fly</h2></div>
+    <div class="tips" role="list">
+      @for (t of tips; track t.title; let i = $index) {
+        <div class="tip" role="listitem" [style.background]="t.bg" [gmReveal]="i">
+          <ion-icon [name]="t.icon" />
+          <h3>{{ t.title }}</h3>
+          <p>{{ t.body }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Destination -->
+    @if (next(); as n) {
+      <div class="gm-section-title"><h2>{{ n.flight.to.city }} at a glance</h2></div>
+      <div class="dest glass flat" gmReveal>
+        <div class="weather">
+          <div class="sun-icon"><ion-icon name="sunny" /></div>
+          <div><b>24°</b><small>Sunny</small></div>
+        </div>
+        <div class="dest-facts">
+          <span><ion-icon name="time-outline" /> {{ n.flight.arrival | clock: n.flight.to.timezone }} local</span>
+          <span><ion-icon name="wallet-outline" /> Euro (€)</span>
+          <span><ion-icon name="flash-outline" /> Plug type C/F</span>
+          <span><ion-icon name="medkit-outline" /> Emergency 112</span>
+        </div>
+      </div>
+    }
+
+    <div class="gm-bottom-spacer"></div>
+  </div>
+</ion-content>

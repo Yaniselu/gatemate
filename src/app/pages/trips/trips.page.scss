@@ -1,0 +1,219 @@
+.page {
+  padding: 0 18px;
+}
+
+.head {
+  padding: 6px 18px 4px;
+}
+
+.segment {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 5px;
+  border-radius: 18px;
+  margin: 8px 0 18px;
+
+  .thumb {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 5px;
+    width: calc(50% - 5px);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(11, 40, 60, 0.1);
+    transform: translateX(calc(var(--x) * 100%));
+    transition: transform 0.5s var(--gm-ease-spring);
+  }
+
+  button {
+    position: relative;
+    z-index: 1;
+    height: 40px;
+    background: none;
+    font-size: 15px;
+    font-weight: 650;
+    color: var(--gm-ink-3);
+    transition: color 0.3s;
+
+    &.on {
+      color: var(--gm-ink);
+    }
+
+    em {
+      font-style: normal;
+      font-size: 12px;
+      margin-left: 4px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: rgba(11, 27, 43, 0.06);
+    }
+  }
+}
+
+.trip,
+.trip-skel {
+  display: block;
+  margin-bottom: 16px;
+  border-radius: 26px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--gm-ink);
+}
+
+.trip-skel .pad {
+  padding: 16px;
+}
+
+.cover {
+  position: relative;
+  height: 130px;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.35), transparent 50%);
+  }
+
+  .emoji {
+    position: absolute;
+    right: 18px;
+    bottom: -8px;
+    font-size: 70px;
+    filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.15));
+    animation: gm-float 4s ease-in-out infinite;
+  }
+
+  .cover-route {
+    position: absolute;
+    left: 18px;
+    bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+
+    b {
+      font-size: 26px;
+      font-weight: 850;
+    }
+
+    .dash {
+      position: relative;
+      width: 64px;
+      border-top: 2px dashed rgba(255, 255, 255, 0.7);
+
+      ion-icon {
+        position: absolute;
+        top: -10px;
+        left: 0;
+        font-size: 18px;
+        transform: rotate(90deg);
+        animation: fly 3s var(--gm-ease-in-out) infinite;
+      }
+    }
+  }
+
+  .count {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.24);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
+@keyframes fly {
+  0% {
+    left: -4px;
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: 50px;
+    opacity: 0;
+  }
+}
+
+.body {
+  padding: 14px 16px 16px;
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 750;
+  }
+  p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--gm-ink-3);
+  }
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+
+  .bar {
+    flex: 1;
+    height: 7px;
+    border-radius: 7px;
+    background: #edf2f6;
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #22c7d3, #0a93a6);
+      transform-origin: left;
+      transition: transform 1s var(--gm-ease-out);
+      animation: gm-grow-x 1.2s var(--gm-ease-out) both 0.3s;
+    }
+  }
+
+  small {
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--gm-accent-strong);
+  }
+}
+
+.fab {
+  margin-bottom: calc(86px + env(safe-area-inset-bottom));
+  margin-right: 6px;
+
+  ion-fab-button {
+    --background: linear-gradient(135deg, #22c7d3, #0a93a6);
+    --box-shadow: 0 14px 30px var(--gm-accent-glow);
+    width: 60px;
+    height: 60px;
+    animation: gm-pop 0.6s var(--gm-ease-spring) 0.4s both;
+
+    ion-icon {
+      font-size: 30px;
+    }
+  }
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- HTTPS only, system CAs only (user-installed CAs cannot intercept traffic in release builds). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <!-- Local Java backend during development (emulator → host machine). -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
+    <!-- Add certificate pinning for api.gatemate.app once the production certificate exists:
+    <domain-config>
+        <domain includeSubdomains="true">api.gatemate.app</domain>
+        <pin-set expiration="2027-12-31">
+            <pin digest="SHA-256">PRIMARY_KEY_HASH_BASE64</pin>
+            <pin digest="SHA-256">BACKUP_KEY_HASH_BASE64</pin>
+        </pin-set>
+    </domain-config>
+    -->
+</network-security-config>

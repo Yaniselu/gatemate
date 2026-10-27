@@ -1,0 +1,110 @@
+<ion-header class="gm-glass-header room-header">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/chat" text="" icon="chevron-back" /></ion-buttons>
+    @if (thread(); as t) {
+      <div class="who">
+        <span class="avatar" [style.background]="t.gradient">{{ t.emoji }}</span>
+        <div>
+          <b>{{ t.title }}</b>
+          <small>
+            @if (typing()) {
+              <span class="typing-text">{{ typing() }} is typing…</span>
+            } @else {
+              {{ t.subtitle }}
+            }
+          </small>
+        </div>
+      </div>
+    }
+    <ion-buttons slot="end">
+      <button class="gm-icon-btn menu" (click)="threadMenu()" aria-label="Chat options"><ion-icon name="ellipsis-horizontal" /></button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="room">
+  @if (thread()?.isPublic) {
+    <div class="lounge-banner anim-fade-up">
+      <ion-icon name="shield-checkmark-outline" />
+      <span>Public lounge for passengers on this flight. It is moderated — never share your booking reference, passport or payment details.</span>
+    </div>
+  }
+
+  <div class="messages">
+    @if (!loaded()) {
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="skel" [class.mine]="i % 2 === 0">
+          <gm-skeleton [width]="i % 2 === 0 ? '55%' : '68%'" height="44px" radius="20px" />
+        </div>
+      }
+    } @else {
+      @for (r of rows(); track r.key) {
+        @if (r.kind === 'day') {
+          <div class="day"><span>{{ r.label }}</span></div>
+        } @else {
+          @let m = r.msg!;
+          <div class="msg" [class.mine]="r.mine" [class.first]="r.first">
+            @if (!r.mine && r.first) {
+              <span class="author">{{ m.authorName }}</span>
+            }
+            <div
+              class="bubble"
+              [class.failed]="m.status === 'failed'"
+              (pointerdown)="pressStart(m)"
+              (pointerup)="pressEnd()"
+              (pointerleave)="pressEnd()"
+              (contextmenu)="$event.preventDefault(); messageActions(m)"
+            >
+              <span class="text selectable">{{ m.text }}</span>
+              <span class="meta">
+                {{ m.createdAt | clock }}
+                @if (r.mine) {
+                  @switch (m.status) {
+                    @case ('sending') { <ion-icon name="time-outline" /> }
+                    @case ('sent') { <ion-icon name="checkmark-done" class="sent" /> }
+                    @case ('failed') { <ion-icon name="alert-circle" class="fail" /> }
+                  }
+                }
+              </span>
+            </div>
+            @if (m.flagged) {
+              <small class="flag">Some words were hidden by our language filter.</small>
+            }
+            @if (m.status === 'failed') {
+              <button class="retry" (click)="messageActions(m)">Not sent · Tap to retry</button>
+            }
+          </div>
+        }
+      }
+      @if (typing()) {
+        <div class="msg">
+          <div class="bubble typing" aria-label="Someone is typing"><i></i><i></i><i></i></div>
+        </div>
+      }
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="composer-wrap">
+  @if (warning()) {
+    <div class="warn anim-fade-up"><ion-icon name="warning-outline" /> {{ warning() }}</div>
+  }
+  <div class="composer glass strong">
+    <textarea
+      rows="1"
+      [ngModel]="draft()"
+      (ngModelChange)="draft.set($event)"
+      (keydown)="onKey($event)"
+      [attr.maxlength]="maxLength"
+      placeholder="Message"
+      aria-label="Message"
+      enterkeyhint="send"
+    ></textarea>
+    <button class="send" [class.ready]="draft().trim().length > 0" (click)="send()" aria-label="Send" [disabled]="!draft().trim()">
+      <ion-icon name="arrow-up" />
+    </button>
+  </div>
+  @if (draft().length > maxLength * 0.8) {
+    <small class="count">{{ draft().length }}/{{ maxLength }}</small>
+  }
+</ion-footer>

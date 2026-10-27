@@ -1,0 +1,92 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/trips" text="" icon="chevron-back" /></ion-buttons>
+    <ion-title>Add a flight</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    <div class="switch glass" [style.--x]="mode() === 'scan' ? 0 : 1">
+      <span class="thumb"></span>
+      <button [class.on]="mode() === 'scan'" (click)="mode.set('scan')"><ion-icon name="scan-outline" /> Scan pass</button>
+      <button [class.on]="mode() === 'manual'" (click)="mode.set('manual')"><ion-icon name="document-text-outline" /> Enter details</button>
+    </div>
+
+    @if (mode() === 'scan') {
+      <div class="scan anim-fade-up">
+        <div class="frame" [class.active]="scanning()">
+          <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+          <div class="pass-mock">
+            <div class="bars">
+              @for (i of bars; track $index) {
+                <i [style.width.px]="i"></i>
+              }
+            </div>
+          </div>
+          <span class="laser"></span>
+        </div>
+        <h2>Scan your boarding pass</h2>
+        <p>Point your camera at the barcode on a paper pass or a screenshot. We read flight, seat and booking reference instantly — nothing leaves your phone until you save.</p>
+        <button class="gm-btn" (click)="scan()" [disabled]="scanning()">
+          <ion-icon name="camera-outline" /> {{ scanning() ? 'Scanning…' : 'Open scanner' }}
+        </button>
+        <button class="link" (click)="mode.set('manual')">Enter flight details manually</button>
+      </div>
+    } @else {
+      <form class="anim-fade-up" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        @if (scanned()) {
+          <div class="scanned"><ion-icon name="checkmark-circle" /> Boarding pass read — check the details below.</div>
+        }
+
+        <div class="grid">
+          <div class="gm-field" [class.invalid]="bad('carrier')">
+            <label for="carrier">Airline code</label>
+            <div class="gm-input-wrap"><input id="carrier" formControlName="carrier" placeholder="AE" maxlength="3" autocapitalize="characters" (input)="normalize('carrier', $event)" /></div>
+          </div>
+          <div class="gm-field" [class.invalid]="bad('flightNumber')">
+            <label for="fn">Flight no.</label>
+            <div class="gm-input-wrap"><input id="fn" formControlName="flightNumber" placeholder="415" maxlength="5" inputmode="numeric" (input)="normalize('flightNumber', $event)" /></div>
+          </div>
+        </div>
+
+        <div class="grid route">
+          <div class="gm-field" [class.invalid]="bad('from')">
+            <label for="from">From</label>
+            <div class="gm-input-wrap"><ion-icon name="airplane-outline" /><input id="from" formControlName="from" placeholder="OTP" maxlength="3" (input)="normalize('from', $event)" /></div>
+          </div>
+          <span class="swap"><ion-icon name="swap-horizontal" /></span>
+          <div class="gm-field" [class.invalid]="bad('to')">
+            <label for="to">To</label>
+            <div class="gm-input-wrap"><ion-icon name="location-outline" /><input id="to" formControlName="to" placeholder="BCN" maxlength="3" (input)="normalize('to', $event)" /></div>
+          </div>
+        </div>
+
+        <div class="gm-field" [class.invalid]="bad('date')">
+          <label for="date">Departure (local time)</label>
+          <div class="gm-input-wrap"><ion-icon name="calendar-outline" /><input id="date" type="datetime-local" formControlName="date" /></div>
+        </div>
+
+        <div class="grid">
+          <div class="gm-field" [class.invalid]="bad('seat')">
+            <label for="seat">Seat <small>optional</small></label>
+            <div class="gm-input-wrap"><input id="seat" formControlName="seat" placeholder="14C" maxlength="4" (input)="normalize('seat', $event)" /></div>
+          </div>
+          <div class="gm-field" [class.invalid]="bad('bookingRef')">
+            <label for="pnr">Booking ref <small>optional</small></label>
+            <div class="gm-input-wrap"><input id="pnr" formControlName="bookingRef" placeholder="GT7Q2M" maxlength="8" (input)="normalize('bookingRef', $event)" /></div>
+          </div>
+        </div>
+
+        @if (submitted() && form.invalid) {
+          <p class="gm-error">Check the highlighted fields: airports use 3-letter IATA codes (e.g. OTP), seats look like 14C.</p>
+        }
+
+        <button class="gm-btn" type="submit" [disabled]="saving()">
+          @if (saving()) { <span class="spinner"></span> } @else { <ion-icon name="airplane" /> Save flight }
+        </button>
+        <p class="note"><ion-icon name="lock-closed-outline" /> Your booking details are encrypted in transit and never shared with other travellers.</p>
+      </form>
+    }
+  </div>
+</ion-content>

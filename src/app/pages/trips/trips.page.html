@@ -1,0 +1,88 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar><ion-title>Trips</ion-title></ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingIcon="airplane" refreshingSpinner="crescent" />
+  </ion-refresher>
+
+  <ion-header collapse="condense" class="gm-glass-header">
+    <ion-toolbar>
+      <div class="head">
+        <h1 class="gm-page-title anim-fade-up">Your trips</h1>
+        <p class="gm-subtitle anim-fade-up" style="animation-delay: 60ms">Every flight, plan and friend in one place.</p>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="page">
+    <div class="segment glass" role="tablist" [style.--x]="segment() === 'upcoming' ? 0 : 1">
+      <span class="thumb"></span>
+      <button role="tab" [attr.aria-selected]="segment() === 'upcoming'" [class.on]="segment() === 'upcoming'" (click)="select('upcoming')">
+        Upcoming <em>{{ store.upcomingTrips().length }}</em>
+      </button>
+      <button role="tab" [attr.aria-selected]="segment() === 'past'" [class.on]="segment() === 'past'" (click)="select('past')">
+        Past <em>{{ store.pastTrips().length }}</em>
+      </button>
+    </div>
+
+    @if (store.tripsState() !== 'ready') {
+      @for (i of [1, 2]; track i) {
+        <div class="trip-skel glass flat">
+          <gm-skeleton height="130px" radius="22px" />
+          <div class="pad">
+            <gm-skeleton width="55%" height="18px" />
+            <gm-skeleton width="35%" height="13px" style="margin-top: 10px" />
+            <gm-skeleton height="8px" radius="4px" style="margin-top: 18px" />
+          </div>
+        </div>
+      }
+    } @else {
+      @for (t of list(); track t.id; let i = $index) {
+        <a class="trip glass flat" [routerLink]="['/trip', t.id]" [gmReveal]="i" gmPressable>
+          <div class="cover" [style.background]="t.coverGradient">
+            <span class="emoji">{{ t.emoji }}</span>
+            <div class="cover-route">
+              <b>{{ t.flights[0].from.code }}</b>
+              <span class="dash"><ion-icon name="airplane" /></span>
+              <b>{{ t.destination.code }}</b>
+            </div>
+            @if (segment() === 'upcoming') {
+              <span class="count">{{ countdownLabel(t) }}</span>
+            }
+          </div>
+          <div class="body">
+            <div class="row">
+              <div>
+                <h3>{{ t.title }}</h3>
+                <p>{{ t.startDate | shortDate }} – {{ t.endDate | shortDate }} · {{ t.flights.length }} {{ t.flights.length === 1 ? 'flight' : 'flights' }}</p>
+              </div>
+              <gm-avatar-stack [people]="t.travellers" />
+            </div>
+            @if (segment() === 'upcoming' && t.checklist.length) {
+              <div class="progress">
+                <div class="bar"><span [style.transform]="'scaleX(' + checklistProgress(t) + ')'"></span></div>
+                <small>{{ (checklistProgress(t) * 100).toFixed(0) }}% ready</small>
+              </div>
+            }
+          </div>
+        </a>
+      } @empty {
+        <div class="gm-empty">
+          <ion-icon name="airplane-outline" />
+          <h3>{{ segment() === 'upcoming' ? 'No trips planned yet' : 'No past trips' }}</h3>
+          <p>Add a boarding pass and Gatemate builds the trip for you.</p>
+        </div>
+      }
+    }
+
+    <div class="gm-bottom-spacer"></div>
+  </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab">
+    <ion-fab-button routerLink="/add-flight" aria-label="Add a flight">
+      <ion-icon name="add" />
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

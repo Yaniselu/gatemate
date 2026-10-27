@@ -1,0 +1,97 @@
+// Gatemate design tokens — light, airy, turquoise accent.
+:root {
+  color-scheme: light;
+
+  // Brand
+  --gm-accent: #0fb5c3;
+  --gm-accent-rgb: 15, 181, 195;
+  --gm-accent-strong: #0a93a6;
+  --gm-accent-deep: #08707f;
+  --gm-accent-soft: #e6f8fa;
+  --gm-accent-glow: rgba(15, 181, 195, 0.35);
+  --gm-sky: #5ec8ff;
+  --gm-sunset: #ffb36b;
+  --gm-coral: #ff6b6b;
+  --gm-mint: #2fd18a;
+  --gm-amber: #ffb020;
+  --gm-violet: #8b7cf6;
+
+  // Neutrals
+  --gm-ink: #0b1b2b;
+  --gm-ink-2: #3a4a5c;
+  --gm-ink-3: #74859a;
+  --gm-line: rgba(11, 27, 43, 0.08);
+  --gm-bg: #ffffff;
+  --gm-surface: #f5f8fb;
+
+  // Liquid Glass
+  --gm-glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.46));
+  --gm-glass-bg-strong: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.66));
+  --gm-glass-border: rgba(255, 255, 255, 0.75);
+  --gm-glass-blur: blur(22px) saturate(180%);
+  --gm-glass-shadow: 0 10px 30px rgba(11, 40, 60, 0.08), 0 2px 6px rgba(11, 40, 60, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.25);
+
+  // Shape & motion
+  --gm-radius-sm: 12px;
+  --gm-radius: 20px;
+  --gm-radius-lg: 28px;
+  --gm-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --gm-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --gm-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --gm-dur-fast: 180ms;
+  --gm-dur: 420ms;
+  --gm-dur-slow: 800ms;
+
+  // Ionic mapping
+  --ion-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ion-background-color: var(--gm-bg);
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: var(--gm-ink);
+  --ion-text-color-rgb: 11, 27, 43;
+  --ion-toolbar-background: transparent;
+  --ion-item-background: transparent;
+  --ion-border-color: var(--gm-line);
+
+  --ion-color-primary: #0fb5c3;
+  --ion-color-primary-rgb: 15, 181, 195;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0d9fac;
+  --ion-color-primary-tint: #27bcc9;
+
+  --ion-color-secondary: #0b1b2b;
+  --ion-color-secondary-rgb: 11, 27, 43;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #0a1826;
+  --ion-color-secondary-tint: #233240;
+
+  --ion-color-success: #2fd18a;
+  --ion-color-success-rgb: 47, 209, 138;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #29b879;
+  --ion-color-success-tint: #44d696;
+
+  --ion-color-warning: #ffb020;
+  --ion-color-warning-rgb: 255, 176, 32;
+  --ion-color-warning-contrast: #0b1b2b;
+  --ion-color-warning-contrast-rgb: 11, 27, 43;
+  --ion-color-warning-shade: #e09b1c;
+  --ion-color-warning-tint: #ffb836;
+
+  --ion-color-danger: #ff5a5f;
+  --ion-color-danger-rgb: 255, 90, 95;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #e04f54;
+  --ion-color-danger-tint: #ff6b6f;
+
+  --ion-color-medium: #74859a;
+  --ion-color-medium-rgb: 116, 133, 154;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #667588;
+  --ion-color-medium-tint: #8291a4;
+}

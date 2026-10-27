@@ -1,0 +1,120 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar><ion-title>Airport</ion-title></ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingIcon="airplane" refreshingSpinner="crescent" />
+  </ion-refresher>
+
+  <ion-header collapse="condense" class="gm-glass-header">
+    <ion-toolbar>
+      <div class="head">
+        <h1 class="gm-page-title anim-fade-up">Airport guide</h1>
+        <button class="picker anim-fade-up" style="animation-delay: 60ms" (click)="chooseAirport()">
+          <ion-icon name="location" />
+          @if (info(); as i) { {{ i.airport.code }} · {{ i.airport.name }} } @else { Loading… }
+          <ion-icon name="chevron-down" />
+        </button>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="page">
+    @if (store.airportState() !== 'ready' || !info()) {
+      <div class="grid2">
+        <gm-skeleton height="150px" radius="24px" />
+        <gm-skeleton height="150px" radius="24px" />
+      </div>
+      <gm-skeleton height="22px" width="40%" style="margin: 26px 0 14px" />
+      @for (i of [1, 2, 3]; track i) {
+        <gm-skeleton height="64px" radius="18px" style="margin-bottom: 10px" />
+      }
+    } @else {
+      @let i = info()!;
+
+      <div class="grid2">
+        <!-- Walk to gate -->
+        <div class="walk glass tinted anim-scale-in" gmPressable>
+          <small>Walk to gate</small>
+          <b>{{ gate() ?? 'B12' }}</b>
+          <div class="path" aria-hidden="true">
+            <span class="dot a"></span>
+            <span class="line"><i></i><i></i><i></i></span>
+            <span class="dot b"><ion-icon name="airplane" /></span>
+          </div>
+          <span class="min"><ion-icon name="walk-outline" /> {{ i.walkToGateMinutes }} min</span>
+        </div>
+
+        <!-- Wi-Fi -->
+        <button class="wifi glass anim-scale-in" style="animation-delay: 80ms" (click)="copyWifi(i.wifiName)">
+          <div class="waves" aria-hidden="true"><span></span><span></span><span></span></div>
+          <small>Free Wi-Fi</small>
+          <b>{{ i.wifiName }}</b>
+          <span class="copy"><ion-icon name="copy-outline" /> Tap to copy</span>
+        </button>
+      </div>
+
+      <!-- Security queues -->
+      <div class="gm-section-title"><h2>Live queue times</h2><span class="gm-chip success"><span class="gm-dot live"></span> Live</span></div>
+      <div class="lanes">
+        @for (l of i.lanes; track l.id; let idx = $index) {
+          <div class="lane glass flat" [gmReveal]="idx">
+            <div class="lane-top">
+              <span>{{ l.name }}</span>
+              <b [style.color]="waitColor(l.waitMinutes)">
+                {{ l.waitMinutes }} min
+                <ion-icon [name]="l.trend === 'up' ? 'trending-up' : l.trend === 'down' ? 'trending-down' : 'remove-outline'" />
+              </b>
+            </div>
+            <div class="meter"><span [style.background]="waitColor(l.waitMinutes)" [style.--w]="Math.min(1, l.waitMinutes / 30)"></span></div>
+          </div>
+        }
+      </div>
+
+      <!-- Places -->
+      <div class="gm-section-title"><h2>Around you</h2></div>
+      <div class="cats">
+        <button [class.on]="category() === 'all'" (click)="setCategory('all')">All</button>
+        @for (c of categories(); track c) {
+          <button [class.on]="category() === c" (click)="setCategory(c)" [style.--c]="meta[c].color">
+            <ion-icon [name]="meta[c].icon" /> {{ meta[c].label }}
+          </button>
+        }
+      </div>
+      <div class="pois">
+        @for (p of pois(); track p.id; let idx = $index) {
+          <div class="poi" [gmReveal]="idx">
+            <span class="ic" [style.--c]="meta[p.category].color"><ion-icon [name]="meta[p.category].icon" /></span>
+            <div class="grow">
+              <b>{{ p.name }}</b>
+              <small>{{ p.terminal }} · near {{ p.near }}</small>
+            </div>
+            <div class="side">
+              <span class="gm-chip" [class.success]="p.open" [class.neutral]="!p.open">{{ p.open ? 'Open' : 'Closed' }}</span>
+              <small><ion-icon name="walk-outline" /> {{ p.walkMinutes }} min</small>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Rules -->
+      <div class="gm-section-title"><h2>Security rules</h2></div>
+      <div class="rules glass flat">
+        @for (r of rules; track r.id) {
+          <div class="rule" [class.open]="openRule() === r.id">
+            <button (click)="toggleRule(r.id)" [attr.aria-expanded]="openRule() === r.id">
+              <ion-icon [name]="r.icon" class="lead" />
+              <span>{{ r.title }}</span>
+              <ion-icon name="chevron-down" class="chev" />
+            </button>
+            <div class="answer"><div><p>{{ r.body }}</p></div></div>
+          </div>
+        }
+      </div>
+      <p class="disclaimer">Queue times are estimates. Always follow airport staff and your airline's official rules.</p>
+    }
+
+    <div class="gm-bottom-spacer"></div>
+  </div>
+</ion-content>

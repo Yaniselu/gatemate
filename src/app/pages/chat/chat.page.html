@@ -1,0 +1,92 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar><ion-title>Chat</ion-title></ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content pullingIcon="airplane" refreshingSpinner="crescent" />
+  </ion-refresher>
+
+  <ion-header collapse="condense" class="gm-glass-header">
+    <ion-toolbar>
+      <div class="head">
+        <h1 class="gm-page-title anim-fade-up">Chats</h1>
+        <p class="gm-subtitle anim-fade-up" style="animation-delay: 60ms">Plan together with the people you travel with.</p>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="page">
+    <div class="search glass">
+      <ion-icon name="search-outline" />
+      <input type="search" placeholder="Search chats" maxlength="60" [value]="query()" (input)="onSearch($event)" aria-label="Search chats" />
+    </div>
+
+    <div class="filters">
+      @for (f of filters; track f.id) {
+        <button [class.on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.label }}</button>
+      }
+    </div>
+
+    @if (chat.threadsState() !== 'ready') {
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="thread">
+          <gm-skeleton width="54px" height="54px" radius="18px" />
+          <div class="grow">
+            <gm-skeleton width="55%" height="15px" />
+            <gm-skeleton width="80%" height="12px" style="margin-top: 9px" />
+          </div>
+        </div>
+      }
+    } @else {
+      @for (t of threads(); track t.id; let i = $index) {
+        <a class="thread" [routerLink]="['/chat', t.id]" [gmReveal]="i" gmPressable>
+          <div class="avatar" [style.background]="t.gradient">
+            <span>{{ t.emoji }}</span>
+            @if (t.isPublic) {
+              <i class="pub"><ion-icon name="people" /></i>
+            }
+          </div>
+          <div class="grow">
+            <div class="row">
+              <b>{{ t.title }}</b>
+              <time>{{ t.lastMessage?.createdAt | relTime }}</time>
+            </div>
+            <div class="row">
+              <p>
+                @if (chat.typing()[t.id]) {
+                  <span class="typing">{{ chat.typing()[t.id] }} is typing<i></i><i></i><i></i></span>
+                } @else {
+                  @if (t.lastMessage) {
+                    <span class="who">{{ t.lastMessage.authorId === 'me' ? 'You' : t.lastMessage.authorName.split(' ')[0] }}:</span> {{ t.lastMessage.text }}
+                  }
+                }
+              </p>
+              @if (t.muted) {
+                <ion-icon class="muted" name="volume-mute-outline" />
+              } @else if (t.unread > 0) {
+                <span class="unread">{{ t.unread }}</span>
+              }
+            </div>
+          </div>
+        </a>
+      } @empty {
+        <div class="gm-empty">
+          <ion-icon name="chatbubbles-outline" />
+          <h3>No chats yet</h3>
+          <p>Every trip gets its own group chat. Invite friends from a trip.</p>
+        </div>
+      }
+    }
+
+    <div class="safety glass flat" gmReveal>
+      <ion-icon name="shield-checkmark-outline" />
+      <div>
+        <b>Safe & respectful</b>
+        <p>Flight lounges are moderated. Long-press any message to report it or block someone. <a routerLink="/legal/guidelines">Community Guidelines</a></p>
+      </div>
+    </div>
+
+    <div class="gm-bottom-spacer"></div>
+  </div>
+</ion-content>

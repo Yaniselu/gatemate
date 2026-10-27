@@ -1,0 +1,116 @@
+.meter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 10px 4px 8px;
+
+  span {
+    height: 5px;
+    border-radius: 5px;
+    background: #e8eef3;
+    overflow: hidden;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      background: var(--c, var(--gm-accent));
+      transition: transform 0.45s var(--gm-ease-out);
+    }
+    &.on::after {
+      transform: scaleX(1);
+    }
+  }
+}
+
+.meter-label {
+  font-size: 12.5px;
+  font-weight: 650;
+  margin-left: 4px;
+  color: var(--c);
+  transition: color 0.3s;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 4px;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #f0f4f7;
+    color: var(--gm-ink-3);
+    transition: background 0.3s, color 0.3s;
+
+    &.ok {
+      background: rgba(47, 209, 138, 0.14);
+      color: #138a57;
+      ion-icon {
+        animation: gm-pop 0.4s var(--gm-ease-spring);
+      }
+    }
+  }
+}
+
+.check {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 12px 0;
+  font-size: 14px;
+  color: var(--gm-ink-2);
+  line-height: 1.4;
+
+  input {
+    appearance: none;
+    flex: none;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    border-radius: 8px;
+    border: 2px solid #cfdae3;
+    background: #fff;
+    display: grid;
+    place-content: center;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s var(--gm-ease-spring);
+
+    &::after {
+      content: '';
+      width: 6px;
+      height: 11px;
+      border: solid #fff;
+      border-width: 0 2.5px 2.5px 0;
+      transform: rotate(45deg) scale(0);
+      margin-top: -3px;
+      transition: transform 0.25s var(--gm-ease-spring);
+    }
+
+    &:checked {
+      background: var(--gm-accent);
+      border-color: var(--gm-accent);
+      transform: scale(1.06);
+      &::after {
+        transform: rotate(45deg) scale(1);
+      }
+    }
+  }
+
+  &.invalid input {
+    border-color: var(--gm-coral);
+    animation: gm-shake 0.4s;
+  }
+
+  a {
+    color: var(--gm-accent-strong);
+    font-weight: 650;
+  }
+}

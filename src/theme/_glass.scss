@@ -1,0 +1,106 @@
+// Liquid Glass surfaces. Blur is limited to a few elevated layers to keep scrolling smooth.
+.glass {
+  position: relative;
+  background: var(--gm-glass-bg);
+  border: 1px solid var(--gm-glass-border);
+  border-radius: var(--gm-radius);
+  box-shadow: var(--gm-glass-shadow);
+  -webkit-backdrop-filter: var(--gm-glass-blur);
+  backdrop-filter: var(--gm-glass-blur);
+  isolation: isolate;
+
+  // Specular rim highlight that gives the "liquid" edge.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.6));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &.strong {
+    background: var(--gm-glass-bg-strong);
+  }
+
+  // Cards inside scrolling lists: same look, no live blur (cheaper).
+  &.flat {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: linear-gradient(135deg, #ffffff, #f8fbfd);
+    border-color: rgba(11, 27, 43, 0.05);
+  }
+
+  &.tinted {
+    background: linear-gradient(135deg, rgba(34, 199, 211, 0.92), rgba(10, 147, 166, 0.88));
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #fff;
+    box-shadow: 0 16px 34px rgba(10, 147, 166, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  }
+}
+
+// Fallback for engines without backdrop-filter.
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background: rgba(255, 255, 255, 0.96);
+  }
+}
+
+// Glass header used by every tab page.
+ion-header.gm-glass-header ion-toolbar {
+  --background: rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: var(--gm-glass-blur);
+  backdrop-filter: var(--gm-glass-blur);
+}
+
+ion-header.gm-glass-header.header-collapse-condense-inactive ion-toolbar,
+ion-header.gm-glass-header[collapse='condense'] ion-toolbar {
+  --background: transparent;
+  backdrop-filter: none;
+}
+
+ion-header.gm-glass-header ion-title {
+  font-weight: 700;
+}
+
+.gm-icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gm-ink);
+  background: var(--gm-glass-bg-strong);
+  border: 1px solid var(--gm-glass-border);
+  box-shadow: var(--gm-glass-shadow);
+  -webkit-backdrop-filter: var(--gm-glass-blur);
+  backdrop-filter: var(--gm-glass-blur);
+  transition: transform var(--gm-dur-fast) var(--gm-ease-out);
+  position: relative;
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  ion-icon {
+    font-size: 21px;
+  }
+
+  .badge {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--gm-coral);
+    border: 2px solid #fff;
+    animation: gm-pop 0.5s var(--gm-ease-spring);
+  }
+}
