@@ -32,9 +32,15 @@
     align-items: center;
     justify-content: center;
     font-size: 34px;
-    color: #fff;
-    background: linear-gradient(135deg, #22c7d3, #0a93a6);
-    box-shadow: 0 16px 30px var(--gm-accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    background: #fff;
+    border: 1px solid var(--gm-card-border);
+    box-shadow: 0 10px 24px rgba(11, 40, 60, 0.1);
+
+    img {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+    }
     animation: land 1s var(--gm-ease-spring) both;
 
     ion-icon {
