@@ -55,7 +55,10 @@ export class SatMapComponent {
       const sel = this.selectedGate();
       void this.ensure().then(() => this.draw(f, me, sel));
     });
-    inject(DestroyRef).onDestroy(() => this.map?.remove());
+    inject(DestroyRef).onDestroy(() => {
+      this.resize?.disconnect();
+      this.map?.remove();
+    });
   }
 
   private init?: Promise<void>;
@@ -82,7 +85,8 @@ export class SatMapComponent {
       keyboard: i,
       zoomSnap: 0.5,
     }).setView([c.lat, c.lon], this.zoom());
-    const sat = L.tileLayer(environment.maps.satelliteTiles, { maxZoom: 19, maxNativeZoom: 18, crossOrigin: true });
+    // No crossOrigin: tiles are only displayed, and a CORS request can be refused inside the iOS web view.
+    const sat = L.tileLayer(environment.maps.satelliteTiles, { maxZoom: 19, maxNativeZoom: 18 });
     sat.on('tileload', () => this.tiles++);
     sat.on('tileerror', () => {
       this.errors++;
@@ -91,8 +95,20 @@ export class SatMapComponent {
     sat.addTo(this.map);
     L.tileLayer(environment.maps.labelTiles, { maxZoom: 19, maxNativeZoom: 18, opacity: 0.9 }).addTo(this.map);
     this.layer = L.layerGroup().addTo(this.map);
+    // The page may still be animating in (zero size) when the map is created; Leaflet then never asks for tiles.
+    // Re-measure whenever the container changes size, and once more after the page transition.
+    const el = this.host().nativeElement;
+    this.resize = new ResizeObserver(() => this.map?.invalidateSize({ pan: false }));
+    this.resize.observe(el);
     setTimeout(() => this.map?.invalidateSize(), 250);
+    setTimeout(() => this.map?.invalidateSize(), 800);
+    // Nothing loaded at all after a while: say so instead of showing an empty dark box.
+    setTimeout(() => {
+      if (this.tiles === 0) this.failed.set(true);
+    }, 12_000);
   }
+
+  private resize?: ResizeObserver;
 
   private draw(features: MapFeature[], me: { lat: number; lon: number } | null, selected: string | null) {
     const L = this.L!;

@@ -261,3 +261,22 @@
     animation: gm-spin 0.8s linear infinite;
   }
 }
+
+.airport-btn {
+  width: 100%;
+  text-align: left;
+  color: var(--gm-ink);
+  font-size: 16px;
+
+  .ap {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    b {
+      margin-right: 4px;
+    }
+  }
+}

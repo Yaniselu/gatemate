@@ -83,13 +83,13 @@
       <div class="card fields">
         <div class="gm-field">
           <label for="home">Home airport</label>
-          <div class="gm-input-wrap select">
+          <button type="button" id="home" class="gm-input-wrap select airport-btn" (click)="pickingHome.set(true)">
             <ion-icon name="location-outline" />
-            <select id="home" formControlName="homeAirport">
-              @for (a of airports; track a.code) { <option [value]="a.code">{{ a.code }} · {{ a.city }}</option> }
-            </select>
+            <span class="ap">
+              @if (homeRecord(); as h) { <b>{{ h.iata }}</b> {{ h.city }} · {{ h.name }} } @else { Choose your home airport }
+            </span>
             <ion-icon name="chevron-down" class="lock" />
-          </div>
+          </button>
         </div>
         <label class="seat-label">Seat preference</label>
         <div class="seg" [style.--x]="seatIndex()">
@@ -114,4 +114,7 @@
       </button>
     }
   </div>
+  @if (pickingHome()) {
+    <gm-airport-picker (picked)="setHome($event)" (closed)="pickingHome.set(false)" />
+  }
 </ion-content>

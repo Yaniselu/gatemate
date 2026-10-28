@@ -29,7 +29,7 @@ import org.springframework.web.client.RestClient;
 public class AppleClient {
     private static final Logger log = LoggerFactory.getLogger(AppleClient.class);
     private final GatemateProperties.Apple cfg;
-    private final RestClient http = RestClient.builder().baseUrl("https://appleid.apple.com").build();
+    private final RestClient http = app.gatemate.common.Http.builder().baseUrl("https://appleid.apple.com").build();
 
     public AppleClient(GatemateProperties props) {
         this.cfg = props.apple();

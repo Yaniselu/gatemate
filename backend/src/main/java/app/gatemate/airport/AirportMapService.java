@@ -21,7 +21,9 @@ public class AirportMapService {
 
     public record MapFeature(String kind, String ref, double lat, double lon, String poi) {}
 
-    private final RestClient http = RestClient.builder().baseUrl("https://overpass-api.de").defaultHeader("User-Agent", "Gatemate/1.0 (support@gatemate.app)").build();
+    /** Public Overpass instances, tried in order (the main one is often busy). */
+    private static final List<String> MIRRORS = List.of("https://overpass-api.de", "https://overpass.kumi.systems", "https://overpass.private.coffee");
+    private final RestClient http = app.gatemate.common.Http.builder(java.time.Duration.ofSeconds(30)).build();
     private final boolean enabled;
 
     public AirportMapService(GatemateProperties props) {
@@ -35,9 +37,21 @@ public class AirportMapService {
         String q = "[out:json][timeout:25];(node[\"aeroway\"=\"gate\"]" + near + ";way[\"aeroway\"=\"terminal\"]" + near
                 + ";node[\"amenity\"~\"^(cafe|restaurant|fast_food|bar|pharmacy|toilets|atm|bureau_de_change|charging_station)$\"]" + near
                 + ";node[\"shop\"][\"name\"]" + near + ";node[\"tourism\"=\"information\"]" + near + ";);out center tags 400;";
+        JsonNode res = null;
+        for (String mirror : MIRRORS) {
+            try {
+                res = http.post().uri(mirror + "/api/interpreter").contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .body("data=" + java.net.URLEncoder.encode(q, java.nio.charset.StandardCharsets.UTF_8)).retrieve().body(JsonNode.class);
+                if (res != null && res.has("elements")) break;
+            } catch (Exception e) {
+                log.warn("Overpass {} failed for {}: {}", mirror, a.iata(), e.getMessage());
+            }
+        }
+        // Throwing (instead of returning an empty list) keeps a failure out of the cache and lets the app say "try again".
+        if (res == null || !res.has("elements")) {
+            throw new app.gatemate.common.ApiException(org.springframework.http.HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Airport map data is temporarily unavailable.");
+        }
         try {
-            JsonNode res = http.post().uri("/api/interpreter").contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body("data=" + java.net.URLEncoder.encode(q, java.nio.charset.StandardCharsets.UTF_8)).retrieve().body(JsonNode.class);
             var out = new ArrayList<MapFeature>();
             for (JsonNode e : res.path("elements")) {
                 JsonNode t = e.path("tags");

@@ -28,7 +28,7 @@ public class FlightStatusJob {
     private final Repos.Flights flights;
     private final AlertService alerts;
     private final String key;
-    private final RestClient http = RestClient.builder().baseUrl("https://aerodatabox.p.rapidapi.com").build();
+    private final RestClient http = app.gatemate.common.Http.builder().baseUrl("https://aerodatabox.p.rapidapi.com").build();
 
     public FlightStatusJob(Repos.Flights flights, AlertService alerts, GatemateProperties props) {
         this.flights = flights;

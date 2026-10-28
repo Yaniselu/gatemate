@@ -466,3 +466,13 @@ ion-content::part(scroll) {
   --gm-glass-bg-strong: #ffffff;
   --gm-accent-strong: #06707e;
 }
+
+/* Inline button spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: gm-spin 0.8s linear infinite;
+}

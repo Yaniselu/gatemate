@@ -39,7 +39,7 @@ public class ExploreService {
     private final AirportCatalog airports;
     private final DestinationService destinations;
     private final boolean enabled;
-    private final RestClient http = RestClient.builder().defaultHeader("User-Agent", "Gatemate/1.0 (support@gatemate.app)").build();
+    private final RestClient http = app.gatemate.common.Http.builder(java.time.Duration.ofSeconds(30)).build();
 
     public ExploreService(AirportCatalog airports, DestinationService destinations, GatemateProperties props) {
         this.airports = airports;

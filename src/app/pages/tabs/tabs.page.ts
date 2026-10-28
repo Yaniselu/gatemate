@@ -4,6 +4,9 @@ import { PlatformService } from '../../core/services/platform.service';
 import { ChatService } from '../../core/services/chat.service';
 import { Router } from '@angular/router';
 import { PENDING_INVITE } from '../../core/guards/auth.guards';
+import { Preferences } from '@capacitor/preferences';
+import { AuthService } from '../../core/services/auth.service';
+import { onboardedKey } from '../onboarding/onboarding.page';
 
 interface TabDef {
   id: string;
@@ -41,7 +44,16 @@ export class TabsPage {
   private chat = inject(ChatService);
   private router = inject(Router);
 
+  private auth = inject(AuthService);
+
   constructor() {
+    // First sign-in on this device: ask for the home airport and notifications once.
+    const id = this.auth.user()?.id;
+    if (id) {
+      void Preferences.get({ key: onboardedKey(id) }).then(({ value }) => {
+        if (!value) void this.router.navigateByUrl('/onboarding', { replaceUrl: true });
+      });
+    }
     let pending: string | null = null;
     try {
       pending = sessionStorage.getItem(PENDING_INVITE);

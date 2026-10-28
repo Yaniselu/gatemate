@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { NotificationsService } from '../../core/services/notifications.service';
+import { environment } from '../../../environments/environment';
 import { PassReaderService } from '../../core/services/pass-reader.service';
 import { ApiError, GatemateApi } from '../../core/services/api';
 import { AIRLINES, AirlineOption } from '../../core/data/airlines';
@@ -126,16 +127,23 @@ export class AddFlightPage {
   // ----- Sources -----
   async scan() {
     if (!this.platform.isNative) {
-      await this.toast.show('Camera scanning works in the app. Using a sample boarding pass in your name.');
-      await this.verifyPass(this.sample());
+      if (environment.useMocks) {
+        await this.toast.show('Camera scanning works in the app. Using a sample boarding pass in your name.');
+        await this.verifyPass(this.sample());
+      } else {
+        await this.toast.show('Camera scanning works in the Gatemate app. Here, upload a screenshot of your boarding pass.');
+      }
       return;
     }
+    let raw: string | null;
     try {
-      const raw = await this.reader.fromCamera();
-      if (raw) await this.verifyPass(raw);
+      raw = await this.reader.fromCamera();
     } catch (e) {
-      await this.toast.show(e instanceof BcbpError ? e.message : 'Scan cancelled.', e instanceof BcbpError ? 'error' : 'info');
+      await this.toast.show(e instanceof BcbpError ? e.message : 'The camera scanner could not start.', 'error');
+      return;
     }
+    // Closing the scanner is not an error: just stay on this screen.
+    if (raw) await this.verifyPass(raw);
   }
 
   async onFile(ev: Event) {
@@ -143,16 +151,20 @@ export class AddFlightPage {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
+    let raw: string;
     try {
-      await this.verifyPass(await this.reader.fromImage(file));
+      raw = await this.reader.fromImage(file);
     } catch (e) {
-      if (e instanceof BcbpError && !this.platform.isNative) {
-        await this.toast.show(e.message);
+      if (environment.useMocks && !this.platform.isNative) {
+        // Demo build in a browser: fall back to a sample pass so the flow can be tried.
+        await this.toast.show(e instanceof Error ? e.message : 'Could not read that image.');
         await this.verifyPass(this.sample());
       } else {
         await this.toast.show(e instanceof Error ? e.message : 'Could not read that image.', 'error');
       }
+      return;
     }
+    await this.verifyPass(raw);
   }
 
   async openEmail() {

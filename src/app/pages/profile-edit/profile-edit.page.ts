@@ -6,7 +6,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { PrefsService } from '../../core/services/prefs.service';
-import { AIRPORTS } from '../../core/data/mock-data';
+import { AirportDbService, AirportRecord } from '../../core/services/airport-db.service';
+import { AirportPickerComponent } from '../../shared/components/airport-picker.component';
 import { nameValidator } from '../../core/security/validators';
 import { cleanText } from '../../core/security/sanitize';
 import { compressAvatar } from '../../core/utils/image';
@@ -20,7 +21,7 @@ const LEGAL = /^[\p{L}][\p{L}\p{M}' -]{0,39}$/u;
 @Component({
   selector: 'gm-profile-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, ReactiveFormsModule],
+  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, ReactiveFormsModule, AirportPickerComponent],
   templateUrl: './profile-edit.page.html',
   styleUrl: './profile-edit.page.scss',
 })
@@ -34,7 +35,16 @@ export class ProfileEditPage implements HasUnsavedChanges {
   private achievements = inject(AchievementsService);
 
   private user = this.auth.user()!;
-  readonly airports = Object.values(AIRPORTS);
+  private db = inject(AirportDbService);
+  readonly pickingHome = signal(false);
+  private dbReady = signal(false);
+  readonly homeRecord = computed(() => (this.dbReady() ? this.db.get(this.value().homeAirport ?? '') : undefined));
+
+  setHome(a: AirportRecord) {
+    this.pickingHome.set(false);
+    this.form.controls.homeAirport.setValue(a.iata);
+    this.form.controls.homeAirport.markAsDirty();
+  }
   readonly seats: { id: SeatPreference; label: string; icon: string }[] = [
     { id: 'window', label: 'Window', icon: 'sunny-outline' },
     { id: 'aisle', label: 'Aisle', icon: 'walk-outline' },
@@ -72,6 +82,10 @@ export class ProfileEditPage implements HasUnsavedChanges {
   });
   readonly dirty = computed(() => Object.keys(this.patch()).length > 0);
   readonly initials = computed(() => (this.value().name ?? '?').split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase());
+
+  constructor() {
+    void this.db.load().then(() => this.dbReady.set(true));
+  }
 
   bad(name: keyof typeof this.form.controls) {
     const c = this.form.controls[name];

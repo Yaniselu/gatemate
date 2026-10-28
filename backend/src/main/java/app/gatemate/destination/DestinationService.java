@@ -28,7 +28,7 @@ public class DestinationService {
     private static final String UA = "Gatemate/1.0 (support@gatemate.app)";
     private final AirportCatalog airports;
     private final GatemateProperties.Integrations cfg;
-    private final RestClient http = RestClient.builder().defaultHeader("User-Agent", UA).build();
+    private final RestClient http = app.gatemate.common.Http.builder().build();
 
     public DestinationService(AirportCatalog airports, GatemateProperties props) {
         this.airports = airports;
