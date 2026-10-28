@@ -45,6 +45,16 @@
       </h1>
       <p class="powered">powered by <b>Velosyntech</b></p>
     </div>
+    <div class="pitch" aria-live="polite">
+      @for (p of pitches; track p.text; let i = $index) {
+        @if (i === pitch()) {
+          <p class="line"><span class="ico">{{ p.icon }}</span>{{ p.text }}</p>
+        }
+      }
+      <div class="dots" aria-hidden="true">
+        @for (p of pitches; track p.text; let i = $index) { <i [class.on]="i === pitch()"></i> }
+      </div>
+    </div>
     <gm-swipe-button class="swipe" label="Get started" (completed)="takeOff()" />
   </div>
 

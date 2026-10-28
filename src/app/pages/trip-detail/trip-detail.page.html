@@ -21,7 +21,12 @@
           <h1>{{ t.title }}</h1>
           <p>{{ t.startDate | shortDate }} – {{ t.endDate | shortDate }} · {{ t.destination.city }}, {{ t.destination.country }}</p>
         </div>
-        <gm-avatar-stack [people]="t.travellers" />
+        <div class="title-side">
+          <gm-avatar-stack [people]="t.travellers" />
+          <button class="share-trip" (click)="shareTrip()" [disabled]="sharing()" aria-label="Share trip countdown" gmPressable>
+            @if (sharing()) { <span class="spinner"></span> } @else { <ion-icon name="share-outline" /> }
+          </button>
+        </div>
       </div>
 
       <nav class="tabs" role="tablist">
@@ -35,6 +40,9 @@
       @switch (section()) {
         @case ('flights') {
           <div class="section">
+            @if (upcomingFlights()[0]; as nf) {
+              <gm-airport-day class="card day anim-fade-up" [flight]="nf" />
+            }
             @for (f of t.flights; track f.id; let i = $index) {
               <div class="flight card" [gmReveal]="i">
                 <div class="f-head">

@@ -4,7 +4,8 @@ import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { environment } from '../environments/environment';
 import { PrefsService } from './core/services/prefs.service';
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
+import { IonApp, IonIcon, IonRouterOutlet } from '@ionic/angular/standalone';
+import { NetworkService } from './core/services/network.service';
 import { AppLockService } from './core/security/app-lock.service';
 import { LockScreenComponent } from './shared/components/lock-screen.component';
 import { BadgeToastComponent } from './shared/components/badge-toast.component';
@@ -12,11 +13,14 @@ import { BadgeToastComponent } from './shared/components/badge-toast.component';
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonApp, IonRouterOutlet, LockScreenComponent, BadgeToastComponent],
+  imports: [IonApp, IonIcon, IonRouterOutlet, LockScreenComponent, BadgeToastComponent],
   template: `
     <ion-app>
       <div class="gm-ambient" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>
       <ion-router-outlet />
+      @if (!net.online()) {
+        <div class="gm-offline" role="status"><ion-icon name="cloud-offline-outline" /> Offline · your trips and passes are saved on this phone</div>
+      }
       <gm-badge-toast />
       @if (lock.locked()) {
         <gm-lock-screen />
@@ -26,6 +30,7 @@ import { BadgeToastComponent } from './shared/components/badge-toast.component';
 })
 export class App {
   protected lock = inject(AppLockService);
+  protected net = inject(NetworkService);
   private prefs = inject(PrefsService);
 
   constructor() {

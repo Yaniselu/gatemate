@@ -22,6 +22,10 @@ import { PressableDirective } from '../../shared/directives/pressable.directive'
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { ClockPipe, DurationPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
 import { FlightStatusPipe } from '../../shared/pipes/status.pipe';
+import { AirportDayComponent } from '../../shared/components/airport-day.component';
+import { DestinationService } from '../../core/services/destination.service';
+import { renderTripCard } from '../../core/utils/trip-card';
+import { isShareCancel, shareCanvas } from '../../core/utils/share-image';
 
 type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' | 'people';
 
@@ -30,7 +34,7 @@ type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' 
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonIcon, RouterLink, FormsModule, DecimalPipe,
-    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
+    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, AirportDayComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
   ],
   templateUrl: './trip-detail.page.html',
   styleUrl: './trip-detail.page.scss',
@@ -47,6 +51,8 @@ export class TripDetailPage implements OnInit {
   private confetti = inject(ConfettiService);
   private review = inject(ReviewService);
   private achievements = inject(AchievementsService);
+  private dest = inject(DestinationService);
+  readonly sharing = signal(false);
 
   readonly trip = computed<Trip | undefined>(() => this.store.trip(this.id()));
   readonly section = signal<Section>('flights');
@@ -251,5 +257,22 @@ export class TripDetailPage implements OnInit {
 
   personName(id: string): string {
     return this.trip()?.travellers.find((p) => p.id === id)?.name.split(' ')[0] ?? 'Someone';
+  }
+
+  /** Story-sized countdown card ("12 days until Barcelona") for Instagram, WhatsApp… */
+  async shareTrip(): Promise<void> {
+    const t = this.trip();
+    if (!t || this.sharing()) return;
+    this.sharing.set(true);
+    try {
+      const photo = t.destination.imageUrl ?? (await this.dest.photo(t.destination.code).catch(() => undefined))?.url;
+      const canvas = await renderTripCard(t, photo);
+      await shareCanvas(canvas, `gatemate-${t.destination.city}.png`, `${t.destination.city}, here I come ✈️`);
+      this.platform.success();
+    } catch (e) {
+      if (!isShareCancel(e)) void this.toast.show('Couldn’t create the image. Please try again.', 'error');
+    } finally {
+      this.sharing.set(false);
+    }
   }
 }

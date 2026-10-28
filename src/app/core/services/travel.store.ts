@@ -1,10 +1,19 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { ChecklistItem, Expense, Flight, FlightAlert, TravelStats, Trip } from '../models';
 import { GatemateApi, NewFlightInput } from './api';
 import { Preferences } from '@capacitor/preferences';
 import { buildAlerts } from './alerts-engine';
 import { AirportDbService, haversineKm } from './airport-db.service';
 import { LocationService } from './location.service';
+import { AuthService, TRIPS_CACHE_KEY } from './auth.service';
+import { NetworkService } from './network.service';
+import { SecureStorageService } from '../security/secure-storage.service';
+
+interface TripsCache {
+  userId: string;
+  savedAt: number;
+  trips: Trip[];
+}
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -14,6 +23,11 @@ export class TravelStore {
   private api = inject(GatemateApi);
   private db = inject(AirportDbService);
   private location = inject(LocationService);
+  private auth = inject(AuthService);
+  private storage = inject(SecureStorageService);
+  private network = inject(NetworkService);
+  private inflight: Promise<void> | null = null;
+  private persistTimer?: ReturnType<typeof setTimeout>;
   /** Server alerts (gate changes, delays, chat) — device reminders are derived from trips below. */
   private serverAlerts = signal<FlightAlert[]>([]);
   private readIds = signal<Set<string>>(new Set());
@@ -22,6 +36,8 @@ export class TravelStore {
 
   readonly trips = signal<Trip[]>([]);
   readonly tripsState = signal<LoadState>('idle');
+  /** Set while the trips on screen are the copy saved on this phone (offline or server unreachable). */
+  readonly savedAt = signal<number | null>(null);
   /** Everything that is due (past or now), newest first. */
   readonly alerts = computed<FlightAlert[]>(() => {
     const now = this.clock();
@@ -72,6 +88,34 @@ export class TravelStore {
 
   constructor() {
     setInterval(() => this.clock.set(Date.now()), 60_000);
+
+    // A different account signing in must never see the previous one's trips.
+    let lastUser: string | undefined;
+    effect(() => {
+      const id = this.auth.user()?.id;
+      if (lastUser && id !== lastUser) untracked(() => this.reset());
+      lastUser = id;
+    });
+
+    // Keep an encrypted copy on the device so boarding passes and plans work in flight mode.
+    effect(() => {
+      const trips = this.trips();
+      const userId = this.auth.user()?.id;
+      if (!userId || untracked(this.tripsState) !== 'ready' || untracked(this.savedAt)) return;
+      clearTimeout(this.persistTimer);
+      this.persistTimer = setTimeout(() => {
+        const value: TripsCache = { userId, savedAt: Date.now(), trips };
+        void this.storage.set(TRIPS_CACHE_KEY, JSON.stringify(value)).catch(() => {});
+      }, 800);
+    });
+
+    // Back online: replace the saved copy with fresh data.
+    let wasOnline = true;
+    effect(() => {
+      const online = this.network.online();
+      if (online && !wasOnline && this.auth.status() === 'signed-in') untracked(() => void this.loadTrips(true));
+      wasOnline = online;
+    });
     void Preferences.get({ key: 'gm_alerts_state' })
       .then(({ value }) => {
         if (!value) return;
@@ -93,13 +137,38 @@ export class TravelStore {
   }
 
   async loadTrips(force = false): Promise<void> {
-    if (!force && this.tripsState() === 'ready') return;
-    if (!force) this.tripsState.set('loading');
+    if (this.inflight) return this.inflight;
+    if (!force && this.tripsState() === 'ready' && !this.savedAt()) return;
+    this.inflight = (async () => {
+      if (this.tripsState() === 'idle') await this.restoreCache();
+      if (this.tripsState() !== 'ready') this.tripsState.set('loading');
+      try {
+        const trips = await this.api.getTrips();
+        this.savedAt.set(null);
+        this.trips.set(trips);
+        this.tripsState.set('ready');
+      } catch {
+        // Keep showing the saved copy rather than an error screen.
+        if (!this.savedAt()) this.tripsState.set('error');
+      } finally {
+        this.inflight = null;
+      }
+    })();
+    return this.inflight;
+  }
+
+  private async restoreCache(): Promise<void> {
+    const userId = this.auth.user()?.id;
+    if (!userId) return;
     try {
-      this.trips.set(await this.api.getTrips());
+      const raw = await this.storage.get(TRIPS_CACHE_KEY);
+      const c = raw ? (JSON.parse(raw) as TripsCache) : null;
+      if (!c || c.userId !== userId || !Array.isArray(c.trips)) return;
+      this.savedAt.set(c.savedAt);
+      this.trips.set(c.trips);
       this.tripsState.set('ready');
     } catch {
-      this.tripsState.set('error');
+      /* unreadable cache: fetch from the server */
     }
   }
 
@@ -178,6 +247,8 @@ export class TravelStore {
   }
 
   reset(): void {
+    clearTimeout(this.persistTimer);
+    this.savedAt.set(null);
     this.trips.set([]);
     this.tripsState.set('idle');
     this.serverAlerts.set([]);

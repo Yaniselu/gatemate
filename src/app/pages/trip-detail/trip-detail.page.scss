@@ -91,6 +91,27 @@
   }
 }
 
+.title-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.share-trip {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 19px;
+  color: var(--gm-accent-deep);
+  background: var(--gm-accent-soft);
+  .spinner { width: 16px; height: 16px; }
+}
+gm-airport-day.day {
+  margin-bottom: 14px;
+}
+
 .tabs {
   display: flex;
   gap: 8px;

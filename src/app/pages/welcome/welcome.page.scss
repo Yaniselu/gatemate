@@ -267,6 +267,57 @@ h1 {
   animation: gm-fade-up 0.7s var(--gm-ease-out) both 1.2s;
 }
 
+.pitch {
+  margin-top: -14px;
+  text-align: center;
+  animation: gm-fade-up 0.6s var(--gm-ease-out) both 1.3s;
+
+  .line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 24px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 650;
+    color: #fff;
+    text-shadow: 0 1px 8px rgba(4, 50, 60, 0.25);
+    animation: pitch-in 0.55s var(--gm-ease-out) both;
+  }
+  .ico {
+    font-size: 18px;
+  }
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 12px;
+
+    i {
+      width: 6px;
+      height: 6px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.45);
+      transition: width 0.35s var(--gm-ease-out), background 0.35s;
+    }
+    i.on {
+      width: 18px;
+      background: #fff;
+    }
+  }
+}
+@keyframes pitch-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+}
+:host-context(.gm-reduce-motion) .pitch .line {
+  animation: none;
+}
+
 .reveal {
   position: absolute;
   inset: 0;

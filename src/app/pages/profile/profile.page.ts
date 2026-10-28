@@ -17,7 +17,8 @@ import { PressableDirective } from '../../shared/directives/pressable.directive'
 import { SheenDirective } from '../../shared/directives/sheen.directive';
 import { ReviewService } from '../../core/services/review.service';
 import { AchievementsService } from '../../core/services/achievements.service';
-import { AirportDbService, haversineKm } from '../../core/services/airport-db.service';
+import { AirportDbService } from '../../core/services/airport-db.service';
+import { summarize } from '../../core/utils/travel-summary';
 
 @Component({
   selector: 'gm-profile',
@@ -43,17 +44,8 @@ export class ProfilePage implements OnInit {
   /** Computed from the user's own completed flights — no estimates. */
   readonly travel = computed(() => {
     this.db.ready();
-    const flights = this.store.trips().flatMap((t) => t.flights).filter((f) => new Date(f.arrival).getTime() < Date.now());
-    const countries = new Set<string>();
-    let km = 0;
-    let minutes = 0;
-    for (const f of flights) {
-      const a = this.db.get(f.from.code), b = this.db.get(f.to.code);
-      if (b) countries.add(b.country);
-      km += a && b ? haversineKm(a.lat, a.lon, b.lat, b.lon) : f.distanceKm;
-      minutes += f.durationMinutes;
-    }
-    return { flights: flights.length, km: Math.round(km), countries: countries.size, hours: Math.round(minutes / 60) };
+    const s = summarize(this.store.trips().flatMap((t) => t.flights), (c) => this.db.get(c));
+    return { flights: s.flights, km: s.km, countries: s.countries.length, hours: s.hours };
   });
   readonly recentBadges = computed(() => {
     const list = this.ach.badges();

@@ -1,0 +1,84 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back" /></ion-buttons>
+    <ion-title>Travel passport</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    @if (years().length > 0) {
+      <nav class="periods" role="tablist">
+        <button role="tab" [class.on]="period() === 'all'" [attr.aria-selected]="period() === 'all'" (click)="setPeriod('all')">All time</button>
+        @for (y of years(); track y) {
+          <button role="tab" [class.on]="period() === y" [attr.aria-selected]="period() === y" (click)="setPeriod(y)">{{ y }}</button>
+        }
+      </nav>
+    }
+
+    <div class="map-card card anim-scale-in">
+      <gm-route-map class="map" [routes]="summary().routes" />
+      @if (!loading() && !summary().routes.length) {
+        <div class="map-empty">
+          <b>Your map is waiting</b>
+          <small>Every flight you add draws a line here.</small>
+        </div>
+      }
+      <div class="legend">
+        <span><i class="solid"></i>Flown</span>
+        @if (upcomingCount()) { <span><i class="dash"></i>Booked</span> }
+      </div>
+    </div>
+
+    @if (!loading()) {
+      @let s = summary();
+      <div class="hero" gmReveal>
+        <b [gmCountUp]="s.km"></b><span>km flown</span>
+        @if (fact()) { <p>{{ fact() }}</p> }
+      </div>
+
+      <div class="grid">
+        <div class="stat card" gmReveal="0"><b [gmCountUp]="s.flights"></b><small>{{ s.flights === 1 ? 'Flight' : 'Flights' }}</small></div>
+        <div class="stat card" gmReveal="1"><b [gmCountUp]="s.countries.length"></b><small>{{ s.countries.length === 1 ? 'Country' : 'Countries' }}</small></div>
+        <div class="stat card" gmReveal="2"><b [gmCountUp]="s.airports"></b><small>Airports</small></div>
+        <div class="stat card" gmReveal="3"><b [gmCountUp]="s.hours"></b><small>Hours in the air</small></div>
+      </div>
+
+      @if (countries().length) {
+        <div class="gm-section-title"><h2>Countries</h2><span class="src">{{ countries().length }} so far</span></div>
+        <div class="flags">
+          @for (c of countries(); track c.cc; let i = $index) {
+            <span class="flag" [gmReveal]="i"><i>{{ c.flag }}</i>{{ c.name }}</span>
+          }
+        </div>
+      }
+
+      @if (s.longest || s.topCity) {
+        <div class="gm-section-title"><h2>Highlights</h2></div>
+        <div class="rows card" gmReveal>
+          @if (s.longest; as l) {
+            <div class="row"><span class="gm-well accent"><ion-icon name="resize-outline" /></span><span class="row-text"><b>Longest flight</b><small>{{ l.from }} → {{ l.to }} · {{ l.km | number }} km</small></span></div>
+          }
+          @if (s.topCity; as t) {
+            <div class="row"><span class="gm-well"><ion-icon name="heart-outline" /></span><span class="row-text"><b>Favourite destination</b><small>{{ t.city }} · {{ t.count }} {{ t.count === 1 ? 'visit' : 'visits' }}</small></span></div>
+          }
+        </div>
+      }
+
+      @if (s.flights) {
+        <button class="gm-btn share" gmPressable (click)="share()" [disabled]="sharing()">
+          @if (sharing()) { <span class="spinner"></span> Preparing… } @else { <ion-icon name="share-outline" /> Share my passport }
+        </button>
+        <p class="hint">Creates an image on your phone for Instagram, WhatsApp or Messages. Your booking details are never included.</p>
+      } @else {
+        <div class="gm-empty">
+          <ion-icon name="earth" />
+          <h3>No flights flown yet</h3>
+          <p>Add a booking and, once you land, your passport fills itself in.</p>
+          <a class="gm-btn small" routerLink="/add-flight"><ion-icon name="add" /> Add a booking</a>
+        </div>
+      }
+    }
+    <div style="height: 40px"></div>
+  </div>
+</ion-content>

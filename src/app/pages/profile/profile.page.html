@@ -52,7 +52,7 @@
       <div class="lv-side"><b>{{ ach.streak() }}🔥</b><small>{{ ach.earnedCount() }} badges</small></div>
     </a>
 
-    <div class="gm-section-title"><h2>Your travel</h2><span class="src">from your trips</span></div>
+    <div class="gm-section-title"><h2>Your travel</h2><a routerLink="/passport">Passport &amp; map</a></div>
     @if (store.tripsState() === 'ready') {
       @let s = travel();
       <div class="stats">

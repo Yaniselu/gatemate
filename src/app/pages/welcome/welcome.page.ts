@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { IonContent, NavController } from '@ionic/angular/standalone';
 import { PlaneComponent } from '../../shared/components/plane.component';
 import { SwipeButtonComponent } from '../../shared/components/swipe-button.component';
@@ -22,6 +22,22 @@ export class WelcomePage {
 
   readonly takingOff = signal(false);
   readonly title = 'Gatemate'.split('');
+
+  /** What the app does, one line at a time. */
+  readonly pitches = [
+    { icon: '🎫', text: 'Boarding passes that work offline' },
+    { icon: '🔔', text: 'Gate, boarding and delay alerts' },
+    { icon: '🗺️', text: 'Satellite airport maps to your gate' },
+    { icon: '🧭', text: 'City guides, phrases and money tips' },
+    { icon: '🌍', text: 'Your travel passport and world map' },
+    { icon: '🎮', text: 'Games for the flight, no Wi-Fi needed' },
+  ];
+  readonly pitch = signal(0);
+
+  constructor() {
+    const t = setInterval(() => this.pitch.update((i) => (i + 1) % this.pitches.length), 2600);
+    inject(DestroyRef).onDestroy(() => clearInterval(t));
+  }
 
   async takeOff(): Promise<void> {
     if (this.takingOff()) return;

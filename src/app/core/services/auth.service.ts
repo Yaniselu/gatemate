@@ -9,6 +9,10 @@ import { ApiError, GatemateApi, SocialCredential } from './api';
 import { PlatformService } from './platform.service';
 
 const REFRESH_KEY = 'refresh_token';
+/** Last known profile, so the app opens instantly (and offline) while the token refreshes in the background. */
+const USER_KEY = 'session_user';
+/** Device copy of the user's trips (see TravelStore); erased with the session. */
+export const TRIPS_CACHE_KEY = 'trips_cache';
 const REFRESH_SKEW_MS = 30_000;
 
 export type AuthStatus = 'unknown' | 'signed-out' | 'signed-in';
@@ -33,15 +37,30 @@ export class AuthService {
   private failedAttempts = 0;
   readonly lockedUntil = signal(0);
 
-  /** Restore a session from the refresh token in the Keychain/Keystore. */
+  /**
+   * Restore a session from the refresh token in the Keychain/Keystore. With a saved profile the app opens
+   * straight away and the token refreshes in the background, so a sleeping server or no signal doesn't
+   * block start-up. Only a rejected token signs the user out.
+   */
   async init(): Promise<void> {
     const refreshToken = await this.storage.get(REFRESH_KEY);
     if (!refreshToken) {
       this.status.set('signed-out');
       return;
     }
-    const restored = await this.refresh();
-    this.status.set(restored ? 'signed-in' : 'signed-out');
+    const cached = await this.cachedUser();
+    if (cached) {
+      this.session.set({ user: cached, accessToken: '', expiresAt: 0, refreshToken });
+      this.status.set('signed-in');
+      void this.refresh().then((s) => { if (!s) void this.forceSignOut(); }, () => {});
+      return;
+    }
+    try {
+      const restored = await this.refresh();
+      this.status.set(restored ? 'signed-in' : 'signed-out');
+    } catch {
+      this.status.set('signed-out');
+    }
   }
 
   async loginWithPassword(email: string, password: string): Promise<void> {
@@ -71,20 +90,24 @@ export class AuthService {
   /** Saves only the changed fields and swaps the user in place (no reload of other data). */
   async updateProfile(patch: ProfilePatch): Promise<User> {
     const user = await this.api.updateProfile(patch);
-    this.session.update((s) => (s ? { ...s, user } : s));
+    this.setUser(user);
     return user;
   }
 
   /** Replaces the signed-in user (e.g. after the server confirms a subscription). */
   setUser(user: User): void {
     this.session.update((s) => (s ? { ...s, user } : s));
+    void this.storage.set(USER_KEY, JSON.stringify(user)).catch(() => {});
   }
 
   requestPasswordReset(email: string): Promise<void> {
     return this.api.requestPasswordReset(email.trim().toLowerCase());
   }
 
-  /** Returns a valid access token, refreshing it shortly before expiry. */
+  /**
+   * Returns a valid access token, refreshing it shortly before expiry. Throws an ApiError when the server
+   * can't be reached, so callers show "no connection" instead of signing the user out.
+   */
   async getAccessToken(): Promise<string | null> {
     const s = this.session();
     if (!s) return null;
@@ -92,7 +115,10 @@ export class AuthService {
     return (await this.refresh())?.accessToken ?? null;
   }
 
-  /** Single-flight refresh: concurrent 401s share one refresh call. Tokens rotate on every refresh. */
+  /**
+   * Single-flight refresh: concurrent 401s share one refresh call. Tokens rotate on every refresh.
+   * Resolves null when the server rejects the token (signed out); rethrows when it simply can't be reached.
+   */
   refresh(): Promise<Session | null> {
     this.refreshing ??= (async () => {
       try {
@@ -101,7 +127,8 @@ export class AuthService {
         const next = await this.api.refresh(token);
         await this.storeSession(next);
         return next;
-      } catch {
+      } catch (e) {
+        if (isTransient(e)) throw e;
         await this.clearLocal();
         return null;
       } finally {
@@ -192,13 +219,24 @@ export class AuthService {
 
   private async storeSession(session: Session): Promise<void> {
     await this.storage.set(REFRESH_KEY, session.refreshToken);
+    await this.storage.set(USER_KEY, JSON.stringify(session.user)).catch(() => {});
     this.session.set(session);
+  }
+
+  private async cachedUser(): Promise<User | null> {
+    try {
+      const raw = await this.storage.get(USER_KEY);
+      const u = raw ? (JSON.parse(raw) as User) : null;
+      return u && typeof u.id === 'string' && typeof u.name === 'string' ? u : null;
+    } catch {
+      return null;
+    }
   }
 
   private async clearLocal(): Promise<void> {
     this.session.set(null);
     this.status.set('signed-out');
-    await this.storage.remove(REFRESH_KEY);
+    await Promise.all([REFRESH_KEY, USER_KEY, TRIPS_CACHE_KEY].map((k) => this.storage.remove(k)));
   }
 
   private registerFailure(): void {
@@ -214,4 +252,10 @@ export class AuthService {
     const left = this.throttleSecondsLeft();
     if (left > 0) throw new ApiError(`Too many attempts. Try again in ${left}s.`, 429, 'throttled', left);
   }
+}
+
+/** No connection, timeout or a server error: the token may still be fine, so keep the session. */
+function isTransient(e: unknown): boolean {
+  if (!(e instanceof ApiError)) return true;
+  return e.status === 0 || e.status === 408 || e.status === 429 || e.status >= 500;
 }

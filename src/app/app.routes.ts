@@ -26,6 +26,7 @@ export const routes: Routes = [
   { path: 'pro', canActivate: [authGuard], loadComponent: () => import('./pages/pro/pro.page').then((m) => m.ProPage) },
   { path: 'onboarding', canActivate: [authGuard], loadComponent: () => import('./pages/onboarding/onboarding.page').then((m) => m.OnboardingPage) },
   { path: 'explore/:iata', canActivate: [authGuard], loadComponent: () => import('./pages/explore/explore.page').then((m) => m.ExplorePage) },
+  { path: 'passport', canActivate: [authGuard], loadComponent: () => import('./pages/passport/passport.page').then((m) => m.PassportPage) },
   { path: 'tools', canActivate: [authGuard], loadComponent: () => import('./pages/tools/tools.page').then((m) => m.ToolsPage) },
   { path: 'achievements', canActivate: [authGuard], loadComponent: () => import('./pages/achievements/achievements.page').then((m) => m.AchievementsPage) },
   { path: 'feedback', canActivate: [authGuard], loadComponent: () => import('./pages/feedback/feedback.page').then((m) => m.FeedbackPage) },
