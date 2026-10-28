@@ -17,14 +17,14 @@ export class FxService {
     if (from === to) return Promise.resolve({ base: from, currency: to, rate: 1, date: new Date().toISOString().slice(0, 10) });
     const key = `${from}|${to}`;
     if (!this.cache.has(key)) {
-      const p = (environment.useMocks
-        ? fetch(`https://api.frankfurter.app/latest?from=${from}&to=${to}`).then(async (r) => {
-            if (!r.ok) throw new Error('fx');
-            const j = await r.json();
-            return { base: from, currency: to, rate: j.rates[to] as number, date: j.date as string };
-          })
-        : firstValueFrom(this.http.get<FxRate>(`${environment.apiUrl}/fx`, { params: { from, to } }))
-      ).catch((e) => {
+      const p = fetch(`https://api.frankfurter.app/latest?from=${from}&to=${to}`)
+        .then(async (r) => {
+          if (!r.ok) throw new Error('fx');
+          const j = await r.json();
+          return { base: from, currency: to, rate: j.rates[to] as number, date: j.date as string };
+        })
+        .catch((e) => (environment.useMocks ? Promise.reject(e) : firstValueFrom(this.http.get<FxRate>(`${environment.apiUrl}/fx`, { params: { from, to } }))))
+        .catch((e) => {
         this.cache.delete(key);
         throw e;
       });

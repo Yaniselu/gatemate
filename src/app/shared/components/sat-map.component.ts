@@ -70,7 +70,9 @@ export class SatMapComponent {
   }
 
   private async create() {
-    this.L = await import('leaflet');
+    // Leaflet is CommonJS: optimized builds expose it as the module's default export, dev builds as the namespace.
+    const mod = (await import('leaflet')) as unknown as typeof Leaflet & { default?: typeof Leaflet };
+    this.L = mod.default && typeof mod.default.map === 'function' ? mod.default : mod;
     const L = this.L;
     const c = this.center();
     const i = this.interactive();

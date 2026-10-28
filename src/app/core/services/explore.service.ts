@@ -31,10 +31,10 @@ export class ExploreService {
 
   sights(iata: string, lat: number, lon: number): Promise<Sight[]> {
     if (!this.sightsCache.has(iata)) {
-      const p = (environment.useMocks
-        ? this.querySights(lat, lon)
-        : firstValueFrom(this.http.get<Sight[]>(`${environment.apiUrl}/destinations/${encodeURIComponent(iata)}/sights`))
-      ).catch((e) => {
+      // Wikidata straight from the phone; our server is the fallback.
+      const p = this.querySights(lat, lon)
+        .catch((e) => (environment.useMocks ? Promise.reject(e) : firstValueFrom(this.http.get<Sight[]>(`${environment.apiUrl}/destinations/${encodeURIComponent(iata)}/sights`))))
+        .catch((e) => {
         this.sightsCache.delete(iata);
         throw e;
       });
@@ -46,16 +46,15 @@ export class ExploreService {
   holidays(country: string, year: number): Promise<Holiday[]> {
     const key = `${country}|${year}`;
     if (!this.holidayCache.has(key)) {
-      const p = (environment.useMocks
-        ? fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${encodeURIComponent(country)}`).then(async (r) => {
+      const p = (fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${encodeURIComponent(country)}`).then(async (r) => {
             if (r.status === 204 || r.status === 404) return [];
             if (!r.ok) throw new Error('holidays');
             return ((await r.json()) as { date: string; localName: string; name: string; global: boolean }[]).map((h) => ({
               date: h.date, localName: h.localName, name: h.name, national: h.global,
             }));
-          })
-        : firstValueFrom(this.http.get<Holiday[]>(`${environment.apiUrl}/countries/${encodeURIComponent(country)}/holidays`, { params: { year } }))
-      ).catch((e) => {
+          }) as Promise<Holiday[]>)
+        .catch((e) => (environment.useMocks ? Promise.reject(e) : firstValueFrom(this.http.get<Holiday[]>(`${environment.apiUrl}/countries/${encodeURIComponent(country)}/holidays`, { params: { year } }))))
+        .catch((e) => {
         this.holidayCache.delete(key);
         throw e;
       });

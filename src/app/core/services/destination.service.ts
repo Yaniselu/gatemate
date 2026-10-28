@@ -48,7 +48,6 @@ export class DestinationService {
 
   /** Just the destination photo (used by trip covers). Resolves undefined when unavailable. */
   async photo(iata: string): Promise<DestinationInfo['photo']> {
-    if (!environment.useMocks) return (await this.get(iata).catch(() => undefined))?.photo;
     await this.db.load();
     const a = this.db.get(iata);
     if (!a) return undefined;
@@ -76,15 +75,19 @@ export class DestinationService {
     await this.db.load();
     const airport = this.db.get(iata);
     if (!airport) throw new Error('Unknown airport');
-    if (!environment.useMocks) {
-      return firstValueFrom(this.http.get<DestinationInfo>(`${environment.apiUrl}/destinations/${encodeURIComponent(iata)}`, { params: { home } }));
-    }
+    // Public sources are called straight from the phone; if every one of them fails, ask our server instead.
     const country = this.db.country(airport.country);
     const [wiki, weather, fx] = await Promise.all([
       this.wikiFor(airport),
       this.weather(airport).catch(() => undefined),
       this.fx(home, country?.currency?.[0]).catch(() => undefined),
     ]);
+    if (!wiki && !weather && !environment.useMocks) {
+      const viaServer = await firstValueFrom(
+        this.http.get<DestinationInfo>(`${environment.apiUrl}/destinations/${encodeURIComponent(iata)}`, { params: { home } }),
+      ).catch(() => null);
+      if (viaServer) return { ...viaServer, airport, country: viaServer.country ?? country };
+    }
     return { airport, country, summary: wiki?.summary, photo: wiki?.photo, weather, fx };
   }
 

@@ -23,6 +23,9 @@ const AMENITY: Record<string, PoiKind> = {
  * Gate and terminal positions from OpenStreetMap (aeroway=gate / aeroway=terminal).
  * Coverage depends on the airport; the backend caches results for a day to respect Overpass fair use.
  */
+/** Public Overpass instances, tried in order. */
+const OVERPASS = ['https://overpass-api.de', 'https://overpass.kumi.systems', 'https://overpass.private.coffee'];
+
 @Injectable({ providedIn: 'root' })
 export class GatesService {
   private http = inject(HttpClient);
@@ -40,14 +43,32 @@ export class GatesService {
     return this.cache.get(a.iata)!;
   }
 
+  /** Straight from OpenStreetMap on the phone (fast, per-user rate limits); our server is the fallback. */
   private async fetch(a: AirportRecord): Promise<MapFeature[]> {
-    if (!environment.useMocks) {
+    try {
+      return await this.overpass(a);
+    } catch (e) {
+      if (environment.useMocks) throw e;
       return firstValueFrom(this.http.get<MapFeature[]>(`${environment.apiUrl}/airports/${a.iata}/map`));
     }
+  }
+
+  private async overpass(a: AirportRecord): Promise<MapFeature[]> {
     const near = `(around:4000,${a.lat},${a.lon})`;
     const q = `[out:json][timeout:25];(node["aeroway"="gate"]${near};way["aeroway"="terminal"]${near};node["amenity"~"^(cafe|restaurant|fast_food|bar|pharmacy|toilets|atm|bureau_de_change|charging_station)$"]${near};node["shop"]["name"]${near};node["tourism"="information"]${near};);out center tags 400;`;
-    const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-    if (!r.ok) throw new Error('overpass ' + r.status);
+    let r: Response | null = null;
+    for (const host of OVERPASS) {
+      try {
+        const ctl = new AbortController();
+        const timer = setTimeout(() => ctl.abort(), 20_000);
+        r = await fetch(`${host}/api/interpreter`, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctl.signal });
+        clearTimeout(timer);
+        if (r.ok) break;
+      } catch {
+        r = null;
+      }
+    }
+    if (!r?.ok) throw new Error('overpass unavailable');
     const j = await r.json();
     return (j.elements as { type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[])
       .map((e): MapFeature => {
