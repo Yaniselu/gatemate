@@ -31,9 +31,11 @@ public class TripService {
     private final AirportCatalog airports;
     private final ChatService chat;
     private final JsonMapper json;
+    private final app.gatemate.config.GatemateProperties props;
 
     public TripService(Repos.Trips trips, Repos.Members members, Repos.Flights flights, Repos.Checklist checklist, Repos.Expenses expenses,
-            UserRepository users, AirportCatalog airports, ChatService chat, JsonMapper json) {
+            UserRepository users, AirportCatalog airports, ChatService chat, JsonMapper json, app.gatemate.config.GatemateProperties props) {
+        this.props = props;
         this.trips = trips;
         this.members = members;
         this.flights = flights;
@@ -57,6 +59,7 @@ public class TripService {
     /** Creates a trip around a first flight, with a default checklist and a private group chat. */
     @Transactional
     public TripEntity createWithFlight(UUID me, FlightEntity f) {
+        requireTripAllowance(me);
         var to = airports.get(f.toIata).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + f.toIata + "."));
         var t = new TripEntity();
         t.ownerId = me;
@@ -85,6 +88,19 @@ public class TripService {
         }
         t.chatId = chat.createForTrip(t, me);
         return trips.save(t);
+    }
+
+    /** Free accounts keep up to N upcoming trips at a time; Gatemate Pro has no limit. */
+    private void requireTripAllowance(UUID me) {
+        var u = users.findById(me).orElseThrow();
+        if (u.isPro()) return;
+        int limit = props.billing() == null || props.billing().freeUpcomingTrips() <= 0 ? 3 : props.billing().freeUpcomingTrips();
+        Instant now = Instant.now();
+        long upcoming = trips.findForMember(me).stream().filter(t -> t.ownerId.equals(me) && t.endAt != null && t.endAt.isAfter(now)).count();
+        if (upcoming >= limit) {
+            throw new ApiException(org.springframework.http.HttpStatus.PAYMENT_REQUIRED, "pro_required",
+                    "Free accounts can have " + limit + " upcoming trips. Upgrade to Gatemate Pro for unlimited trips.");
+        }
     }
 
     @Transactional

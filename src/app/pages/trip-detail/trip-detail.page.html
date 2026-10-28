@@ -232,6 +232,22 @@
               </div>
             }
 
+            @if (t.expenses.length) {
+              <div class="pro-actions">
+                <button class="gm-btn ghost small" (click)="openSettleUp()"><ion-icon name="swap-horizontal-outline" /> Settle up @if (!pro.isPro()) { <span class="pro-tag">PRO</span> }</button>
+                <button class="gm-btn ghost small" (click)="exportCsv()"><ion-icon name="download-outline" /> Export CSV @if (!pro.isPro()) { <span class="pro-tag">PRO</span> }</button>
+              </div>
+              @if (showSettle()) {
+                <div class="settle card anim-fade-up">
+                  @for (s of settleUp(); track $index) {
+                    <div class="tr"><b>{{ s.from.id === 'me' ? 'You' : s.from.name }}</b><ion-icon name="arrow-forward" /><b>{{ s.to.id === 'me' ? 'you' : s.to.name }}</b><span>€{{ s.amount | number: '1.2-2' }}</span></div>
+                  } @empty {
+                    <p class="muted">Everyone is settled up.</p>
+                  }
+                </div>
+              }
+            }
+
             <h3 class="sub">Expenses</h3>
             @for (e of t.expenses; track e.id; let i = $index) {
               <div class="expense" [gmReveal]="i">

@@ -30,6 +30,18 @@
       </div>
     }
 
+    <button class="pro-card card" [class.on]="pro.isPro()" (click)="pro.isPro() ? pro.manage() : pro.open('profile')" gmPressable gmReveal>
+      <span class="pro-ic"><ion-icon name="sparkles" /></span>
+      <span class="pro-txt">
+        @if (pro.isPro()) {
+          <b>Gatemate Pro</b><small>Active{{ auth.user()?.proUntil ? ' · renews or ends ' + (auth.user()!.proUntil! | shortDate: false) : '' }} · Manage</small>
+        } @else {
+          <b>Upgrade to Gatemate Pro</b><small>Unlimited trips, full city guides, settle-up</small>
+        }
+      </span>
+      <ion-icon name="chevron-forward" class="chev" />
+    </button>
+
     <a class="level card" routerLink="/achievements" gmPressable gmReveal>
       <div class="lv-ring" [style.--p]="ach.level().progress"><b>{{ ach.level().index }}</b></div>
       <div class="lv-txt">

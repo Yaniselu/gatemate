@@ -6,7 +6,7 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonToolbar }
 import { TravelStore } from '../../core/services/travel.store';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
-import { BaggageAllowance, BagItem, Trip, VerificationMethod } from '../../core/models';
+import { BaggageAllowance, BagItem, Traveller, Trip, VerificationMethod } from '../../core/models';
 import { CityImageComponent } from '../../shared/components/city-image.component';
 import { InvitePanelComponent } from '../../shared/components/invite-panel.component';
 import { DestinationGuideComponent } from '../../shared/components/destination-guide.component';
@@ -17,6 +17,7 @@ import { cleanText } from '../../core/security/sanitize';
 import { BoardingPassComponent } from '../../shared/components/boarding-pass.component';
 import { AvatarStackComponent } from '../../shared/components/avatar-stack.component';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
+import { ProService } from '../../core/services/pro.service';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { ClockPipe, DurationPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
@@ -35,6 +36,7 @@ type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' 
   styleUrl: './trip-detail.page.scss',
 })
 export class TripDetailPage implements OnInit {
+  protected pro = inject(ProService);
   readonly id = input.required<string>();
   /** Optional deep link to a section, e.g. ?tab=pass */
   readonly tab = input<Section | undefined>();
@@ -81,6 +83,65 @@ export class TripDetailPage implements OnInit {
     }
     return t.travellers.map((p) => ({ person: p, amount: Math.round((net.get(p.id) ?? 0) * 100) / 100 }));
   });
+
+  /** Fewest transfers that settle every balance (greedy: largest debtor pays largest creditor). Pro. */
+  readonly settleUp = computed(() => {
+    const debt = this.balances().filter((b) => b.amount < -0.004).map((b) => ({ p: b.person, v: -b.amount })).sort((a, b) => b.v - a.v);
+    const cred = this.balances().filter((b) => b.amount > 0.004).map((b) => ({ p: b.person, v: b.amount })).sort((a, b) => b.v - a.v);
+    const out: { from: Traveller; to: Traveller; amount: number }[] = [];
+    let i = 0, j = 0;
+    while (i < debt.length && j < cred.length) {
+      const amt = Math.min(debt[i].v, cred[j].v);
+      if (amt >= 0.01) out.push({ from: debt[i].p, to: cred[j].p, amount: Math.round(amt * 100) / 100 });
+      debt[i].v -= amt;
+      cred[j].v -= amt;
+      if (debt[i].v < 0.005) i++;
+      if (cred[j].v < 0.005) j++;
+    }
+    return out;
+  });
+
+  openSettleUp() {
+    if (!this.pro.isPro()) {
+      this.pro.open('expenses');
+      return;
+    }
+    this.showSettle.update((v) => !v);
+  }
+  readonly showSettle = signal(false);
+
+  /** CSV of all expenses (Pro). Shared via the system sheet on the phone, downloaded in a browser. */
+  async exportCsv() {
+    const t = this.trip();
+    if (!t) return;
+    if (!this.pro.isPro()) {
+      this.pro.open('expenses');
+      return;
+    }
+    const q = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = [['Date', 'What', 'Amount', 'Currency', 'Paid by', 'Split between'].join(',')];
+    for (const e of t.expenses) {
+      rows.push([e.createdAt.slice(0, 10), q(e.label), e.amount.toFixed(2), e.currency, q(this.nameOf(e.paidBy)), q(e.splitWith.map((p) => this.nameOf(p)).join('; '))].join(','));
+    }
+    const csv = rows.join('\n');
+    const name = `${t.title.replace(/[^\w-]+/g, '-').toLowerCase()}-expenses.csv`;
+    if (this.platform.isNative) {
+      const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+      const { Share } = await import('@capacitor/share');
+      const { uri } = await Filesystem.writeFile({ path: name, data: csv, directory: Directory.Cache, encoding: Encoding.UTF8 });
+      await Share.share({ title: name, url: uri }).catch(() => {});
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }
+  }
+
+  private nameOf(id: string) {
+    return id === 'me' ? 'You' : this.trip()?.travellers.find((p) => p.id === id)?.name ?? id;
+  }
 
   // New expense form
   readonly addingExpense = signal(false);

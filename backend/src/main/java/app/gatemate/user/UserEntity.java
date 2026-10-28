@@ -30,5 +30,12 @@ public class UserEntity {
     public boolean banned;
     public int failedLogins;
     public Instant lockedUntil;
+    public Instant proUntil;
+    public String proProduct;
     public Instant createdAt = Instant.now();
+
+    /** Active Gatemate Pro subscription (kept in sync by the store webhooks). */
+    public boolean isPro() {
+        return proUntil != null && proUntil.isAfter(Instant.now());
+    }
 }

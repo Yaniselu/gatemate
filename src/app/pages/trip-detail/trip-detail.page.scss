@@ -783,3 +783,38 @@
   color: var(--gm-ink-3);
   font-weight: 500;
 }
+
+.pro-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0 6px;
+
+  .gm-btn {
+    width: 100%;
+  }
+}
+
+.settle {
+  padding: 4px 14px;
+  margin-bottom: 8px;
+
+  .tr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--gm-line);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+    ion-icon {
+      color: var(--gm-ink-3);
+    }
+    span {
+      margin-left: auto;
+      font-weight: 700;
+    }
+  }
+}

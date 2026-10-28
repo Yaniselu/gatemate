@@ -23,6 +23,7 @@ export const routes: Routes = [
   { path: 'profile/edit', canActivate: [authGuard], canDeactivate: [unsavedChangesGuard], loadComponent: () => import('./pages/profile-edit/profile-edit.page').then((m) => m.ProfileEditPage) },
   { path: 'airport-map', canActivate: [authGuard], loadComponent: () => import('./pages/airport-map/airport-map.page').then((m) => m.AirportMapPage) },
   { path: 'airport-map/:iata', canActivate: [authGuard], loadComponent: () => import('./pages/airport-map/airport-map.page').then((m) => m.AirportMapPage) },
+  { path: 'pro', canActivate: [authGuard], loadComponent: () => import('./pages/pro/pro.page').then((m) => m.ProPage) },
   { path: 'onboarding', canActivate: [authGuard], loadComponent: () => import('./pages/onboarding/onboarding.page').then((m) => m.OnboardingPage) },
   { path: 'explore/:iata', canActivate: [authGuard], loadComponent: () => import('./pages/explore/explore.page').then((m) => m.ExplorePage) },
   { path: 'tools', canActivate: [authGuard], loadComponent: () => import('./pages/tools/tools.page').then((m) => m.ToolsPage) },

@@ -64,6 +64,9 @@ export class HttpApi extends GatemateApi {
   async createInvite(id: string) {
     return (await this.call(this.http.post<{ url: string }>(`${this.base}/invites`, { targetId: id }))).url;
   }
+  syncPro() {
+    return this.call(this.http.post<User>(`${this.base}/me/pro/sync`, {}));
+  }
   async registerPushToken(token: string, platform: 'ios' | 'android') {
     await this.call(this.http.post<void>(`${this.base}/push-tokens`, { token, platform }));
   }

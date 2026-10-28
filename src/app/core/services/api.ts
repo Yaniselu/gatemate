@@ -69,6 +69,8 @@ export abstract class GatemateApi {
   abstract deleteAccount(): Promise<void>;
   abstract exportMyData(): Promise<Blob>;
   abstract updateProfile(patch: ProfilePatch): Promise<User>;
+  /** Asks the server to re-check the store subscription right after a purchase or restore. */
+  abstract syncPro(): Promise<User>;
   abstract sendFeedback(input: FeedbackInput): Promise<void>;
 
   // Trips & flights

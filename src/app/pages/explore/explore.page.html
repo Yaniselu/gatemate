@@ -58,7 +58,9 @@
             }
           </div>
           @if (list.length > 8) {
-            <button class="more" (click)="showAllSights.set(!showAllSights())">{{ showAllSights() ? 'Show fewer' : 'Show all ' + list.length }}</button>
+            <button class="more" (click)="toggleAllSights()">
+              @if (showAllSights()) { Show fewer } @else { Show all {{ list.length }} @if (!pro.isPro()) { <span class="pro-tag">PRO</span> } }
+            </button>
           }
           <p class="src">Data: Wikidata (CC0) · Photos: Wikimedia Commons · Opens in Maps</p>
         } @else {

@@ -43,11 +43,11 @@ public class SecurityConfig {
                 .httpStrictTransportSecurity(s -> s.includeSubDomains(true).maxAgeInSeconds(31536000)))
             .authorizeHttpRequests(a -> a
                 .requestMatchers("/api/v1/auth/**", "/actuator/health", "/api/v1/airports/**", "/api/v1/destinations/**", "/api/v1/countries/**", "/api/v1/fx").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/inbound/email").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/inbound/email", "/api/v1/billing/revenuecat").permitAll()
                 .requestMatchers("/ws/**").permitAll() // authenticated on STOMP CONNECT
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
-            .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(jwtAuth())))
+            .oauth2ResourceServer(o -> o.bearerTokenResolver(bearerResolver()).jwt(j -> j.jwtAuthenticationConverter(jwtAuth())))
             .addFilterBefore(rateLimit, org.springframework.security.web.authentication.AnonymousAuthenticationFilter.class);
         return http.build();
     }
@@ -73,6 +73,16 @@ public class SecurityConfig {
         var d = NimbusJwtDecoder.withPublicKey(keys.publicKey).build();
         d.setJwtValidator(JwtValidators.createDefaultWithIssuer(props.jwt().issuer()));
         return d;
+    }
+
+    /** Webhooks carry their own shared secret in Authorization; it is not a user JWT, so don't try to decode it. */
+    private static org.springframework.security.oauth2.server.resource.web.BearerTokenResolver bearerResolver() {
+        var standard = new org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver();
+        return request -> {
+            String uri = request.getRequestURI();
+            if (uri.equals("/api/v1/billing/revenuecat") || uri.equals("/api/v1/inbound/email")) return null;
+            return standard.resolve(request);
+        };
     }
 
     /** Argon2id (memory-hard) — Spring Security's recommended parameters. */

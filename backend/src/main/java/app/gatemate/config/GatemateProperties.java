@@ -14,6 +14,7 @@ public record GatemateProperties(
         Booking booking,
         Mail mail,
         Integrations integrations,
+        Billing billing,
         List<String> corsOrigins,
         /** Public https origin used to build invite links, e.g. https://gatemate.app */
         String publicUrl) {
@@ -36,6 +37,12 @@ public record GatemateProperties(
     public record Booking(boolean sandbox, String inboundSecret, List<String> airlineEmailDomains, String importDomain) {}
 
     public record Mail(String from, String resetUrl) {}
+
+    /**
+     * RevenueCat: {@code webhookSecret} is the Authorization header value configured on the webhook;
+     * {@code secretApiKey} (optional) lets the server re-check a subscription right after a purchase.
+     */
+    public record Billing(String webhookSecret, String secretApiKey, String entitlement, int freeUpcomingTrips) {}
 
     public record Integrations(String unsplashAccessKey, String aeroDataBoxKey, boolean publicDataEnabled) {}
 

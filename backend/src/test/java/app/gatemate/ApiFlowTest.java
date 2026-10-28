@@ -176,6 +176,40 @@ class ApiFlowTest {
     }
 
     @Test
+    void proSubscriptionLiftsTheFreeTripLimit() throws Exception {
+        var s = register("pro+" + UUID.randomUUID() + "@example.com");
+        String access = s.get("accessToken").asString();
+        String userId = s.path("user").path("id").asString();
+        String[] to = {"LTN", "CDG", "FCO", "BCN"};
+        for (int i = 0; i < 3; i++) {
+            post("/api/v1/flights", access, "{\"carrier\":\"W6\",\"flightNumber\":\"33" + i + "\",\"from\":\"OTP\",\"to\":\"" + to[i] + "\",\"date\":\""
+                    + LocalDate.now().plusDays(5 + i) + "T06:00\"}", 200);
+        }
+        String fourth = "{\"carrier\":\"W6\",\"flightNumber\":\"339\",\"from\":\"OTP\",\"to\":\"BCN\",\"date\":\"" + LocalDate.now().plusDays(9) + "T06:00\"}";
+        var blocked = post("/api/v1/flights", access, fourth, 402);
+        org.junit.jupiter.api.Assertions.assertEquals("pro_required", blocked.path("code").asString());
+
+        long exp = System.currentTimeMillis() + 30L * 86_400_000;
+        String event = "{\"event\":{\"id\":\"evt-" + UUID.randomUUID() + "\",\"type\":\"INITIAL_PURCHASE\",\"app_user_id\":\"" + userId
+                + "\",\"product_id\":\"gatemate_pro_monthly\",\"expiration_at_ms\":" + exp + "}}";
+        // Wrong secret: rejected; the app itself can never grant Pro.
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/billing/revenuecat")
+                .header("Authorization", "Bearer nope").contentType(MediaType.APPLICATION_JSON).content(event)).andExpect(status().isUnauthorized());
+        for (int i = 0; i < 2; i++) { // second delivery is a no-op
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/billing/revenuecat")
+                    .header("Authorization", "Bearer test-webhook-secret").contentType(MediaType.APPLICATION_JSON).content(event)).andExpect(status().isOk());
+        }
+        mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + access)).andExpect(jsonPath("$.pro").value(true));
+        post("/api/v1/flights", access, fourth, 200);
+
+        String expire = "{\"event\":{\"id\":\"evt-" + UUID.randomUUID() + "\",\"type\":\"EXPIRATION\",\"app_user_id\":\"" + userId + "\",\"expiration_at_ms\":"
+                + (System.currentTimeMillis() - 1000) + "}}";
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/billing/revenuecat")
+                .header("Authorization", "Bearer test-webhook-secret").contentType(MediaType.APPLICATION_JSON).content(expire)).andExpect(status().isOk());
+        mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + access)).andExpect(jsonPath("$.pro").value(false));
+    }
+
+    @Test
     void airportsArePublic() throws Exception {
         mvc.perform(get("/api/v1/airports").param("q", "bucharest")).andExpect(status().isOk()).andExpect(jsonPath("$[*].iata", hasItem("OTP")));
     }

@@ -8,6 +8,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { NotificationsService } from '../../core/services/notifications.service';
 import { environment } from '../../../environments/environment';
+import { ProService } from '../../core/services/pro.service';
 import { PassReaderService } from '../../core/services/pass-reader.service';
 import { ApiError, GatemateApi } from '../../core/services/api';
 import { AIRLINES, AirlineOption } from '../../core/data/airlines';
@@ -50,6 +51,7 @@ export class AddFlightPage {
   private platform = inject(PlatformService);
   private notifications = inject(NotificationsService);
   private reader = inject(PassReaderService);
+  protected pro = inject(ProService);
   private confetti = inject(ConfettiService);
   private review = inject(ReviewService);
   private achievements = inject(AchievementsService);
@@ -178,7 +180,7 @@ export class AddFlightPage {
     try {
       await navigator.clipboard.writeText(v);
       await this.toast.show('Address copied', 'success');
-    } catch {
+    } catch (e) {
       await this.toast.show(v);
     }
   }
@@ -266,6 +268,8 @@ export class AddFlightPage {
           ? { title: 'This ticket isn’t in your name', body: `Gatemate only adds tickets that belong to you (${this.legalName() || 'your legal name'}). If it’s a friend’s, ask them to add it and invite you to the trip.`, code: err.code }
           : err?.code === 'legal_name_missing'
             ? { title: 'Add your legal name first', body: 'We compare it with the name on the ticket to make sure it’s yours.', code: err.code }
+            : err?.code === 'pro_required'
+              ? { title: 'You’ve reached the free limit', body: 'Free accounts keep 3 upcoming trips at a time. Upgrade to Gatemate Pro for unlimited trips, or wait until one of your trips is over.', code: err.code }
             : { title: 'We couldn’t verify this booking', body: err?.message ?? 'Please check the details and try again.', code: err?.code },
       );
       await wait(400);
@@ -299,7 +303,11 @@ export class AddFlightPage {
       });
       await this.toast.show('Flight added as unverified — import the booking later to verify it', 'success', 'airplane');
       await this.openTrip(trip);
-    } catch {
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 'pro_required') {
+        this.pro.open('trips');
+        return;
+      }
       await this.toast.show('Could not save this flight. Please try again.', 'error');
     } finally {
       this.busy.set(false);

@@ -9,6 +9,7 @@ import { PrefsService } from '../../core/services/prefs.service';
 import { TravelStore } from '../../core/services/travel.store';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
+import { ProService } from '../../core/services/pro.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { PHRASE_KEYS, phrasesFor } from '../../core/data/phrasebook';
 import { sunTimes } from '../../core/utils/sun';
@@ -37,6 +38,7 @@ export class ExplorePage {
   private toast = inject(ToastService);
   private platform = inject(PlatformService);
   private achievements = inject(AchievementsService);
+  protected pro = inject(ProService);
 
   /** Route params: /explore/:iata?trip=<id> */
   readonly iata = input.required<string>();
@@ -204,6 +206,14 @@ export class ExplorePage {
     if (c) {
       this.explore.sights(code, c.lat, c.lon).then((s) => this.sights.set(s)).catch(() => this.sightsError.set(true));
     }
+  }
+
+  toggleAllSights() {
+    if (!this.showAllSights() && !this.pro.isPro()) {
+      this.pro.open('explore');
+      return;
+    }
+    this.showAllSights.update((v) => !v);
   }
 
   onScroll(ev: CustomEvent<{ scrollTop: number }>) {

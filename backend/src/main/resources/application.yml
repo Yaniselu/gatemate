@@ -74,6 +74,11 @@ gatemate:
   mail:
     from: ${MAIL_FROM:no-reply@gatemate.app}
     reset-url: ${RESET_URL:https://gatemate.app/reset}
+  billing:
+    webhook-secret: ${REVENUECAT_WEBHOOK_SECRET:}
+    secret-api-key: ${REVENUECAT_SECRET_KEY:}
+    entitlement: pro
+    free-upcoming-trips: 3
   integrations:
     unsplash-access-key: ${UNSPLASH_ACCESS_KEY:}
     aero-data-box-key: ${AERODATABOX_KEY:}

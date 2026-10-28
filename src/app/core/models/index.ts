@@ -18,6 +18,9 @@ export interface User {
   seatPreference?: SeatPreference;
   bio?: string;
   createdAt: string;
+  /** Active Gatemate Pro subscription, as confirmed by the server from App Store / Google Play events. */
+  pro?: boolean;
+  proUntil?: string;
 }
 
 export type ProfilePatch = Partial<Pick<User, 'name' | 'homeAirport' | 'legalFirstName' | 'legalLastName' | 'phone' | 'seatPreference' | 'bio' | 'avatarUrl'>>;

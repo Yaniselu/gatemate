@@ -123,6 +123,25 @@ export class MockApi extends GatemateApi {
     return this.delay(this.user, 400, 800);
   }
 
+  async syncPro(): Promise<User> {
+    if (!this.user) throw new ApiError('Not signed in.', 401);
+    return this.delay(this.user, 300, 600);
+  }
+
+  /** Demo builds only: simulates a completed store purchase (no payment happens). */
+  async demoGrantPro(): Promise<User> {
+    if (!this.user) throw new ApiError('Not signed in.', 401);
+    this.user = { ...this.user, pro: true, proUntil: new Date(Date.now() + 30 * 86_400_000).toISOString() };
+    return this.delay(this.user, 500, 900);
+  }
+
+  /** Same rule as the server: free accounts keep up to 3 upcoming trips. */
+  private requireTripAllowance() {
+    if (this.user?.pro) return;
+    const upcoming = this.ensureTrips().filter((t) => +new Date(t.endDate) > Date.now()).length;
+    if (upcoming >= 3) throw new ApiError('Free accounts can have 3 upcoming trips. Upgrade to Gatemate Pro for unlimited trips.', 402, 'pro_required');
+  }
+
   async sendFeedback(_input: FeedbackInput): Promise<void> {
     await this.delay(null, 500, 900);
   }
@@ -174,6 +193,7 @@ export class MockApi extends GatemateApi {
   }
 
   async claimFlight(req: ClaimRequest): Promise<Trip> {
+    this.requireTripAllowance();
     await this.delay(null, 900, 1400);
     const user = this.user;
     if (!user?.legalFirstName || !user.legalLastName) throw new ApiError('Add your legal name in your profile first.', 422, 'legal_name_missing');
@@ -283,6 +303,7 @@ export class MockApi extends GatemateApi {
 
   async addFlight(input: NewFlightInput): Promise<Trip> {
     const trips = this.ensureTrips();
+    this.requireTripAllowance();
     await this.airportDb.load();
     const ra = this.airportDb.get(input.from), rb = this.airportDb.get(input.to);
     if (!ra || !rb) throw new ApiError('Unknown airport code.', 400, 'unknown_airport');

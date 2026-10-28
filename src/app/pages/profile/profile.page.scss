@@ -335,3 +335,43 @@
   background: linear-gradient(135deg, #e7b98a, #b7703f);
   box-shadow: 0 10px 22px rgba(183, 112, 63, 0.3);
 }
+
+.pro-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  text-align: left;
+  color: var(--gm-ink);
+
+  .pro-ic {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--gm-accent), var(--gm-accent-deep));
+  }
+  .pro-txt {
+    flex: 1;
+    min-width: 0;
+
+    b {
+      display: block;
+      font-size: 15.5px;
+    }
+    small {
+      color: var(--gm-ink-3);
+      font-size: 12.5px;
+    }
+  }
+  .chev {
+    color: var(--gm-ink-3);
+  }
+}

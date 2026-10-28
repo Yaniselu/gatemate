@@ -13,7 +13,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 class JwtKeysTest {
     private static GatemateProperties props(String encKey) {
         return new GatemateProperties(new GatemateProperties.Jwt("iss", Duration.ofMinutes(15), Duration.ofDays(60), null, null), null, null,
-                new GatemateProperties.Security(encKey, 5, Duration.ofMinutes(15)), null, null, null, null, null);
+                new GatemateProperties.Security(encKey, 5, Duration.ofMinutes(15)), null, null, null, null, null, null);
     }
 
     @Test

@@ -206,6 +206,9 @@
                 <li [attr.data-state]="c.state"><span class="dot">@if (c.state === 'ok') { <ion-icon name="checkmark" /> } @else if (c.state === 'bad') { <ion-icon name="close-outline" /> }</span>{{ c.label }}</li>
               }
             </ul>
+            @if (f.code === 'pro_required') {
+              <button class="gm-btn" (click)="pro.open('trips')"><ion-icon name="sparkles" /> See Gatemate Pro</button>
+            }
             @if (f.code === 'name_mismatch' || f.code === 'legal_name_missing') {
               <a class="gm-btn ghost" routerLink="/profile/edit"><ion-icon name="id-card-outline" /> Check my legal name</a>
             }

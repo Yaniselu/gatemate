@@ -1,3 +1,5 @@
+import { ShortDatePipe } from '../../shared/pipes/time.pipes';
+import { ProService } from '../../core/services/pro.service';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AlertController, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
@@ -20,11 +22,12 @@ import { AirportDbService, haversineKm } from '../../core/services/airport-db.se
 @Component({
   selector: 'gm-profile',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, RouterLink, SkeletonComponent, CountUpDirective, RevealDirective, PressableDirective, SheenDirective],
+  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, RouterLink, SkeletonComponent, CountUpDirective, RevealDirective, PressableDirective, SheenDirective, ShortDatePipe],
   templateUrl: './profile.page.html',
   styleUrl: './profile.page.scss',
 })
 export class ProfilePage implements OnInit {
+  protected pro = inject(ProService);
   protected auth = inject(AuthService);
   protected store = inject(TravelStore);
   protected prefs = inject(PrefsService);
@@ -119,7 +122,7 @@ export class ProfilePage implements OnInit {
   async deleteAccount() {
     const alert = await this.alerts.create({
       header: 'Delete account',
-      message: 'This permanently deletes your profile, trips, boarding passes and messages. Type DELETE to confirm.',
+      message: (this.pro.isPro() ? 'Deleting your account does not cancel your Gatemate Pro subscription — cancel it in your App Store / Google Play settings first. ' : '') + 'This permanently deletes your profile, trips, boarding passes and messages. Type DELETE to confirm.',
       inputs: [{ name: 'confirm', type: 'text', placeholder: 'DELETE', attributes: { autocapitalize: 'characters', maxlength: 10 } }],
       buttons: [
         { text: 'Cancel', role: 'cancel' },

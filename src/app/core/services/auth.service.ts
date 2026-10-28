@@ -75,6 +75,11 @@ export class AuthService {
     return user;
   }
 
+  /** Replaces the signed-in user (e.g. after the server confirms a subscription). */
+  setUser(user: User): void {
+    this.session.update((s) => (s ? { ...s, user } : s));
+  }
+
   requestPasswordReset(email: string): Promise<void> {
     return this.api.requestPasswordReset(email.trim().toLowerCase());
   }

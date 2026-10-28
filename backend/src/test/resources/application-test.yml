@@ -8,3 +8,6 @@ gatemate:
     sandbox: true
   integrations:
     public-data-enabled: false
+  billing:
+    webhook-secret: test-webhook-secret
+    free-upcoming-trips: 3
