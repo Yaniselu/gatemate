@@ -10,15 +10,26 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService auth;
     private final TokenService tokens;
+    private final EmailVerificationService verification;
 
-    public AuthController(AuthService auth, TokenService tokens) {
+    public AuthController(AuthService auth, TokenService tokens, EmailVerificationService verification) {
         this.auth = auth;
         this.tokens = tokens;
+        this.verification = verification;
+    }
+
+    /** What this server can do, so the app only offers working options (e.g. codes by e-mail). */
+    @GetMapping("/features")
+    public java.util.Map<String, Boolean> features() {
+        return java.util.Map.of("emailCodes", verification.mailEnabled());
     }
 
     @PostMapping("/register")
     public AuthDtos.Session register(@Valid @RequestBody AuthDtos.RegisterRequest r) {
-        return auth.register(r);
+        var session = auth.register(r);
+        // After the account is saved: e-mail the confirmation code.
+        verification.sendQuietly(session.user().id());
+        return session;
     }
 
     @PostMapping("/login")

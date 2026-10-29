@@ -21,6 +21,8 @@ export interface User {
   /** Active Gatemate Pro subscription, as confirmed by the server from App Store / Google Play events. */
   pro?: boolean;
   proUntil?: string;
+  /** The account's e-mail was confirmed with a code. */
+  emailVerified?: boolean;
 }
 
 export type ProfilePatch = Partial<Pick<User, 'name' | 'homeAirport' | 'legalFirstName' | 'legalLastName' | 'phone' | 'seatPreference' | 'bio' | 'avatarUrl'>>;

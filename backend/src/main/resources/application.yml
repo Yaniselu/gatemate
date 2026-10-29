@@ -22,8 +22,22 @@ spring:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/gatemate}
     username: ${DATABASE_USER:gatemate}
     password: ${DATABASE_PASSWORD:gatemate}
+    hikari:
+      # Small pool: the free database allows few connections and the app's queries are short.
+      maximum-pool-size: ${DB_POOL_SIZE:5}
+      minimum-idle: 1
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 1500000
   jpa:
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc.batch_size: 25
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 32
+        query.in_clause_parameter_padding: true
     hibernate:
       ddl-auto: validate
   flyway:
@@ -73,7 +87,10 @@ gatemate:
     import-domain: ${IMPORT_EMAIL_DOMAIN:}
     import-address: ${IMPORT_EMAIL_ADDRESS:}
   mail:
-    from: ${MAIL_FROM:no-reply@gatemate.app}
+    from: ${MAIL_FROM:}
+    from-name: ${MAIL_FROM_NAME:Gatemate}
+    provider: ${MAIL_PROVIDER:brevo}
+    api-key: ${MAIL_API_KEY:}
     reset-url: ${RESET_URL:https://gatemate.app/reset}
   billing:
     webhook-secret: ${REVENUECAT_WEBHOOK_SECRET:}

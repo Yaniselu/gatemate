@@ -24,6 +24,7 @@ export const routes: Routes = [
   { path: 'airport-map', canActivate: [authGuard], loadComponent: () => import('./pages/airport-map/airport-map.page').then((m) => m.AirportMapPage) },
   { path: 'airport-map/:iata', canActivate: [authGuard], loadComponent: () => import('./pages/airport-map/airport-map.page').then((m) => m.AirportMapPage) },
   { path: 'pro', canActivate: [authGuard], loadComponent: () => import('./pages/pro/pro.page').then((m) => m.ProPage) },
+  { path: 'verify-email', canActivate: [authGuard], loadComponent: () => import('./pages/verify-email/verify-email.page').then((m) => m.VerifyEmailPage) },
   { path: 'onboarding', canActivate: [authGuard], loadComponent: () => import('./pages/onboarding/onboarding.page').then((m) => m.OnboardingPage) },
   { path: 'explore/:iata', canActivate: [authGuard], loadComponent: () => import('./pages/explore/explore.page').then((m) => m.ExplorePage) },
   { path: 'passport', canActivate: [authGuard], loadComponent: () => import('./pages/passport/passport.page').then((m) => m.PassportPage) },

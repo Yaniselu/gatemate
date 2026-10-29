@@ -69,7 +69,7 @@ export class MockApi extends GatemateApi {
     if (password.length < 8) throw new ApiError('Incorrect email or password.', 401, 'invalid_credentials');
     const local = email.split('@')[0].replace(/[._-]+/g, ' ');
     const name = local.replace(/\b\w/g, (c) => c.toUpperCase()) || 'Traveller';
-    return this.session(this.makeUser(name, email, 'password'));
+    return this.session({ ...this.makeUser(name, email, 'password'), emailVerified: false });
   }
 
   async register(name: string, email: string, _password: string): Promise<Session> {
@@ -103,6 +103,30 @@ export class MockApi extends GatemateApi {
   async requestPasswordReset(_email: string): Promise<void> {
     // Always succeeds so the response never reveals whether an account exists.
     await this.delay(null, 700, 1100);
+  }
+
+  /** Demo builds: the code is always 246810 (shown on the screen). */
+  static readonly DEMO_CODE = '246810';
+
+  async confirmPasswordReset(_email: string, code: string, _password: string): Promise<void> {
+    await this.delay(null, 500, 800);
+    if (code !== MockApi.DEMO_CODE) throw new ApiError('This code is wrong or has expired.', 400, 'invalid_code');
+  }
+
+  async getFeatures() {
+    return { emailCodes: true };
+  }
+
+  async sendVerificationCode(): Promise<void> {
+    await this.delay(null, 400, 700);
+  }
+
+  async verifyEmail(code: string): Promise<User> {
+    await this.delay(null, 400, 700);
+    if (!this.user) throw new ApiError('Please sign in again.', 401);
+    if (code !== MockApi.DEMO_CODE) throw new ApiError('That code isn’t right. 4 tries left.', 400, 'wrong_code');
+    this.user = { ...this.user, emailVerified: true };
+    return this.user;
   }
 
   async deleteAccount(): Promise<void> {

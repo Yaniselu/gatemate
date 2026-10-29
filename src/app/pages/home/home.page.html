@@ -36,6 +36,13 @@
   </ion-header>
 
   <div class="page">
+    @if (verifyReminder()) {
+      <a class="verify card anim-fade-up" routerLink="/verify-email" gmPressable>
+        <span class="gm-well tint" style="--c: #f59e0b"><ion-icon name="mail-unread-outline" /></span>
+        <span class="row-text"><b>Confirm your e-mail</b><small>Type the 6-digit code we sent to {{ auth.user()?.email }}</small></span>
+        <ion-icon name="chevron-forward" class="chev" />
+      </a>
+    }
     <!-- Next flight -->
     @if (loading()) {
       <div class="hero-skel card">

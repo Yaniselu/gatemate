@@ -40,6 +40,18 @@ export class HttpApi extends GatemateApi {
   async requestPasswordReset(email: string) {
     await this.call(this.http.post<void>(`${this.base}/auth/password-reset`, { email }));
   }
+  async confirmPasswordReset(email: string, code: string, password: string) {
+    await this.call(this.http.post<void>(`${this.base}/auth/password-reset/confirm`, { email, code, password }));
+  }
+  getFeatures() {
+    return this.call(this.http.get<{ emailCodes: boolean }>(`${this.base}/auth/features`));
+  }
+  async sendVerificationCode() {
+    await this.call(this.http.post<void>(`${this.base}/me/email/code`, {}));
+  }
+  verifyEmail(code: string) {
+    return this.call(this.http.post<User>(`${this.base}/me/email/verify`, { code }));
+  }
   async deleteAccount() {
     await this.call(this.http.delete<void>(`${this.base}/me`));
   }

@@ -11,9 +11,23 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/me")
 public class MeController {
     private final MeService me;
+    private final app.gatemate.auth.EmailVerificationService verification;
 
-    public MeController(MeService me) {
+    public MeController(MeService me, app.gatemate.auth.EmailVerificationService verification) {
         this.me = me;
+        this.verification = verification;
+    }
+
+    /** E-mails a new 6-digit confirmation code. */
+    @PostMapping("/email/code")
+    public ResponseEntity<Void> sendCode() {
+        verification.send(me.get(CurrentUser.id()));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/email/verify")
+    public UserDto verify(@jakarta.validation.Valid @RequestBody app.gatemate.auth.AuthDtos.VerifyRequest in) {
+        return UserDto.of(verification.verify(CurrentUser.id(), in.code()));
     }
 
     @GetMapping

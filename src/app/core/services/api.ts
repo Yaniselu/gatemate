@@ -73,6 +73,13 @@ export abstract class GatemateApi {
   abstract refresh(refreshToken: string): Promise<Session>;
   abstract logout(refreshToken: string): Promise<void>;
   abstract requestPasswordReset(email: string): Promise<void>;
+  /** Sets a new password with the 6-digit code from the reset e-mail. */
+  abstract confirmPasswordReset(email: string, code: string, password: string): Promise<void>;
+  /** E-mails a new 6-digit code to confirm the account's address. */
+  abstract sendVerificationCode(): Promise<void>;
+  /** What the server supports (e.g. e-mailing codes). */
+  abstract getFeatures(): Promise<{ emailCodes: boolean }>;
+  abstract verifyEmail(code: string): Promise<User>;
   abstract deleteAccount(): Promise<void>;
   abstract exportMyData(): Promise<Blob>;
   abstract updateProfile(patch: ProfilePatch): Promise<User>;

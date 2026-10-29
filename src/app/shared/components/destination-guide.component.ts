@@ -13,6 +13,9 @@ import { RevealDirective } from '../directives/reveal.directive';
   imports: [IonIcon, SkeletonComponent, RevealDirective],
   template: `
     @if (info(); as d) {
+      @if (d.offline) {
+        <div class="card offline-note"><ion-icon name="cloud-offline-outline" /><p>Weather, photos and the city summary need the internet. Country facts below work offline.</p><button (click)="retry()">Retry</button></div>
+      }
       @if (d.summary; as s) {
         <section class="card about" gmReveal>
           <span class="gm-label">About {{ d.airport.city }}</span>
@@ -100,7 +103,7 @@ import { RevealDirective } from '../directives/reveal.directive';
       </section>
       <p class="note">Facts are checked against official sources but can change — verify entry rules with your government’s travel advice.</p>
     } @else if (error()) {
-      <div class="card offline"><ion-icon name="cloud-offline-outline" /><p>Destination info isn’t available offline. Connect to the internet and pull to refresh.</p></div>
+      <div class="card offline"><ion-icon name="cloud-offline-outline" /><p>Destination info couldn’t load. Check your connection.</p><button (click)="retry()">Retry</button></div>
     } @else {
       <div class="skel">
         <gm-skeleton height="140px" radius="16px" />
@@ -110,6 +113,10 @@ import { RevealDirective } from '../directives/reveal.directive';
     }
   `,
   styles: `
+    .offline-note { display: flex; align-items: center; gap: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; color: #9a3412; background: #fff7ed; }
+    .offline-note p, .offline p { flex: 1; margin: 0; }
+    .offline-note button, .offline button { flex: none; background: none; font-weight: 700; color: var(--gm-accent-strong); }
+
     :host { display: grid; gap: 12px; }
     .skel { display: grid; gap: 12px; }
     .about { padding: 16px; }
@@ -180,6 +187,7 @@ export class DestinationGuideComponent {
   constructor() {
     effect(() => {
       const code = this.iata();
+      this.attempt();
       this.info.set(null);
       this.error.set(false);
       const home = this.db.get(this.prefs.homeAirport());
@@ -190,6 +198,12 @@ export class DestinationGuideComponent {
     });
     const t = setInterval(() => this.now.set(Date.now()), 30_000);
     inject(DestroyRef).onDestroy(() => clearInterval(t));
+  }
+
+  private attempt = signal(0);
+  retry() {
+    this.dest.forget(this.iata());
+    this.attempt.update((n) => n + 1);
   }
 
   weekday(date: string) {

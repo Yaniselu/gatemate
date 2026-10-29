@@ -20,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
+    private final Bucket global = Bucket.builder().addLimit(Bandwidth.builder().capacity(600).refillGreedy(600, Duration.ofMinutes(1)).build()).build();
     private final Cache<String, Bucket> buckets = Caffeine.newBuilder().expireAfterAccess(Duration.ofMinutes(30)).maximumSize(200_000).build();
 
     @Override
@@ -28,7 +29,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = req.getRequestURI();
         String group;
         Bandwidth limit;
-        if (path.startsWith("/api/v1/auth/")) {
+        // Server-wide ceilings: even with many (or spoofed) IPs, sign-in endpoints can't be hammered.
+        if (path.startsWith("/api/v1/auth/") && !global.tryConsume(1)) {
+            tooMany(res, 30);
+            return;
+        }
+        if (path.equals("/api/v1/auth/register")) {
+            group = "register";
+            limit = Bandwidth.builder().capacity(5).refillGreedy(5, Duration.ofHours(1)).build();
+        } else if (path.startsWith("/api/v1/auth/")) {
             group = "auth";
             limit = Bandwidth.builder().capacity(20).refillGreedy(20, Duration.ofMinutes(10)).build();
         } else if (path.startsWith("/api/v1/bookings/")) {
@@ -41,13 +50,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
         Bucket b = buckets.get(group + "|" + ip, k -> Bucket.builder().addLimit(limit).build());
         var probe = b.tryConsumeAndReturnRemaining(1);
         if (!probe.isConsumed()) {
-            long wait = Math.max(1, probe.getNanosToWaitForRefill() / 1_000_000_000L);
-            res.setStatus(429);
-            res.setHeader("Retry-After", String.valueOf(wait));
-            res.setContentType("application/json");
-            res.getWriter().write("{\"code\":\"rate_limited\",\"message\":\"Too many requests. Please wait a moment.\"}");
+            tooMany(res, Math.max(1, probe.getNanosToWaitForRefill() / 1_000_000_000L));
             return;
         }
         chain.doFilter(req, res);
+    }
+
+    private static void tooMany(HttpServletResponse res, long wait) throws IOException {
+        res.setStatus(429);
+        res.setHeader("Retry-After", String.valueOf(wait));
+        res.setContentType("application/json");
+        res.getWriter().write("{\"code\":\"rate_limited\",\"message\":\"Too many requests. Please wait a moment.\"}");
     }
 }

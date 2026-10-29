@@ -98,6 +98,7 @@ export class AirportPlanComponent {
     this.base = L.layerGroup().addTo(this.map);
     this.top = L.layerGroup().addTo(this.map);
     this.map.on('zoomend', () => this.onZoom());
+    this.map.on('moveend', () => requestAnimationFrame(() => this.declutter()));
     this.resize = new ResizeObserver(() => this.map?.invalidateSize({ pan: false }));
     this.resize.observe(this.host().nativeElement);
     setTimeout(() => this.map?.invalidateSize(), 250);
@@ -118,6 +119,8 @@ export class AirportPlanComponent {
     el.classList.toggle('z-names', z >= 14);
     el.classList.toggle('z-far', z < 14);
     el.classList.toggle('z-shops', z >= 17.5);
+    el.classList.toggle('z-bld', z >= 15.5);
+    requestAnimationFrame(() => this.declutter());
   }
 
   private drawBase(features: MapFeature[], category: PoiKind | null, level: string | null = null) {
@@ -127,8 +130,30 @@ export class AirportPlanComponent {
     this.empty.set(features.length === 0);
     const by = (k: MapFeature['kind']) => features.filter((f) => f.kind === k);
 
-    for (const a of by('aerodrome')) L.polygon(a.outline!, { color: '#cfdcd3', weight: 1, fillColor: '#e3ece5', fillOpacity: 1, interactive: false }).addTo(layer);
+    const poly = (k: MapFeature['kind'], style: Leaflet.PolylineOptions) => {
+      for (const f of by(k)) if (f.outline) L.polygon(f.outline, { ...style, interactive: false }).addTo(layer);
+    };
+    poly('green', { color: '#c9e4c5', weight: 0.5, fillColor: '#d8ecd3', fillOpacity: 1 });
+    poly('water', { color: '#a9d3ee', weight: 0.5, fillColor: '#bfe0f5', fillOpacity: 1 });
+    for (const a of by('aerodrome')) L.polygon(a.outline!, { color: '#cfdcd3', weight: 1, fillColor: '#e3ece5', fillOpacity: 0.85, interactive: false }).addTo(layer);
+    poly('parking', { color: '#c7ccd6', weight: 0.8, fillColor: '#e5e8ee', fillOpacity: 1 });
     for (const a of by('apron')) L.polygon(a.outline!, { color: '#cdd4dc', weight: 1, fillColor: '#dde3e9', fillOpacity: 1, interactive: false }).addTo(layer);
+    // Roads at their real width (casing + fill), railways as dashed dark lines.
+    const ROAD: Record<string, [number, string]> = {
+      motorway: [24, '#f6c66a'], trunk: [20, '#f6c66a'], primary: [16, '#fbe08a'], secondary: [13, '#fdf0b0'], tertiary: [11, '#ffffff'],
+      motorway_link: [10, '#f6c66a'], trunk_link: [9, '#f6c66a'], primary_link: [9, '#fbe08a'], secondary_link: [8, '#fdf0b0'], tertiary_link: [7, '#ffffff'],
+      unclassified: [8, '#ffffff'], residential: [8, '#ffffff'], service: [5, '#ffffff'], pedestrian: [6, '#f3f4f6'], footway: [2.5, '#ffffff'],
+    };
+    for (const r of by('road').filter((x) => !x.level || here(x))) {
+      const [w, color] = ROAD[r.cls ?? 'service'] ?? ROAD['service'];
+      const casing = L.polyline(r.line!, { color: '#c3cad3', weight: 3, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(layer);
+      const fill = L.polyline(r.line!, { color, weight: 2, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(layer);
+      this.strips.push({ layer: casing, width: w + 2, min: 1.5 }, { layer: fill, width: w, min: 1 });
+    }
+    for (const r of by('rail')) {
+      L.polyline(r.line!, { color: '#6b7280', weight: 3, interactive: false }).addTo(layer);
+      L.polyline(r.line!, { color: '#ffffff', weight: 1.5, dashArray: '6 6', interactive: false }).addTo(layer);
+    }
     for (const t of by('taxiway')) {
       const line = L.polyline(t.line!, { color: '#e9d48f', weight: 2, opacity: 0.95, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(layer);
       this.strips.push({ layer: line, width: t.width ?? 18, min: 1.5 });
@@ -138,12 +163,21 @@ export class AirportPlanComponent {
       this.strips.push({ layer: line, width: r.width ?? 45, min: 3 });
       L.polyline(r.line!, { color: '#ffffff', weight: 1, dashArray: '8 10', opacity: 0.8, interactive: false }).addTo(layer);
     }
+    // Buildings: hangars, the control tower, hotels, car parks…
+    for (const b of by('building')) {
+      if (b.outline) L.polygon(b.outline, { color: '#bcc5cf', weight: 1, fillColor: b.cls === 'hangar' ? '#cfd6de' : '#d9dfe5', fillOpacity: 1, interactive: false }).addTo(layer);
+    }
     for (const t of by('terminal')) {
       if (t.outline) {
         L.polygon(t.outline, { color: '#0fb5c3', weight: 2, fillColor: '#5fd6df', fillOpacity: 0.32, interactive: false, className: 'gm-terminal-outline' }).addTo(layer);
       }
     }
     const here = (f: MapFeature) => onLevel(f.level, level);
+    // Jet bridges from the terminal to the aircraft, and the numbered aircraft stands.
+    for (const j of by('jetbridge')) {
+      const line = L.polyline(j.line!, { color: '#64748b', weight: 3, lineCap: 'butt', interactive: false }).addTo(layer);
+      this.strips.push({ layer: line, width: 3.5, min: 2 });
+    }
     // Inside the terminals: corridors (walkways) and rooms, so the floor plan reads like a building.
     for (const c of by('corridor').filter(here)) L.polygon(c.outline!, { color: '#c9d4dd', weight: 1, fillColor: '#ffffff', fillOpacity: 0.95, interactive: false }).addTo(layer);
     for (const r of by('room').filter(here)) L.polygon(r.outline!, { color: '#b9c6d2', weight: 1, fillColor: '#eef2f6', fillOpacity: 1, interactive: false }).addTo(layer);
@@ -181,6 +215,23 @@ export class AirportPlanComponent {
     }
     for (const r of by('room').filter(here)) {
       if (r.ref) L.marker([r.lat, r.lon], { icon: L.divIcon({ className: 'gm-plan-shop room', html: `<span>${esc(r.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
+    }
+    const glyph = (k: MapFeature['kind'], cls: string, html: string, filter: (f: MapFeature) => boolean = () => true) => {
+      for (const f of by(k).filter(filter)) {
+        L.marker([f.lat, f.lon], { icon: L.divIcon({ className: cls, html, iconSize: undefined }), interactive: this.interactive(), title: f.ref })
+          .bindTooltip(esc(f.ref), { direction: 'top', offset: [0, -8] })
+          .addTo(layer);
+      }
+    };
+    glyph('elevator', 'gm-plan-icon z17', '<span>⇅</span>', here);
+    glyph('entrance', 'gm-plan-icon door z17', '<span>⇥</span>', here);
+    glyph('tower', 'gm-plan-icon tower', '<span>⌂</span>');
+    for (const e of by('escalator').filter(here)) L.polyline(e.line!, { color: '#0f766e', weight: 3, dashArray: '2 3', interactive: false }).addTo(layer);
+    for (const st of by('stand')) {
+      L.marker([st.lat, st.lon], { icon: L.divIcon({ className: 'gm-plan-stand', html: `<span>${esc(st.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
+    }
+    for (const b of by('building').filter((x) => x.ref)) {
+      L.marker([b.lat, b.lon], { icon: L.divIcon({ className: 'gm-plan-building', html: `<span>${esc(b.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
     }
     for (const r of by('runway')) {
       if (r.ref) L.marker([r.lat, r.lon], { icon: L.divIcon({ className: 'gm-plan-runway', html: `<span>${esc(r.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
@@ -224,6 +275,22 @@ export class AirportPlanComponent {
       }
     } else if (target && this.interactive()) {
       map.setView([target.lat, target.lon], Math.max(map.getZoom(), 17.5), { animate: true });
+    }
+  }
+
+  /** Hides labels that would overlap one already shown (terminal names first, then buildings and shops). */
+  private declutter() {
+    const el = this.host().nativeElement;
+    const shown: DOMRect[] = [];
+    for (const sel of ['.gm-plan-terminal span', '.gm-plan-building span', '.gm-plan-shop span', '.gm-plan-stand span']) {
+      for (const label of Array.from(el.querySelectorAll<HTMLElement>(sel))) {
+        label.style.visibility = '';
+        const r = label.getBoundingClientRect();
+        if (!r.width) continue;
+        const hit = shown.some((o) => r.left < o.right + 2 && r.right > o.left - 2 && r.top < o.bottom + 1 && r.bottom > o.top - 1);
+        if (hit) label.style.visibility = 'hidden';
+        else shown.push(r);
+      }
     }
   }
 

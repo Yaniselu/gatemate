@@ -12,7 +12,11 @@ export type { PoiKind } from '../data/airport-poi';
 
 export interface MapFeature {
   id?: string;
-  kind: 'gate' | 'terminal' | 'poi' | 'aerodrome' | 'runway' | 'taxiway' | 'apron' | 'room' | 'corridor';
+  kind:
+    | 'gate' | 'terminal' | 'poi' | 'aerodrome' | 'runway' | 'taxiway' | 'apron' | 'room' | 'corridor'
+    | 'building' | 'road' | 'rail' | 'green' | 'water' | 'parking' | 'jetbridge' | 'escalator' | 'stand' | 'elevator' | 'entrance' | 'tower';
+  /** Road class (motorway, primary, service…) for line width. */
+  cls?: string;
   ref: string;
   lat: number;
   lon: number;
@@ -34,7 +38,7 @@ export interface MapFeature {
 }
 
 interface Cached {
-  v: 4;
+  v: 5;
   savedAt: number;
   features: MapFeature[];
 }
@@ -173,7 +177,7 @@ export class GatesService {
         raw = localStorage.getItem(`gm_osm_${iata}`);
       }
       const c = raw ? (JSON.parse(raw) as Cached) : null;
-      return c?.v === 4 && Array.isArray(c.features) ? c : null;
+      return c?.v === 5 && Array.isArray(c.features) ? c : null;
     } catch {
       return null;
     }
@@ -181,7 +185,7 @@ export class GatesService {
 
   private async save(iata: string, features: MapFeature[]): Promise<void> {
     if (!features.length) return;
-    const data = JSON.stringify({ v: 4, savedAt: Date.now(), features } satisfies Cached);
+    const data = JSON.stringify({ v: 5, savedAt: Date.now(), features } satisfies Cached);
     try {
       if (Capacitor.isNativePlatform()) {
         await Filesystem.writeFile({ path: `osm/${iata}.json`, directory: Directory.Data, encoding: Encoding.UTF8, data, recursive: true });
@@ -225,7 +229,19 @@ const outputs = 'node.p;out;way.p;out geom tags;rel.p;out center tags;';
 
 /** Shapes for the drawn plan: terminals, aprons, runways and taxiways, with geometry. */
 function shapes(scope: string): string {
-  return `(way["aeroway"="terminal"]${scope};relation["aeroway"="terminal"]${scope};way["building"="terminal"]${scope};way["aeroway"~"^(runway|taxiway|apron)$"]${scope};relation["aeroway"="apron"]${scope};);out geom tags;way["indoor"~"^(room|area|corridor)$"]${scope};out geom tags;`;
+  return `(way["aeroway"="terminal"]${scope};relation["aeroway"="terminal"]${scope};way["building"="terminal"]${scope};way["aeroway"~"^(runway|taxiway|apron)$"]${scope};relation["aeroway"="apron"]${scope};);out geom tags;way["indoor"~"^(room|area|corridor)$"]${scope};out geom tags;${context(scope.replace('around:3000', 'around:1500'))}`;
+}
+
+/** Everything around the terminals that makes the plan read like a real map. */
+function context(scope: string): string {
+  const roads = 'motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|pedestrian';
+  return (
+    `(way["building"]${scope};way["highway"~"^(${roads})$"]${scope};way["railway"~"^(rail|light_rail|subway|tram|monorail)$"]${scope};` +
+    `way["amenity"="parking"]${scope};way["landuse"~"^(grass|meadow|forest|recreation_ground|village_green)$"]${scope};way["natural"~"^(water|wood|scrub|grassland)$"]${scope};` +
+    `way["leisure"="park"]${scope};way["aeroway"~"^(jet_bridge|hangar)$"]${scope};way["highway"="steps"]["conveying"]${scope};way["highway"="footway"]["indoor"="yes"]${scope};);out geom tags;` +
+    `(node["aeroway"~"^(parking_position|control_tower)$"]${scope};node["highway"="elevator"]${scope};node["entrance"~"^(main|yes)$"]${scope};` +
+    `node["man_made"="tower"]["tower:type"="airport_control"]${scope};);out;`
+  );
 }
 
 /** Turns Overpass elements into map features, placing each facility in the terminal that contains it. */
@@ -257,6 +273,14 @@ export function parse(elements: OsmElement[]): MapFeature[] {
       const mid = line[Math.floor(line.length / 2)];
       const width = parseFloat(t['width'] ?? '') || (aw === 'runway' ? 45 : 18);
       shapes.push({ id: key, kind: aw, ref: aw === 'runway' ? t['ref'] ?? '' : '', lat: mid[0], lon: mid[1], line, width });
+    } else if (e.geometry && !classify(t) && !t['indoor'] && contextKind(t)) {
+      const kind = contextKind(t)!;
+      const pts = simplify(e.geometry.map((p) => [round(p.lat), round(p.lon)] as [number, number]));
+      if (pts.length < 2) continue;
+      const mid = centroid(pts);
+      const linear = kind === 'road' || kind === 'rail' || kind === 'jetbridge' || kind === 'escalator';
+      if (linear) shapes.push({ id: key, kind, ref: t['name'] ?? '', lat: mid[0], lon: mid[1], line: pts, cls: t['highway'] ?? t['railway'], level: t['level'] || undefined });
+      else if (pts.length > 2) shapes.push({ id: key, kind, ref: (t['name'] ?? '').trim(), lat: mid[0], lon: mid[1], outline: [pts], cls: t['aeroway'] ?? t['building'] });
     } else if (e.geometry && e.geometry.length > 2) {
       // Shops, cafés, rooms and corridors mapped as areas: keep their outline.
       const ring = simplify(e.geometry.map((p) => [round(p.lat), round(p.lon)] as [number, number]));
@@ -283,6 +307,23 @@ export function parse(elements: OsmElement[]): MapFeature[] {
     }
     const terminal = t['terminal'] ? terminalLabel(t['terminal']) : terminals.find((x) => x.outline?.some((r) => inside(lat, lon, r)))?.ref;
     const base = { id: `${e.type}${e.id}`, lat, lon, terminal, level: t['level'] || undefined };
+    if (t['aeroway'] === 'parking_position') {
+      if (t['ref']) out.push({ ...base, kind: 'stand', ref: t['ref'] });
+      continue;
+    }
+    if (t['aeroway'] === 'control_tower' || t['tower:type'] === 'airport_control') {
+      out.push({ ...base, kind: 'tower', ref: t['name'] ?? 'Control tower' });
+      continue;
+    }
+    if (t['highway'] === 'elevator' && !classify(t)) {
+      out.push({ ...base, kind: 'elevator', ref: 'Lift' });
+      continue;
+    }
+    if (t['entrance'] && !classify(t) && t['aeroway'] !== 'gate') {
+      // Only doors into the terminals matter to travellers.
+      if (terminal) out.push({ ...base, kind: 'entrance', ref: t['name'] ?? (t['entrance'] === 'main' ? 'Main entrance' : 'Entrance') });
+      continue;
+    }
     if (t['aeroway'] === 'gate') {
       const ref = (t['ref'] || t['name'] || '').trim();
       if (ref) out.push({ ...base, kind: 'gate', ref });
@@ -296,12 +337,28 @@ export function parse(elements: OsmElement[]): MapFeature[] {
     }
     const name = (t['name'] || t['brand'] || '').trim();
     // Unnamed shops/parking spaces are noise; unnamed toilets or ATMs are exactly what people look for.
-    if (!name && (poi === 'shop' || poi === 'parking' || poi === 'hotel')) continue;
+    if (!name && (poi === 'shop' || poi === 'parking' || poi === 'hotel')) {
+      // Still draw an unnamed car park's area on the plan.
+      if (poi === 'parking' && ring) out.push({ ...base, kind: 'parking', ref: '', outline: [ring] });
+      continue;
+    }
     const cuisine = t['cuisine']?.split(';').map((c) => c.trim().replace(/_/g, ' ')).join(', ');
     const detail = (cuisine ? cuisine.charAt(0).toUpperCase() + cuisine.slice(1) : '') || t['operator'] || undefined;
     out.push({ ...base, kind: 'poi', poi, ref: name || fallbackName(poi, t), hours: t['opening_hours'] || undefined, brand: t['brand'] || undefined, detail, outline: ring ? [ring] : undefined });
   }
   return out;
+}
+
+function contextKind(t: Record<string, string>): MapFeature['kind'] | null {
+  if (t['aeroway'] === 'jet_bridge') return 'jetbridge';
+  if (t['highway'] === 'steps' && t['conveying']) return 'escalator';
+  if (t['highway']) return 'road';
+  if (t['railway']) return 'rail';
+  if (t['amenity'] === 'parking') return 'parking';
+  if (t['natural'] === 'water') return 'water';
+  if (t['landuse'] || t['natural'] || t['leisure'] === 'park') return 'green';
+  if (t['building'] || t['aeroway'] === 'hangar') return 'building';
+  return null;
 }
 
 function centroid(ring: [number, number][]): [number, number] {

@@ -28,5 +28,7 @@ public final class AuthDtos {
 
     public record ResetRequest(@NotBlank @Email @Size(max = 254) String email) {}
 
-    public record ResetConfirm(@NotBlank @Size(max = 200) String token, @NotBlank @Size(min = 10, max = 128) String password) {}
+    public record ResetConfirm(@NotBlank @Email @Size(max = 254) String email, @NotBlank @Size(min = 6, max = 6) String code, @NotBlank @Size(min = 10, max = 128) String password) {}
+
+    public record VerifyRequest(@NotBlank @Size(min = 6, max = 6) String code) {}
 }

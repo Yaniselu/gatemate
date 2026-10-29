@@ -46,3 +46,35 @@ function withAbort<T>(p: Promise<T>, signal?: AbortSignal): Promise<T> {
     p.then(resolve, reject);
   });
 }
+
+/** GET (or POST) JSON from a public source; throws on HTTP errors and after the timeout. */
+export async function publicJson<T>(url: string, opts: { timeoutMs?: number; accept?: string } = {}): Promise<T> {
+  const r = await publicFetch(url, { timeoutMs: opts.timeoutMs ?? 12_000 });
+  if (r.status < 200 || r.status >= 300) throw new Error(`HTTP ${r.status}`);
+  return JSON.parse(r.text) as T;
+}
+
+/**
+ * Keeps public data (city guide, sights, holidays, rates) on the device: fresh copies are used straight away,
+ * older ones refresh in the background, and anything up to a month old still shows when offline.
+ */
+export async function deviceCached<T>(key: string, freshMs: number, load: () => Promise<T>): Promise<T> {
+  const { Preferences } = await import('@capacitor/preferences');
+  const k = 'gm_pub_' + key;
+  let saved: { at: number; data: T } | null = null;
+  try {
+    const { value } = await Preferences.get({ key: k });
+    saved = value ? JSON.parse(value) : null;
+  } catch {
+    saved = null;
+  }
+  const store = (data: T) => Preferences.set({ key: k, value: JSON.stringify({ at: Date.now(), data }) }).catch(() => {});
+  if (saved && Date.now() - saved.at < freshMs) return saved.data;
+  if (saved && Date.now() - saved.at < 30 * 86_400_000) {
+    void load().then(store, () => {});
+    return saved.data;
+  }
+  const data = await load();
+  void store(data);
+  return data;
+}

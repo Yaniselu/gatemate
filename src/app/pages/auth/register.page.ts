@@ -64,7 +64,8 @@ export class RegisterPage {
       const { name, email, password } = this.form.getRawValue();
       await this.auth.register(name, email, password);
       this.platform.success();
-      await this.nav.navigateRoot('/tabs/home');
+      // The confirmation code is already on its way (when this server sends e-mail).
+      await this.nav.navigateRoot((await this.auth.emailCodes()) ? '/verify-email' : '/tabs/home');
     } catch (e) {
       this.platform.error();
       this.error.set(e instanceof ApiError ? e.message : 'Could not create your account. Please try again.');

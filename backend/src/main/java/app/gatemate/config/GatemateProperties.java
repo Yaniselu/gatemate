@@ -37,7 +37,12 @@ public record GatemateProperties(
     /** importAddress: the provider's inbound address with {token}, e.g. "1a2b3c+{token}@cloudmailin.net". */
     public record Booking(boolean sandbox, String inboundSecret, List<String> airlineEmailDomains, String importDomain, String importAddress) {}
 
-    public record Mail(String from, String resetUrl) {}
+    /** provider: "brevo" (default) or "resend"; apiKey empty = e-mail off. */
+    public record Mail(String from, String resetUrl, String provider, String apiKey, String fromName) {
+        public Mail {
+            if (fromName == null || fromName.isBlank()) fromName = "Gatemate";
+        }
+    }
 
     /**
      * RevenueCat: {@code webhookSecret} is the Authorization header value configured on the webhook;

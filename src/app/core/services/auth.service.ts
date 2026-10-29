@@ -104,6 +104,28 @@ export class AuthService {
     return this.api.requestPasswordReset(email.trim().toLowerCase());
   }
 
+  confirmPasswordReset(email: string, code: string, password: string): Promise<void> {
+    return this.api.confirmPasswordReset(email.trim().toLowerCase(), code, password);
+  }
+
+  private features: Promise<{ emailCodes: boolean }> | null = null;
+  /** Whether the server can e-mail codes (verification, password reset). */
+  async emailCodes(): Promise<boolean> {
+    this.features ??= this.api.getFeatures().catch(() => {
+      this.features = null;
+      return { emailCodes: false };
+    });
+    return (await this.features).emailCodes;
+  }
+
+  sendVerificationCode(): Promise<void> {
+    return this.api.sendVerificationCode();
+  }
+
+  async verifyEmail(code: string): Promise<void> {
+    this.setUser(await this.api.verifyEmail(code));
+  }
+
   /**
    * Returns a valid access token, refreshing it shortly before expiry. Throws an ApiError when the server
    * can't be reached, so callers show "no connection" instead of signing the user out.

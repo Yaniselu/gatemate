@@ -66,6 +66,9 @@ export class HomePage implements OnInit {
   readonly today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   readonly next = this.store.nextFlight;
   readonly loading = computed(() => this.store.tripsState() !== 'ready');
+  /** Reminder to confirm the e-mail (only when this server can send codes). */
+  private emailCodes = signal(false);
+  readonly verifyReminder = computed(() => this.emailCodes() && this.auth.user()?.emailVerified === false);
   private live = inject(LiveFlightService);
   /** Next flight while it can be tracked live (an hour before departure until after landing). */
   readonly liveFlight = computed(() => {
@@ -115,6 +118,7 @@ export class HomePage implements OnInit {
   );
 
   constructor() {
+    void this.auth.emailCodes().then((v) => this.emailCodes.set(v));
     const id = setInterval(() => this.now.set(Date.now()), 30_000);
     inject(DestroyRef).onDestroy(() => clearInterval(id));
   }

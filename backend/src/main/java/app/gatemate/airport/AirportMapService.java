@@ -31,10 +31,14 @@ public class AirportMapService {
     private static final Logger log = LoggerFactory.getLogger(AirportMapService.class);
 
     public record MapFeature(String id, String kind, String ref, double lat, double lon, String poi, String terminal, String level, String hours,
-            String brand, String detail, List<List<double[]>> outline, List<double[]> line, Double width) {
+            String brand, String detail, List<List<double[]>> outline, List<double[]> line, Double width, String cls) {
+        MapFeature(String id, String kind, String ref, double lat, double lon, String poi, String terminal, String level, String hours, String brand,
+                String detail, List<List<double[]>> outline, List<double[]> line, Double width) {
+            this(id, kind, ref, lat, lon, poi, terminal, level, hours, brand, detail, outline, line, width, null);
+        }
         MapFeature(String id, String kind, String ref, double lat, double lon, String poi, String terminal, String level, String hours, String brand,
                 String detail, List<List<double[]>> outline) {
-            this(id, kind, ref, lat, lon, poi, terminal, level, hours, brand, detail, outline, null, null);
+            this(id, kind, ref, lat, lon, poi, terminal, level, hours, brand, detail, outline, null, null, null);
         }
     }
 
@@ -126,7 +130,18 @@ public class AirportMapService {
     /** Shapes for the drawn plan: terminals, aprons, runways and taxiways, with geometry. */
     private static String shapes(String scope) {
         return "(way[\"aeroway\"=\"terminal\"]" + scope + ";relation[\"aeroway\"=\"terminal\"]" + scope + ";way[\"building\"=\"terminal\"]" + scope
-                + ";way[\"aeroway\"~\"^(runway|taxiway|apron)$\"]" + scope + ";relation[\"aeroway\"=\"apron\"]" + scope + ";);out geom tags;way[\"indoor\"~\"^(room|area|corridor)$\"]" + scope + ";out geom tags;";
+                + ";way[\"aeroway\"~\"^(runway|taxiway|apron)$\"]" + scope + ";relation[\"aeroway\"=\"apron\"]" + scope + ";);out geom tags;way[\"indoor\"~\"^(room|area|corridor)$\"]" + scope + ";out geom tags;" + context(scope.replace("around:3000", "around:1500"));
+    }
+
+    /** Everything around the terminals that makes the plan read like a real map. */
+    private static String context(String scope) {
+        String roads = "motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|pedestrian";
+        return "(way[\"building\"]" + scope + ";way[\"highway\"~\"^(" + roads + ")$\"]" + scope + ";way[\"railway\"~\"^(rail|light_rail|subway|tram|monorail)$\"]" + scope
+                + ";way[\"amenity\"=\"parking\"]" + scope + ";way[\"landuse\"~\"^(grass|meadow|forest|recreation_ground|village_green)$\"]" + scope
+                + ";way[\"natural\"~\"^(water|wood|scrub|grassland)$\"]" + scope + ";way[\"leisure\"=\"park\"]" + scope + ";way[\"aeroway\"~\"^(jet_bridge|hangar)$\"]" + scope
+                + ";way[\"highway\"=\"steps\"][\"conveying\"]" + scope + ";way[\"highway\"=\"footway\"][\"indoor\"=\"yes\"]" + scope + ";);out geom tags;"
+                + "(node[\"aeroway\"~\"^(parking_position|control_tower)$\"]" + scope + ";node[\"highway\"=\"elevator\"]" + scope + ";node[\"entrance\"~\"^(main|yes)$\"]" + scope
+                + ";node[\"man_made\"=\"tower\"][\"tower:type\"=\"airport_control\"]" + scope + ";);out;";
     }
 
     public static List<MapFeature> parse(JsonNode elements) {
@@ -159,6 +174,19 @@ public class AirportMapService {
                 double[] mid = line.get(line.size() / 2);
                 double width = parseWidth(t.path("width").asString(""), aw.equals("runway") ? 45 : 18);
                 shapes.add(new MapFeature(key, aw, aw.equals("runway") ? t.path("ref").asString("") : "", mid[0], mid[1], null, null, null, null, null, null, null, line, width));
+            } else if (e.has("geometry") && classify(t) == null && !t.has("indoor") && contextKind(t) != null) {
+                String kind = contextKind(t);
+                var pts = simplify(points(e.path("geometry")));
+                if (pts.size() < 2) continue;
+                double[] mid = centroid(pts);
+                String name = t.path("name").asString("").trim();
+                if (kind.equals("road") || kind.equals("rail") || kind.equals("jetbridge") || kind.equals("escalator")) {
+                    String cls = t.has("highway") ? t.path("highway").asString() : t.path("railway").asString(null);
+                    shapes.add(new MapFeature(key, kind, name, mid[0], mid[1], null, null, blank(t.path("level").asString("")), null, null, null, null, pts, null, cls));
+                } else if (pts.size() > 2) {
+                    String cls = t.has("aeroway") ? t.path("aeroway").asString() : t.path("building").asString(null);
+                    shapes.add(new MapFeature(key, kind, name, mid[0], mid[1], null, null, null, null, null, null, List.of(pts), null, null, cls));
+                }
             } else if (e.has("geometry") && e.path("geometry").size() > 2) {
                 // Shops, cafés, rooms and corridors mapped as areas: keep their outline.
                 var ring = simplify(points(e.path("geometry")));
@@ -188,6 +216,24 @@ public class AirportMapService {
             String terminal = t.hasNonNull("terminal") ? terminalLabel(t.path("terminal").asString()) : null;
             if (terminal == null) for (var term : terminals) if (term.outline() != null && term.outline().stream().anyMatch(r -> inside(lat, lon, r))) { terminal = term.ref(); break; }
             String level = blank(t.path("level").asString(""));
+            String aeroway = t.path("aeroway").asString("");
+            if (aeroway.equals("parking_position")) {
+                if (t.hasNonNull("ref")) out.add(new MapFeature(id, "stand", t.path("ref").asString(), lat, lon, null, terminal, level, null, null, null, null));
+                continue;
+            }
+            if (aeroway.equals("control_tower") || t.path("tower:type").asString("").equals("airport_control")) {
+                out.add(new MapFeature(id, "tower", t.path("name").asString("Control tower"), lat, lon, null, terminal, level, null, null, null, null));
+                continue;
+            }
+            if (t.path("highway").asString("").equals("elevator") && classify(t) == null) {
+                out.add(new MapFeature(id, "elevator", "Lift", lat, lon, null, terminal, level, null, null, null, null));
+                continue;
+            }
+            if (t.has("entrance") && classify(t) == null && !aeroway.equals("gate")) {
+                if (terminal != null) out.add(new MapFeature(id, "entrance", t.path("name").asString(t.path("entrance").asString("").equals("main") ? "Main entrance" : "Entrance"),
+                        lat, lon, null, terminal, level, null, null, null, null));
+                continue;
+            }
             if ("gate".equals(t.path("aeroway").asString(""))) {
                 String ref = t.path("ref").asString(t.path("name").asString("")).trim();
                 if (!ref.isEmpty()) out.add(new MapFeature(id, "gate", ref, lat, lon, null, terminal, level, null, null, null, null));
@@ -201,7 +247,10 @@ public class AirportMapService {
                 continue;
             }
             String name = t.path("name").asString(t.path("brand").asString("")).trim();
-            if (name.isEmpty() && (poi.equals("shop") || poi.equals("parking") || poi.equals("hotel"))) continue;
+            if (name.isEmpty() && (poi.equals("shop") || poi.equals("parking") || poi.equals("hotel"))) {
+                if (poi.equals("parking") && ring != null) out.add(new MapFeature(id, "parking", "", lat, lon, null, null, null, null, null, null, List.of(ring)));
+                continue;
+            }
             String detail = blank(t.path("cuisine").asString("").replace('_', ' ').replace(";", ", "));
             if (detail == null) detail = blank(t.path("operator").asString(""));
             out.add(new MapFeature(id, "poi", name.isEmpty() ? fallbackName(poi, t) : name, lat, lon, poi, terminal, level, blank(t.path("opening_hours").asString("")),
@@ -330,6 +379,18 @@ public class AirportMapService {
             if ((yi > lat) != (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) hit = !hit;
         }
         return hit;
+    }
+
+    static String contextKind(JsonNode t) {
+        if (t.path("aeroway").asString("").equals("jet_bridge")) return "jetbridge";
+        if (t.path("highway").asString("").equals("steps") && t.has("conveying")) return "escalator";
+        if (t.has("highway")) return "road";
+        if (t.has("railway")) return "rail";
+        if (t.path("amenity").asString("").equals("parking")) return "parking";
+        if (t.path("natural").asString("").equals("water")) return "water";
+        if (t.has("landuse") || t.has("natural") || t.path("leisure").asString("").equals("park")) return "green";
+        if (t.has("building") || t.path("aeroway").asString("").equals("hangar")) return "building";
+        return null;
     }
 
     private static double[] centroid(List<double[]> ring) {

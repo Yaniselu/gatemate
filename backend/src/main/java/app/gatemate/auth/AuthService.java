@@ -29,9 +29,14 @@ public class AuthService {
     private final PasswordResetRepository resets;
     private final MailService mail;
     private final GatemateProperties props;
+    private final EmailVerificationService verification;
+    private final app.gatemate.common.RateLimiter limiter;
 
     public AuthService(UserRepository users, PasswordEncoder encoder, TokenService tokens, SocialTokenVerifier social, AppleClient apple,
-            TokenCipher cipher, PasswordResetRepository resets, MailService mail, GatemateProperties props) {
+            TokenCipher cipher, PasswordResetRepository resets, MailService mail, GatemateProperties props, EmailVerificationService verification,
+            app.gatemate.common.RateLimiter limiter) {
+        this.verification = verification;
+        this.limiter = limiter;
         this.users = users;
         this.encoder = encoder;
         this.tokens = tokens;
@@ -63,6 +68,8 @@ public class AuthService {
     @Transactional(noRollbackFor = ApiException.class)
     public AuthDtos.Session login(AuthDtos.LoginRequest r) {
         String email = r.email().trim().toLowerCase(Locale.ROOT);
+        // Per address, whatever IP the attempts come from (stops spread-out guessing; the account lockout below adds to it).
+        limiter.check("login:" + email, 10, Duration.ofMinutes(15));
         var found = users.findByEmail(email);
         if (found.isEmpty() || found.get().passwordHash == null) {
             encoder.matches(r.password(), dummyHash);
@@ -112,29 +119,42 @@ public class AuthService {
         return tokens.issue(u);
     }
 
-    /** Always succeeds — never reveals whether the e-mail has an account. */
+    /** Always succeeds — never reveals whether the e-mail has an account. Sends a 6-digit code to type in the app. */
     @Transactional
     public void requestReset(String rawEmail) {
-        users.findByEmail(rawEmail.trim().toLowerCase(Locale.ROOT)).filter(u -> u.passwordHash != null).ifPresent(u -> {
-            String token = Crypto.token(32);
+        String email = rawEmail.trim().toLowerCase(Locale.ROOT);
+        if (!mail.enabled()) throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "mail_unavailable", "E-mail sending isn’t set up on this server yet.");
+        limiter.check("reset-send:" + email, 3, Duration.ofHours(1));
+        users.findByEmail(email).filter(u -> u.passwordHash != null).ifPresent(u -> {
+            resets.deleteByUserId(u.id); // only the newest code works
+            String code = EmailVerificationService.code();
             var pr = new PasswordResetEntity();
-            pr.tokenHash = Crypto.sha256(token);
+            pr.tokenHash = EmailVerificationService.hash(u.id, code);
             pr.userId = u.id;
             pr.expiresAt = Instant.now().plus(Duration.ofMinutes(30));
             resets.save(pr);
-            mail.sendPasswordReset(u.email, props.mail().resetUrl() + "#token=" + token);
+            try {
+                mail.sendPasswordResetCode(u.email, u.displayName, code);
+            } catch (ApiException e) {
+                // Same answer either way, so the response never reveals whether the account exists.
+            }
         });
     }
 
     @Transactional
     public void confirmReset(AuthDtos.ResetConfirm r) {
-        var pr = resets.findById(Crypto.sha256(r.token())).filter(x -> x.usedAt == null && x.expiresAt.isAfter(Instant.now()))
-                .orElseThrow(() -> ApiException.badRequest("invalid_token", "This reset link is invalid or has expired."));
-        var u = users.findById(pr.userId).orElseThrow(() -> ApiException.notFound("Account"));
+        String email = r.email().trim().toLowerCase(Locale.ROOT);
+        // 5 guesses per address per 15 minutes against a 6-digit, 30-minute code.
+        limiter.check("reset-try:" + email, 5, Duration.ofMinutes(15));
+        var invalid = ApiException.badRequest("invalid_code", "This code is wrong or has expired.");
+        var u = users.findByEmail(email).orElseThrow(() -> invalid);
+        var pr = resets.findById(EmailVerificationService.hash(u.id, r.code().trim()))
+                .filter(x -> x.userId.equals(u.id) && x.usedAt == null && x.expiresAt.isAfter(Instant.now())).orElseThrow(() -> invalid);
         PasswordPolicy.check(r.password(), u.email);
         u.passwordHash = encoder.encode(r.password());
         u.failedLogins = 0;
         u.lockedUntil = null;
+        u.emailVerified = true; // they just proved they read this inbox
         pr.usedAt = Instant.now();
         users.save(u);
         resets.save(pr);

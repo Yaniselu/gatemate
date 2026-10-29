@@ -4,7 +4,7 @@ import { catchError, from, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../services/auth.service';
 
-const AUTH_FREE = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/password-reset', '/auth/oauth/'];
+const AUTH_FREE = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/password-reset', '/auth/oauth/', '/auth/features'];
 
 function isOwnApi(url: string): boolean {
   try {

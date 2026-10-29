@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AirportDbService, AirportRecord, CountryFacts } from './airport-db.service';
+import { deviceCached, publicFetch, publicJson } from '../utils/public-fetch';
 
 export interface WeatherDay {
   date: string;
@@ -18,6 +19,8 @@ export interface DestinationInfo {
   photo?: { url: string; credit: string; link: string };
   weather?: { temp: number; code: number; wind: number; days: WeatherDay[] };
   fx?: { base: string; currency: string; rate: number; date: string };
+  /** Live parts (photo, summary, weather, rates) couldn't load; only the bundled country facts are shown. */
+  offline?: boolean;
 }
 
 /** WMO weather codes → label + ionicon. */
@@ -51,12 +54,22 @@ export class DestinationService {
     await this.db.load();
     const a = this.db.get(iata);
     if (!a) return undefined;
-    return (await this.wikiFor(a))?.photo;
+    // City photos are kept on the phone for a month (only real photos are saved, never "none").
+    return deviceCached(`photo_${iata}`, 30 * 86_400_000, async () => {
+      const p = (await this.wikiFor(a))?.photo;
+      if (!p) throw new Error('no photo');
+      return p;
+    }).catch(() => undefined);
   }
 
   private wikiFor(a: AirportRecord) {
     if (!this.wikiCache.has(a.iata)) this.wikiCache.set(a.iata, this.wiki(a, this.db.country(a.country)).catch(() => undefined));
     return this.wikiCache.get(a.iata)!;
+  }
+
+  /** Drops the in-memory copy so the next get() tries the network again. */
+  forget(iata: string) {
+    for (const k of [...this.cache.keys()]) if (k.startsWith(iata + '|')) this.cache.delete(k);
   }
 
   get(iata: string, homeCurrency = 'EUR'): Promise<DestinationInfo> {
@@ -75,6 +88,18 @@ export class DestinationService {
     await this.db.load();
     const airport = this.db.get(iata);
     if (!airport) throw new Error('Unknown airport');
+    // Shown instantly from the phone's copy (refreshed in the background every few hours).
+    const country = this.db.country(airport.country);
+    // Nothing reachable and nothing saved: the country facts bundled with the app still show (plugs, money, emergency numbers).
+    const info = await deviceCached(`dest_${iata}_${home}`, 3 * 3600_000, () => this.fetchInfo(iata, home)).catch(
+      (): DestinationInfo => ({ airport, country, offline: true }),
+    );
+    return { ...info, airport, country: info.country ?? country };
+  }
+
+  private async fetchInfo(iata: string, home: string): Promise<DestinationInfo> {
+    const airport = this.db.get(iata);
+    if (!airport) throw new Error('Unknown airport');
     // Public sources are called straight from the phone; if every one of them fails, ask our server instead.
     const country = this.db.country(airport.country);
     const [wiki, weather, fx] = await Promise.all([
@@ -88,15 +113,17 @@ export class DestinationService {
       ).catch(() => null);
       if (viaServer) return { ...viaServer, airport, country: viaServer.country ?? country };
     }
+    // Nothing reachable at all: fail so the saved copy (or the error state with Retry) is shown.
+    if (!wiki && !weather && !fx) throw new Error('offline');
     return { airport, country, summary: wiki?.summary, photo: wiki?.photo, weather, fx };
   }
 
   private async wiki(a: AirportRecord, c?: CountryFacts) {
     const titles = [a.city, c ? `${a.city}, ${c.name}` : ''].filter(Boolean);
     for (const t of titles) {
-      const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t.replace(/ /g, '_'))}`);
-      if (!r.ok) continue;
-      const j = await r.json();
+      const r = await publicFetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t.replace(/ /g, '_'))}`, { timeoutMs: 10_000 });
+      if (r.status !== 200) continue;
+      const j = JSON.parse(r.text);
       if (j.type === 'disambiguation' || !j.extract) continue;
       // Use the original when it is small enough, otherwise ask Wikimedia for a 1280 px rendition.
       const orig = j.originalimage as { source: string; width: number } | undefined;
@@ -112,7 +139,7 @@ export class DestinationService {
 
   private async weather(a: AirportRecord) {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${a.lat}&longitude=${a.lon}&current=temperature_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=5&timezone=${encodeURIComponent(a.tz)}`;
-    const j = await (await fetch(url)).json();
+    const j = await publicJson<any>(url, { timeoutMs: 10_000 }); // eslint-disable-line @typescript-eslint/no-explicit-any
     return {
       temp: Math.round(j.current.temperature_2m),
       code: j.current.weather_code,
@@ -123,7 +150,7 @@ export class DestinationService {
 
   private async fx(base: string, currency?: string) {
     if (!currency || currency === base) return undefined;
-    const j = await (await fetch(`https://api.frankfurter.app/latest?from=${base}&to=${currency}`)).json();
+    const j = await publicJson<{ rates?: Record<string, number>; date: string }>(`https://api.frankfurter.app/latest?from=${base}&to=${currency}`, { timeoutMs: 8000 });
     const rate = j.rates?.[currency];
     return rate ? { base, currency, rate, date: j.date } : undefined;
   }

@@ -33,5 +33,10 @@ services:
         generateValue: true
       - key: IMPORT_EMAIL_ADDRESS
         sync: false
+      # E-mail (verification and password-reset codes): Brevo API key and a verified sender address. See docs/MAIL.md.
+      - key: MAIL_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
       - key: CORS_ORIGINS
         value: capacitor://localhost,https://localhost,http://localhost

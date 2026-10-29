@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { deviceCached, publicFetch } from '../utils/public-fetch';
 
 export interface Sight {
   id: string;
@@ -32,8 +33,8 @@ export class ExploreService {
   sights(iata: string, lat: number, lon: number): Promise<Sight[]> {
     if (!this.sightsCache.has(iata)) {
       // Wikidata straight from the phone; our server is the fallback.
-      const p = this.querySights(lat, lon)
-        .catch((e) => (environment.useMocks ? Promise.reject(e) : firstValueFrom(this.http.get<Sight[]>(`${environment.apiUrl}/destinations/${encodeURIComponent(iata)}/sights`))))
+      const p = deviceCached(`sights_${iata}`, 7 * 86_400_000, () => this.querySights(lat, lon)
+        .catch((e) => (environment.useMocks ? Promise.reject(e) : firstValueFrom(this.http.get<Sight[]>(`${environment.apiUrl}/destinations/${encodeURIComponent(iata)}/sights`)))))
         .catch((e) => {
         this.sightsCache.delete(iata);
         throw e;
@@ -46,14 +47,14 @@ export class ExploreService {
   holidays(country: string, year: number): Promise<Holiday[]> {
     const key = `${country}|${year}`;
     if (!this.holidayCache.has(key)) {
-      const p = (fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${encodeURIComponent(country)}`).then(async (r) => {
+      const p = deviceCached(`hol_${country}_${year}`, 30 * 86_400_000, () => (publicFetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${encodeURIComponent(country)}`, { timeoutMs: 10_000 }).then((r) => {
             if (r.status === 204 || r.status === 404) return [];
-            if (!r.ok) throw new Error('holidays');
-            return ((await r.json()) as { date: string; localName: string; name: string; global: boolean }[]).map((h) => ({
+            if (r.status !== 200) throw new Error('holidays');
+            return (JSON.parse(r.text) as { date: string; localName: string; name: string; global: boolean }[]).map((h) => ({
               date: h.date, localName: h.localName, name: h.name, national: h.global,
             }));
           }) as Promise<Holiday[]>)
-        .catch((e) => (environment.useMocks ? Promise.reject(e) : firstValueFrom(this.http.get<Holiday[]>(`${environment.apiUrl}/countries/${encodeURIComponent(country)}/holidays`, { params: { year } }))))
+        .catch((e) => (environment.useMocks ? Promise.reject(e) : firstValueFrom(this.http.get<Holiday[]>(`${environment.apiUrl}/countries/${encodeURIComponent(country)}/holidays`, { params: { year } })))))
         .catch((e) => {
         this.holidayCache.delete(key);
         throw e;
@@ -66,9 +67,9 @@ export class ExploreService {
   /** Same SPARQL the backend runs: notable attractions within 8 km of the centre, ranked by Wikipedia language editions. */
   private async querySights(lat: number, lon: number): Promise<Sight[]> {
     const url = 'https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(sightsQuery(lat, lon));
-    const r = await fetch(url, { headers: { Accept: 'application/sparql-results+json' } });
-    if (!r.ok) throw new Error('sights');
-    return parseSights((await r.json()) as SparqlResult);
+    const r = await publicFetch(url, { timeoutMs: 15_000 });
+    if (r.status !== 200) throw new Error('sights');
+    return parseSights(JSON.parse(r.text) as SparqlResult);
   }
 }
 

@@ -628,3 +628,47 @@ ion-content::part(scroll) {
 .z-shops .gm-plan-terminal span {
   opacity: 0.35;
 }
+
+/* Detail labels on the airport plan, revealed as you zoom in. */
+.gm-plan-building span,
+.gm-plan-stand span {
+  display: inline-block;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.gm-plan-building span {
+  font-size: 10px;
+  font-weight: 650;
+  color: #475569;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff;
+}
+.gm-plan-stand span {
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #334155;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #cbd5e1;
+}
+.gm-plan-icon span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: #334155;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.gm-plan-icon.door span { background: #0f766e; }
+.gm-plan-icon.tower span { background: #b45309; border-radius: 50%; }
+.leaflet-container:not(.z-bld) .gm-plan-building,
+.leaflet-container:not(.z-shops) .gm-plan-stand,
+.leaflet-container:not(.z-shops) .gm-plan-icon.z17 {
+  display: none;
+}
