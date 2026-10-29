@@ -5,33 +5,34 @@ import { NotificationsService } from '../../core/services/notifications.service'
 import { PlatformService } from '../../core/services/platform.service';
 import { NotificationPrefs } from '../../core/models';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-notification-settings',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonToggle, RevealDirective],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonToggle, RevealDirective],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Notifications</ion-title>
+        <ion-title>{{ 'Notifications' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="bell anim-scale-in"><ion-icon name="notifications" /></div>
-        <p class="lead">Choose what Gatemate tells you about. Critical flight alerts are sent even when the app is closed.</p>
+        <p class="lead">{{ 'Choose what Gatemate tells you about. Critical flight alerts are sent even when the app is closed.' | t }}</p>
         <div class="group glass flat">
           @for (o of options; track o.key; let i = $index) {
             <div class="row" [gmReveal]="i">
               <span class="ic" [style.--c]="o.color"><ion-icon [name]="o.icon" /></span>
-              <div class="grow"><b>{{ o.label }}</b><small>{{ o.hint }}</small></div>
-              <ion-toggle [checked]="prefs.notifications()[o.key]" (ionChange)="set(o.key, $event.detail.checked)" [attr.aria-label]="o.label" />
+              <div class="grow"><b>{{ o.label | t }}</b><small>{{ o.hint | t }}</small></div>
+              <ion-toggle [checked]="prefs.notifications()[o.key]" (ionChange)="set(o.key, $event.detail.checked)" [attr.aria-label]="o.label | t" />
             </div>
           }
         </div>
         @if (platform.isNative) {
-          <button class="gm-btn ghost" (click)="notifications.requestPermission()"><ion-icon name="notifications-outline" /> Allow notifications</button>
+          <button class="gm-btn ghost" (click)="notifications.requestPermission()"><ion-icon name="notifications-outline" /> {{ 'Allow notifications' | t }}</button>
         }
       </div>
     </ion-content>

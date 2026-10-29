@@ -1,5 +1,6 @@
 package app.gatemate.auth;
 
+import app.gatemate.common.Messages;
 import app.gatemate.config.GatemateProperties;
 import java.time.Duration;
 import java.util.List;
@@ -28,16 +29,19 @@ public class MailService {
         return cfg != null && cfg.apiKey() != null && !cfg.apiKey().isBlank() && cfg.from() != null && !cfg.from().isBlank();
     }
 
-    public void sendVerificationCode(String to, String name, String code) {
-        send(to, code + " is your Gatemate code", page("Confirm your e-mail", "Hi " + esc(first(name)) + ", here is your code to confirm this e-mail address for Gatemate:",
-                code, "It expires in 30 minutes. If you didn’t create a Gatemate account, you can ignore this e-mail."),
-                "Your Gatemate code is " + code + ". It expires in 30 minutes.");
+    public void sendVerificationCode(String to, String name, String code, String lang) {
+        sendCode("mail.verify", to, name, code, lang);
     }
 
-    public void sendPasswordResetCode(String to, String name, String code) {
-        send(to, code + " is your Gatemate password reset code", page("Reset your password", "Hi " + esc(first(name)) + ", use this code in the app to choose a new password:",
-                code, "It expires in 30 minutes. If you didn’t ask to reset your password, ignore this e-mail: your password stays the same."),
-                "Your Gatemate password reset code is " + code + ". It expires in 30 minutes.");
+    public void sendPasswordResetCode(String to, String name, String code, String lang) {
+        sendCode("mail.reset", to, name, code, lang);
+    }
+
+    /** One of the code e-mails, in the user's app language. */
+    private void sendCode(String kind, String to, String name, String code, String lang) {
+        send(to, Messages.get(lang, kind + ".subject", "code", code),
+                page(Messages.get(lang, kind + ".title"), Messages.get(lang, kind + ".intro", "name", esc(first(name))), code, Messages.get(lang, kind + ".note")),
+                Messages.get(lang, kind + ".text", "code", code));
     }
 
     void send(String to, String subject, String html, String text) {

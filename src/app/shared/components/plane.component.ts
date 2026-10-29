@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Hand-drawn side-view airliner (nose to the right). Pure SVG, scales to any size. */
 @Component({
   selector: 'gm-plane',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TranslatePipe],
   template: `
-    <svg viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Airplane">
+    <svg viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg" role="img" [aria-label]="'Airplane' | t">
       <defs>
         <linearGradient id="gm-body" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#ffffff" />

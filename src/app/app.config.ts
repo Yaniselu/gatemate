@@ -5,6 +5,7 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalo
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { environment } from '../environments/environment';
+import { I18nService } from './core/i18n/i18n.service';
 import { routes } from './app.routes';
 import { GatemateApi } from './core/services/api';
 import { MockApi } from './core/services/mock-api';
@@ -32,12 +33,13 @@ export const appConfig: ApplicationConfig = {
     { provide: GatemateApi, useClass: environment.useMocks ? MockApi : HttpApi },
     provideAppInitializer(async () => {
       const prefs = inject(PrefsService);
+      const i18n = inject(I18nService);
       const auth = inject(AuthService);
       const lock = inject(AppLockService);
       const platform = inject(PlatformService);
       void inject(ReviewService).init();
       const achievements = inject(AchievementsService);
-      await prefs.load();
+      await Promise.all([prefs.load(), i18n.init()]);
       await auth.init();
       await lock.init();
       lock.lockIfEnabled();

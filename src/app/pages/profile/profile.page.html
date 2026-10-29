@@ -1,11 +1,11 @@
 <ion-header class="gm-glass-header" [translucent]="true">
-  <ion-toolbar><ion-title>Profile</ion-title></ion-toolbar>
+  <ion-toolbar><ion-title>{{ 'Profile' | t }}</ion-title></ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense" class="gm-glass-header">
     <ion-toolbar>
-      <div class="head"><h1 class="gm-page-title anim-fade-up">Profile</h1></div>
+      <div class="head"><h1 class="gm-page-title anim-fade-up">{{ 'Profile' | t }}</h1></div>
     </ion-toolbar>
   </ion-header>
 
@@ -22,10 +22,10 @@
         <h2>{{ u.name }}</h2>
         <p class="email selectable">{{ u.email }}</p>
         @if (u.bio) { <p class="bio">{{ u.bio }}</p> }
-        <a class="edit-btn" routerLink="/profile/edit"><ion-icon name="create-outline" /> Edit profile</a>
+        <a class="edit-btn" routerLink="/profile/edit"><ion-icon name="create-outline" /> {{ 'Edit profile' | t }}</a>
         <div class="chips">
-          <span class="gm-chip"><ion-icon [name]="u.provider === 'apple' ? 'logo-apple' : u.provider === 'google' ? 'logo-google' : 'mail-outline'" /> {{ providerLabel() }}</span>
-          <span class="gm-chip neutral"><ion-icon name="location-outline" /> Home · {{ prefs.homeAirport() }}</span>
+          <span class="gm-chip"><ion-icon [name]="u.provider === 'apple' ? 'logo-apple' : u.provider === 'google' ? 'logo-google' : 'mail-outline'" /> {{ providerLabel() | t }}</span>
+          <span class="gm-chip neutral"><ion-icon name="location-outline" /> {{ 'Home · {code}' | t: { code: prefs.homeAirport() } }}</span>
         </div>
       </div>
     }
@@ -34,9 +34,9 @@
       <span class="pro-ic"><ion-icon name="sparkles" /></span>
       <span class="pro-txt">
         @if (pro.isPro()) {
-          <b>Gatemate Pro</b><small>Active{{ auth.user()?.proUntil ? ' · renews or ends ' + (auth.user()!.proUntil! | shortDate: false) : '' }} · Manage</small>
+          <b>{{ 'Gatemate Pro' | t }}</b><small>Active{{ auth.user()?.proUntil ? ' · renews or ends ' + (auth.user()!.proUntil! | shortDate: false) : '' }} · Manage</small>
         } @else {
-          <b>Upgrade to Gatemate Pro</b><small>Unlimited trips, full city guides, settle-up</small>
+          <b>{{ 'Upgrade to Gatemate Pro' | t }}</b><small>{{ 'Unlimited trips, full city guides, settle-up' | t }}</small>
         }
       </span>
       <ion-icon name="chevron-forward" class="chev" />
@@ -45,21 +45,21 @@
     <a class="level card" routerLink="/achievements" gmPressable gmReveal>
       <div class="lv-ring" [style.--p]="ach.level().progress"><b>{{ ach.level().index }}</b></div>
       <div class="lv-txt">
-        <span class="gm-label">Level {{ ach.level().index }} · {{ ach.xp() }} XP</span>
-        <b>{{ ach.level().name }}</b>
+        <span class="gm-label">{{ 'Level {n} · {xp} XP' | t: { n: ach.level().index, xp: ach.xp() } }}</span>
+        <b>{{ ach.level().name | t }}</b>
         <div class="lv-bar"><span [style.transform]="'scaleX(' + ach.level().progress + ')'"></span></div>
       </div>
-      <div class="lv-side"><b>{{ ach.streak() }}🔥</b><small>{{ ach.earnedCount() }} badges</small></div>
+      <div class="lv-side"><b>{{ ach.streak() }}🔥</b><small>{{ '{n} badges' | t: { n: ach.earnedCount() } }}</small></div>
     </a>
 
-    <div class="gm-section-title"><h2>Your travel</h2><a routerLink="/passport">Passport &amp; map</a></div>
+    <div class="gm-section-title"><h2>{{ 'Your travel' | t }}</h2><a routerLink="/passport">{{ 'Passport & map' | t }}</a></div>
     @if (store.tripsState() === 'ready') {
       @let s = travel();
       <div class="stats">
-        <div class="stat card" gmReveal="0" style="--c: #0fb5c3"><ion-icon name="airplane" /><b [gmCountUp]="s.flights"></b><small>Flights taken</small></div>
-        <div class="stat card" gmReveal="1" style="--c: #6366f1"><ion-icon name="globe-outline" /><b [gmCountUp]="s.km"></b><small>Kilometres flown</small></div>
-        <div class="stat card" gmReveal="2" style="--c: #10b981"><ion-icon name="earth" /><b [gmCountUp]="s.countries"></b><small>Countries visited</small></div>
-        <div class="stat card" gmReveal="3" style="--c: #f97316"><ion-icon name="time-outline" /><b [gmCountUp]="s.hours"></b><small>Hours in the air</small></div>
+        <div class="stat card" gmReveal="0" style="--c: #0fb5c3"><ion-icon name="airplane" /><b [gmCountUp]="s.flights"></b><small>{{ 'Flights taken' | t }}</small></div>
+        <div class="stat card" gmReveal="1" style="--c: #6366f1"><ion-icon name="globe-outline" /><b [gmCountUp]="s.km"></b><small>{{ 'Kilometres flown' | t }}</small></div>
+        <div class="stat card" gmReveal="2" style="--c: #10b981"><ion-icon name="earth" /><b [gmCountUp]="s.countries"></b><small>{{ 'Countries visited' | t }}</small></div>
+        <div class="stat card" gmReveal="3" style="--c: #f97316"><ion-icon name="time-outline" /><b [gmCountUp]="s.hours"></b><small>{{ 'Hours in the air' | t }}</small></div>
       </div>
     } @else {
       <div class="stats">
@@ -69,61 +69,73 @@
       </div>
     }
 
-    <div class="gm-section-title"><h2>Recent badges</h2><a routerLink="/achievements">All {{ ach.badges().length }}</a></div>
+    <div class="gm-section-title"><h2>{{ 'Recent badges' | t }}</h2><a routerLink="/achievements">{{ 'All {n}' | t: { n: ach.badges().length } }}</a></div>
     <div class="badges">
       @for (b of recentBadges(); track b.id; let i = $index) {
         <a class="badge" routerLink="/achievements" [class.earned]="b.earned" [attr.data-tier]="b.tier" [gmReveal]="i">
           <span class="medal"><ion-icon [name]="b.earned ? b.icon : 'lock-closed-outline'" /></span>
-          <small>{{ b.title }}</small>
+          <small>{{ b.title | t }}</small>
         </a>
       }
     </div>
 
-    <div class="gm-section-title"><h2>Settings</h2></div>
+    <div class="gm-section-title"><h2>{{ 'Settings' | t }}</h2></div>
     <div class="group card">
+      <button class="item" (click)="langOpen.set(!langOpen())" gmPressable [attr.aria-expanded]="langOpen()">
+        <span class="ic" style="--c: #8B7CF6"><ion-icon name="language-outline" /></span>{{ 'Language' | t }}
+        <span class="lang-now">{{ currentLang().flag }} {{ currentLang().name }}</span><ion-icon name="chevron-forward" class="chev" [class.open]="langOpen()" />
+      </button>
+      @if (langOpen()) {
+        <div class="langs anim-fade-up">
+          <p>{{ 'Choose the language Gatemate uses. The app restarts to switch.' | t }}</p>
+          @for (l of languages; track l.code) {
+            <button [class.on]="l.code === i18n.lang()" (click)="setLang(l.code)"><span>{{ l.flag }}</span>{{ l.name }}@if (l.code === i18n.lang()) { <ion-icon name="checkmark" /> }</button>
+          }
+        </div>
+      }
       <a class="item" routerLink="/settings/notifications" gmPressable>
-        <span class="ic" style="--c: #0FB5C3"><ion-icon name="notifications-outline" /></span>Notifications<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic" style="--c: #0FB5C3"><ion-icon name="notifications-outline" /></span>{{ 'Notifications' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <a class="item" routerLink="/settings/security" gmPressable>
-        <span class="ic" style="--c: #2FD18A"><ion-icon name="shield-checkmark-outline" /></span>Security & privacy<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic" style="--c: #2FD18A"><ion-icon name="shield-checkmark-outline" /></span>{{ 'Security & privacy' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <a class="item" routerLink="/settings/accessibility" gmPressable>
-        <span class="ic"><ion-icon name="accessibility-outline" /></span>Accessibility<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic"><ion-icon name="accessibility-outline" /></span>{{ 'Accessibility' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <a class="item" routerLink="/achievements" gmPressable>
-        <span class="ic"><ion-icon name="trophy-outline" /></span>Achievements<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic"><ion-icon name="trophy-outline" /></span>{{ 'Achievements' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <a class="item" routerLink="/rights" gmPressable>
-        <span class="ic" style="--c: #FFB020"><ion-icon name="scale-outline" /></span>Passenger rights<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic" style="--c: #FFB020"><ion-icon name="scale-outline" /></span>{{ 'Passenger rights' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <button class="item" (click)="exportData()" [disabled]="exporting()" gmPressable>
-        <span class="ic" style="--c: #8B7CF6"><ion-icon name="download-outline" /></span>Export my data
+        <span class="ic" style="--c: #8B7CF6"><ion-icon name="download-outline" /></span>{{ 'Export my data' | t }}
         @if (exporting()) { <span class="mini-spin"></span> } @else { <ion-icon name="chevron-forward" class="chev" /> }
       </button>
     </div>
 
     <div class="group card">
       <a class="item" routerLink="/legal/privacy" gmPressable>
-        <span class="ic" style="--c: #5EC8FF"><ion-icon name="document-lock-outline" /></span>Privacy Policy<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic" style="--c: #5EC8FF"><ion-icon name="document-lock-outline" /></span>{{ 'Privacy Policy' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <a class="item" routerLink="/legal/terms" gmPressable>
-        <span class="ic" style="--c: #74859A"><ion-icon name="document-text-outline" /></span>Terms of Use<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic" style="--c: #74859A"><ion-icon name="document-text-outline" /></span>{{ 'Terms of Use' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <a class="item" routerLink="/legal/guidelines" gmPressable>
-        <span class="ic" style="--c: #FF8A5B"><ion-icon name="people-outline" /></span>Community Guidelines<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic" style="--c: #FF8A5B"><ion-icon name="people-outline" /></span>{{ 'Community Guidelines' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <a class="item" routerLink="/feedback" gmPressable>
-        <span class="ic" style="--c: #0FB5C3"><ion-icon name="chatbox-ellipses-outline" /></span>Send feedback<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic" style="--c: #0FB5C3"><ion-icon name="chatbox-ellipses-outline" /></span>{{ 'Send feedback' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
       <button class="item" (click)="review.openStorePage()" gmPressable>
-        <span class="ic" style="--c: #FFB020"><ion-icon name="star-outline" /></span>Rate Gatemate<ion-icon name="chevron-forward" class="chev" />
+        <span class="ic" style="--c: #FFB020"><ion-icon name="star-outline" /></span>{{ 'Rate Gatemate' | t }}<ion-icon name="chevron-forward" class="chev" />
       </button>
     </div>
 
-    <button class="gm-btn ghost" (click)="signOut()"><ion-icon name="log-out-outline" /> Sign out</button>
-    <button class="danger" (click)="deleteAccount()"><ion-icon name="trash-outline" /> Delete account</button>
+    <button class="gm-btn ghost" (click)="signOut()"><ion-icon name="log-out-outline" /> {{ 'Sign out' | t }}</button>
+    <button class="danger" (click)="deleteAccount()"><ion-icon name="trash-outline" /> {{ 'Delete account' | t }}</button>
 
-    <p class="version">Gatemate {{ version }} · Made with ✈️ for travellers</p>
+    <p class="version">Gatemate {{ version }} · {{ 'Made with ✈️ for travellers' | t }}</p>
     <div class="gm-bottom-spacer"></div>
   </div>
 </ion-content>

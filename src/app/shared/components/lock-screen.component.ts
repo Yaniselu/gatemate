@@ -2,22 +2,23 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { IonIcon } from '@ionic/angular/standalone';
 import { AppLockService } from '../../core/security/app-lock.service';
 import { AuthService } from '../../core/services/auth.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-lock-screen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonIcon],
+  imports: [TranslatePipe, IonIcon],
   template: `
-    <div class="wrap" role="dialog" aria-modal="true" aria-label="Gatemate is locked">
+    <div class="wrap" role="dialog" aria-modal="true" [aria-label]="'Gatemate is locked' | t">
       <div class="icon" [class.fail]="failed()">
         <ion-icon name="lock-closed" />
       </div>
-      <h2>Gatemate is locked</h2>
-      <p>Your boarding passes and chats are protected.</p>
+      <h2>{{ 'Gatemate is locked' | t }}</h2>
+      <p>{{ 'Your boarding passes and chats are protected.' | t }}</p>
       <button class="gm-btn" (click)="unlock()">
-        <ion-icon name="finger-print-outline" /> Unlock with {{ lock.biometryLabel() }}
+        <ion-icon name="finger-print-outline" /> {{ 'Unlock with {method}' | t: { method: lock.biometryLabel() } }}
       </button>
-      <button class="link" (click)="auth.logout(); lock.locked.set(false)">Sign out instead</button>
+      <button class="link" (click)="auth.logout(); lock.locked.set(false)">{{ 'Sign out instead' | t }}</button>
     </div>
   `,
   styles: `

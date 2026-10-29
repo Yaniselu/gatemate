@@ -3,27 +3,28 @@ import { IonIcon } from '@ionic/angular/standalone';
 import { AirportDbService, AirportRecord } from '../../core/services/airport-db.service';
 import { LocationService } from '../../core/services/location.service';
 import { PlatformService } from '../../core/services/platform.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Full-screen glass sheet to search ~5,300 airports by code, city, name or country. */
 @Component({
   selector: 'gm-airport-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonIcon],
+  imports: [TranslatePipe, IonIcon],
   template: `
     <div class="backdrop" (click)="closed.emit()"></div>
-    <div class="sheet glass strong" role="dialog" aria-label="Choose an airport">
+    <div class="sheet glass strong" role="dialog" [aria-label]="'Choose an airport' | t">
       <div class="grab"></div>
       <div class="search">
         <ion-icon name="search-outline" />
-        <input #q type="search" placeholder="City, airport or code (e.g. OTP)" [value]="query()" (input)="query.set(q.value)" maxlength="60" autofocus aria-label="Search airports" />
-        <button (click)="closed.emit()">Cancel</button>
+        <input #q type="search" [placeholder]="'City, airport or code (e.g. OTP)' | t" [value]="query()" (input)="query.set(q.value)" maxlength="60" autofocus [aria-label]="'Search airports' | t" />
+        <button (click)="closed.emit()">{{ 'Cancel' | t }}</button>
       </div>
       <button class="near" (click)="nearMe()" [disabled]="locating()">
-        <ion-icon name="navigate" /> {{ locating() ? 'Finding the nearest airport…' : 'Airport nearest to me' }}
+        <ion-icon name="navigate" /> {{ locating() ? ('Finding the nearest airport…' | t) : ('Airport nearest to me' | t) }}
       </button>
       <div class="list">
         @if (!db.ready()) {
-          <p class="muted">Loading 5,300 airports…</p>
+          <p class="muted">{{ 'Loading 5,300 airports…' | t }}</p>
         }
         @for (a of results(); track a.iata; let i = $index) {
           <button class="row" (click)="pick(a)" [style.--i]="i">

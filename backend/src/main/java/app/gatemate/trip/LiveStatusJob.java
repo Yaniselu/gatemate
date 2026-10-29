@@ -2,6 +2,7 @@ package app.gatemate.trip;
 
 import app.gatemate.airport.AirportCatalog;
 import app.gatemate.alert.AlertService;
+import app.gatemate.common.Messages;
 import java.time.Duration;
 import java.time.Instant;
 import org.slf4j.Logger;
@@ -53,22 +54,22 @@ public class LiveStatusJob {
             if (!ground && knots > 120 && !wasFlying) {
                 f.status = "departed";
                 flights.save(f);
-                alerts.notifyTrip(f.tripId, f.id, "info", f.flightNumber + " has taken off ✈️", "On its way to " + city + ". Follow it live in Gatemate.");
+                alerts.notifyTrip(f.tripId, f.id, "info", l -> Messages.get(l, "takeoff.title", "flight", f.flightNumber), l -> Messages.get(l, "takeoff.body", "city", city));
                 return;
             }
             if (wasFlying && ground && knots < 60 && nearDestination(f, ac)) {
-                land(f, city, "Welcome to " + city + "!");
+                land(f, city, "landed.welcome");
             }
             return;
         }
         // No signal long after the scheduled arrival: it has landed (receivers often lose planes on the ground).
-        if (wasFlying && now.isAfter(f.arrivalAt.plus(Duration.ofMinutes(45)))) land(f, city, "Arrived in " + city + ".");
+        if (wasFlying && now.isAfter(f.arrivalAt.plus(Duration.ofMinutes(45)))) land(f, city, "landed.arrived");
     }
 
-    private void land(FlightEntity f, String city, String body) {
+    private void land(FlightEntity f, String city, String bodyKey) {
         f.status = "landed";
         flights.save(f);
-        alerts.notifyTrip(f.tripId, f.id, "baggage", f.flightNumber + " has landed in " + city, body + " Follow the signs to baggage reclaim.");
+        alerts.notifyTrip(f.tripId, f.id, "baggage", l -> Messages.get(l, "landed.title", "flight", f.flightNumber, "city", city), l -> Messages.get(l, bodyKey, "city", city));
     }
 
     private boolean nearDestination(FlightEntity f, JsonNode ac) {

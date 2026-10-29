@@ -2,14 +2,15 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { IonIcon } from '@ionic/angular/standalone';
 import { Flight } from '../../core/models';
 import { ClockPipe, ShortDatePipe } from '../pipes/time.pipes';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Tap-to-flip boarding pass. Front: journey details. Back: scannable code area. */
 @Component({
   selector: 'gm-boarding-pass',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonIcon, ClockPipe, ShortDatePipe],
+  imports: [TranslatePipe, IonIcon, ClockPipe, ShortDatePipe],
   template: `
-    <button class="card" [class.flipped]="flipped()" (click)="flip()" [attr.aria-label]="flipped() ? 'Show flight details' : 'Show boarding code'">
+    <button class="card" [class.flipped]="flipped()" (click)="flip()" [attr.aria-label]="flipped() ? ('Show flight details' | t) : ('Show boarding code' | t)">
       <div class="face front">
         <div class="top">
           <div class="airline"><span class="logo">{{ flight().airlineCode }}</span>{{ flight().airline }}</div>
@@ -32,14 +33,14 @@ import { ClockPipe, ShortDatePipe } from '../pipes/time.pipes';
         </div>
         <div class="perf"><span></span></div>
         <div class="grid">
-          <div><small>Passenger</small><b>{{ flight().passengerName }}</b></div>
-          <div><small>Flight</small><b>{{ flight().number }}</b></div>
-          <div><small>Date</small><b>{{ flight().departure | shortDate: false : flight().from.timezone }}</b></div>
-          <div><small>Boarding</small><b>{{ flight().boardingTime | clock: flight().from.timezone }}</b></div>
-          <div><small>Gate</small><b>{{ flight().gate ?? 'TBA' }}</b></div>
-          <div><small>Seat</small><b>{{ flight().seat ?? '—' }}</b></div>
+          <div><small>{{ 'Passenger' | t }}</small><b>{{ flight().passengerName }}</b></div>
+          <div><small>{{ 'Flight' | t }}</small><b>{{ flight().number }}</b></div>
+          <div><small>{{ 'Date' | t }}</small><b>{{ flight().departure | shortDate: false : flight().from.timezone }}</b></div>
+          <div><small>{{ 'Boarding' | t }}</small><b>{{ flight().boardingTime | clock: flight().from.timezone }}</b></div>
+          <div><small>{{ 'Gate' | t }}</small><b>{{ flight().gate ?? ('TBA' | t) }}</b></div>
+          <div><small>{{ 'Seat' | t }}</small><b>{{ flight().seat ?? '—' }}</b></div>
         </div>
-        <div class="hint"><ion-icon name="sync-outline" /> Tap to show code</div>
+        <div class="hint"><ion-icon name="sync-outline" /> {{ 'Tap to show code' | t }}</div>
       </div>
       <div class="face back">
         <div class="code-box">
@@ -51,8 +52,8 @@ import { ClockPipe, ShortDatePipe } from '../pipes/time.pipes';
             </div>
           }
         </div>
-        <div class="ref">Booking ref <b class="selectable">{{ flight().bookingRef || '—' }}</b></div>
-        <p class="note">Show the airline's original boarding pass at security and the gate. Increase screen brightness for scanning.</p>
+        <div class="ref">{{ 'Booking ref' | t }} <b class="selectable">{{ flight().bookingRef || '—' }}</b></div>
+        <p class="note">{{ 'Show the airline’s original boarding pass at security and the gate. Increase screen brightness for scanning.' | t }}</p>
       </div>
     </button>
   `,

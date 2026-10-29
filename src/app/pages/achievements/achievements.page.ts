@@ -5,16 +5,17 @@ import { PlatformService } from '../../core/services/platform.service';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { SheenDirective } from '../../shared/directives/sheen.directive';
 import { CountUpDirective } from '../../shared/directives/count-up.directive';
+import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-achievements',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RevealDirective, SheenDirective, CountUpDirective],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RevealDirective, SheenDirective, CountUpDirective],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Achievements</ion-title>
+        <ion-title>{{ 'Achievements' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
@@ -26,15 +27,15 @@ import { CountUpDirective } from '../../shared/directives/count-up.directive';
               <b>{{ a.level().index }}</b>
             </div>
             <div>
-              <span class="gm-label light">Level {{ a.level().index }}</span>
-              <h2>{{ a.level().name }}</h2>
-              <small>@if (a.level().next) { {{ a.level().toNext }} XP to {{ a.level().next }} } @else { Top level reached ✈️ }</small>
+              <span class="gm-label light">{{ 'Level {n}' | t: { n: a.level().index } }}</span>
+              <h2>{{ a.level().name | t }}</h2>
+              <small>@if (a.level().next) { {{ '{xp} XP to {level}' | t: { xp: a.level().toNext, level: (a.level().next! | t) } }} } @else { {{ 'Top level reached ✈️' | t }} }</small>
             </div>
           </div>
           <div class="stats">
-            <span><b [gmCountUp]="a.xp()"></b><small>XP</small></span>
-            <span><b>{{ a.streak() }}🔥</b><small>Day streak</small></span>
-            <span><b>{{ a.earnedCount() }}/{{ total }}</b><small>Badges</small></span>
+            <span><b [gmCountUp]="a.xp()"></b><small>{{ 'XP' | t }}</small></span>
+            <span><b>{{ a.streak() }}🔥</b><small>{{ 'Day streak' | t }}</small></span>
+            <span><b>{{ a.earnedCount() }}/{{ total }}</b><small>{{ 'Badges' | t }}</small></span>
           </div>
           <div class="ladder">
             @for (l of levels; track l.name; let i = $index) { <i [class.on]="i < a.level().index" [title]="l.name"></i> }
@@ -42,7 +43,7 @@ import { CountUpDirective } from '../../shared/directives/count-up.directive';
         </div>
 
         <div class="filters">
-          @for (f of filters; track f.id) { <button [class.on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.label }}</button> }
+          @for (f of filters; track f.id) { <button [class.on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.label | t }}</button> }
         </div>
 
         <div class="grid">
@@ -52,7 +53,7 @@ import { CountUpDirective } from '../../shared/directives/count-up.directive';
                 <svg viewBox="0 0 64 64" class="prog"><circle cx="32" cy="32" r="29" /><circle cx="32" cy="32" r="29" class="p" [style.stroke-dashoffset]="182 - 182 * b.progress" /></svg>
                 <span class="disc"><ion-icon [name]="b.earned ? b.icon : 'lock-closed'" /></span>
               </span>
-              <b>{{ b.title }}</b>
+              <b>{{ b.title | t }}</b>
               <small>{{ b.earned ? '+' + b.xp + ' XP' : Math.round(b.progress * 100) + '%' }}</small>
             </button>
           }
@@ -62,14 +63,14 @@ import { CountUpDirective } from '../../shared/directives/count-up.directive';
           <div class="detail-backdrop" (click)="selected.set(null)"></div>
           <div class="detail glass strong" [attr.data-tier]="b.tier">
             <span class="medal big" [class.earned]="b.earned"><span class="disc"><ion-icon [name]="b.earned ? b.icon : 'lock-closed'" /></span></span>
-            <h3>{{ b.title }}</h3>
-            <p>{{ b.description }}</p>
+            <h3>{{ b.title | t }}</h3>
+            <p>{{ b.description | t }}</p>
             <div class="bar"><span [style.transform]="'scaleX(' + b.progress + ')'"></span></div>
-            <small>{{ b.earned ? 'Earned ' + date(b.earnedAt) : Math.round(b.progress * 100) + '% · ' + b.xp + ' XP when unlocked' }}</small>
-            <button class="gm-btn small" (click)="selected.set(null)">Close</button>
+            <small>{{ b.earned ? ('Earned {date}' | t: { date: date(b.earnedAt) }) : ('{n}% · {xp} XP when unlocked' | t: { n: Math.round(b.progress * 100), xp: b.xp }) }}</small>
+            <button class="gm-btn small" (click)="selected.set(null)">{{ 'Close' | t }}</button>
           </div>
         }
-        <p class="fine">Badges are earned only through what you do in Gatemate — never bought or random.</p>
+        <p class="fine">{{ 'Badges are earned only through what you do in Gatemate — never bought or random.' | t }}</p>
       </div>
     </ion-content>
   `,
@@ -153,6 +154,6 @@ export class AchievementsPage {
   }
 
   date(iso?: string) {
-    return iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    return iso ? new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short', year: 'numeric' }) : '';
   }
 }

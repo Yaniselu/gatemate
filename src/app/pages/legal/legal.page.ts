@@ -1,22 +1,23 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { LEGAL_DOCS } from './legal-content';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-legal',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/welcome" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>{{ docData().title }}</ion-title>
+        <ion-title>{{ docData().title | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <article class="page anim-fade-up">
-        <h1>{{ docData().title }}</h1>
-        <p class="updated">Last updated {{ docData().updated }}</p>
+        <h1>{{ docData().title | t }}</h1>
+        <p class="updated">{{ 'Last updated {date}' | t: { date: docData().updated } }}</p>
         <p class="intro">{{ docData().intro }}</p>
         @for (s of docData().sections; track s.heading) {
           <section>
@@ -26,7 +27,7 @@ import { LEGAL_DOCS } from './legal-content';
             }
           </section>
         }
-        <p class="contact">Questions? Write to <b class="selectable">privacy&#64;gatemate.app</b></p>
+        <p class="contact">{{ 'Questions? Write to' | t }} <b class="selectable">privacy&#64;gatemate.app</b></p>
       </article>
     </ion-content>
   `,

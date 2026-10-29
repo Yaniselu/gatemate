@@ -1,49 +1,50 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-rights',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RevealDirective],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RevealDirective],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/home" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Passenger rights</ion-title>
+        <ion-title>{{ 'Passenger rights' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="intro glass tinted anim-scale-in">
           <ion-icon name="scale-outline" />
-          <h2>Know your rights</h2>
-          <p>Flying from the EU, or to the EU with an EU airline? Regulation (EC) No 261/2004 may entitle you to care and compensation.</p>
+          <h2>{{ 'Know your rights' | t }}</h2>
+          <p>{{ 'Flying from the EU, or to the EU with an EU airline? Regulation (EC) No 261/2004 may entitle you to care and compensation.' | t }}</p>
         </div>
 
-        <h3 class="sub">Estimate compensation</h3>
+        <h3 class="sub">{{ 'Estimate compensation' | t }}</h3>
         <div class="calc glass flat">
           <div class="opts">
             @for (d of distances; track d.id) {
-              <button [class.on]="distance() === d.id" (click)="distance.set(d.id)">{{ d.label }}</button>
+              <button [class.on]="distance() === d.id" (click)="distance.set(d.id)">{{ d.label | t }}</button>
             }
           </div>
           <div class="amount">
-            <small>Up to</small>
+            <small>{{ 'Up to' | t }}</small>
             <b>€{{ amount() }}</b>
-            <span>per passenger, if the delay at arrival is 3 h or more, or the flight is cancelled at short notice — unless caused by extraordinary circumstances.</span>
+            <span>{{ 'per passenger, if the delay at arrival is 3 h or more, or the flight is cancelled at short notice — unless caused by extraordinary circumstances.' | t }}</span>
           </div>
         </div>
 
-        <h3 class="sub">What to do</h3>
+        <h3 class="sub">{{ 'What to do' | t }}</h3>
         @for (s of steps; track s.title; let i = $index) {
           <div class="step" [gmReveal]="i">
             <span class="n">{{ i + 1 }}</span>
-            <div><b>{{ s.title }}</b><p>{{ s.body }}</p></div>
+            <div><b>{{ s.title | t }}</b><p>{{ s.body | t }}</p></div>
           </div>
         }
 
-        <p class="disclaimer">This is general information, not legal advice. Eligibility depends on your route, airline and the cause of disruption. Contact your airline or national enforcement body for a binding answer.</p>
+        <p class="disclaimer">{{ 'This is general information, not legal advice. Eligibility depends on your route, airline and the cause of disruption. Contact your airline or national enforcement body for a binding answer.' | t }}</p>
       </div>
     </ion-content>
   `,

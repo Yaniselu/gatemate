@@ -7,6 +7,7 @@ import { createNonce } from '../security/crypto.util';
 import { SecureStorageService } from '../security/secure-storage.service';
 import { ApiError, GatemateApi, SocialCredential } from './api';
 import { PlatformService } from './platform.service';
+import { currentLang } from '../i18n/i18n.service';
 
 const REFRESH_KEY = 'refresh_token';
 /** Last known profile, so the app opens instantly (and offline) while the token refreshes in the background. */
@@ -243,6 +244,17 @@ export class AuthService {
     await this.storage.set(REFRESH_KEY, session.refreshToken);
     await this.storage.set(USER_KEY, JSON.stringify(session.user)).catch(() => {});
     this.session.set(session);
+    this.syncLanguage(session.user);
+  }
+
+  /** Push alerts and e-mails are written on the server in the account's language: keep it in step with the app. */
+  private syncLanguage(user: User): void {
+    const lang = currentLang();
+    if (user.lang === lang) return;
+    void this.api.updateProfile({ lang }).then((u) => {
+      const s = this.session();
+      if (s && s.user.id === u.id) this.session.set({ ...s, user: u });
+    }, () => {});
   }
 
   private async cachedUser(): Promise<User | null> {

@@ -6,13 +6,13 @@
     </div>
 
     <div class="stagger">
-      <h1 style="--i: 0">Welcome aboard</h1>
-      <p class="lead" style="--i: 1">Sign in to see your flights, alerts and trip chats.</p>
+      <h1 style="--i: 0">{{ 'Welcome aboard' | t }}</h1>
+      <p class="lead" style="--i: 1">{{ 'Sign in to see your flights, alerts and trip chats.' | t }}</p>
 
       @if (socialAvailable) {
       <gm-social-buttons style="--i: 2; display: block" />
 
-      <div class="divider" style="--i: 3">or with email</div>
+      <div class="divider" style="--i: 3">{{ 'or with email' | t }}</div>
       }
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate style="--i: 4">
@@ -21,39 +21,39 @@
         }
 
         <div class="gm-field" [class.invalid]="invalid('email')">
-          <label for="email">Email</label>
+          <label for="email">{{ 'Email' | t }}</label>
           <div class="gm-input-wrap">
             <ion-icon name="mail-outline" />
-            <input id="email" type="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="you@example.com" />
+            <input id="email" type="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" [placeholder]="'you@example.com' | t" />
           </div>
           @if (invalid('email')) {
-            <span class="gm-error">Enter a valid email address.</span>
+            <span class="gm-error">{{ 'Enter a valid email address.' | t }}</span>
           }
         </div>
 
         <div class="gm-field" [class.invalid]="invalid('password')">
-          <label for="password">Password</label>
+          <label for="password">{{ 'Password' | t }}</label>
           <div class="gm-input-wrap">
             <ion-icon name="lock-closed-outline" />
-            <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" placeholder="Your password" />
-            <button type="button" class="gm-input-action" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+            <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" [placeholder]="'Your password' | t" />
+            <button type="button" class="gm-input-action" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? ('Hide password' | t) : ('Show password' | t)">
               <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'" />
             </button>
           </div>
           @if (invalid('password')) {
-            <span class="gm-error">Enter your password.</span>
+            <span class="gm-error">{{ 'Enter your password.' | t }}</span>
           }
         </div>
 
-        <div class="row-end"><a routerLink="/auth/forgot">Forgot password?</a></div>
+        <div class="row-end"><a routerLink="/auth/forgot">{{ 'Forgot password?' | t }}</a></div>
 
         <button class="gm-btn" type="submit" [disabled]="loading()">
-          @if (loading()) { <span class="spinner"></span> } @else { Sign in <ion-icon name="arrow-forward" /> }
+          @if (loading()) { <span class="spinner"></span> } @else { {{ 'Sign in' | t }} <ion-icon name="arrow-forward" /> }
         </button>
-        @if (slow()) { <p class="slow-hint">Waking up the server — the first sign-in can take up to a minute.</p> }
+        @if (slow()) { <p class="slow-hint">{{ 'Waking up the server — the first sign-in can take up to a minute.' | t }}</p> }
       </form>
     </div>
 
-    <p class="switch">New to Gatemate? <a routerLink="/auth/register">Create an account</a></p>
+    <p class="switch">{{ 'New to Gatemate?' | t }} <a routerLink="/auth/register">{{ 'Create an account' | t }}</a></p>
   </div>
 </ion-content>

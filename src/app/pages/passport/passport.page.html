@@ -1,7 +1,7 @@
 <ion-header class="gm-glass-header" [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back" /></ion-buttons>
-    <ion-title>Travel passport</ion-title>
+    <ion-title>{{ 'Travel passport' | t }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -9,7 +9,7 @@
   <div class="page">
     @if (years().length > 0) {
       <nav class="periods" role="tablist">
-        <button role="tab" [class.on]="period() === 'all'" [attr.aria-selected]="period() === 'all'" (click)="setPeriod('all')">All time</button>
+        <button role="tab" [class.on]="period() === 'all'" [attr.aria-selected]="period() === 'all'" (click)="setPeriod('all')">{{ 'All time' | t }}</button>
         @for (y of years(); track y) {
           <button role="tab" [class.on]="period() === y" [attr.aria-selected]="period() === y" (click)="setPeriod(y)">{{ y }}</button>
         }
@@ -20,32 +20,32 @@
       <gm-route-map class="map" [routes]="summary().routes" />
       @if (!loading() && !summary().routes.length) {
         <div class="map-empty">
-          <b>Your map is waiting</b>
-          <small>Every flight you add draws a line here.</small>
+          <b>{{ 'Your map is waiting' | t }}</b>
+          <small>{{ 'Every flight you add draws a line here.' | t }}</small>
         </div>
       }
       <div class="legend">
-        <span><i class="solid"></i>Flown</span>
-        @if (upcomingCount()) { <span><i class="dash"></i>Booked</span> }
+        <span><i class="solid"></i>{{ 'Flown' | t }}</span>
+        @if (upcomingCount()) { <span><i class="dash"></i>{{ 'Booked' | t }}</span> }
       </div>
     </div>
 
     @if (!loading()) {
       @let s = summary();
       <div class="hero" gmReveal>
-        <b [gmCountUp]="s.km"></b><span>km flown</span>
+        <b [gmCountUp]="s.km"></b><span>{{ 'km flown' | t }}</span>
         @if (fact()) { <p>{{ fact() }}</p> }
       </div>
 
       <div class="grid">
-        <div class="stat card" gmReveal="0"><b [gmCountUp]="s.flights"></b><small>{{ s.flights === 1 ? 'Flight' : 'Flights' }}</small></div>
-        <div class="stat card" gmReveal="1"><b [gmCountUp]="s.countries.length"></b><small>{{ s.countries.length === 1 ? 'Country' : 'Countries' }}</small></div>
-        <div class="stat card" gmReveal="2"><b [gmCountUp]="s.airports"></b><small>Airports</small></div>
-        <div class="stat card" gmReveal="3"><b [gmCountUp]="s.hours"></b><small>Hours in the air</small></div>
+        <div class="stat card" gmReveal="0"><b [gmCountUp]="s.flights"></b><small>{{ s.flights === 1 ? ('Flight' | t) : ('Flights' | t) }}</small></div>
+        <div class="stat card" gmReveal="1"><b [gmCountUp]="s.countries.length"></b><small>{{ s.countries.length === 1 ? ('Country' | t) : ('Countries' | t) }}</small></div>
+        <div class="stat card" gmReveal="2"><b [gmCountUp]="s.airports"></b><small>{{ 'Airports' | t }}</small></div>
+        <div class="stat card" gmReveal="3"><b [gmCountUp]="s.hours"></b><small>{{ 'Hours in the air' | t }}</small></div>
       </div>
 
       @if (countries().length) {
-        <div class="gm-section-title"><h2>Countries</h2><span class="src">{{ countries().length }} so far</span></div>
+        <div class="gm-section-title"><h2>{{ 'Countries' | t }}</h2><span class="src">{{ '{n} so far' | t: { n: countries().length } }}</span></div>
         <div class="flags">
           @for (c of countries(); track c.cc; let i = $index) {
             <span class="flag" [gmReveal]="i"><i>{{ c.flag }}</i>{{ c.name }}</span>
@@ -54,28 +54,28 @@
       }
 
       @if (s.longest || s.topCity) {
-        <div class="gm-section-title"><h2>Highlights</h2></div>
+        <div class="gm-section-title"><h2>{{ 'Highlights' | t }}</h2></div>
         <div class="rows card" gmReveal>
           @if (s.longest; as l) {
-            <div class="row"><span class="gm-well accent"><ion-icon name="resize-outline" /></span><span class="row-text"><b>Longest flight</b><small>{{ l.from }} → {{ l.to }} · {{ l.km | number }} km</small></span></div>
+            <div class="row"><span class="gm-well accent"><ion-icon name="resize-outline" /></span><span class="row-text"><b>{{ 'Longest flight' | t }}</b><small>{{ l.from }} → {{ l.to }} · {{ l.km | number }} km</small></span></div>
           }
           @if (s.topCity; as t) {
-            <div class="row"><span class="gm-well"><ion-icon name="heart-outline" /></span><span class="row-text"><b>Favourite destination</b><small>{{ t.city }} · {{ t.count }} {{ t.count === 1 ? 'visit' : 'visits' }}</small></span></div>
+            <div class="row"><span class="gm-well"><ion-icon name="heart-outline" /></span><span class="row-text"><b>{{ 'Favourite destination' | t }}</b><small>{{ t.city }} · {{ (t.count === 1 ? '1 visit' : '{n} visits') | t: { n: t.count } }}</small></span></div>
           }
         </div>
       }
 
       @if (s.flights) {
         <button class="gm-btn share" gmPressable (click)="share()" [disabled]="sharing()">
-          @if (sharing()) { <span class="spinner"></span> Preparing… } @else { <ion-icon name="share-outline" /> Share my passport }
+          @if (sharing()) { <span class="spinner"></span> {{ 'Preparing…' | t }} } @else { <ion-icon name="share-outline" /> {{ 'Share my passport' | t }} }
         </button>
-        <p class="hint">Creates an image on your phone for Instagram, WhatsApp or Messages. Your booking details are never included.</p>
+        <p class="hint">{{ 'Creates an image on your phone for Instagram, WhatsApp or Messages. Your booking details are never included.' | t }}</p>
       } @else {
         <div class="gm-empty">
           <ion-icon name="earth" />
-          <h3>No flights flown yet</h3>
-          <p>Add a booking and, once you land, your passport fills itself in.</p>
-          <a class="gm-btn small" routerLink="/add-flight"><ion-icon name="add" /> Add a booking</a>
+          <h3>{{ 'No flights flown yet' | t }}</h3>
+          <p>{{ 'Add a booking and, once you land, your passport fills itself in.' | t }}</p>
+          <a class="gm-btn small" routerLink="/add-flight"><ion-icon name="add" /> {{ 'Add a booking' | t }}</a>
         </div>
       }
     }

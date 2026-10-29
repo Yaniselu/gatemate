@@ -6,16 +6,17 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-security-settings',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonToggle, RevealDirective],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonToggle, RevealDirective],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Security & privacy</ion-title>
+        <ion-title>{{ 'Security & privacy' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
@@ -26,30 +27,30 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
           <div class="row">
             <span class="ic" style="--c:#0FB5C3"><ion-icon name="finger-print-outline" /></span>
             <div class="grow">
-              <b>Lock with {{ lock.biometryLabel() }}</b>
-              <small>{{ available() ? 'Ask for ' + lock.biometryLabel() + ' when opening Gatemate' : 'Available in the iOS and Android app' }}</small>
+              <b>{{ 'Lock with {method}' | t: { method: lock.biometryLabel() } }}</b>
+              <small>{{ available() ? ('Ask for {method} when opening Gatemate' | t: { method: lock.biometryLabel() }) : ('Available in the iOS and Android app' | t) }}</small>
             </div>
-            <ion-toggle [checked]="prefs.biometricLock()" [disabled]="!available()" (ionChange)="toggleLock($event.detail.checked)" aria-label="Biometric lock" />
+            <ion-toggle [checked]="prefs.biometricLock()" [disabled]="!available()" (ionChange)="toggleLock($event.detail.checked)" [aria-label]="'Biometric lock' | t" />
           </div>
           @if (auth.user()?.provider === 'password') {
             <button class="row" (click)="changePassword()">
               <span class="ic" style="--c:#8B7CF6"><ion-icon name="key-outline" /></span>
-              <div class="grow"><b>Change password</b><small>We will email you a secure link</small></div>
+              <div class="grow"><b>{{ 'Change password' | t }}</b><small>{{ 'We will email you a secure link' | t }}</small></div>
               <ion-icon name="chevron-forward" class="chev" />
             </button>
           }
           <button class="row" (click)="signOutEverywhere()">
             <span class="ic" style="--c:#FF5A5F"><ion-icon name="log-out-outline" /></span>
-            <div class="grow"><b>Sign out on all devices</b><small>Revokes every active session</small></div>
+            <div class="grow"><b>{{ 'Sign out on all devices' | t }}</b><small>{{ 'Revokes every active session' | t }}</small></div>
             <ion-icon name="chevron-forward" class="chev" />
           </button>
         </div>
 
-        <h3 class="sub">How we protect you</h3>
+        <h3 class="sub">{{ 'How we protect you' | t }}</h3>
         @for (m of measures; track m.title; let i = $index) {
           <div class="measure" [gmReveal]="i">
             <ion-icon [name]="m.icon" />
-            <div><b>{{ m.title }}</b><p>{{ m.body }}</p></div>
+            <div><b>{{ m.title | t }}</b><p>{{ m.body | t }}</p></div>
           </div>
         }
       </div>

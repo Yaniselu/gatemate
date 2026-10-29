@@ -17,6 +17,8 @@ public class UserEntity {
     public String legalLastName;
     public String phone;
     public String homeAirport;
+    /** App language (en, ro, es, fr, de, it) for push alerts and e-mails. */
+    public String lang = "en";
     public String seatPreference;
     public String bio;
     public String avatarUrl;

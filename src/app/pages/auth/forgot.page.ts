@@ -7,63 +7,64 @@ import { emailValidator } from '../../core/security/validators';
 import { PlatformService } from '../../core/services/platform.service';
 import { ApiError } from '../../core/services/api';
 import { CodeInputComponent } from '../../shared/components/code-input.component';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-forgot',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, ReactiveFormsModule, RouterLink, CodeInputComponent],
+  imports: [TranslatePipe, IonContent, IonIcon, ReactiveFormsModule, RouterLink, CodeInputComponent],
   template: `
     <ion-content class="auth">
       <div class="wrap">
-        <a class="gm-icon-btn back" routerLink="/auth/login" aria-label="Back to sign in"><ion-icon name="chevron-back" /></a>
+        <a class="gm-icon-btn back" routerLink="/auth/login" [aria-label]="'Back to sign in' | t"><ion-icon name="chevron-back" /></a>
 
         @if (!sent()) {
           <div class="stagger">
-            <h1 style="--i: 0">Reset password</h1>
-            <p class="lead" style="--i: 1">Enter your e-mail and we’ll send you a 6-digit code to choose a new password.</p>
+            <h1 style="--i: 0">{{ 'Reset password' | t }}</h1>
+            <p class="lead" style="--i: 1">{{ 'Enter your e-mail and we’ll send you a 6-digit code to choose a new password.' | t }}</p>
             <form [formGroup]="form" (ngSubmit)="submit()" novalidate style="--i: 2">
               <div class="gm-field" [class.invalid]="form.controls.email.invalid && submitted()">
-                <label for="email">Email</label>
+                <label for="email">{{ 'Email' | t }}</label>
                 <div class="gm-input-wrap">
                   <ion-icon name="mail-outline" />
-                  <input id="email" type="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="off" placeholder="you@example.com" />
+                  <input id="email" type="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="off" [placeholder]="'you@example.com' | t" />
                 </div>
                 @if (form.controls.email.invalid && submitted()) {
-                  <span class="gm-error">Enter a valid email address.</span>
+                  <span class="gm-error">{{ 'Enter a valid email address.' | t }}</span>
                 }
               </div>
               <button class="gm-btn" type="submit" [disabled]="loading()">
-                @if (loading()) { <span class="spinner"></span> } @else { Send code <ion-icon name="send" /> }
+                @if (loading()) { <span class="spinner"></span> } @else { {{ 'Send code' | t }} <ion-icon name="send" /> }
               </button>
               @if (error()) { <p class="err" role="alert"><ion-icon name="alert-circle" /> {{ error() }}</p> }
             </form>
           </div>
         } @else if (!changed()) {
           <div class="stagger">
-            <h1 style="--i: 0">Enter the code</h1>
-            <p class="lead" style="--i: 1">If an account exists for <b>{{ form.controls.email.value }}</b>, we e-mailed it a 6-digit code. It expires in 30 minutes.</p>
+            <h1 style="--i: 0">{{ 'Enter the code' | t }}</h1>
+            <p class="lead" style="--i: 1">{{ 'If an account exists for' | t }} <b>{{ form.controls.email.value }}</b>{{ ', we e-mailed it a 6-digit code. It expires in 30 minutes.' | t }}</p>
             <div style="--i: 2"><gm-code-input [(value)]="code" [error]="!!error()" /></div>
             <div class="gm-field" style="--i: 3; margin-top: 18px">
-              <label for="np">New password</label>
+              <label for="np">{{ 'New password' | t }}</label>
               <div class="gm-input-wrap">
                 <ion-icon name="lock-closed-outline" />
                 <input id="np" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="password()" (input)="password.set($any($event.target).value)" maxlength="128" />
-                <button type="button" class="eye" (click)="show.set(!show())" [attr.aria-label]="show() ? 'Hide password' : 'Show password'"><ion-icon [name]="show() ? 'eye-off-outline' : 'eye-outline'" /></button>
+                <button type="button" class="eye" (click)="show.set(!show())" [attr.aria-label]="show() ? ('Hide password' | t) : ('Show password' | t)"><ion-icon [name]="show() ? 'eye-off-outline' : 'eye-outline'" /></button>
               </div>
-              <span class="gm-hint">At least 10 characters, with letters and a number or symbol.</span>
+              <span class="gm-hint">{{ 'At least 10 characters, with letters and a number or symbol.' | t }}</span>
             </div>
             @if (error()) { <p class="err" role="alert"><ion-icon name="alert-circle" /> {{ error() }}</p> }
             <button class="gm-btn" style="--i: 4" (click)="confirm()" [disabled]="loading() || code().length !== 6 || password().length < 10">
-              @if (loading()) { <span class="spinner"></span> } @else { Set new password <ion-icon name="checkmark" /> }
+              @if (loading()) { <span class="spinner"></span> } @else { {{ 'Set new password' | t }} <ion-icon name="checkmark" /> }
             </button>
-            <button class="link" (click)="sent.set(false); code.set('')">Use another e-mail or send a new code</button>
+            <button class="link" (click)="sent.set(false); code.set('')">{{ 'Use another e-mail or send a new code' | t }}</button>
           </div>
         } @else {
           <div class="sent">
             <div class="env"><ion-icon name="lock-open-outline" /><span class="tick"><ion-icon name="checkmark" /></span></div>
-            <h1>Password changed</h1>
-            <p class="lead">You can sign in with your new password. For your safety, other devices were signed out.</p>
-            <a class="gm-btn" routerLink="/auth/login">Sign in</a>
+            <h1>{{ 'Password changed' | t }}</h1>
+            <p class="lead">{{ 'You can sign in with your new password. For your safety, other devices were signed out.' | t }}</p>
+            <a class="gm-btn" routerLink="/auth/login">{{ 'Sign in' | t }}</a>
           </div>
         }
       </div>

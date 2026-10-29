@@ -8,6 +8,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { RelativeTimePipe } from '../../shared/pipes/time.pipes';
 import { ALERT_ICONS } from '../home/home.page';
+import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Filter = 'all' | 'flights' | 'prep' | 'social';
 const GROUP: Record<string, Filter> = {
@@ -18,15 +19,15 @@ const GROUP: Record<string, Filter> = {
 @Component({
   selector: 'gm-alerts',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RouterLink, SkeletonComponent, RevealDirective, RelativeTimePipe],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RouterLink, SkeletonComponent, RevealDirective, RelativeTimePipe],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/home" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Alerts</ion-title>
+        <ion-title>{{ 'Alerts' | t }}</ion-title>
         <ion-buttons slot="end">
           @if (store.unreadAlerts() > 0) {
-            <button class="mark" (click)="markAll()">Mark all read</button>
+            <button class="mark" (click)="markAll()">{{ 'Mark all read' | t }}</button>
           }
         </ion-buttons>
       </ion-toolbar>
@@ -35,7 +36,7 @@ const GROUP: Record<string, Filter> = {
       <div class="page">
         <div class="filters">
           @for (f of filters; track f.id) {
-            <button [class.on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.label }} @if (count(f.id)) { <em>{{ count(f.id) }}</em> }</button>
+            <button [class.on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.label | t }} @if (count(f.id)) { <em>{{ count(f.id) }}</em> }</button>
           }
         </div>
 
@@ -45,31 +46,31 @@ const GROUP: Record<string, Filter> = {
           }
         } @else {
           @if (due().length) {
-            <span class="gm-label grp">Now & recent</span>
+            <span class="gm-label grp">{{ 'Now & recent' | t }}</span>
             <div class="list card">
               @for (a of due(); track a.id; let i = $index) {
                 <div class="alert" [gmReveal]="i" [class.unread]="!a.read" [style.transform]="'translateX(' + offset(a.id) + 'px)'" [class.gone]="leaving() === a.id"
                      (pointerdown)="ds($event, a)" (pointermove)="dm($event, a)" (pointerup)="de(a)" (pointercancel)="de(a)">
                   <span class="gm-well" [style.color]="icons[a.kind].color"><ion-icon [name]="icons[a.kind].icon" /></span>
                   <div class="grow">
-                    <div class="t">{{ a.title }}</div>
-                    <div class="b">{{ a.body }}</div>
+                    <div class="t">{{ a.title | t }}</div>
+                    <div class="b">{{ a.body | t }}</div>
                     <time>{{ a.createdAt | relTime }}</time>
                   </div>
                 </div>
               }
             </div>
-            <p class="hint"><ion-icon name="swap-horizontal" /> Swipe an alert to clear it</p>
+            <p class="hint"><ion-icon name="swap-horizontal" /> {{ 'Swipe an alert to clear it' | t }}</p>
           }
 
           @if (upcoming().length) {
-            <span class="gm-label grp">Scheduled reminders</span>
+            <span class="gm-label grp">{{ 'Scheduled reminders' | t }}</span>
             <div class="list card">
               @for (a of upcoming(); track a.id; let i = $index) {
                 <div class="alert future" [gmReveal]="i">
                   <span class="gm-well"><ion-icon [name]="icons[a.kind].icon" /></span>
                   <div class="grow">
-                    <div class="t">{{ a.title }}</div>
+                    <div class="t">{{ a.title | t }}</div>
                     <time><ion-icon name="alarm-outline" /> {{ when(a.createdAt) }}</time>
                   </div>
                 </div>
@@ -78,10 +79,10 @@ const GROUP: Record<string, Filter> = {
           }
 
           @if (!due().length && !upcoming().length) {
-            <div class="gm-empty"><ion-icon name="notifications-outline" /><h3>All caught up</h3><p>Add a booking and Gatemate reminds you about check-in, leaving for the airport and boarding.</p></div>
+            <div class="gm-empty"><ion-icon name="notifications-outline" /><h3>{{ 'All caught up' | t }}</h3><p>{{ 'Add a booking and Gatemate reminds you about check-in, leaving for the airport and boarding.' | t }}</p></div>
           }
           <a class="settings card" routerLink="/settings/notifications">
-            <ion-icon name="settings-outline" /> Choose which alerts you get <ion-icon name="chevron-forward" class="chev" />
+            <ion-icon name="settings-outline" /> {{ 'Choose which alerts you get' | t }} <ion-icon name="chevron-forward" class="chev" />
           </a>
         }
       </div>
@@ -149,7 +150,7 @@ export class AlertsPage implements OnInit {
   }
 
   when(iso: string) {
-    return new Date(iso).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleString(locale(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
 
   ds(e: PointerEvent, _a: FlightAlert) {

@@ -7,11 +7,12 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { RelativeTimePipe } from '../../shared/pipes/time.pipes';
 import { PlatformService } from '../../core/services/platform.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-chat',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, IonRefresher, IonRefresherContent, RouterLink, SkeletonComponent, RevealDirective, PressableDirective, RelativeTimePipe],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, IonRefresher, IonRefresherContent, RouterLink, SkeletonComponent, RevealDirective, PressableDirective, RelativeTimePipe],
   templateUrl: './chat.page.html',
   styleUrl: './chat.page.scss',
 })

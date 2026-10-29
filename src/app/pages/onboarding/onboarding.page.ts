@@ -9,6 +9,7 @@ import { NotificationsService } from '../../core/services/notifications.service'
 import { PlatformService } from '../../core/services/platform.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AirportPickerComponent } from '../../shared/components/airport-picker.component';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Key stored per account once the first-run questions are answered (or skipped). */
 export const onboardedKey = (userId: string) => `gm_onboarded_${userId}`;
@@ -17,7 +18,7 @@ export const onboardedKey = (userId: string) => `gm_onboarded_${userId}`;
 @Component({
   selector: 'gm-onboarding',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, AirportPickerComponent],
+  imports: [TranslatePipe, IonContent, IonIcon, AirportPickerComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="wrap">
@@ -28,8 +29,8 @@ export const onboardedKey = (userId: string) => `gm_onboarded_${userId}`;
         @if (step() === 0) {
           <section class="step anim-fade-up">
             <span class="icon"><ion-icon name="airplane" /></span>
-            <h1>Where do you usually fly from?</h1>
-            <p>We use your home airport for the airport guide, time differences, currency and plug checks. You can change it any time in your profile.</p>
+            <h1>{{ 'Where do you usually fly from?' | t }}</h1>
+            <p>{{ 'We use your home airport for the airport guide, time differences, currency and plug checks. You can change it any time in your profile.' | t }}</p>
 
             @if (home(); as h) {
               <button class="choice card" (click)="picking.set(true)">
@@ -42,31 +43,31 @@ export const onboardedKey = (userId: string) => `gm_onboarded_${userId}`;
             <div class="actions">
               <button class="gm-btn ghost" (click)="useLocation()" [disabled]="locating()">
                 @if (locating()) { <span class="spinner dark"></span> } @else { <ion-icon name="navigate-outline" /> }
-                Use my location
+                {{ 'Use my location' | t }}
               </button>
-              <button class="gm-btn ghost" (click)="picking.set(true)"><ion-icon name="search-outline" /> Search airports</button>
+              <button class="gm-btn ghost" (click)="picking.set(true)"><ion-icon name="search-outline" /> {{ 'Search airports' | t }}</button>
             </div>
 
             <div class="bottom">
               <button class="gm-btn" (click)="saveHome()" [disabled]="!home() || saving()">
-                @if (saving()) { <span class="spinner"></span> } @else { Continue <ion-icon name="arrow-forward" /> }
+                @if (saving()) { <span class="spinner"></span> } @else { {{ 'Continue' | t }} <ion-icon name="arrow-forward" /> }
               </button>
-              <button class="skip" (click)="step.set(1)">Skip for now</button>
+              <button class="skip" (click)="step.set(1)">{{ 'Skip for now' | t }}</button>
             </div>
           </section>
         } @else {
           <section class="step anim-fade-up">
             <span class="icon"><ion-icon name="notifications" /></span>
-            <h1>Never miss boarding</h1>
-            <p>Gatemate reminds you when check-in opens, when to leave for the airport and when boarding starts — and tells you about gate changes and delays.</p>
+            <h1>{{ 'Never miss boarding' | t }}</h1>
+            <p>{{ 'Gatemate reminds you when check-in opens, when to leave for the airport and when boarding starts — and tells you about gate changes and delays.' | t }}</p>
             <ul class="list">
-              <li><ion-icon name="checkmark-circle" /> Only about your own trips</li>
-              <li><ion-icon name="checkmark-circle" /> No marketing</li>
-              <li><ion-icon name="checkmark-circle" /> Choose exactly which ones in Settings</li>
+              <li><ion-icon name="checkmark-circle" /> {{ 'Only about your own trips' | t }}</li>
+              <li><ion-icon name="checkmark-circle" /> {{ 'No marketing' | t }}</li>
+              <li><ion-icon name="checkmark-circle" /> {{ 'Choose exactly which ones in Settings' | t }}</li>
             </ul>
             <div class="bottom">
-              <button class="gm-btn" (click)="allowNotifications()" [disabled]="saving()">Allow notifications</button>
-              <button class="skip" (click)="finish()">Not now</button>
+              <button class="gm-btn" (click)="allowNotifications()" [disabled]="saving()">{{ 'Allow notifications' | t }}</button>
+              <button class="skip" (click)="finish()">{{ 'Not now' | t }}</button>
             </div>
           </section>
         }

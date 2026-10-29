@@ -4,6 +4,7 @@ import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 interface Thing {
   x: number;
@@ -18,29 +19,29 @@ interface Thing {
 @Component({
   selector: 'gm-dodge',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Sky Dodge</ion-title>
+        <ion-title>{{ 'Sky Dodge' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true" [scrollY]="false">
       <div class="wrap" #wrap>
         <canvas #cv (pointerdown)="down($event)" (pointermove)="move($event)" (pointerup)="up()" (pointercancel)="up()"></canvas>
-        <div class="hud glass strong"><span>⭐ {{ score() }}</span><span>Best {{ best() }}</span></div>
+        <div class="hud glass strong"><span>⭐ {{ score() }}</span><span>{{ 'Best {n}' | t: { n: best() } }}</span></div>
         @if (state() !== 'playing') {
           <div class="overlay">
             <div class="panel glass strong">
               @if (state() === 'over') {
-                <h2>{{ record() ? 'New record! 🏆' : 'Turbulence!' }}</h2>
-                <p>You scored <b>{{ score() }}</b>.</p>
+                <h2>{{ record() ? ('New record! 🏆' | t) : ('Turbulence!' | t) }}</h2>
+                <p>{{ 'You scored' | t }} <b>{{ score() }}</b>.</p>
               } @else {
-                <h2>Sky Dodge</h2>
-                <p>Drag left and right to steer. Dodge storms and birds, grab the stars.</p>
+                <h2>{{ 'Sky Dodge' | t }}</h2>
+                <p>{{ 'Drag left and right to steer. Dodge storms and birds, grab the stars.' | t }}</p>
               }
-              <button class="gm-btn" (click)="start()"><ion-icon name="play" /> {{ state() === 'over' ? 'Fly again' : 'Take off' }}</button>
+              <button class="gm-btn" (click)="start()"><ion-icon name="play" /> {{ state() === 'over' ? ('Fly again' | t) : ('Take off' | t) }}</button>
             </div>
           </div>
         }

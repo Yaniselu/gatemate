@@ -6,40 +6,41 @@ import { ApiError } from '../../core/services/api';
 import { PlatformService } from '../../core/services/platform.service';
 import { CodeInputComponent } from '../../shared/components/code-input.component';
 import { ConfettiService } from '../../shared/components/confetti.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** "Check your inbox": type the 6-digit code from the confirmation e-mail. */
 @Component({
   selector: 'gm-verify-email',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, CodeInputComponent],
+  imports: [TranslatePipe, IonContent, IonIcon, CodeInputComponent],
   template: `
     <ion-content class="auth">
       <div class="wrap">
         @if (!done()) {
           <div class="stagger">
             <div class="env" style="--i: 0"><ion-icon name="mail-unread-outline" /></div>
-            <h1 style="--i: 1">Confirm your e-mail</h1>
-            <p class="lead" style="--i: 2">We sent a 6-digit code to <b>{{ email() }}</b>. Type it here.@if (demo) { <br /><small class="demo">Demo: the code is 246810</small> }</p>
+            <h1 style="--i: 1">{{ 'Confirm your e-mail' | t }}</h1>
+            <p class="lead" style="--i: 2">{{ 'We sent a 6-digit code to' | t }} <b>{{ email() }}</b>. {{ 'Type it here.' | t }}@if (demo) { <br /><small class="demo">{{ 'Demo: the code is 246810' | t }}</small> }</p>
             <div style="--i: 3">
               <gm-code-input [(value)]="code" [error]="!!error()" (complete)="verify()" />
             </div>
             @if (error()) { <p class="err" role="alert"><ion-icon name="alert-circle" /> {{ error() }}</p> }
             <button class="gm-btn" style="--i: 4" (click)="verify()" [disabled]="busy() || code().length !== 6">
-              @if (busy()) { <span class="spinner"></span> } @else { Confirm <ion-icon name="checkmark" /> }
+              @if (busy()) { <span class="spinner"></span> } @else { {{ 'Confirm' | t }} <ion-icon name="checkmark" /> }
             </button>
             <div class="row" style="--i: 5">
               <button class="link" (click)="resend()" [disabled]="cooldown() > 0 || sending()">
-                {{ sending() ? 'Sending…' : cooldown() > 0 ? 'Resend code in ' + cooldown() + 's' : 'Resend code' }}
+                {{ sending() ? ('Sending…' | t) : cooldown() > 0 ? ('Resend code in {n}s' | t: { n: cooldown() }) : ('Resend code' | t) }}
               </button>
-              <button class="link muted" (click)="later()">Later</button>
+              <button class="link muted" (click)="later()">{{ 'Later' | t }}</button>
             </div>
-            <p class="hint" style="--i: 6">Can’t find it? Check Spam or Promotions. The code expires in 30 minutes.</p>
+            <p class="hint" style="--i: 6">{{ 'Can’t find it? Check Spam or Promotions. The code expires in 30 minutes.' | t }}</p>
           </div>
         } @else {
           <div class="done">
             <div class="env ok"><ion-icon name="checkmark" /></div>
-            <h1>E-mail confirmed</h1>
-            <p class="lead">Thanks! Your account is secured.</p>
+            <h1>{{ 'E-mail confirmed' | t }}</h1>
+            <p class="lead">{{ 'Thanks! Your account is secured.' | t }}</p>
           </div>
         }
       </div>

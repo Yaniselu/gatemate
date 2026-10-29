@@ -3,17 +3,18 @@ import { Router } from '@angular/router';
 import { IonIcon } from '@ionic/angular/standalone';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { ConfettiService } from './confetti.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Celebrates a newly earned badge with a glass banner that drops in from the top. */
 @Component({
   selector: 'gm-badge-toast',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonIcon],
+  imports: [TranslatePipe, IonIcon],
   template: `
     @if (a.unlocked()[0]; as b) {
       <button class="toast glass strong" [attr.data-tier]="b.tier" (click)="open()" role="status" aria-live="polite">
         <span class="medal"><ion-icon [name]="b.icon" /></span>
-        <span class="txt"><small>Badge unlocked · +{{ b.xp }} XP</small><b>{{ b.title }}</b></span>
+        <span class="txt"><small>Badge unlocked · +{{ b.xp }} XP</small><b>{{ b.title | t }}</b></span>
         <ion-icon name="chevron-forward" class="chev" />
       </button>
     }

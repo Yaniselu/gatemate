@@ -6,6 +6,7 @@ import { LiveFlightService, LiveState } from '../../core/services/live-flight.se
 import { AirportDbService } from '../../core/services/airport-db.service';
 import { RouteLine } from '../../core/utils/travel-summary';
 import { RouteMapComponent } from './route-map.component';
+import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
 
 const LABEL: Record<LiveState['phase'], string> = {
   scheduled: 'Not departed yet',
@@ -19,11 +20,11 @@ const LABEL: Record<LiveState['phase'], string> = {
 @Component({
   selector: 'gm-live-flight',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonIcon, DecimalPipe, RouteMapComponent],
+  imports: [TranslatePipe, IonIcon, DecimalPipe, RouteMapComponent],
   template: `
     <div class="top">
-      <span class="badge" [attr.data-phase]="state()?.phase ?? 'loading'"><i></i>{{ state() ? label[state()!.phase] : 'Looking for the plane…' }}</span>
-      <span class="live">LIVE</span>
+      <span class="badge" [attr.data-phase]="state()?.phase ?? 'loading'"><i></i>{{ (state() ? label[state()!.phase] : 'Looking for the plane…') | t }}</span>
+      <span class="live">{{ 'LIVE' | t }}</span>
     </div>
     <div class="bar">
       <b>{{ flight().from.code }}</b>
@@ -33,15 +34,15 @@ const LABEL: Record<LiveState['phase'], string> = {
     @if (state(); as s) {
       @if (s.phase === 'airborne' || s.phase === 'taxiing') {
         <div class="stats">
-          <div><small>Altitude</small><b>{{ s.altitudeFt ? (s.altitudeFt | number) + ' ft' : 'Ground' }}</b></div>
-          <div><small>Speed</small><b>{{ s.speedKmh }} km/h</b></div>
-          <div><small>Lands ≈</small><b>{{ s.eta ? clock(s.eta) : '—' }}</b></div>
+          <div><small>{{ 'Altitude' | t }}</small><b>{{ s.altitudeFt ? (s.altitudeFt | number) + ' ft' : ('Ground' | t) }}</b></div>
+          <div><small>{{ 'Speed' | t }}</small><b>{{ s.speedKmh }} km/h</b></div>
+          <div><small>{{ 'Lands ≈' | t }}</small><b>{{ s.eta ? clock(s.eta) : '—' }}</b></div>
         </div>
         <gm-route-map class="map" [routes]="route()" [plane]="s.lat !== undefined ? { lat: s.lat, lon: s.lon!, heading: s.heading } : null" />
       } @else if (s.phase === 'no-signal') {
-        <p class="note">Planes are tracked by volunteer receivers on the ground. Over sea or remote areas the signal can drop for a while. We keep checking.</p>
+        <p class="note">{{ 'Planes are tracked by volunteer receivers on the ground. Over sea or remote areas the signal can drop for a while. We keep checking.' | t }}</p>
       } @else if (s.phase === 'scheduled') {
-        <p class="note">Live tracking starts an hour before departure.</p>
+        <p class="note">{{ 'Live tracking starts an hour before departure.' | t }}</p>
       }
       <small class="foot">
         @if (s.aircraft || s.registration) { {{ s.aircraft }} {{ s.registration }} · }
@@ -113,9 +114,9 @@ export class LiveFlightComponent {
 
   clock(t: number) {
     try {
-      return new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: this.flight().to.timezone });
+      return new Date(t).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', timeZone: this.flight().to.timezone });
     } catch {
-      return new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      return new Date(t).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' });
     }
   }
 }

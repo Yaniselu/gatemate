@@ -10,6 +10,7 @@ import { InviteService } from '../../core/services/invite.service';
 import { containsLink, containsSensitiveNumber, MAX_MESSAGE_LENGTH } from '../../core/security/sanitize';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { ClockPipe } from '../../shared/pipes/time.pipes';
+import { locale, t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 interface Row {
   kind: 'day' | 'msg';
@@ -25,7 +26,7 @@ const REPORT_REASONS = ['Spam or scam', 'Harassment or hate', 'Sexual content', 
 @Component({
   selector: 'gm-chat-room',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonFooter, IonIcon, FormsModule, SkeletonComponent, ClockPipe],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonFooter, IonIcon, FormsModule, SkeletonComponent, ClockPipe],
   templateUrl: './chat-room.page.html',
   styleUrl: './chat-room.page.scss',
 })
@@ -110,15 +111,15 @@ export class ChatRoomPage implements OnInit {
       header: mine ? 'Your message' : m.authorName,
       cssClass: 'gm-sheet',
       buttons: [
-        { text: 'Copy text', icon: 'copy-outline', handler: () => void navigator.clipboard?.writeText(m.text).catch(() => {}) },
-        ...(m.status === 'failed' ? [{ text: 'Retry sending', icon: 'refresh-outline', handler: () => void this.chat.retry(this.id(), m, this.auth.user()?.name ?? 'You') }] : []),
+        { text: tr('Copy text'), icon: 'copy-outline', handler: () => void navigator.clipboard?.writeText(m.text).catch(() => {}) },
+        ...(m.status === 'failed' ? [{ text: tr('Retry sending'), icon: 'refresh-outline', handler: () => void this.chat.retry(this.id(), m, this.auth.user()?.name ?? 'You') }] : []),
         ...(!mine
           ? [
-              { text: 'Report message', icon: 'flag-outline', role: 'destructive', handler: () => void this.report(m) },
-              { text: `Block ${m.authorName.split(' ')[0]}`, icon: 'hand-left-outline', role: 'destructive', handler: () => void this.block(m) },
+              { text: tr('Report message'), icon: 'flag-outline', role: 'destructive', handler: () => void this.report(m) },
+              { text: tr('Block {name}', { name: m.authorName.split(' ')[0] }), icon: 'hand-left-outline', role: 'destructive', handler: () => void this.block(m) },
             ]
           : []),
-        { text: 'Cancel', role: 'cancel' },
+        { text: tr('Cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -126,12 +127,12 @@ export class ChatRoomPage implements OnInit {
 
   private async report(m: ChatMessage) {
     const alert = await this.alerts.create({
-      header: 'Report message',
-      message: 'Our moderation team reviews reports within 24 hours.',
-      inputs: REPORT_REASONS.map((r, i) => ({ type: 'radio' as const, label: r, value: r, checked: i === 0 })),
+      header: tr('Report message'),
+      message: tr('Our moderation team reviews reports within 24 hours.'),
+      inputs: REPORT_REASONS.map((r, i) => ({ type: 'radio' as const, label: tr(r), value: r, checked: i === 0 })),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Report', handler: (reason: string) => void this.chat.report(m.id, reason).then(() => this.toast.show('Thanks — we will review it.', 'success')) },
+        { text: tr('Cancel'), role: 'cancel' },
+        { text: tr('Report'), handler: (reason: string) => void this.chat.report(m.id, reason).then(() => this.toast.show('Thanks — we will review it.', 'success')) },
       ],
     });
     await alert.present();
@@ -139,11 +140,11 @@ export class ChatRoomPage implements OnInit {
 
   private async block(m: ChatMessage) {
     const alert = await this.alerts.create({
-      header: `Block ${m.authorName}?`,
-      message: 'You will no longer see their messages, and they will not be able to contact you.',
+      header: tr('Block {name}?', { name: m.authorName }),
+      message: tr('You will no longer see their messages, and they will not be able to contact you.'),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Block', role: 'destructive', handler: () => void this.chat.block(this.id(), m.authorId).then(() => this.toast.show(`${m.authorName.split(' ')[0]} is blocked`, 'success')) },
+        { text: tr('Cancel'), role: 'cancel' },
+        { text: tr('Block'), role: 'destructive', handler: () => void this.chat.block(this.id(), m.authorId).then(() => this.toast.show(tr('{name} is blocked', { name: m.authorName.split(' ')[0] }), 'success')) },
       ],
     });
     await alert.present();
@@ -156,11 +157,11 @@ export class ChatRoomPage implements OnInit {
       header: t.title,
       cssClass: 'gm-sheet',
       buttons: [
-        ...(!t.isPublic ? [{ text: 'Invite via WhatsApp', icon: 'logo-whatsapp', handler: () => void this.inviteWhatsapp() }] : []),
-        { text: t.muted ? 'Unmute notifications' : 'Mute notifications', icon: t.muted ? 'volume-high-outline' : 'volume-mute-outline', handler: () => this.chat.toggleMute(t.id) },
-        { text: 'Community Guidelines', icon: 'shield-checkmark-outline', handler: () => void this.nav.navigateForward('/legal/guidelines') },
-        { text: t.isPublic ? 'Leave lounge' : 'Leave group', icon: 'exit-outline', role: 'destructive', handler: () => void this.leave() },
-        { text: 'Cancel', role: 'cancel' },
+        ...(!t.isPublic ? [{ text: tr('Invite via WhatsApp'), icon: 'logo-whatsapp', handler: () => void this.inviteWhatsapp() }] : []),
+        { text: t.muted ? tr('Unmute notifications') : tr('Mute notifications'), icon: t.muted ? 'volume-high-outline' : 'volume-mute-outline', handler: () => this.chat.toggleMute(t.id) },
+        { text: tr('Community Guidelines'), icon: 'shield-checkmark-outline', handler: () => void this.nav.navigateForward('/legal/guidelines') },
+        { text: t.isPublic ? tr('Leave lounge') : tr('Leave group'), icon: 'exit-outline', role: 'destructive', handler: () => void this.leave() },
+        { text: tr('Cancel'), role: 'cancel' },
       ],
     });
     await sheet.present();
@@ -193,7 +194,7 @@ function dayLabel(iso: string): string {
   const d = new Date(iso);
   const today = new Date();
   const yesterday = new Date(Date.now() - 86_400_000);
-  if (d.toDateString() === today.toDateString()) return 'Today';
+  if (d.toDateString() === today.toDateString()) return tr('Today');
   if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+  return d.toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'short' });
 }

@@ -9,11 +9,12 @@ import { AirportPlanComponent, levelsOf } from '../../shared/components/airport-
 import { POI_META, POI_ORDER, PoiKind } from '../../core/data/airport-poi';
 import { openState } from '../../core/utils/opening-hours';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-airport-map',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, AirportPlanComponent],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, AirportPlanComponent],
   templateUrl: './airport-map.page.html',
   styleUrl: './airport-map.page.scss',
 })

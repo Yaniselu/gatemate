@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { PlatformService } from '../../core/services/platform.service';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 const PHASES = [
   { label: 'Breathe in', secs: 4, scale: 1 },
@@ -13,12 +14,12 @@ const PHASES = [
 @Component({
   selector: 'gm-breathe',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Calm breathing</ion-title>
+        <ion-title>{{ 'Calm breathing' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true" class="calm">
@@ -26,13 +27,13 @@ const PHASES = [
         <div class="orb-wrap">
           <div class="halo" [style.transform]="'scale(' + scale() * 1.25 + ')'" [style.transition-duration.s]="dur()"></div>
           <div class="orb glass" [style.transform]="'scale(' + scale() + ')'" [style.transition-duration.s]="dur()">
-            <span class="phase">{{ running() ? phase() : 'Ready' }}</span>
+            <span class="phase">{{ running() ? phase() : ('Ready' | t) }}</span>
             @if (running()) { <span class="count">{{ left() }}</span> }
           </div>
         </div>
-        <p class="hint">Box breathing: 4 seconds in, hold, out, hold. Helps with take-off and turbulence nerves.</p>
-        <div class="stats"><span class="gm-label">Cycles</span><b>{{ cycles() }}</b></div>
-        <button class="gm-btn" (click)="toggle()"><ion-icon [name]="running() ? 'pause-outline' : 'play-outline'" /> {{ running() ? 'Pause' : 'Start' }}</button>
+        <p class="hint">{{ 'Box breathing: 4 seconds in, hold, out, hold. Helps with take-off and turbulence nerves.' | t }}</p>
+        <div class="stats"><span class="gm-label">{{ 'Cycles' | t }}</span><b>{{ cycles() }}</b></div>
+        <button class="gm-btn" (click)="toggle()"><ion-icon [name]="running() ? 'pause-outline' : 'play-outline'" /> {{ running() ? ('Pause' | t) : ('Start' | t) }}</button>
       </div>
     </ion-content>
   `,

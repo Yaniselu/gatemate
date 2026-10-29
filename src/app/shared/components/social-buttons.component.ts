@@ -3,18 +3,19 @@ import { IonIcon, NavController } from '@ionic/angular/standalone';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiError } from '../../core/services/api';
 import { ToastService } from '../../core/services/toast.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Sign in with Apple (shown first, per App Store guideline 4.8) and Google. */
 @Component({
   selector: 'gm-social-buttons',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonIcon],
+  imports: [TranslatePipe, IonIcon],
   template: `
     <div class="social">
       @if (apple) {
       <button class="apple" type="button" (click)="signIn('apple')" [disabled]="busy()">
         @if (busy() === 'apple') { <span class="spin"></span> } @else { <ion-icon name="logo-apple" /> }
-        {{ verb() }} with Apple
+        {{ 'Continue with Apple' | t }}
       </button>
       }
       @if (google) {
@@ -29,7 +30,7 @@ import { ToastService } from '../../core/services/toast.service';
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
           </svg>
         }
-        {{ verb() }} with Google
+        {{ 'Continue with Google' | t }}
       </button>
       }
     </div>
@@ -49,7 +50,6 @@ export class SocialButtonsComponent {
   private nav = inject(NavController);
   private toast = inject(ToastService);
 
-  readonly verb = signal('Continue');
   readonly busy = signal<'apple' | 'google' | null>(null);
   readonly signedIn = output<void>();
 

@@ -5,6 +5,7 @@ import app.gatemate.auth.AppleClient;
 import app.gatemate.auth.RefreshTokenRepository;
 import app.gatemate.common.ApiException;
 import app.gatemate.common.Crypto;
+import app.gatemate.common.Messages;
 import app.gatemate.common.Text;
 import app.gatemate.common.TokenCipher;
 import app.gatemate.config.GatemateProperties;
@@ -54,7 +55,7 @@ public class MeService {
     }
 
     public record Patch(String name, String homeAirport, String legalFirstName, String legalLastName, String phone, String seatPreference, String bio,
-            String avatarUrl) {}
+            String avatarUrl, String lang) {}
 
     public record Stats(int flights, int distanceKm, int countries, int hoursInAir, List<Object> badges) {}
 
@@ -85,6 +86,10 @@ public class MeService {
         if (p.seatPreference() != null) {
             if (!Set.of("window", "aisle", "any", "").contains(p.seatPreference())) throw ApiException.badRequest("bad_seat", "Unknown seat preference.");
             u.seatPreference = p.seatPreference().isEmpty() ? null : p.seatPreference();
+        }
+        if (p.lang() != null) {
+            if (!Messages.LANGUAGES.contains(p.lang())) throw ApiException.badRequest("bad_lang", "Unsupported language.");
+            u.lang = p.lang();
         }
         if (p.bio() != null) u.bio = Text.maskProfanity(Text.clean(p.bio(), 160)).text();
         if (p.avatarUrl() != null) {

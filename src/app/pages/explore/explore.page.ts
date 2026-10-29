@@ -18,6 +18,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { ChecklistItem } from '../../core/models';
+import { locale, t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Section = 'sights' | 'when' | 'phrases' | 'money' | 'pack' | 'essentials';
 interface PackItem { label: string; why: string; category: ChecklistItem['category'] }
@@ -25,7 +26,7 @@ interface PackItem { label: string; why: string; category: ChecklistItem['catego
 @Component({
   selector: 'gm-explore',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonHeader, IonToolbar, IonButtons, IonBackButton, IonContent, IonIcon, FormsModule, DecimalPipe, CityImageComponent, SkeletonComponent, RevealDirective, PressableDirective],
+  imports: [TranslatePipe, IonHeader, IonToolbar, IonButtons, IonBackButton, IonContent, IonIcon, FormsModule, DecimalPipe, CityImageComponent, SkeletonComponent, RevealDirective, PressableDirective],
   templateUrl: './explore.page.html',
   styleUrl: './explore.page.scss',
 })
@@ -78,7 +79,7 @@ export class ExplorePage {
 
   readonly localTime = computed(() => {
     const a = this.airport();
-    return a ? new Date(this.now()).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: a.tz }) : '';
+    return a ? new Date(this.now()).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', timeZone: a.tz }) : '';
   });
 
   readonly center = computed(() => {
@@ -90,7 +91,7 @@ export class ExplorePage {
   readonly sun = computed(() => {
     const c = this.center(), a = this.airport();
     if (!c || !a) return null;
-    const fmt = (d: Date | null) => (d ? d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: a.tz }) : '—');
+    const fmt = (d: Date | null) => (d ? d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', timeZone: a.tz }) : '—');
     const day = (d: Date) => {
       const s = sunTimes(d, c.lat, c.lon);
       const len = s.sunrise && s.sunset ? (s.sunset.getTime() - s.sunrise.getTime()) / 3_600_000 : s.polar === 'day' ? 24 : 0;
@@ -145,12 +146,12 @@ export class ExplorePage {
     const snow = days.some((x) => (x.code >= 71 && x.code <= 77) || x.code === 85 || x.code === 86);
     if (wet) items.push({ label: 'Compact umbrella or rain jacket', why: 'Rain in the 5-day forecast', category: 'packing' });
     if (snow) items.push({ label: 'Waterproof shoes & gloves', why: 'Snow in the forecast', category: 'packing' });
-    if (min !== undefined && min <= 8) items.push({ label: 'Warm layer or jacket', why: `Lows around ${min}°C`, category: 'packing' });
-    if (max !== undefined && max >= 26) items.push({ label: 'Sunscreen (≤100 ml in cabin bag)', why: `Highs up to ${max}°C`, category: 'packing' });
+    if (min !== undefined && min <= 8) items.push({ label: 'Warm layer or jacket', why: tr('Lows around {n}°C', { n: min }), category: 'packing' });
+    if (max !== undefined && max >= 26) items.push({ label: 'Sunscreen (≤100 ml in cabin bag)', why: tr('Highs up to {n}°C', { n: max }), category: 'packing' });
     if (max !== undefined && max >= 26) items.push({ label: 'Sunglasses & hat', why: 'Strong sun', category: 'packing' });
-    if (this.needsAdapter()) items.push({ label: `Plug adapter (type ${d.country?.plugs})`, why: 'Different sockets from home', category: 'packing' });
-    if (this.otherCurrency()) items.push({ label: `Card without FX fees or some ${d.country?.currency?.[0]}`, why: 'Different currency', category: 'tasks' });
-    items.push({ label: 'Offline map of ' + (d.airport.city || 'the city'), why: 'Works without roaming', category: 'tasks' });
+    if (this.needsAdapter()) items.push({ label: tr('Plug adapter (type {plugs})', { plugs: d.country?.plugs ?? '' }), why: 'Different sockets from home', category: 'packing' });
+    if (this.otherCurrency()) items.push({ label: tr('Card without FX fees or some {code}', { code: d.country?.currency?.[0] ?? '' }), why: 'Different currency', category: 'tasks' });
+    items.push({ label: d.airport.city ? tr('Offline map of {city}', { city: d.airport.city }) : tr('Offline map of the city'), why: 'Works without roaming', category: 'tasks' });
     items.push({ label: 'Travel insurance documents', why: 'Keep a copy on your phone', category: 'documents' });
     return items;
   });
@@ -272,20 +273,20 @@ export class ExplorePage {
   }
 
   holidayDate(d: string) {
-    return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    return new Date(d + 'T12:00:00').toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'short' });
   }
 
   currencyName(code?: string) {
     if (!code) return '';
     try {
-      return new Intl.DisplayNames(['en'], { type: 'currency' }).of(code) ?? code;
+      return new Intl.DisplayNames([locale()], { type: 'currency' }).of(code) ?? code;
     } catch {
       return code;
     }
   }
 
   weekday(date: string) {
-    return new Date(date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short' });
+    return new Date(date + 'T12:00:00').toLocaleDateString(locale(), { weekday: 'short' });
   }
 }
 

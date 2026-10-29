@@ -4,20 +4,21 @@ import { Flight } from '../../core/models';
 import { airportDay, DayStep } from '../../core/services/alerts-engine';
 import { AirportDbService, haversineKm } from '../../core/services/airport-db.service';
 import { LocationService } from '../../core/services/location.service';
+import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** "Your airport day": the flight day as a live timeline, from leaving home to landing. */
 @Component({
   selector: 'gm-airport-day',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonIcon],
+  imports: [TranslatePipe, IonIcon],
   template: `
     <div class="head">
       <div>
-        <span class="gm-label">Your airport day</span>
+        <span class="gm-label">{{ 'Your airport day' | t }}</span>
         <b>{{ dayLabel() }}</b>
       </div>
       @if (!usingLocation()) {
-        <button class="loc" (click)="useLocation()"><ion-icon name="navigate-outline" /> Use my location</button>
+        <button class="loc" (click)="useLocation()"><ion-icon name="navigate-outline" /> {{ 'Use my location' | t }}</button>
       }
     </div>
     <ol>
@@ -25,14 +26,14 @@ import { LocationService } from '../../core/services/location.service';
         <li [class.done]="i < current()" [class.now]="i === current()" [style.--i]="i">
           <span class="dot"><ion-icon [name]="i < current() ? 'checkmark' : s.icon" /></span>
           <div class="txt">
-            <b>{{ s.title }}</b>
-            <small>{{ s.detail }}</small>
+            <b>{{ s.title | t }}</b>
+            <small>{{ s.detail | t }}</small>
           </div>
           <time>{{ time(s) }}</time>
         </li>
       }
     </ol>
-    <p class="note">Typical airline cut-offs. Your airline’s times on the boarding pass always win.</p>
+    <p class="note">{{ 'Typical airline cut-offs. Your airline’s times on the boarding pass always win.' | t }}</p>
   `,
   styles: `
     :host { display: block; padding: 16px; }
@@ -85,7 +86,7 @@ export class AirportDayComponent {
   readonly dayLabel = computed(() => {
     const f = this.flight();
     try {
-      return new Date(f.departure).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', timeZone: f.from.timezone });
+      return new Date(f.departure).toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long', timeZone: f.from.timezone });
     } catch {
       return new Date(f.departure).toDateString();
     }
@@ -101,9 +102,9 @@ export class AirportDayComponent {
     const f = this.flight();
     const tz = s.id === 'landing' ? f.to.timezone : f.from.timezone;
     try {
-      return new Date(s.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz });
+      return new Date(s.at).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', timeZone: tz });
     } catch {
-      return new Date(s.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      return new Date(s.at).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' });
     }
   }
 

@@ -8,11 +8,12 @@ import { ApiError } from '../../core/services/api';
 import { emailValidator, nameValidator, passwordNotContainingEmail, passwordStrength, strongPasswordValidator } from '../../core/security/validators';
 import { PlatformService } from '../../core/services/platform.service';
 import { SocialButtonsComponent } from '../../shared/components/social-buttons.component';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-register',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, ReactiveFormsModule, RouterLink, SocialButtonsComponent],
+  imports: [TranslatePipe, IonContent, IonIcon, ReactiveFormsModule, RouterLink, SocialButtonsComponent],
   templateUrl: './register.page.html',
   styleUrls: ['./auth.scss', './register.page.scss'],
 })

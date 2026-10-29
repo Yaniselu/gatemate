@@ -23,9 +23,11 @@ export interface User {
   proUntil?: string;
   /** The account's e-mail was confirmed with a code. */
   emailVerified?: boolean;
+  /** App language; the server writes push alerts and e-mails in it. */
+  lang?: string;
 }
 
-export type ProfilePatch = Partial<Pick<User, 'name' | 'homeAirport' | 'legalFirstName' | 'legalLastName' | 'phone' | 'seatPreference' | 'bio' | 'avatarUrl'>>;
+export type ProfilePatch = Partial<Pick<User, 'name' | 'homeAirport' | 'legalFirstName' | 'legalLastName' | 'phone' | 'seatPreference' | 'bio' | 'avatarUrl' | 'lang'>>;
 
 export interface Session {
   user: User;

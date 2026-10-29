@@ -4,6 +4,7 @@ import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 interface Card {
   id: number;
@@ -17,24 +18,24 @@ const ICONS = ['airplane', 'earth', 'ticket', 'bag-handle', 'compass', 'camera',
 @Component({
   selector: 'gm-memory',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Boarding Memory</ion-title>
+        <ion-title>{{ 'Boarding Memory' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
-          <div class="card"><span class="gm-label">Moves</span><b>{{ moves() }}</b></div>
-          <div class="card"><span class="gm-label">Time</span><b>{{ seconds() }}s</b></div>
-          <div class="card"><span class="gm-label">Best</span><b>{{ bestLabel() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Moves' | t }}</span><b>{{ moves() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Time' | t }}</span><b>{{ seconds() }}s</b></div>
+          <div class="card"><span class="gm-label">{{ 'Best' | t }}</span><b>{{ bestLabel() }}</b></div>
         </div>
         <div class="board">
           @for (c of cards(); track c.id; let i = $index) {
-            <button class="tile" [class.flipped]="c.flipped || c.matched" [class.matched]="c.matched" [style.--i]="i" (click)="flip(i)" [attr.aria-label]="c.flipped || c.matched ? c.icon : 'Hidden card'">
+            <button class="tile" [class.flipped]="c.flipped || c.matched" [class.matched]="c.matched" [style.--i]="i" (click)="flip(i)" [attr.aria-label]="c.flipped || c.matched ? c.icon : ('Hidden card' | t)">
               <span class="face back"><ion-icon name="airplane-outline" /></span>
               <span class="face front"><ion-icon [name]="c.icon" /></span>
             </button>
@@ -43,12 +44,12 @@ const ICONS = ['airplane', 'earth', 'ticket', 'bag-handle', 'compass', 'camera',
         @if (won()) {
           <div class="end card">
             <ion-icon name="trophy" class="trophy" />
-            <h2>{{ record() ? 'New record!' : 'All matched!' }}</h2>
-            <p>{{ moves() }} moves in {{ seconds() }} seconds.</p>
-            <button class="gm-btn" (click)="reset()"><ion-icon name="refresh-outline" /> Play again</button>
+            <h2>{{ record() ? ('New record!' | t) : ('All matched!' | t) }}</h2>
+            <p>{{ '{moves} moves in {seconds} seconds.' | t: { moves: moves(), seconds: seconds() } }}</p>
+            <button class="gm-btn" (click)="reset()"><ion-icon name="refresh-outline" /> {{ 'Play again' | t }}</button>
           </div>
         } @else {
-          <button class="gm-btn ghost" (click)="reset()"><ion-icon name="refresh-outline" /> Shuffle</button>
+          <button class="gm-btn ghost" (click)="reset()"><ion-icon name="refresh-outline" /> {{ 'Shuffle' | t }}</button>
         }
       </div>
     </ion-content>

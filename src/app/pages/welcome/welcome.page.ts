@@ -4,11 +4,12 @@ import { PlaneComponent } from '../../shared/components/plane.component';
 import { SwipeButtonComponent } from '../../shared/components/swipe-button.component';
 import { PlatformService } from '../../core/services/platform.service';
 import { PrefsService } from '../../core/services/prefs.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-welcome',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, PlaneComponent, SwipeButtonComponent],
+  imports: [TranslatePipe, IonContent, PlaneComponent, SwipeButtonComponent],
   templateUrl: './welcome.page.html',
   styleUrl: './welcome.page.scss',
 })
@@ -27,7 +28,7 @@ export class WelcomePage {
   readonly pitches = [
     { icon: '🎫', text: 'Boarding passes that work offline' },
     { icon: '🔔', text: 'Gate, boarding and delay alerts' },
-    { icon: '🗺️', text: 'Satellite airport maps to your gate' },
+    { icon: '🗺️', text: 'Detailed airport maps to your gate' },
     { icon: '🧭', text: 'City guides, phrases and money tips' },
     { icon: '🌍', text: 'Your travel passport and world map' },
     { icon: '🎮', text: 'Games for the flight, no Wi-Fi needed' },

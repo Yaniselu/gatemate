@@ -1,4 +1,5 @@
 import { Flight, FlightAlert, Trip } from '../models';
+import { locale, t as tr } from '../i18n/i18n.service';
 
 const H = 3600_000;
 const SCHENGEN = new Set(['AT', 'BE', 'BG', 'HR', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'CH']);
@@ -28,30 +29,31 @@ export function buildAlerts(trips: Trip[], ctx: EngineContext): FlightAlert[] {
       const schengen = !!fromC && !!toC && SCHENGEN.has(fromC) && SCHENGEN.has(toC);
       const base = { flightId: f.id, tripId: trip.id, read: false, source: 'device' as const };
 
-      out.push({ ...base, id: `checkin-${f.id}`, kind: 'checkin', title: `Check-in opens · ${f.number}`, body: `Most airlines open online check-in 24–48 h before departure. Check in early to keep your seat${f.seat ? ` (${f.seat})` : ''}.`, createdAt: iso(dep - 24 * H), scheduledFor: iso(dep - 24 * H) });
+      out.push({ ...base, id: `checkin-${f.id}`, kind: 'checkin', title: tr('Check-in opens · {flight}', { flight: f.number }), body: tr('Most airlines open online check-in 24–48 h before departure. Check in early to keep your seat.'), createdAt: iso(dep - 24 * H), scheduledFor: iso(dep - 24 * H) });
 
-      out.push({ ...base, id: `docs-${f.id}`, kind: 'documents', title: schengen ? 'ID card or passport' : 'Passport & entry rules', body: schengen ? `${f.from.city} → ${f.to.city} is inside the Schengen area: a valid ID card or passport is required.` : `Check passport validity and visa or eTA requirements for ${f.to.city} on your government’s travel advice page.`, createdAt: iso(dep - 72 * H), scheduledFor: iso(dep - 72 * H) });
+      out.push({ ...base, id: `docs-${f.id}`, kind: 'documents', title: tr(schengen ? 'ID card or passport' : 'Passport & entry rules'), body: schengen ? tr('{from} → {to} is inside the Schengen area: a valid ID card or passport is required.', { from: f.from.city, to: f.to.city }) : tr('Check passport validity and visa or eTA requirements for {city} on your government’s travel advice page.', { city: f.to.city }), createdAt: iso(dep - 72 * H), scheduledFor: iso(dep - 72 * H) });
 
       if (f.baggage && !f.baggage.cabinBag) {
         const d = f.baggage.personalItem.dimensionsCm.join(' × ');
-        out.push({ ...base, id: `bags-${f.id}`, kind: 'bags', title: 'Only a personal item is included', body: `Your ${f.fareName ?? ''} fare allows one bag up to ${d} cm under the seat. Adding a bag online is cheaper than at the gate.`, createdAt: iso(dep - 48 * H), scheduledFor: iso(dep - 48 * H) });
+        out.push({ ...base, id: `bags-${f.id}`, kind: 'bags', title: tr('Only a personal item is included'), body: tr('Your fare allows one bag up to {size} cm under the seat. Adding a bag online is cheaper than at the gate.', { size: d }), createdAt: iso(dep - 48 * H), scheduledFor: iso(dep - 48 * H) });
       }
 
       const undone = trip.checklist.filter((c) => !c.done).length;
       if (undone) {
-        out.push({ ...base, id: `check-${f.id}`, kind: 'checklist', title: `${undone} thing${undone > 1 ? 's' : ''} left on your checklist`, body: trip.checklist.filter((c) => !c.done).map((c) => c.label).slice(0, 3).join(' · '), createdAt: iso(dep - 36 * H), scheduledFor: iso(dep - 36 * H) });
+        out.push({ ...base, id: `check-${f.id}`, kind: 'checklist', title: undone > 1 ? tr('{n} things left on your checklist', { n: undone }) : tr('1 thing left on your checklist'), body: trip.checklist.filter((c) => !c.done).map((c) => c.label).slice(0, 3).join(' · '), createdAt: iso(dep - 36 * H), scheduledFor: iso(dep - 36 * H) });
       }
 
       const km = ctx.kmToAirport?.(f.from.code);
-      const t = arrivalPlan(f, schengen, km);
-      out.push({ ...base, id: `leave-${f.id}`, kind: 'leave', title: 'Time to leave for the airport', body: `Leave around ${clock(t.leaveAt, f.from.timezone)} to be at ${f.from.code} ${t.arriveBeforeH} h before departure${km !== undefined ? ` (≈${t.driveMin} min drive)` : ''}. Estimate — check traffic.`, createdAt: iso(t.leaveAt), scheduledFor: iso(t.leaveAt) });
+      const plan = arrivalPlan(f, schengen, km);
+      const leave = { time: clock(plan.leaveAt, f.from.timezone), airport: f.from.code, hours: plan.arriveBeforeH, min: plan.driveMin };
+      out.push({ ...base, id: `leave-${f.id}`, kind: 'leave', title: tr('Time to leave for the airport'), body: km !== undefined ? tr('Leave around {time} to be at {airport} {hours} h before departure (≈{min} min drive). Estimate — check traffic.', leave) : tr('Leave around {time} to be at {airport} {hours} h before departure. Estimate — check traffic.', leave), createdAt: iso(plan.leaveAt), scheduledFor: iso(plan.leaveAt) });
 
-      out.push({ ...base, id: `boarding-${f.id}`, kind: 'boarding', title: `Boarding in 15 minutes · ${f.number}`, body: `Gate ${f.gate ?? 'TBA'}${f.seat ? ` · Seat ${f.seat}` : ''}. Have your boarding pass and ID ready.`, createdAt: iso(board - 15 * 60_000), scheduledFor: iso(board - 15 * 60_000) });
+      out.push({ ...base, id: `boarding-${f.id}`, kind: 'boarding', title: tr('Boarding in 15 minutes · {flight}', { flight: f.number }), body: tr('Gate {gate}. Have your boarding pass and ID ready.', { gate: f.gate ?? 'TBA' }), createdAt: iso(board - 15 * 60_000), scheduledFor: iso(board - 15 * 60_000) });
 
       const code = ctx.arrivalWeather?.(trip);
       if (code !== undefined && code >= 51) {
         const snow = code >= 71 && code <= 86;
-        out.push({ ...base, id: `wx-${f.id}`, kind: 'weather', title: snow ? `Snow expected in ${f.to.city}` : `Rain expected in ${f.to.city}`, body: snow ? 'Pack warm layers and allow extra time for transfers.' : 'Pack an umbrella or a light rain jacket.', createdAt: iso(dep - 24 * H), scheduledFor: iso(dep - 24 * H) });
+        out.push({ ...base, id: `wx-${f.id}`, kind: 'weather', title: tr(snow ? 'Snow expected in {city}' : 'Rain expected in {city}', { city: f.to.city }), body: tr(snow ? 'Pack warm layers and allow extra time for transfers.' : 'Pack an umbrella or a light rain jacket.'), createdAt: iso(dep - 24 * H), scheduledFor: iso(dep - 24 * H) });
       }
     }
   }
@@ -87,24 +89,24 @@ export function airportDay(f: Flight, ctx: Pick<EngineContext, 'countryOf' | 'km
   const p = arrivalPlan(f, schengen, km);
   const checked = !!f.baggage?.checked.length;
   const steps: DayStep[] = [
-    { id: 'leave', title: 'Leave for the airport', detail: km !== undefined ? `≈${p.driveMin} min to ${f.from.code} from where you are` : 'Allow about 45 min — check traffic', icon: 'car-outline', at: p.leaveAt },
-    { id: 'arrive', title: `Arrive at ${f.from.code}`, detail: `${p.arriveBeforeH} h before departure${f.terminal ? ` · Terminal ${f.terminal}` : ''}`, icon: 'business-outline', at: p.arriveAt },
+    { id: 'leave', title: tr('Leave for the airport'), detail: km !== undefined ? tr('≈{min} min to {airport} from where you are', { min: p.driveMin, airport: f.from.code }) : tr('Allow about 45 min — check traffic'), icon: 'car-outline', at: p.leaveAt },
+    { id: 'arrive', title: tr('Arrive at {airport}', { airport: f.from.code }), detail: tr('{hours} h before departure', { hours: p.arriveBeforeH }) + (f.terminal ? ` · ${tr('Terminal')} ${f.terminal}` : ''), icon: 'business-outline', at: p.arriveAt },
   ];
-  if (checked) steps.push({ id: 'bagdrop', title: 'Bag drop closes', detail: 'Usually 40–60 min before departure', icon: 'cube-outline', at: dep - 45 * 60_000 });
+  if (checked) steps.push({ id: 'bagdrop', title: tr('Bag drop closes'), detail: tr('Usually 40–60 min before departure'), icon: 'cube-outline', at: dep - 45 * 60_000 });
   steps.push(
-    { id: 'security', title: schengen ? 'Security' : 'Security & passport control', detail: schengen ? 'Liquids out, laptop ready' : 'Have your passport and boarding pass ready', icon: 'shield-checkmark-outline', at: p.arriveAt + 20 * 60_000 },
-    { id: 'boarding', title: 'Boarding starts', detail: `Gate ${f.gate ?? 'shown ~40 min before'}${f.seat ? ` · Seat ${f.seat}` : ''}`, icon: 'people-outline', at: new Date(f.boardingTime).getTime() },
-    { id: 'gateclose', title: 'Gate closes', detail: 'Usually 15–20 min before departure', icon: 'lock-closed-outline', at: dep - 15 * 60_000 },
-    { id: 'takeoff', title: `Take-off · ${f.number}`, detail: `${f.from.city} → ${f.to.city}`, icon: 'airplane', at: dep },
-    { id: 'landing', title: `Land in ${f.to.city}`, detail: 'Local time at arrival', icon: 'flag-outline', at: new Date(f.arrival).getTime() },
+    { id: 'security', title: tr(schengen ? 'Security' : 'Security & passport control'), detail: tr(schengen ? 'Liquids out, laptop ready' : 'Have your passport and boarding pass ready'), icon: 'shield-checkmark-outline', at: p.arriveAt + 20 * 60_000 },
+    { id: 'boarding', title: tr('Boarding starts'), detail: (f.gate ? tr('Gate {gate}', { gate: f.gate }) : tr('Gate shown ~40 min before')) + (f.seat ? ` · ${tr('Seat')} ${f.seat}` : ''), icon: 'people-outline', at: new Date(f.boardingTime).getTime() },
+    { id: 'gateclose', title: tr('Gate closes'), detail: tr('Usually 15–20 min before departure'), icon: 'lock-closed-outline', at: dep - 15 * 60_000 },
+    { id: 'takeoff', title: tr('Take-off · {flight}', { flight: f.number }), detail: `${f.from.city} → ${f.to.city}`, icon: 'airplane', at: dep },
+    { id: 'landing', title: tr('Land in {city}', { city: f.to.city }), detail: tr('Local time at arrival'), icon: 'flag-outline', at: new Date(f.arrival).getTime() },
   );
   return steps.sort((a, b) => a.at - b.at);
 }
 
 function clock(t: number, timeZone?: string) {
   try {
-    return new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone });
+    return new Date(t).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', timeZone });
   } catch {
-    return new Date(t).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return new Date(t).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' });
   }
 }

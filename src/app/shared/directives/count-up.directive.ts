@@ -1,4 +1,5 @@
 import { Directive, ElementRef, inject, input, effect, OnDestroy } from '@angular/core';
+import { locale } from '../../core/i18n/i18n.service';
 
 /** Animates a number from 0 to the target with an ease-out curve. */
 @Directive({ selector: '[gmCountUp]' })
@@ -15,7 +16,7 @@ export class CountUpDirective implements OnDestroy {
   private run(target: number) {
     cancelAnimationFrame(this.frame);
     const start = performance.now();
-    const fmt = new Intl.NumberFormat('en-US');
+    const fmt = new Intl.NumberFormat(locale());
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / this.duration());
       const eased = 1 - Math.pow(1 - p, 4);

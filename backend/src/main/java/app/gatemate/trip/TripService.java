@@ -3,6 +3,7 @@ package app.gatemate.trip;
 import app.gatemate.airport.AirportCatalog;
 import app.gatemate.chat.ChatService;
 import app.gatemate.common.ApiException;
+import app.gatemate.common.Messages;
 import app.gatemate.common.Text;
 import app.gatemate.user.UserEntity;
 import app.gatemate.user.UserRepository;
@@ -61,9 +62,10 @@ public class TripService {
     public TripEntity createWithFlight(UUID me, FlightEntity f) {
         requireTripAllowance(me);
         var to = airports.get(f.toIata).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + f.toIata + "."));
+        String lang = users.findById(me).map(u -> u.lang).orElse("en");
         var t = new TripEntity();
         t.ownerId = me;
-        t.title = "Trip to " + to.city();
+        t.title = Messages.get(lang, "trip.title", "city", to.city());
         t.destinationIata = to.iata();
         t.startAt = f.departureAt;
         t.endAt = f.arrivalAt;
@@ -77,11 +79,11 @@ public class TripService {
         f.claimedBy = me;
         flights.save(f);
         int pos = 0;
-        for (var item : List.of(new String[] {"Passport or ID card", "documents"}, new String[] {"Online check-in", "tasks"},
-                new String[] {"Phone charger & power bank (cabin bag)", "packing"}, new String[] {"Liquids under 100 ml in a clear bag", "packing"})) {
+        for (var item : List.of(new String[] {"checklist.documents", "documents"}, new String[] {"checklist.checkin", "tasks"},
+                new String[] {"checklist.charger", "packing"}, new String[] {"checklist.liquids", "packing"})) {
             var c = new ChecklistItemEntity();
             c.tripId = t.id;
-            c.label = item[0];
+            c.label = Messages.get(lang, item[0]);
             c.category = item[1];
             c.position = pos++;
             checklist.save(c);

@@ -14,11 +14,12 @@ import { AirportPlanComponent } from '../../shared/components/airport-plan.compo
 import { AirportPickerComponent } from '../../shared/components/airport-picker.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
+import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-airport',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink,
     SkeletonComponent, AirportPlanComponent, AirportPickerComponent, RevealDirective, PressableDirective,
   ],
@@ -119,7 +120,7 @@ export class AirportPage implements OnInit {
   );
   readonly localTime = computed(() => {
     const a = this.airport();
-    return a ? new Date(this.now()).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: a.tz }) : '';
+    return a ? new Date(this.now()).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', timeZone: a.tz }) : '';
   });
 
   readonly rules = [

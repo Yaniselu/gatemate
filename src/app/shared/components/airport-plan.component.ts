@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, effect, inj
 import type * as Leaflet from 'leaflet';
 import { MapFeature } from '../../core/services/gates.service';
 import { POI_META, PoiKind } from '../../core/data/airport-poi';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 type LL = { lat: number; lon: number };
 
@@ -14,12 +15,13 @@ type LL = { lat: number; lon: number };
 @Component({
   selector: 'gm-airport-plan',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TranslatePipe],
   template: `
     <div class="plan" #host></div>
     @if (empty()) {
-      <div class="empty"><span>Loading the airport plan…</span></div>
+      <div class="empty"><span>{{ 'Loading the airport plan…' | t }}</span></div>
     }
-    <span class="attr">© OpenStreetMap contributors</span>
+    <span class="attr">{{ '© OpenStreetMap contributors' | t }}</span>
   `,
   styles: `
     :host { position: relative; display: block; overflow: hidden; background: #eef2f4; }
@@ -201,7 +203,7 @@ export class AirportPlanComponent {
         interactive: this.interactive(),
       }).addTo(layer);
       if (this.interactive()) {
-        dot.bindTooltip(esc(p.ref), { direction: 'top', offset: [0, -6] });
+        dot.bindTooltip(esc(tr(p.ref)), { direction: 'top', offset: [0, -6] });
         dot.on('click', () => p.id && this.placeTap.emit(p.id));
       }
     }
@@ -211,7 +213,7 @@ export class AirportPlanComponent {
     }
     // Names written inside the shops once zoomed in.
     for (const p of pois.filter((x) => x.outline)) {
-      L.marker([p.lat, p.lon], { icon: L.divIcon({ className: 'gm-plan-shop', html: `<span>${esc(p.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
+      L.marker([p.lat, p.lon], { icon: L.divIcon({ className: 'gm-plan-shop', html: `<span>${esc(tr(p.ref))}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
     }
     for (const r of by('room').filter(here)) {
       if (r.ref) L.marker([r.lat, r.lon], { icon: L.divIcon({ className: 'gm-plan-shop room', html: `<span>${esc(r.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);

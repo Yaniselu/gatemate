@@ -1,7 +1,7 @@
 <ion-header class="gm-glass-header" [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/airport" text="" icon="chevron-back" /></ion-buttons>
-    <ion-title>{{ airport()?.iata ?? '' }} · Airport map</ion-title>
+    <ion-title>{{ airport()?.iata ?? '' }} · {{ 'Airport map' | t }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -12,16 +12,16 @@
     <div class="gate-bar glass" slot="fixed">
       @if (categories().length) {
         <div class="chips cats">
-          <button [class.on]="!category()" (click)="setCategory(null)">All</button>
+          <button [class.on]="!category()" (click)="setCategory(null)">{{ 'All' | t }}</button>
           @for (c of categories(); track c) {
-            <button [class.on]="category() === c" [style.--c]="meta[c].color" (click)="setCategory(c)"><i></i>{{ meta[c].label }}</button>
+            <button [class.on]="category() === c" [style.--c]="meta[c].color" (click)="setCategory(c)"><i></i>{{ meta[c].label | t }}</button>
           }
         </div>
       }
       @if (gatesError()) {
-        <div class="err-row"><span class="gm-label">Gate data needs an internet connection</span><button (click)="loadGates()">Retry</button></div>
+        <div class="err-row"><span class="gm-label">{{ 'Gate data needs an internet connection' | t }}</span><button (click)="loadGates()">{{ 'Retry' | t }}</button></div>
       } @else {
-        <span class="gm-label" [class.shimmer]="features() === null">{{ gateList().length ? 'Choose your gate' : features() === null ? 'Loading gates…' : 'No gates mapped at this airport yet' }}</span>
+        <span class="gm-label" [class.shimmer]="features() === null">{{ gateList().length ? ('Choose your gate' | t) : features() === null ? ('Loading gates…' | t) : ('No gates mapped at this airport yet' | t) }}</span>
       }
       @if (gateList().length) {
         <div class="chips">
@@ -33,17 +33,17 @@
     </div>
 
     @if (levels().length > 1) {
-      <div class="levels glass" slot="fixed" aria-label="Floor">
+      <div class="levels glass" slot="fixed" [aria-label]="'Floor' | t">
         @for (l of levels().slice().reverse(); track l) {
-          <button [class.on]="level() === l" (click)="setLevel(l)" [attr.aria-label]="'Level ' + l">{{ levelName(l) }}</button>
+          <button [class.on]="level() === l" (click)="setLevel(l)" [attr.aria-label]="'Level {n}' | t: { n: l }">{{ levelName(l) }}</button>
         }
       </div>
     }
     <div class="tools glass" slot="fixed">
-      <button (click)="zoom(1)" aria-label="Zoom in"><ion-icon name="add" /></button>
-      <button (click)="zoom(-1)" aria-label="Zoom out"><ion-icon name="remove-outline" /></button>
-      <button (click)="recenter()" aria-label="Show whole airport"><ion-icon name="scan-outline" /></button>
-      <button class="loc" (click)="locateMe()" aria-label="Show my location"><ion-icon name="navigate" /></button>
+      <button (click)="zoom(1)" [aria-label]="'Zoom in' | t"><ion-icon name="add" /></button>
+      <button (click)="zoom(-1)" [aria-label]="'Zoom out' | t"><ion-icon name="remove-outline" /></button>
+      <button (click)="recenter()" [aria-label]="'Show whole airport' | t"><ion-icon name="scan-outline" /></button>
+      <button class="loc" (click)="locateMe()" [aria-label]="'Show my location' | t"><ion-icon name="navigate" /></button>
     </div>
 
     <div class="sheet glass strong" slot="fixed">
@@ -51,19 +51,19 @@
         <div class="place anim-fade-up" [style.--c]="meta[p.poi!].color">
           <span class="ic"><ion-icon [name]="meta[p.poi!].icon" /></span>
           <div class="txt">
-            <b>{{ p.ref }}</b>
-            <small>{{ p.detail || meta[p.poi!].label }}@if (p.terminal) { · {{ p.terminal }} }@if (p.level) { · Level {{ p.level }} }</small>
-            @if (placeOpen(); as o) { <span class="hours" [class.open]="o.open">{{ o.open ? 'Open' : 'Closed' }} · {{ o.label }}</span> }
+            <b>{{ p.ref | t }}</b>
+            <small>{{ (p.detail || meta[p.poi!].label) | t }}@if (p.terminal) { · {{ p.terminal }} }@if (p.level) { · {{ 'Level {n}' | t: { n: p.level } }} }</small>
+            @if (placeOpen(); as o) { <span class="hours" [class.open]="o.open">{{ o.open ? ('Open' | t) : ('Closed' | t) }} · {{ o.label | t }}</span> }
             @else if (p.hours) { <span class="hours">{{ p.hours }}</span> }
           </div>
-          <button class="x" (click)="placeId.set(null)" aria-label="Close"><ion-icon name="close" /></button>
+          <button class="x" (click)="placeId.set(null)" [aria-label]="'Close' | t"><ion-icon name="close" /></button>
         </div>
       }
       @if (distance(); as d) {
         @if (d.far) {
           <div class="sum">
-            <div><span class="gm-label">You are</span><b class="big">{{ fmt(d.meters) }}</b><small>from {{ a.name }}</small></div>
-            <button class="gm-btn small" (click)="directions()"><ion-icon name="car-outline" /> Directions</button>
+            <div><span class="gm-label">{{ 'You are' | t }}</span><b class="big">{{ fmt(d.meters) }}</b><small>{{ 'from {name}' | t: { name: a.name } }}</small></div>
+            <button class="gm-btn small" (click)="directions()"><ion-icon name="car-outline" /> {{ 'Directions' | t }}</button>
           </div>
         } @else {
           <div class="sum">
@@ -77,10 +77,10 @@
       } @else {
         <div class="sum">
           <div><b>{{ a.name }}</b><small>{{ a.city }} · {{ a.iata }}/{{ a.icao }}</small></div>
-          <button class="gm-btn small" (click)="locateMe()"><ion-icon name="navigate-outline" /> Use my location</button>
+          <button class="gm-btn small" (click)="locateMe()"><ion-icon name="navigate-outline" /> {{ 'Use my location' | t }}</button>
         </div>
         @if (location.denied()) {
-          <p class="note">Location is off. Allow “While using the app” in Settings to see your distance to the gate.</p>
+          <p class="note">{{ 'Location is off. Allow “While using the app” in Settings to see your distance to the gate.' | t }}</p>
         }
       }
     </div>

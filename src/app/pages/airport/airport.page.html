@@ -1,5 +1,5 @@
 <ion-header class="gm-glass-header" [translucent]="true">
-  <ion-toolbar><ion-title>Airport</ion-title></ion-toolbar>
+  <ion-toolbar><ion-title>{{ 'Airport' | t }}</ion-title></ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -10,10 +10,10 @@
   <ion-header collapse="condense" class="gm-glass-header">
     <ion-toolbar>
       <div class="head">
-        <h1 class="gm-page-title anim-fade-up">Airport guide</h1>
+        <h1 class="gm-page-title anim-fade-up">{{ 'Airport guide' | t }}</h1>
         <button class="picker anim-fade-up" (click)="picking.set(true)">
           <ion-icon name="search-outline" />
-          @if (airport(); as a) { <b>{{ a.iata }}</b> {{ a.city }} } @else { Choose airport }
+          @if (airport(); as a) { <b>{{ a.iata }}</b> {{ a.city }} } @else { {{ 'Choose airport' | t }} }
           <ion-icon name="chevron-down" />
         </button>
       </div>
@@ -28,7 +28,7 @@
         <div class="map-overlay glass smoke">
           <div>
             <b>{{ a.name }}</b>
-            <small>{{ features() === null ? 'Loading the plan…' : places().length + ' places · ' + gateCount() + ' gates' }} · {{ localTime() }} local</small>
+            <small>{{ features() === null ? ('Loading the plan…' | t) : ('{places} places · {gates} gates' | t: { places: places().length, gates: gateCount() }) }} · {{ '{time} local' | t: { time: localTime() } }}</small>
           </div>
           <span class="open"><ion-icon name="expand-outline" /></span>
         </div>
@@ -39,39 +39,39 @@
         <div class="gate card" gmReveal>
           <div class="gate-top">
             <div>
-              <span class="gm-label">{{ f.number }} · to {{ f.to.city }}</span>
-              <b class="gate-no">Gate {{ f.gate ?? 'TBA' }}</b>
+              <span class="gm-label">{{ '{flight} · to {city}' | t: { flight: f.number, city: f.to.city } }}</span>
+              <b class="gate-no">{{ 'Gate {gate}' | t: { gate: f.gate ?? ('TBA' | t) } }}</b>
             </div>
             @if (gateDistance(); as d) {
               <div class="dist"><b>{{ d.minutes }} min</b><small>{{ d.meters }} m walk</small></div>
             }
           </div>
           @if (!location.fix()) {
-            <button class="gm-btn small" (click)="location.locate()"><ion-icon name="navigate-outline" /> Show distance from me</button>
+            <button class="gm-btn small" (click)="location.locate()"><ion-icon name="navigate-outline" /> {{ 'Show distance from me' | t }}</button>
           } @else if (!gateFeature()) {
             <p class="muted">Gate position isn’t mapped for this airport yet — follow the airport signs to {{ f.gate ?? 'your gate' }}.</p>
           } @else if ((distanceToAirportKm() ?? 0) > 3) {
             <p class="muted">You’re {{ km(distanceToAirportKm()!) }} from the airport.</p>
           }
-          <a class="gm-btn ghost small" [routerLink]="['/airport-map', a.iata]" [queryParams]="{ gate: f.gate }"><ion-icon name="map-outline" /> Open map</a>
+          <a class="gm-btn ghost small" [routerLink]="['/airport-map', a.iata]" [queryParams]="{ gate: f.gate }"><ion-icon name="map-outline" /> {{ 'Open map' | t }}</a>
         </div>
       }
 
       <!-- Airport facts -->
       <div class="facts card" gmReveal>
-        <div class="fact"><span class="gm-label">Codes</span><b>{{ a.iata }} · {{ a.icao || '—' }}</b></div>
-        <div class="fact"><span class="gm-label">Local time</span><b>{{ localTime() }}</b></div>
-        <div class="fact"><span class="gm-label">City</span><b>{{ a.city }}, {{ db.countryName(a.country) }}</b></div>
-        <div class="fact"><span class="gm-label">From you</span><b>{{ distanceToAirportKm() !== null ? km(distanceToAirportKm()!) : '—' }}</b></div>
-        <button class="gm-btn small full" (click)="directions()"><ion-icon name="navigate-outline" /> Directions to the airport</button>
+        <div class="fact"><span class="gm-label">{{ 'Codes' | t }}</span><b>{{ a.iata }} · {{ a.icao || '—' }}</b></div>
+        <div class="fact"><span class="gm-label">{{ 'Local time' | t }}</span><b>{{ localTime() }}</b></div>
+        <div class="fact"><span class="gm-label">{{ 'City' | t }}</span><b>{{ a.city }}, {{ db.countryName(a.country) }}</b></div>
+        <div class="fact"><span class="gm-label">{{ 'From you' | t }}</span><b>{{ distanceToAirportKm() !== null ? km(distanceToAirportKm()!) : '—' }}</b></div>
+        <button class="gm-btn small full" (click)="directions()"><ion-icon name="navigate-outline" /> {{ 'Directions to the airport' | t }}</button>
       </div>
 
       <!-- Facilities (OpenStreetMap) -->
-      <div class="gm-section-title"><h2>Find anything</h2><span class="src">© OpenStreetMap</span></div>
+      <div class="gm-section-title"><h2>{{ 'Find anything' | t }}</h2><span class="src">{{ '© OpenStreetMap' | t }}</span></div>
       <div class="finder glass">
         <ion-icon name="search-outline" />
-        <input type="search" placeholder="Coffee, toilets, pharmacy, gate B12…" maxlength="60" [value]="query()" (input)="onSearch($event)" aria-label="Search the airport" enterkeyhint="search" />
-        @if (query()) { <button class="clear" (click)="query.set('')" aria-label="Clear"><ion-icon name="close-circle" /></button> }
+        <input type="search" [placeholder]="'Coffee, toilets, pharmacy, gate B12…' | t" maxlength="60" [value]="query()" (input)="onSearch($event)" [aria-label]="'Search the airport' | t" enterkeyhint="search" />
+        @if (query()) { <button class="clear" (click)="query.set('')" [aria-label]="'Clear' | t"><ion-icon name="close-circle" /></button> }
       </div>
 
       @if (features() === null) {
@@ -79,8 +79,8 @@
         @for (i of [1, 2, 3, 4]; track i) { <gm-skeleton height="60px" radius="14px" style="margin-bottom: 8px" /> }
       } @else if (places().length || gateCount()) {
         <p class="summary">
-          <b>{{ places().length }}</b> places · <b>{{ gateCount() }}</b> gates
-          @if (terminals().length) { · <b>{{ terminalNames().length }}</b> {{ terminalNames().length === 1 ? 'terminal' : 'terminals' }} }
+          {{ '{places} places · {gates} gates' | t: { places: places().length, gates: gateCount() } }}
+          @if (terminals().length) { · <b>{{ terminalNames().length }}</b> {{ (terminalNames().length === 1 ? 'terminal' : 'terminals') | t }} }
           @if (refreshing()) { · updating… }
         </p>
 
@@ -89,17 +89,17 @@
             @for (t of terminalSummary(); track t.name; let i = $index) {
               <button class="term" [class.on]="terminal() === t.name" (click)="setTerminal(t.name)" [style.--i]="i" gmPressable>
                 <b>{{ t.name }}</b>
-                <small>{{ t.eat }} food · {{ t.shop }} shops · {{ t.gates }} gates</small>
+                <small>{{ '{food} food · {shops} shops · {gates} gates' | t: { food: t.eat, shops: t.shop, gates: t.gates } }}</small>
               </button>
             }
           </div>
         }
 
         <div class="cats">
-          <button [class.on]="category() === 'all'" (click)="setCategory('all')">All <span>{{ results().length && category() === 'all' ? results().length : '' }}</span></button>
+          <button [class.on]="category() === 'all'" (click)="setCategory('all')">{{ 'All' | t }} <span>{{ results().length && category() === 'all' ? results().length : '' }}</span></button>
           @for (c of categories(); track c.kind; let i = $index) {
             <button [class.on]="category() === c.kind" (click)="setCategory(c.kind)" [style.--c]="meta[c.kind].color" [style.--i]="i">
-              <ion-icon [name]="meta[c.kind].icon" /> {{ meta[c.kind].label }} <span>{{ c.count }}</span>
+              <ion-icon [name]="meta[c.kind].icon" /> {{ meta[c.kind].label | t }} <span>{{ c.count }}</span>
             </button>
           }
         </div>
@@ -107,7 +107,7 @@
         @if (gateHits().length) {
           <div class="gate-hits">
             @for (g of gateHits(); track g.id ?? g.ref) {
-              <button (click)="openPlace(g)" gmPressable><ion-icon name="enter-outline" /> Gate {{ g.ref }} @if (g.terminal) { <small>{{ g.terminal }}</small> }</button>
+              <button (click)="openPlace(g)" gmPressable><ion-icon name="enter-outline" /> {{ 'Gate {gate}' | t: { gate: g.ref } }} @if (g.terminal) { <small>{{ g.terminal }}</small> }</button>
             }
           </div>
         }
@@ -117,12 +117,12 @@
             <button class="poi" (click)="openPlace(p)" [style.--c]="meta[p.poi!].color" [style.--i]="i < 12 ? i : 0">
               <span class="ic"><ion-icon [name]="meta[p.poi!].icon" /></span>
               <span class="grow">
-                <b>{{ p.ref }}</b>
+                <b>{{ p.ref | t }}</b>
                 <small>
-                  {{ p.detail || meta[p.poi!].label }}@if (p.terminal) { · {{ p.terminal }} }@if (p.level) { · Level {{ p.level }} }
+                  {{ (p.detail || meta[p.poi!].label) | t }}@if (p.terminal) { · {{ p.terminal }} }@if (p.level) { · {{ 'Level {n}' | t: { n: p.level } }} }
                 </small>
                 @if (p.open; as o) {
-                  <span class="hours" [class.open]="o.open">{{ o.open ? 'Open' : 'Closed' }} · {{ o.label }}</span>
+                  <span class="hours" [class.open]="o.open">{{ o.open ? ('Open' | t) : ('Closed' | t) }} · {{ o.label | t }}</span>
                 } @else if (p.hours) {
                   <span class="hours raw">{{ p.hours }}</span>
                 }
@@ -130,38 +130,38 @@
               <span class="m">{{ dist(p.meters) }}<ion-icon name="chevron-forward" /></span>
             </button>
           } @empty {
-            <p class="none">Nothing matches “{{ query() }}”@if (terminal() !== 'all') { in {{ terminal() }} }. Try another word or category.</p>
+            <p class="none">{{ 'Nothing matches “{q}”.' | t: { q: query() } }} {{ 'Try another word or category.' | t }}</p>
           }
         </div>
         @if (results().length > limit()) {
           <button class="gm-btn ghost small more" (click)="limit.set(limit() + 40)">Show {{ results().length - limit() > 40 ? 40 : results().length - limit() }} more of {{ results().length }}</button>
         }
-        <p class="osm-note">Places come from OpenStreetMap, edited by volunteers. Something missing? Anyone can add it at openstreetmap.org.</p>
+        <p class="osm-note">{{ 'Places come from OpenStreetMap, edited by volunteers. Something missing? Anyone can add it at openstreetmap.org.' | t }}</p>
       } @else if (gatesError()) {
         <div class="muted card pad offline">
           <ion-icon name="cloud-offline-outline" />
-          <span>Couldn’t load the airport’s places. Check your connection and try again.<small>{{ errorDetail() }}</small></span>
-          <button (click)="retry()">Retry</button>
+          <span>{{ 'Couldn’t load the airport’s places. Check your connection and try again.' | t }}<small>{{ errorDetail() }}</small></span>
+          <button (click)="retry()">{{ 'Retry' | t }}</button>
         </div>
       } @else {
-        <p class="muted card pad">Nothing is mapped inside {{ a.name }} on OpenStreetMap yet. The satellite map still works.</p>
+        <p class="muted card pad">{{ 'Nothing is mapped inside {name} on OpenStreetMap yet.' | t: { name: a.name } }}</p>
       }
 
       <!-- Rules -->
-      <div class="gm-section-title"><h2>Good to know</h2></div>
+      <div class="gm-section-title"><h2>{{ 'Good to know' | t }}</h2></div>
       <div class="rules card">
         @for (r of rules; track r.id) {
           <div class="rule" [class.open]="openRule() === r.id">
             <button (click)="toggleRule(r.id)" [attr.aria-expanded]="openRule() === r.id">
               <ion-icon [name]="r.icon" class="lead" />
-              <span>{{ r.title }}</span>
+              <span>{{ r.title | t }}</span>
               <ion-icon name="chevron-down" class="chev" />
             </button>
-            <div class="answer"><div><p>{{ r.body }}</p></div></div>
+            <div class="answer"><div><p>{{ r.body | t }}</p></div></div>
           </div>
         }
       </div>
-      <p class="disclaimer">Airport and gate data: OurAirports and OpenStreetMap contributors. Always follow airport signs and staff.</p>
+      <p class="disclaimer">{{ 'Airport and gate data: OurAirports and OpenStreetMap contributors. Always follow airport signs and staff.' | t }}</p>
     } @else {
       <gm-skeleton height="220px" radius="22px" style="margin-top: 10px" />
     }

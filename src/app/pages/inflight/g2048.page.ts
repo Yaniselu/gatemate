@@ -4,6 +4,7 @@ import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 interface Tile {
   id: number;
@@ -18,20 +19,20 @@ interface Tile {
 @Component({
   selector: 'gm-2048',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>2048 Altitude</ion-title>
+        <ion-title>{{ '2048 Altitude' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true" [scrollY]="false">
       <div class="page">
         <div class="hud">
-          <div class="card"><span class="gm-label">Score</span><b>{{ score() }}</b></div>
-          <div class="card"><span class="gm-label">Best</span><b>{{ best() }}</b></div>
-          <button class="card again" (click)="reset()" aria-label="New game"><ion-icon name="refresh-outline" /></button>
+          <div class="card"><span class="gm-label">{{ 'Score' | t }}</span><b>{{ score() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Best' | t }}</span><b>{{ best() }}</b></div>
+          <button class="card again" (click)="reset()" [aria-label]="'New game' | t"><ion-icon name="refresh-outline" /></button>
         </div>
         <div class="board glass" (pointerdown)="ps($event)" (pointerup)="pe($event)">
           @for (i of cells; track i) { <span class="cell"></span> }
@@ -39,10 +40,10 @@ interface Tile {
             <span class="tile" [attr.data-v]="t.v" [class.merged]="t.merged" [class.fresh]="t.fresh" [style.--r]="t.r" [style.--c]="t.c">{{ t.v }}</span>
           }
           @if (over()) {
-            <div class="end"><b>{{ won() ? 'You reached 2048! ✈️' : 'No more moves' }}</b><button class="gm-btn small" (click)="reset()">Try again</button></div>
+            <div class="end"><b>{{ won() ? ('You reached 2048! ✈️' | t) : ('No more moves' | t) }}</b><button class="gm-btn small" (click)="reset()">{{ 'Try again' | t }}</button></div>
           }
         </div>
-        <p class="hint">Swipe in any direction. Merge tiles to climb from 2 to 2048 ft… ×1000.</p>
+        <p class="hint">{{ 'Swipe in any direction. Merge tiles to climb from 2 to 2048 ft… ×1000.' | t }}</p>
       </div>
     </ion-content>
   `,

@@ -7,11 +7,12 @@ import { ApiError } from '../../core/services/api';
 import { emailValidator } from '../../core/security/validators';
 import { PlatformService } from '../../core/services/platform.service';
 import { SocialButtonsComponent } from '../../shared/components/social-buttons.component';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, ReactiveFormsModule, RouterLink, SocialButtonsComponent],
+  imports: [TranslatePipe, IonContent, IonIcon, ReactiveFormsModule, RouterLink, SocialButtonsComponent],
   templateUrl: './login.page.html',
   styleUrl: './auth.scss',
 })

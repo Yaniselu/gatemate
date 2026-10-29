@@ -4,6 +4,7 @@ import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Cell = 'P' | 'C' | null; // P = plane (you), C = cloud (autopilot)
 const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
@@ -29,34 +30,34 @@ function minimax(b: Cell[], turn: 'C' | 'P'): number {
 @Component({
   selector: 'gm-tictactoe',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Planes & Clouds</ion-title>
+        <ion-title>{{ 'Planes & Clouds' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
-          <div class="card"><span class="gm-label">You ✈️</span><b>{{ wins() }}</b></div>
-          <div class="card"><span class="gm-label">Draws</span><b>{{ draws() }}</b></div>
-          <div class="card"><span class="gm-label">Autopilot ☁️</span><b>{{ losses() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'You ✈️' | t }}</span><b>{{ wins() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Draws' | t }}</span><b>{{ draws() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Autopilot ☁️' | t }}</span><b>{{ losses() }}</b></div>
         </div>
         <div class="seg">
-          @for (l of levels; track l.id) { <button [class.on]="level() === l.id" (click)="level.set(l.id); reset()">{{ l.label }}</button> }
+          @for (l of levels; track l.id) { <button [class.on]="level() === l.id" (click)="level.set(l.id); reset()">{{ l.label | t }}</button> }
         </div>
         <div class="board glass" [class.over]="!!result()">
           @for (c of board(); track $index; let i = $index) {
-            <button class="cell" (click)="play(i)" [class.win]="winLine().includes(i)" [attr.aria-label]="c === 'P' ? 'Plane' : c === 'C' ? 'Cloud' : 'Empty'">
+            <button class="cell" (click)="play(i)" [class.win]="winLine().includes(i)" [attr.aria-label]="c === 'P' ? ('Plane' | t) : c === 'C' ? ('Cloud' | t) : ('Empty' | t)">
               @if (c === 'P') { <ion-icon name="airplane" class="p" /> }
               @if (c === 'C') { <ion-icon name="cloud" class="c" /> }
             </button>
           }
         </div>
-        <p class="status">{{ status() }}</p>
-        <button class="gm-btn" (click)="reset()"><ion-icon name="refresh-outline" /> New game</button>
+        <p class="status">{{ status() | t }}</p>
+        <button class="gm-btn" (click)="reset()"><ion-icon name="refresh-outline" /> {{ 'New game' | t }}</button>
       </div>
     </ion-content>
   `,

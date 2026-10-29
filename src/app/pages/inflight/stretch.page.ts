@@ -3,6 +3,7 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, Io
 import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 const MOVES = [
   { title: 'Ankle circles', body: 'Lift your feet slightly and draw circles with your toes — 10 each direction.', icon: 'sync-outline' },
@@ -17,12 +18,12 @@ const SECS = 30;
 @Component({
   selector: 'gm-stretch',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Seat stretches</ion-title>
+        <ion-title>{{ 'Seat stretches' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
@@ -34,20 +35,20 @@ const SECS = 30;
               <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="bg" /><circle cx="60" cy="60" r="52" class="fg" [style.stroke-dashoffset]="327 - 327 * (1 - left() / secs)" /></svg>
               <div class="center"><ion-icon [name]="m.icon" /><b>{{ left() }}s</b></div>
             </div>
-            <span class="gm-label">Move {{ index() + 1 }} of {{ moves.length }}</span>
-            <h2>{{ m.title }}</h2>
-            <p>{{ m.body }}</p>
+            <span class="gm-label">{{ 'Move {n} of {total}' | t: { n: index() + 1, total: moves.length } }}</span>
+            <h2>{{ m.title | t }}</h2>
+            <p>{{ m.body | t }}</p>
           </div>
         }
         @if (finished()) {
-          <p class="done-msg">All done — your legs say thank you 🙌</p>
+          <p class="done-msg">{{ 'All done — your legs say thank you 🙌' | t }}</p>
         }
         <div class="controls">
           <button class="gm-btn ghost small" (click)="go(-1)" [disabled]="index() === 0"><ion-icon name="chevron-back" /></button>
-          <button class="gm-btn" (click)="toggle()"><ion-icon [name]="running() ? 'pause-outline' : 'play-outline'" /> {{ running() ? 'Pause' : finished() ? 'Restart' : 'Start' }}</button>
+          <button class="gm-btn" (click)="toggle()"><ion-icon [name]="running() ? 'pause-outline' : 'play-outline'" /> {{ running() ? ('Pause' | t) : finished() ? ('Restart' | t) : ('Start' | t) }}</button>
           <button class="gm-btn ghost small" (click)="go(1)" [disabled]="index() === moves.length - 1"><ion-icon name="chevron-forward" /></button>
         </div>
-        <p class="note">Stop if anything hurts. Keep your seatbelt fastened while seated.</p>
+        <p class="note">{{ 'Stop if anything hurts. Keep your seatbelt fastened while seated.' | t }}</p>
       </div>
     </ion-content>
   `,

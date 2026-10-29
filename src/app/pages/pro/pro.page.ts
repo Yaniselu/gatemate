@@ -5,6 +5,7 @@ import { ProPlan, ProService } from '../../core/services/pro.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 const FEATURES = [
   { icon: 'airplane-outline', title: 'Unlimited trips', body: 'Free accounts keep 3 upcoming trips at a time.' },
@@ -17,51 +18,51 @@ const FEATURES = [
 @Component({
   selector: 'gm-pro',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon, RouterLink],
+  imports: [TranslatePipe, IonContent, IonIcon, RouterLink],
   template: `
     <ion-content [fullscreen]="true">
-      <button class="close" (click)="close()" aria-label="Close"><ion-icon name="close" /></button>
+      <button class="close" (click)="close()" [aria-label]="'Close' | t"><ion-icon name="close" /></button>
       <div class="wrap">
         <header class="hero anim-fade-up">
           <span class="crown"><ion-icon name="sparkles" /></span>
-          <h1>Gatemate Pro</h1>
+          <h1>{{ 'Gatemate Pro' | t }}</h1>
           <p>{{ headline() }}</p>
         </header>
 
         @if (pro.isPro()) {
           <section class="card done anim-scale-in">
             <ion-icon name="checkmark-circle" />
-            <div><b>You’re on Pro</b><small>Thanks for supporting Gatemate.</small></div>
+            <div><b>{{ 'You’re on Pro' | t }}</b><small>{{ 'Thanks for supporting Gatemate.' | t }}</small></div>
           </section>
-          @if (!pro.demo) { <button class="gm-btn ghost" (click)="pro.manage()">Manage subscription</button> }
+          @if (!pro.demo) { <button class="gm-btn ghost" (click)="pro.manage()">{{ 'Manage subscription' | t }}</button> }
         } @else {
           <ul class="features">
             @for (f of features; track f.title; let i = $index) {
-              <li [style.--i]="i"><span class="gm-well accent"><ion-icon [name]="f.icon" /></span><div><b>{{ f.title }}</b><small>{{ f.body }}</small></div></li>
+              <li [style.--i]="i"><span class="gm-well accent"><ion-icon [name]="f.icon" /></span><div><b>{{ f.title | t }}</b><small>{{ f.body | t }}</small></div></li>
             }
           </ul>
 
           @switch (pro.state()) {
             @case ('ready') {
-              <div class="plans" role="radiogroup" aria-label="Choose a plan">
+              <div class="plans" role="radiogroup" [aria-label]="'Choose a plan' | t">
                 @for (p of pro.plans(); track p.id) {
                   <button class="plan" role="radio" [attr.aria-checked]="selected()?.id === p.id" [class.on]="selected()?.id === p.id" (click)="select(p)">
                     <span class="radio"></span>
-                    <span class="txt"><b>{{ p.title }}</b>@if (p.perMonth) { <small>{{ p.perMonth }}</small> }</span>
+                    <span class="txt"><b>{{ p.title | t }}</b>@if (p.perMonth) { <small>{{ p.perMonth }}</small> }</span>
                     <span class="price">{{ p.price }}</span>
-                    @if (p.id === 'annual') { <em class="save">Best value</em> }
+                    @if (p.id === 'annual') { <em class="save">{{ 'Best value' | t }}</em> }
                   </button>
                 }
               </div>
               <button class="gm-btn buy" (click)="buy()" [disabled]="!selected() || pro.busy()">
-                @if (pro.busy()) { <span class="spinner"></span> } @else { {{ selected()?.trial ? 'Start free trial' : 'Subscribe' }} }
+                @if (pro.busy()) { <span class="spinner"></span> } @else { {{ selected()?.trial ? ('Start free trial' | t) : ('Subscribe' | t) }} }
               </button>
               <p class="terms">
                 @if (selected(); as s) {
-                  @if (s.trial) { {{ s.trial }}, then {{ s.price }}. } @else { {{ s.price }}. }
+                  @if (s.trial) { {{ '{trial}, then {price}.' | t: { trial: s.trial, price: s.price } }} } @else { {{ s.price }}. }
                 }
-                Auto-renews until cancelled. Cancel any time in your {{ storeName }} settings at least 24 hours before renewal.
-                @if (pro.demo) { <b>Demo build: no payment is taken.</b> }
+                {{ 'Auto-renews until cancelled. Cancel any time in your {store} settings at least 24 hours before renewal.' | t: { store: storeName } }}
+                @if (pro.demo) { <b>{{ 'Demo build: no payment is taken.' | t }}</b> }
               </p>
             }
             @case ('loading') { <div class="loading"><span class="spinner dark"></span></div> }
@@ -73,9 +74,9 @@ const FEATURES = [
             }
           }
           <div class="links">
-            <button (click)="restore()" [disabled]="pro.busy()">Restore purchases</button>
-            <a routerLink="/legal/terms">Terms</a>
-            <a routerLink="/legal/privacy">Privacy</a>
+            <button (click)="restore()" [disabled]="pro.busy()">{{ 'Restore purchases' | t }}</button>
+            <a routerLink="/legal/terms">{{ 'Terms' | t }}</a>
+            <a routerLink="/legal/privacy">{{ 'Privacy' | t }}</a>
           </div>
         }
       </div>
@@ -132,12 +133,12 @@ export class ProPage implements OnInit {
   private chosen = signal<ProPlan | null>(null);
   readonly selected = computed<ProPlan | null>(() => this.chosen() ?? this.pro.plans()[0] ?? null);
   readonly headline = computed(() => {
-    if (this.pro.isPro()) return 'Everything in Gatemate, without limits.';
+    if (this.pro.isPro()) return tr('Everything in Gatemate, without limits.');
     switch (this.reason()) {
-      case 'trips': return 'You’ve reached 3 upcoming trips on the free plan. Go unlimited.';
-      case 'explore': return 'See every top sight in the cities you visit.';
-      case 'expenses': return 'Settle up with your travel group in one tap.';
-      default: return 'Everything in Gatemate, without limits.';
+      case 'trips': return tr('You’ve reached 3 upcoming trips on the free plan. Go unlimited.');
+      case 'explore': return tr('See every top sight in the cities you visit.');
+      case 'expenses': return tr('Settle up with your travel group in one tap.');
+      default: return tr('Everything in Gatemate, without limits.');
     }
   });
 

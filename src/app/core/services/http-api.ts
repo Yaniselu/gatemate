@@ -4,6 +4,7 @@ import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 import { ApiError, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { currentLang, t } from '../i18n/i18n.service';
 
 // Generous: a free-tier server can take ~50 s to wake up after being idle.
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -26,7 +27,7 @@ export class HttpApi extends GatemateApi {
     return this.call(this.http.post<Session>(`${this.base}/auth/login`, { email, password }));
   }
   register(name: string, email: string, password: string) {
-    return this.call(this.http.post<Session>(`${this.base}/auth/register`, { name, email, password }));
+    return this.call(this.http.post<Session>(`${this.base}/auth/register`, { name, email, password, lang: currentLang() }));
   }
   loginWithSocial(c: SocialCredential) {
     return this.call(this.http.post<Session>(`${this.base}/auth/oauth/${c.provider}`, c));
@@ -163,8 +164,8 @@ function toApiError(e: unknown): ApiError {
       : e.status >= 500 ? 'Something went wrong on our side. Please try again.'
       : typeof e.error?.message === 'string' ? e.error.message.slice(0, 200)
       : 'Request failed.';
-    return new ApiError(msg, e.status, e.error?.code, retryAfter);
+    return new ApiError(t(msg), e.status, e.error?.code, retryAfter);
   }
-  if (e instanceof Error && e.name === 'TimeoutError') return new ApiError('The server is waking up. Please try again in a moment.', 408);
+  if (e instanceof Error && e.name === 'TimeoutError') return new ApiError(t('The server is waking up. Please try again in a moment.'), 408);
   return new ApiError('Unexpected error.', 0);
 }

@@ -1,5 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { FlightStatus } from '../../core/models';
+import { t } from '../../core/i18n/i18n.service';
 
 const LABELS: Record<FlightStatus, string> = {
   scheduled: 'Scheduled',
@@ -14,6 +15,6 @@ const LABELS: Record<FlightStatus, string> = {
 @Pipe({ name: 'flightStatus' })
 export class FlightStatusPipe implements PipeTransform {
   transform(status: FlightStatus): string {
-    return LABELS[status] ?? status;
+    return t(LABELS[status] ?? status);
   }
 }

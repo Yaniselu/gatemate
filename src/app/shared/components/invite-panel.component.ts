@@ -1,20 +1,21 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { InviteService } from '../../core/services/invite.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-invite-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonIcon],
+  imports: [TranslatePipe, IonIcon],
   template: `
     <button class="wa" (click)="url() && invites.whatsapp(title(), url()!)" [disabled]="!url()">
-      <ion-icon name="logo-whatsapp" /> Invite via WhatsApp
+      <ion-icon name="logo-whatsapp" /> {{ 'Invite via WhatsApp' | t }}
     </button>
     <div class="row">
-      <button class="alt card" (click)="url() && invites.share(title(), url()!)" [disabled]="!url()"><ion-icon name="share-outline" /> More apps</button>
-      <button class="alt card" (click)="url() && invites.copy(url()!)" [disabled]="!url()"><ion-icon name="link-outline" /> Copy link</button>
+      <button class="alt card" (click)="url() && invites.share(title(), url()!)" [disabled]="!url()"><ion-icon name="share-outline" /> {{ 'More apps' | t }}</button>
+      <button class="alt card" (click)="url() && invites.copy(url()!)" [disabled]="!url()"><ion-icon name="link-outline" /> {{ 'Copy link' | t }}</button>
     </div>
-    <p class="fine"><ion-icon name="lock-closed-outline" /> Link works once, expires in 7 days, and friends must sign in to join.</p>
+    <p class="fine"><ion-icon name="lock-closed-outline" /> {{ 'Link works once, expires in 7 days, and friends must sign in to join.' | t }}</p>
   `,
   styles: `
     :host { display: block; }

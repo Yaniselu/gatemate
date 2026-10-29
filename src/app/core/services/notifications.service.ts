@@ -7,6 +7,7 @@ import { GatemateApi } from './api';
 import { AlertKind, Flight, FlightAlert, NotificationPrefs } from '../models';
 import { PlatformService } from './platform.service';
 import { PrefsService } from './prefs.service';
+import { t as tr } from '../i18n/i18n.service';
 
 /**
  * Local reminders derived from the user's flights. Live gate/delay alerts arrive as push
@@ -75,9 +76,9 @@ export class NotificationsService {
     const departure = new Date(flight.departure).getTime();
     const baseId = hash(flight.id);
     const items = [
-      prefs.checkIn && { id: baseId + 1, at: departure - 24 * 3600_000, title: `Check-in is open · ${flight.number}`, body: `Check in for ${flight.from.city} → ${flight.to.city}.` },
-      prefs.boarding && { id: baseId + 2, at: boarding - 15 * 60_000, title: 'Boarding in 15 minutes', body: `${flight.number} · Gate ${flight.gate ?? 'TBA'} · Seat ${flight.seat ?? '—'}` },
-      prefs.boarding && { id: baseId + 3, at: boarding, title: 'Boarding has started ✈️', body: `Head to gate ${flight.gate ?? 'TBA'} now.` },
+      prefs.checkIn && { id: baseId + 1, at: departure - 24 * 3600_000, title: tr('Check-in is open · {flight}', { flight: flight.number }), body: tr('Check in for {from} → {to}.', { from: flight.from.city, to: flight.to.city }) },
+      prefs.boarding && { id: baseId + 2, at: boarding - 15 * 60_000, title: tr('Boarding in 15 minutes'), body: tr('{flight} · Gate {gate} · Seat {seat}', { flight: flight.number, gate: flight.gate ?? tr('TBA'), seat: flight.seat ?? '—' }) },
+      prefs.boarding && { id: baseId + 3, at: boarding, title: tr('Boarding has started ✈️'), body: tr('Head to gate {gate} now.', { gate: flight.gate ?? tr('TBA') }) },
     ].filter((x): x is { id: number; at: number; title: string; body: string } => !!x && x.at > Date.now());
 
     await LocalNotifications.cancel({ notifications: [1, 2, 3].map((n) => ({ id: baseId + n })) }).catch(() => {});

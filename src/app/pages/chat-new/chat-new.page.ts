@@ -10,18 +10,19 @@ import { cleanText } from '../../core/security/sanitize';
 import { InvitePanelComponent } from '../../shared/components/invite-panel.component';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', '🌴', '💼', '🎓', '❤️', '✈️'];
 
 @Component({
   selector: 'gm-chat-new',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, FormsModule, InvitePanelComponent],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, FormsModule, InvitePanelComponent],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/chat" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>{{ created() ? 'Invite friends' : 'New trip group' }}</ion-title>
+        <ion-title>{{ created() ? ('Invite friends' | t) : ('New trip group' | t) }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
@@ -29,25 +30,25 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
         @if (!created()) {
           <div class="preview anim-scale-in">
             <span class="avatar" [class.bump]="bump()">{{ emoji() }}</span>
-            <b>{{ title().trim() || 'Your group' }}</b>
+            <b>{{ title().trim() || ('Your group' | t) }}</b>
             <small>{{ tripTitle() }}</small>
           </div>
 
           <div class="gm-field">
-            <label for="gname">Group name</label>
-            <div class="gm-input-wrap"><ion-icon name="people-outline" /><input id="gname" [ngModel]="title()" (ngModelChange)="title.set($event)" maxlength="40" placeholder="Barcelona squad" /></div>
+            <label for="gname">{{ 'Group name' | t }}</label>
+            <div class="gm-input-wrap"><ion-icon name="people-outline" /><input id="gname" [ngModel]="title()" (ngModelChange)="title.set($event)" maxlength="40" [placeholder]="'Barcelona squad' | t" /></div>
           </div>
 
-          <span class="gm-label lbl">Pick an icon</span>
+          <span class="gm-label lbl">{{ 'Pick an icon' | t }}</span>
           <div class="emojis">
             @for (e of emojis; track e; let i = $index) {
-              <button [class.on]="emoji() === e" (click)="pickEmoji(e)" [style.--i]="i" [attr.aria-label]="'Icon ' + e">{{ e }}</button>
+              <button [class.on]="emoji() === e" (click)="pickEmoji(e)" [style.--i]="i" [attr.aria-label]="'Icon {e}' | t: { e }">{{ e }}</button>
             }
           </div>
 
-          <span class="gm-label lbl">Link to a trip (optional)</span>
+          <span class="gm-label lbl">{{ 'Link to a trip (optional)' | t }}</span>
           <div class="trips">
-            <button [class.on]="!tripId()" (click)="tripId.set(null)">No trip</button>
+            <button [class.on]="!tripId()" (click)="tripId.set(null)">{{ 'No trip' | t }}</button>
             @for (t of store.upcomingTrips(); track t.id) {
               <button [class.on]="tripId() === t.id" (click)="tripId.set(t.id); title() || title.set(t.title)">{{ t.destination.city }}</button>
             }
@@ -57,17 +58,17 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
             <p class="err anim-fade-up" role="alert"><ion-icon name="alert-circle" /> {{ error() }}</p>
           }
           <button class="gm-btn" (click)="create()" [disabled]="busy()">
-            @if (busy()) { <i class="spin"></i> Creating… } @else { <ion-icon name="add" /> Create group }
+            @if (busy()) { <i class="spin"></i> {{ 'Creating…' | t }} } @else { <ion-icon name="add" /> {{ 'Create group' | t }} }
           </button>
         } @else {
           @if (created(); as c) {
             <div class="created anim-scale-in">
               <span class="avatar big">{{ c.emoji }}</span>
-              <h2>{{ c.title }} is ready</h2>
-              <p>Invite your travel buddies — they’ll join the chat and see the shared trip.</p>
+              <h2>{{ c.title | t }} is ready</h2>
+              <p>{{ 'Invite your travel buddies — they’ll join the chat and see the shared trip.' | t }}</p>
             </div>
             <gm-invite-panel [targetId]="c.id" [title]="c.title" />
-            <button class="gm-btn ghost open" (click)="open(c)"><ion-icon name="chatbubbles-outline" /> Open chat</button>
+            <button class="gm-btn ghost open" (click)="open(c)"><ion-icon name="chatbubbles-outline" /> {{ 'Open chat' | t }}</button>
           }
         }
       </div>
@@ -119,7 +120,7 @@ export class ChatNewPage implements OnInit {
 
   tripTitle() {
     const t = this.store.upcomingTrips().find((x) => x.id === this.tripId());
-    return t ? `Linked to ${t.title}` : 'Private group · only invited people';
+    return t ? tr('Linked to {trip}', { trip: t.title }) : tr('Private group · only invited people');
   }
 
   pickEmoji(e: string) {

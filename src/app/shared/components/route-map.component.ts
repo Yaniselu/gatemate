@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, effect, inject, input, signal, viewChild } from '@angular/core';
 import type * as Leaflet from 'leaflet';
 import { greatCircle, RouteLine } from '../../core/utils/travel-summary';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 const BASE = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
 
@@ -8,12 +9,13 @@ const BASE = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_
 @Component({
   selector: 'gm-route-map',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TranslatePipe],
   template: `
     <div class="map" #host></div>
     @if (offline()) {
-      <div class="offline">Map tiles need an internet connection</div>
+      <div class="offline">{{ 'Map tiles need an internet connection' | t }}</div>
     }
-    <span class="attr">© Esri</span>
+    <span class="attr">{{ '© Esri' | t }}</span>
   `,
   styles: `
     :host { position: relative; display: block; overflow: hidden; background: #eef3f5; }

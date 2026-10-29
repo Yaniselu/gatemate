@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 import { GatemateApi } from './api';
 import { MockApi } from './mock-api';
+import { t as tr } from '../i18n/i18n.service';
 
 /** What a Pro plan looks like on the paywall. Prices always come from the store, already localized. */
 export interface ProPlan {
@@ -80,8 +81,8 @@ export class ProService {
     if (this.state() === 'ready' || this.state() === 'loading') return;
     if (this.demo) {
       this.plans.set([
-        { id: 'annual', title: 'Yearly', price: '€19.99 / year', perMonth: '€1.67 / month', trial: '7-day free trial' },
-        { id: 'monthly', title: 'Monthly', price: '€2.99 / month', trial: '7-day free trial' },
+        { id: 'annual', title: 'Yearly', price: tr('{price} / year', { price: '€19.99' }), perMonth: tr('{price} / month', { price: '€1.67' }), trial: tr('{n}-day free trial', { n: 7 }) },
+        { id: 'monthly', title: 'Monthly', price: tr('{price} / month', { price: '€2.99' }), trial: tr('{n}-day free trial', { n: 7 }) },
       ]);
       this.state.set('ready');
       return;
@@ -103,9 +104,9 @@ export class ProService {
         plans.push({
           id: annual ? 'annual' : 'monthly',
           title: annual ? 'Yearly' : 'Monthly',
-          price: `${p.product.priceString} / ${annual ? 'year' : 'month'}`,
-          perMonth: annual && p.product.pricePerMonthString ? `${p.product.pricePerMonthString} / month` : undefined,
-          trial: intro && intro.price === 0 ? `${intro.periodNumberOfUnits}-${intro.periodUnit.toLowerCase()} free trial` : undefined,
+          price: tr(annual ? '{price} / year' : '{price} / month', { price: p.product.priceString }),
+          perMonth: annual && p.product.pricePerMonthString ? tr('{price} / month', { price: p.product.pricePerMonthString }) : undefined,
+          trial: intro && intro.price === 0 ? trialLabel(intro.periodNumberOfUnits, intro.periodUnit) : undefined,
           pkg: p,
         });
       }
@@ -171,4 +172,13 @@ export class ProService {
       /* the webhook will update the account shortly */
     }
   }
+}
+
+/** "7-day free trial", "1-month free trial"… in the app's language. */
+function trialLabel(n: number, unit: string): string {
+  const u = unit.toLowerCase();
+  if (u.startsWith('week')) return tr('{n}-week free trial', { n });
+  if (u.startsWith('month')) return tr('{n}-month free trial', { n });
+  if (u.startsWith('year')) return tr('{n}-year free trial', { n });
+  return tr('{n}-day free trial', { n });
 }

@@ -45,3 +45,6 @@ Thumbs.db
 # Build output
 /www
 .data/
+
+# i18n-extract.py output
+i18n-src/missing-*.json

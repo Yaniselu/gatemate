@@ -28,13 +28,14 @@ import { LiveFlightService } from '../../core/services/live-flight.service';
 import { DestinationService } from '../../core/services/destination.service';
 import { renderTripCard } from '../../core/utils/trip-card';
 import { isShareCancel, shareCanvas } from '../../core/utils/share-image';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' | 'people';
 
 @Component({
   selector: 'gm-trip-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonIcon, RouterLink, FormsModule, DecimalPipe,
     BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, AirportDayComponent, LiveFlightComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
   ],

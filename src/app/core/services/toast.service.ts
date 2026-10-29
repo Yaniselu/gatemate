@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { PlatformService } from './platform.service';
+import { t } from '../i18n/i18n.service';
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
@@ -12,7 +13,7 @@ export class ToastService {
     if (kind === 'error') this.platform.error();
     await this.ctrl.dismiss().catch(() => {});
     const toast = await this.ctrl.create({
-      message,
+      message: t(message),
       duration: 2600,
       position: 'top',
       cssClass: 'gm-toast',

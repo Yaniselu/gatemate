@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, input, model, output, viewChild } from '@angular/core';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /**
  * Six-digit code entry: one real input (so iOS can fill the code from Mail/Messages and paste works),
@@ -7,12 +8,13 @@ import { ChangeDetectionStrategy, Component, ElementRef, input, model, output, v
 @Component({
   selector: 'gm-code-input',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TranslatePipe],
   template: `
     <label class="boxes" [class.error]="error()" (click)="focus()">
       @for (i of slots; track i) {
         <span class="box" [class.filled]="value().length > i" [class.caret]="value().length === i">{{ value()[i] ?? '' }}</span>
       }
-      <input #field type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" aria-label="6-digit code"
+      <input #field type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" [aria-label]="'6-digit code' | t"
         [value]="value()" (input)="onInput($event)" (keydown.enter)="complete.emit(value())" />
     </label>
   `,

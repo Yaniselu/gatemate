@@ -7,6 +7,7 @@ import { PENDING_INVITE } from '../../core/guards/auth.guards';
 import { Preferences } from '@capacitor/preferences';
 import { AuthService } from '../../core/services/auth.service';
 import { onboardedKey } from '../onboarding/onboarding.page';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 interface TabDef {
   id: string;
@@ -18,7 +19,7 @@ interface TabDef {
 @Component({
   selector: 'gm-tabs',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
+  imports: [TranslatePipe, IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
   template: `
     <ion-tabs (ionTabsDidChange)="changed($event.tab)">
       <ion-tab-bar slot="bottom" class="gm-tabbar" [style.--index]="index()">
@@ -31,7 +32,7 @@ interface TabDef {
                 <span class="dot">{{ unread() }}</span>
               }
             </span>
-            <ion-label>{{ t.label }}</ion-label>
+            <ion-label>{{ t.label | t }}</ion-label>
           </ion-tab-button>
         }
       </ion-tab-bar>

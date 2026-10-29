@@ -13,7 +13,7 @@
       <span class="kicker">{{ country()?.name }}</span>
       <h1>{{ airport()?.city }}</h1>
       @if (localTime()) {
-        <span class="sub"><ion-icon name="time-outline" /> {{ localTime() }} local time</span>
+        <span class="sub"><ion-icon name="time-outline" /> {{ '{time} local time' | t: { time: localTime() } }}</span>
       }
     </div>
   </div>
@@ -21,12 +21,12 @@
   <div class="sheet">
     <nav class="chips" role="tablist">
       @for (s of sections; track s.id) {
-        <button role="tab" [class.on]="section() === s.id" (click)="go(s.id)"><ion-icon [name]="s.icon" />{{ s.label }}</button>
+        <button role="tab" [class.on]="section() === s.id" (click)="go(s.id)"><ion-icon [name]="s.icon" />{{ s.label | t }}</button>
       }
     </nav>
 
     @if (infoError() && !airport()) {
-      <div class="card notice"><ion-icon name="alert-circle-outline" /><p>We don’t know this airport code.</p></div>
+      <div class="card notice"><ion-icon name="alert-circle-outline" /><p>{{ 'We don’t know this airport code.' | t }}</p></div>
     }
 
     <!-- About -->
@@ -36,7 +36,7 @@
 
     <!-- Sights -->
     <section id="ex-sights" class="block">
-      <header><h2>Top sights</h2><small>Most notable first</small></header>
+      <header><h2>{{ 'Top sights' | t }}</h2><small>{{ 'Most notable first' | t }}</small></header>
       @if (sights(); as list) {
         @if (list.length) {
           <div class="sights">
@@ -51,7 +51,7 @@
                 </div>
                 <div class="s-txt">
                   <b>{{ s.name }}</b>
-                  @if (s.description) { <small>{{ s.description }}</small> }
+                  @if (s.description) { <small>{{ s.description | t }}</small> }
                   <span class="dist"><ion-icon name="navigate-outline" /> {{ s.distanceKm | number: '1.0-1' }} km from centre</span>
                 </div>
               </a>
@@ -59,15 +59,15 @@
           </div>
           @if (list.length > 8) {
             <button class="more" (click)="toggleAllSights()">
-              @if (showAllSights()) { Show fewer } @else { Show all {{ list.length }} @if (!pro.isPro()) { <span class="pro-tag">PRO</span> } }
+              @if (showAllSights()) { {{ 'Show fewer' | t }} } @else { {{ 'Show all {n}' | t: { n: list.length } }} @if (!pro.isPro()) { <span class="pro-tag">{{ 'PRO' | t }}</span> } }
             </button>
           }
-          <p class="src">Data: Wikidata (CC0) · Photos: Wikimedia Commons · Opens in Maps</p>
+          <p class="src">{{ 'Data: Wikidata (CC0) · Photos: Wikimedia Commons · Opens in Maps' | t }}</p>
         } @else {
-          <div class="card notice"><ion-icon name="map-outline" /><p>No well-known landmarks are mapped near this airport’s city yet.</p></div>
+          <div class="card notice"><ion-icon name="map-outline" /><p>{{ 'No well-known landmarks are mapped near this airport’s city yet.' | t }}</p></div>
         }
       } @else if (sightsError() || infoError()) {
-        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>Sights need an internet connection. Pull down to retry when you’re online.</p></div>
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>{{ 'Sights need an internet connection. Pull down to retry when you’re online.' | t }}</p></div>
       } @else {
         <div class="sights">
           @for (i of [1, 2, 3, 4]; track i) { <div class="sight card"><gm-skeleton height="100%" radius="12px" /></div> }
@@ -77,13 +77,13 @@
 
     <!-- Days & holidays -->
     <section id="ex-when" class="block">
-      <header><h2>Days & holidays</h2><small>{{ tripData() ? 'During your trip' : 'Next 30 days' }}</small></header>
+      <header><h2>{{ 'Days & holidays' | t }}</h2><small>{{ tripData() ? ('During your trip' | t) : ('Next 30 days' | t) }}</small></header>
       <div class="card sunbox">
         @if (sun(); as s) {
           <div class="sunrow">
-            <div><ion-icon name="sunny-outline" /><span class="gm-label">Sunrise</span><b>{{ s.today.rise }}</b></div>
-            <div><ion-icon name="moon-outline" /><span class="gm-label">Sunset</span><b>{{ s.today.set }}</b></div>
-            <div><ion-icon name="hourglass-outline" /><span class="gm-label">Daylight</span><b>{{ s.today.hours | number: '1.0-1' }} h</b></div>
+            <div><ion-icon name="sunny-outline" /><span class="gm-label">{{ 'Sunrise' | t }}</span><b>{{ s.today.rise }}</b></div>
+            <div><ion-icon name="moon-outline" /><span class="gm-label">{{ 'Sunset' | t }}</span><b>{{ s.today.set }}</b></div>
+            <div><ion-icon name="hourglass-outline" /><span class="gm-label">{{ 'Daylight' | t }}</span><b>{{ s.today.hours | number: '1.0-1' }} h</b></div>
           </div>
           @if (s.trip; as t) {
             <p class="hint">On your arrival day: sunrise {{ t.rise }}, sunset {{ t.set }}.</p>
@@ -95,19 +95,19 @@
           @for (h of th; track h.date + h.name) {
             <div class="hol">
               <span class="date">{{ holidayDate(h.date) }}</span>
-              <div><b>{{ h.name }}</b><small>{{ h.localName }}{{ h.national ? '' : ' · regional' }}</small></div>
+              <div><b>{{ h.name }}</b><small>{{ h.localName }}{{ h.national ? '' : ' · ' + ('regional' | t) }}</small></div>
             </div>
           } @empty {
-            <div class="hol none"><ion-icon name="checkmark-circle-outline" /><div><b>No public holidays</b><small>Shops and offices keep normal hours{{ tripData() ? ' during your trip' : '' }}.</small></div></div>
+            <div class="hol none"><ion-icon name="checkmark-circle-outline" /><div><b>{{ 'No public holidays' | t }}</b><small>{{ (tripData() ? 'Shops and offices keep normal hours during your trip.' : 'Shops and offices keep normal hours.') | t }}</small></div></div>
           }
         </div>
         @if (th.length) {
-          <p class="hint">On public holidays many shops, banks and museums close or keep Sunday hours — book ahead.</p>
+          <p class="hint">{{ 'On public holidays many shops, banks and museums close or keep Sunday hours — book ahead.' | t }}</p>
         } @else if (nextHolidays().length) {
-          <p class="hint">Next: {{ nextHolidays()[0].name }} on {{ holidayDate(nextHolidays()[0].date) }}.</p>
+          <p class="hint">{{ 'Next: {name} on {date}.' | t: { name: nextHolidays()[0].name, date: holidayDate(nextHolidays()[0].date) } }}</p>
         }
       } @else if (holidaysError()) {
-        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>Holiday calendar needs an internet connection.</p></div>
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>{{ 'Holiday calendar needs an internet connection.' | t }}</p></div>
       } @else {
         <gm-skeleton height="90px" radius="14px" />
       }
@@ -116,21 +116,21 @@
     <!-- Phrases -->
     <section id="ex-phrases" class="block">
       <header>
-        <h2>Phrases</h2>
+        <h2>{{ 'Phrases' | t }}</h2>
         <small>{{ phrases() ? phrases()!.language + ' · ' + phrases()!.set.native : '' }}</small>
       </header>
       @if (phrases(); as p) {
         <div class="card list phrases">
           @for (ph of p.set.phrases; track $index; let i = $index) {
-            <button class="phrase" (click)="speak(ph[0])" [attr.aria-label]="'Play ' + phraseKeys[i]">
-              <span class="en">{{ phraseKeys[i] }}</span>
+            <button class="phrase" (click)="speak(ph[0])" [attr.aria-label]="'Play {phrase}' | t: { phrase: (phraseKeys[i] | t) }">
+              <span class="en">{{ phraseKeys[i] | t }}</span>
               <span class="native"><b>{{ ph[0] }}</b>@if (ph[1]) { <small>{{ ph[1] }}</small> }</span>
               <ion-icon name="volume-medium-outline" />
             </button>
           }
         </div>
         @if (p.set.note) { <p class="hint">{{ p.set.note }}</p> }
-        <p class="hint">Tap a phrase to hear it (uses your phone’s voice for {{ p.language }}).</p>
+        <p class="hint">{{ 'Tap a phrase to hear it (uses your phone’s voice for {language}).' | t: { language: p.language } }}</p>
       } @else {
         <div class="card notice"><ion-icon name="language-outline" /><p>English is widely used here{{ country()?.languages?.length ? ' (' + country()!.languages.slice(0, 3).join(', ') + ')' : '' }}.</p></div>
       }
@@ -138,15 +138,15 @@
 
     <!-- Money -->
     <section id="ex-money" class="block">
-      <header><h2>Money</h2><small>{{ currencyName(country()?.currency?.[0]) }}</small></header>
+      <header><h2>{{ 'Money' | t }}</h2><small>{{ currencyName(country()?.currency?.[0]) }}</small></header>
       @if (info()?.fx; as fx) {
         <div class="card fx">
           <div class="fx-row">
             <label>
               <span class="gm-label">{{ reverse() ? fx.currency : fx.base }}</span>
-              <input type="number" inputmode="decimal" min="0" [ngModel]="amount()" (ngModelChange)="setAmount($event)" aria-label="Amount" />
+              <input type="number" inputmode="decimal" min="0" [ngModel]="amount()" (ngModelChange)="setAmount($event)" [aria-label]="'Amount' | t" />
             </label>
-            <button class="swap" (click)="flip()" aria-label="Swap currencies"><ion-icon name="swap-vertical" /></button>
+            <button class="swap" (click)="flip()" [aria-label]="'Swap currencies' | t"><ion-icon name="swap-vertical" /></button>
             <div class="out">
               <span class="gm-label">{{ reverse() ? fx.base : fx.currency }}</span>
               <b>{{ converted() | number: (converted()! < 100 ? '1.2-2' : '1.0-0') }}</b>
@@ -160,9 +160,9 @@
       } @else if (info() && !otherCurrency()) {
         <div class="card notice"><ion-icon name="checkmark-circle-outline" /><p>Same currency as at home ({{ homeCurrency() }}).</p></div>
       } @else if (info()) {
-        <div class="card notice"><ion-icon name="cash-outline" /><p>Local currency: {{ country()?.currency?.join(', ') }}. Live exchange rate isn’t available for this currency.</p></div>
+        <div class="card notice"><ion-icon name="cash-outline" /><p>{{ 'Local currency: {code}. Live exchange rate isn’t available for this currency.' | t: { code: country()?.currency?.join(', ') ?? '' } }}</p></div>
       } @else if (infoError()) {
-        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>Exchange rates need an internet connection.</p></div>
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>{{ 'Exchange rates need an internet connection.' | t }}</p></div>
       } @else {
         <gm-skeleton height="120px" radius="14px" />
       }
@@ -170,13 +170,13 @@
 
     <!-- Pack -->
     <section id="ex-pack" class="block">
-      <header><h2>Pack for the weather</h2><small>From the 5-day forecast</small></header>
+      <header><h2>{{ 'Pack for the weather' | t }}</h2><small>{{ 'From the 5-day forecast' | t }}</small></header>
       @if (info(); as d) {
         @if (d.weather; as w) {
           <div class="days card">
             @for (day of w.days; track day.date; let i = $index) {
               <div class="day" [style.--i]="i">
-                <span class="gm-label">{{ i === 0 ? 'Today' : weekday(day.date) }}</span>
+                <span class="gm-label">{{ i === 0 ? ('Today' | t) : weekday(day.date) }}</span>
                 <ion-icon [name]="wl(day.code).icon" />
                 <b>{{ day.max }}°</b><small>{{ day.min }}°</small>
               </div>
@@ -185,14 +185,14 @@
         }
         <div class="card list">
           @for (p of packList(); track p.label) {
-            <div class="pack"><ion-icon name="checkmark-outline" /><div><b>{{ p.label }}</b><small>{{ p.why }}</small></div></div>
+            <div class="pack"><ion-icon name="checkmark-outline" /><div><b>{{ p.label | t }}</b><small>{{ p.why | t }}</small></div></div>
           }
         </div>
         @if (tripData()) {
-          <button class="gm-btn full" (click)="addToChecklist(packList())"><ion-icon name="add-circle-outline" /> Add all to trip checklist</button>
+          <button class="gm-btn full" (click)="addToChecklist(packList())"><ion-icon name="add-circle-outline" /> {{ 'Add all to trip checklist' | t }}</button>
         }
       } @else if (infoError()) {
-        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>The forecast needs an internet connection.</p></div>
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>{{ 'The forecast needs an internet connection.' | t }}</p></div>
       } @else {
         <gm-skeleton height="140px" radius="14px" />
       }
@@ -200,32 +200,32 @@
 
     <!-- Essentials -->
     <section id="ex-essentials" class="block">
-      <header><h2>Essentials</h2></header>
+      <header><h2>{{ 'Essentials' | t }}</h2></header>
       @if (country(); as c) {
         <div class="card list">
           @if (c.sos; as sos) {
             <a class="ess" [href]="'tel:' + (sos.general ?? sos.police)">
               <span class="gm-well danger"><ion-icon name="call-outline" /></span>
-              <div><b>Emergency {{ sos.general ?? sos.police }}</b><small>@if (sos.ambulance) {Ambulance {{ sos.ambulance }} · }@if (sos.fire) {Fire {{ sos.fire }}}</small></div>
+              <div><b>{{ 'Emergency {n}' | t: { n: sos.general ?? sos.police ?? '' } }}</b><small>@if (sos.ambulance) { {{ 'Ambulance {n}' | t: { n: sos.ambulance } }} · }@if (sos.fire) { {{ 'Fire {n}' | t: { n: sos.fire } }} }</small></div>
               <ion-icon name="chevron-forward" class="chev" />
             </a>
           }
           @if (c.plugs) {
             <div class="ess">
               <span class="gm-well" [class.warn]="needsAdapter()"><ion-icon name="flash-outline" /></span>
-              <div><b>Type {{ c.plugs }} · {{ c.volts }} V</b><small>{{ needsAdapter() ? 'Bring a plug adapter' : 'Same plugs as at home' }}</small></div>
+              <div><b>{{ 'Type {plugs} · {volts} V' | t: { plugs: c.plugs, volts: c.volts } }}</b><small>{{ needsAdapter() ? ('Bring a plug adapter' | t) : ('Same plugs as at home' | t) }}</small></div>
             </div>
           }
           <div class="ess">
             <span class="gm-well"><ion-icon name="car-outline" /></span>
-            <div><b>Drives on the {{ c.left ? 'left' : 'right' }}</b><small>Look {{ c.left ? 'right' : 'left' }} first when crossing</small></div>
+            <div><b>{{ (c.left ? 'Drives on the left' : 'Drives on the right') | t }}</b><small>{{ (c.left ? 'Look right first when crossing' : 'Look left first when crossing') | t }}</small></div>
           </div>
           <div class="ess">
             <span class="gm-well"><ion-icon name="call-outline" /></span>
-            <div><b>Country code +{{ c.phone[0] }}</b><small>Capital: {{ c.capital || '—' }}</small></div>
+            <div><b>{{ 'Country code +{n}' | t: { n: c.phone[0] } }}</b><small>{{ 'Capital: {city}' | t: { city: c.capital || '—' } }}</small></div>
           </div>
         </div>
-        <p class="hint">Check entry and visa rules with your government’s official travel advice before you go.</p>
+        <p class="hint">{{ 'Check entry and visa rules with your government’s official travel advice before you go.' | t }}</p>
       }
     </section>
     <div class="gm-bottom-spacer"></div>

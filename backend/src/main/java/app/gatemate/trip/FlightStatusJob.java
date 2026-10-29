@@ -1,6 +1,7 @@
 package app.gatemate.trip;
 
 import app.gatemate.alert.AlertService;
+import app.gatemate.common.Messages;
 import app.gatemate.config.GatemateProperties;
 import java.time.Duration;
 import java.time.Instant;
@@ -67,26 +68,27 @@ public class FlightStatusJob {
             if (gate != null && !gate.equals(f.gate)) {
                 boolean changed = f.gate != null;
                 f.gate = gate;
-                alerts.notifyTrip(f.tripId, f.id, "gate", changed ? "Gate change: " + gate : "Gate " + gate + " assigned",
-                        f.flightNumber + " to " + f.toIata + " now departs from gate " + gate + (terminal != null ? ", terminal " + terminal : "") + ".");
+                alerts.notifyTrip(f.tripId, f.id, "gate", l -> Messages.get(l, changed ? "gate.changed" : "gate.assigned", "gate", gate),
+                        l -> Messages.get(l, terminal != null ? "gate.bodyTerminal" : "gate.body", "flight", f.flightNumber, "to", f.toIata, "gate", gate, "terminal", terminal));
             }
             if (terminal != null) f.terminal = terminal;
             if ("Canceled".equalsIgnoreCase(status) || "CanceledUncertain".equalsIgnoreCase(status)) {
                 if (!"cancelled".equals(f.status)) {
                     f.status = "cancelled";
-                    alerts.notifyTrip(f.tripId, f.id, "delay", f.flightNumber + " is cancelled",
-                            "Contact the airline for rebooking. Under EU261 you may be entitled to compensation — see Rights in the app.");
+                    alerts.notifyTrip(f.tripId, f.id, "delay", l -> Messages.get(l, "cancelled.title", "flight", f.flightNumber), l -> Messages.get(l, "cancelled.body"));
                 }
             } else if (revised != null && Duration.between(f.departureAt, revised).toMinutes() >= 15) {
                 long late = Duration.between(f.departureAt, revised).toMinutes();
                 if (!"delayed".equals(f.status)) {
-                    alerts.notifyTrip(f.tripId, f.id, "delay", f.flightNumber + " delayed " + late + " min",
-                            "New estimated departure " + revised.atOffset(ZoneOffset.UTC).toLocalTime() + " UTC.");
+                    String time = revised.atOffset(ZoneOffset.UTC).toLocalTime().toString();
+                    alerts.notifyTrip(f.tripId, f.id, "delay", l -> Messages.get(l, "delayed.title", "flight", f.flightNumber, "min", late), l -> Messages.get(l, "delayed.body", "time", time));
                 }
                 f.status = "delayed";
             } else if ("Boarding".equalsIgnoreCase(status) && !Objects.equals(f.status, "boarding")) {
                 f.status = "boarding";
-                alerts.notifyTrip(f.tripId, f.id, "boarding", "Boarding " + f.flightNumber, "Boarding has started" + (f.gate != null ? " at gate " + f.gate : "") + ".");
+                String atGate = f.gate;
+                alerts.notifyTrip(f.tripId, f.id, "boarding", l -> Messages.get(l, "boarding.title", "flight", f.flightNumber),
+                        l -> atGate != null ? Messages.get(l, "boarding.bodyGate", "gate", atGate) : Messages.get(l, "boarding.body"));
             } else if ("Departed".equalsIgnoreCase(status)) {
                 f.status = "departed";
             }

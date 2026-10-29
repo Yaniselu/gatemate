@@ -10,11 +10,12 @@ import { PressableDirective } from '../../shared/directives/pressable.directive'
 import { ClockPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
 import { CityImageComponent } from '../../shared/components/city-image.component';
 import { PlatformService } from '../../core/services/platform.service';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-trips',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [TranslatePipe, 
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonFab, IonFabButton, IonRefresher, IonRefresherContent,
     RouterLink, SkeletonComponent, AvatarStackComponent, RevealDirective, PressableDirective, ShortDatePipe, ClockPipe, CityImageComponent,
   ],
@@ -48,7 +49,7 @@ export class TripsPage implements OnInit {
     if (start.getTime() <= Date.now()) return 'Happening now';
     const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     const days = Math.round((midnight(start) - midnight(new Date())) / 86_400_000);
-    return days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : `in ${days} days`;
+    return days === 0 ? tr('Today') : days === 1 ? tr('Tomorrow') : tr('in {n} days', { n: days });
   }
 
   verified(t: Trip): boolean {

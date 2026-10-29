@@ -5,6 +5,7 @@ import { AirportDbService } from '../../core/services/airport-db.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 const POOL = ['RO', 'ES', 'FR', 'IT', 'DE', 'GB', 'PT', 'GR', 'NL', 'BE', 'AT', 'CH', 'SE', 'NO', 'DK', 'FI', 'IE', 'PL', 'CZ', 'HU', 'BG', 'HR',
   'US', 'CA', 'MX', 'BR', 'AR', 'CL', 'JP', 'KR', 'CN', 'IN', 'TH', 'VN', 'ID', 'AU', 'NZ', 'ZA', 'EG', 'MA', 'TR', 'AE', 'IL', 'IS', 'MD', 'UA', 'CY', 'MT', 'SG', 'PE'];
@@ -15,20 +16,20 @@ const flag = (cc: string) => String.fromCodePoint(...[...cc].map((c) => 0x1f1e6 
 @Component({
   selector: 'gm-flags',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Flag Quiz</ion-title>
+        <ion-title>{{ 'Flag Quiz' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
-          <div class="card"><span class="gm-label">Round</span><b>{{ Math.min(round() + 1, rounds) }}/{{ rounds }}</b></div>
-          <div class="card"><span class="gm-label">Correct</span><b>{{ correct() }}</b></div>
-          <div class="card"><span class="gm-label">Best</span><b>{{ best() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Round' | t }}</span><b>{{ Math.min(round() + 1, rounds) }}/{{ rounds }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Correct' | t }}</span><b>{{ correct() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Best' | t }}</span><b>{{ best() }}</b></div>
         </div>
         @if (round() < rounds) {
           @if (q(); as qq) {
@@ -45,8 +46,8 @@ const flag = (cc: string) => String.fromCodePoint(...[...cc].map((c) => 0x1f1e6 
           <div class="end card">
             <div class="big">{{ correct() >= 8 ? '🏆' : correct() >= 5 ? '🌍' : '🧭' }}</div>
             <h2>{{ correct() }}/{{ rounds }} flags</h2>
-            <p>{{ correct() >= 8 ? 'True globetrotter!' : 'Every trip makes you better at this.' }}</p>
-            <button class="gm-btn" (click)="start()"><ion-icon name="refresh-outline" /> Play again</button>
+            <p>{{ correct() >= 8 ? ('True globetrotter!' | t) : ('Every trip makes you better at this.' | t) }}</p>
+            <button class="gm-btn" (click)="start()"><ion-icon name="refresh-outline" /> {{ 'Play again' | t }}</button>
           </div>
         }
       </div>

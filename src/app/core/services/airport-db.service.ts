@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { locale } from '../i18n/i18n.service';
 
 export interface AirportRecord {
   iata: string;
@@ -64,9 +65,18 @@ export class AirportDbService {
     return this.countries[code];
   }
 
+  /** Country name in the app's language (the bundled English name when the browser has no translation). */
   countryName(code: string): string {
-    return this.countries[code]?.name ?? code;
+    const en = this.countries[code]?.name ?? code;
+    if (locale().startsWith('en') || !/^[A-Z]{2}$/.test(code)) return en;
+    try {
+      this.regionNames ??= new Intl.DisplayNames([locale()], { type: 'region' });
+      return this.regionNames.of(code) ?? en;
+    } catch {
+      return en;
+    }
   }
+  private regionNames?: Intl.DisplayNames;
 
   /** Code match first, then city, then airport name / country; larger airports rank higher. */
   search(query: string, limit = 25): AirportRecord[] {

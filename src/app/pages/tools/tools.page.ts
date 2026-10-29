@@ -9,6 +9,7 @@ import { TravelStore } from '../../core/services/travel.store';
 import { PlatformService } from '../../core/services/platform.service';
 import { AirportPickerComponent } from '../../shared/components/airport-picker.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { locale, t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Tool = 'money' | 'time' | 'cabin' | 'distance';
 type PickTarget = 'home' | 'away' | 'from' | 'to';
@@ -34,7 +35,7 @@ const CABIN_RULES: CabinRule[] = [
 @Component({
   selector: 'gm-tools',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonContent, IonIcon, FormsModule, DecimalPipe, AirportPickerComponent, RevealDirective],
+  imports: [TranslatePipe, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonContent, IonIcon, FormsModule, DecimalPipe, AirportPickerComponent, RevealDirective],
   templateUrl: './tools.page.html',
   styleUrl: './tools.page.scss',
 })
@@ -80,7 +81,7 @@ export class ToolsPage {
     return h && a ? tzOffset(a.tz, this.now()) - tzOffset(h.tz, this.now()) : 0;
   });
   readonly awayHour = computed(() => (((this.hour() + this.offsetH()) % 24) + 24) % 24);
-  readonly clock = (tz: string) => new Date(this.now()).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz });
+  readonly clock = (tz: string) => new Date(this.now()).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', timeZone: tz });
   readonly jetlag = computed(() => {
     const d = this.offsetH();
     const abs = Math.abs(d);
@@ -88,12 +89,12 @@ export class ToolsPage {
     const east = d > 0;
     const days = Math.min(3, Math.ceil(abs / 2));
     const steps = [
-      `${days} day${days > 1 ? 's' : ''} before: go to bed and wake up ${east ? 'about an hour earlier' : 'about an hour later'} each day.`,
-      `On the flight: set your watch to ${this.away()?.city} time and sleep only if it’s night there.`,
+      days > 1 ? tr(east ? '{n} days before: go to bed and wake up about an hour earlier each day.' : '{n} days before: go to bed and wake up about an hour later each day.', { n: days }) : tr(east ? '1 day before: go to bed and wake up about an hour earlier.' : '1 day before: go to bed and wake up about an hour later.'),
+      tr('On the flight: set your watch to {city} time and sleep only if it’s night there.', { city: this.away()?.city ?? '' }),
       east
-        ? 'On arrival: get outdoor light in the morning, avoid bright light late in the evening.'
-        : 'On arrival: get outdoor light in the late afternoon and evening; stay up until local bedtime.',
-      'Short naps only (under 30 min) and no caffeine after 2 pm local time.',
+        ? tr('On arrival: get outdoor light in the morning, avoid bright light late in the evening.')
+        : tr('On arrival: get outdoor light in the late afternoon and evening; stay up until local bedtime.'),
+      tr('Short naps only (under 30 min) and no caffeine after 2 pm local time.'),
     ];
     return { level: abs >= 6 ? ('strong' as const) : ('mild' as const), days, steps, east, recovery: Math.round(abs / (east ? 1 : 1.5)) };
   });
@@ -175,7 +176,7 @@ export class ToolsPage {
 
   currencyName(code: string) {
     try {
-      return new Intl.DisplayNames(['en'], { type: 'currency' }).of(code) ?? code;
+      return new Intl.DisplayNames([locale()], { type: 'currency' }).of(code) ?? code;
     } catch {
       return code;
     }

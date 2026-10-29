@@ -1,9 +1,9 @@
 <ion-header class="gm-glass-header" [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <button class="back-btn" (click)="back()" aria-label="Back"><ion-icon name="chevron-back" /></button>
+      <button class="back-btn" (click)="back()" [aria-label]="'Back' | t"><ion-icon name="chevron-back" /></button>
     </ion-buttons>
-    <ion-title>Add a booking</ion-title>
+    <ion-title>{{ 'Add a booking' | t }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -13,18 +13,18 @@
     @switch (step()) {
       @case ('choose') {
         <div class="intro anim-fade-up">
-          <h1>Bring your trip in</h1>
-          <p>Import a booking from any airline. We check the ticket is <b>in your name</b> before adding it, so nobody can add someone else’s flight.</p>
+          <h1>{{ 'Bring your trip in' | t }}</h1>
+          <p>{{ 'Import a booking from any airline. We check the ticket is' | t }} <b>{{ 'in your name' | t }}</b> {{ 'before adding it, so nobody can add someone else’s flight.' | t }}</p>
         </div>
 
         @if (!hasLegalName()) {
           <a class="legal-warn card anim-fade-up" routerLink="/profile/edit">
             <span class="gm-well accent"><ion-icon name="id-card-outline" /></span>
-            <div><b>Add your name as on your passport</b><small>Needed to verify tickets belong to you.</small></div>
+            <div><b>{{ 'Add your name as on your passport' | t }}</b><small>{{ 'Needed to verify tickets belong to you.' | t }}</small></div>
             <ion-icon name="chevron-forward" class="chev" />
           </a>
         } @else {
-          <div class="who anim-fade-up"><ion-icon name="shield-checkmark" /> Verifying tickets for <b>{{ legalName() }}</b> <a routerLink="/profile/edit">Edit</a></div>
+          <div class="who anim-fade-up"><ion-icon name="shield-checkmark" /> {{ 'Verifying tickets for' | t }} <b>{{ legalName() }}</b> <a routerLink="/profile/edit">{{ 'Edit' | t }}</a></div>
         }
 
         <div class="methods">
@@ -32,28 +32,28 @@
             <button class="method card" [gmReveal]="i" gmPressable (click)="choose(m.id)" [disabled]="!hasLegalName()">
               <span class="gm-well" [class.accent]="i === 0"><ion-icon [name]="m.icon" /></span>
               <div class="txt">
-                <b>{{ m.title }} @if (m.badge) { <em>{{ m.badge }}</em> }</b>
-                <small>{{ m.body }}</small>
+                <b>{{ m.title | t }} @if (m.badge) { <em>{{ m.badge | t }}</em> }</b>
+                <small>{{ m.body | t }}</small>
               </div>
               <ion-icon name="chevron-forward" class="chev" />
             </button>
           }
         </div>
 
-        <button class="manual-link" (click)="step.set('manual')">Enter flight details manually <small>(unverified)</small></button>
+        <button class="manual-link" (click)="step.set('manual')">{{ 'Enter flight details manually' | t }} <small>{{ '(unverified)' | t }}</small></button>
 
         <div class="privacy">
           <ion-icon name="lock-closed-outline" />
-          <p>We never ask for your airline account password. Barcodes are read on your phone; only the flight details are sent, encrypted.</p>
+          <p>{{ 'We never ask for your airline account password. Barcodes are read on your phone; only the flight details are sent, encrypted.' | t }}</p>
         </div>
       }
 
       @case ('airline') {
         <div class="anim-fade-up">
-          <h2 class="h">Which airline?</h2>
+          <h2 class="h">{{ 'Which airline?' | t }}</h2>
           <div class="search card">
             <ion-icon name="search-outline" />
-            <input type="search" placeholder="Search airlines" maxlength="40" [value]="airlineQuery()" (input)="airlineQuery.set($any($event.target).value)" aria-label="Search airlines" />
+            <input type="search" [placeholder]="'Search airlines' | t" maxlength="40" [value]="airlineQuery()" (input)="airlineQuery.set($any($event.target).value)" [aria-label]="'Search airlines' | t" />
           </div>
           <div class="airlines">
             @for (a of filteredAirlines(); track a.code; let i = $index) {
@@ -67,17 +67,17 @@
 
           @if (airline(); as a) {
             <form class="booking card anim-scale-in" [formGroup]="bookingForm" (ngSubmit)="lookupBooking()" novalidate>
-              <span class="gm-label">{{ a.name }} booking</span>
+              <span class="gm-label">{{ '{airline} booking' | t: { airline: a.name } }}</span>
               <div class="gm-field" [class.invalid]="bookingForm.controls.bookingRef.invalid && submitted()">
-                <label for="pnr">Booking reference</label>
-                <div class="gm-input-wrap"><ion-icon name="ticket-outline" /><input id="pnr" formControlName="bookingRef" placeholder="e.g. K7Q2MX" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" (input)="normalize('booking', 'bookingRef', $event)" /></div>
-                @if (bookingForm.controls.bookingRef.invalid && submitted()) { <span class="gm-error">6 letters or numbers, as on your confirmation.</span> }
+                <label for="pnr">{{ 'Booking reference' | t }}</label>
+                <div class="gm-input-wrap"><ion-icon name="ticket-outline" /><input id="pnr" formControlName="bookingRef" [placeholder]="'e.g. K7Q2MX' | t" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" (input)="normalize('booking', 'bookingRef', $event)" /></div>
+                @if (bookingForm.controls.bookingRef.invalid && submitted()) { <span class="gm-error">{{ '6 letters or numbers, as on your confirmation.' | t }}</span> }
               </div>
               <div class="gm-field" [class.invalid]="bookingForm.controls.lastName.invalid && submitted()">
-                <label for="ln">Passenger last name</label>
+                <label for="ln">{{ 'Passenger last name' | t }}</label>
                 <div class="gm-input-wrap"><ion-icon name="person-outline" /><input id="ln" formControlName="lastName" maxlength="40" autocomplete="family-name" /></div>
               </div>
-              <button class="gm-btn" type="submit"><ion-icon name="shield-checkmark-outline" /> Find & verify booking</button>
+              <button class="gm-btn" type="submit"><ion-icon name="shield-checkmark-outline" /> {{ 'Find & verify booking' | t }}</button>
             </form>
           }
         </div>
@@ -86,15 +86,15 @@
       @case ('email') {
         <div class="email anim-fade-up">
           <div class="env-art" aria-hidden="true"><ion-icon name="mail-outline" /><span class="fly"><ion-icon name="paper-plane-outline" /></span></div>
-          <h2 class="h center">Add it from the e-mail</h2>
-          <p class="center muted">Open the airline’s confirmation e-mail, select all the text, copy it and paste it here. We read every flight in the booking.</p>
+          <h2 class="h center">{{ 'Add it from the e-mail' | t }}</h2>
+          <p class="center muted">{{ 'Open the airline’s confirmation e-mail, select all the text, copy it and paste it here. We read every flight in the booking.' | t }}</p>
 
           <div class="paste card">
-            <textarea rows="6" placeholder="Paste the confirmation e-mail here…" [value]="emailText()" (input)="setEmailText($any($event.target).value)" aria-label="Confirmation e-mail text"></textarea>
+            <textarea rows="6" [placeholder]="'Paste the confirmation e-mail here…' | t" [value]="emailText()" (input)="setEmailText($any($event.target).value)" [aria-label]="'Confirmation e-mail text' | t"></textarea>
             <div class="paste-actions">
-              <button class="gm-btn ghost small" (click)="pasteEmail()"><ion-icon name="clipboard-outline" /> Paste</button>
+              <button class="gm-btn ghost small" (click)="pasteEmail()"><ion-icon name="clipboard-outline" /> {{ 'Paste' | t }}</button>
               <button class="gm-btn small" (click)="readEmail()" [disabled]="emailBusy() || !emailText().trim()">
-                @if (emailBusy()) { <span class="spinner"></span> Reading… } @else { <ion-icon name="sparkles-outline" /> Find flights }
+                @if (emailBusy()) { <span class="spinner"></span> {{ 'Reading…' | t }} } @else { <ion-icon name="sparkles-outline" /> {{ 'Find flights' | t }} }
               </button>
             </div>
           </div>
@@ -122,17 +122,17 @@
           }
 
           <div class="forward">
-            <span class="gm-label">Or forward it</span>
+            <span class="gm-label">{{ 'Or forward it' | t }}</span>
             @switch (forwardState()) {
               @case ('ready') {
-                <p class="muted">Forward the e-mail from <b>{{ auth.user()?.email }}</b> to your private address. We check it really came from you, then the trip appears here.</p>
+                <p class="muted">{{ 'Forward the e-mail from' | t }} <b>{{ auth.user()?.email }}</b> {{ 'to your private address. We check it really came from you, then the trip appears here.' | t }}</p>
                 <div class="addr glass" gmSheen>
                   <span class="selectable">{{ importEmail() }}</span>
-                  <button class="gm-btn small" (click)="copyEmail()"><ion-icon name="copy-outline" /> Copy</button>
+                  <button class="gm-btn small" (click)="copyEmail()"><ion-icon name="copy-outline" /> {{ 'Copy' | t }}</button>
                 </div>
               }
-              @case ('loading') { <p class="muted">Getting your private address…</p> }
-              @default { <p class="muted">Forwarding to a private address isn’t switched on for this server yet. Pasting works right away.</p> }
+              @case ('loading') { <p class="muted">{{ 'Getting your private address…' | t }}</p> }
+              @default { <p class="muted">{{ 'Forwarding to a private address isn’t switched on for this server yet. Pasting works right away.' | t }}</p> }
             }
           </div>
         </div>
@@ -140,37 +140,37 @@
 
       @case ('manual') {
         <form class="anim-fade-up" [formGroup]="manualForm" (ngSubmit)="saveManual()" novalidate>
-          <div class="unverified"><ion-icon name="warning-outline" /> Manual flights are marked <b>unverified</b> and don’t include baggage. Import the booking later to verify.</div>
+          <div class="unverified"><ion-icon name="warning-outline" /> {{ 'Manual flights are marked' | t }} <b>{{ 'unverified' | t }}</b> {{ 'and don’t include baggage. Import the booking later to verify.' | t }}</div>
           <div class="grid">
             <div class="gm-field" [class.invalid]="manualForm.controls.carrier.invalid && submitted()">
-              <label for="carrier">Airline code</label>
+              <label for="carrier">{{ 'Airline code' | t }}</label>
               <div class="gm-input-wrap"><input id="carrier" formControlName="carrier" placeholder="W6" maxlength="3" (input)="normalize('manual', 'carrier', $event)" /></div>
             </div>
             <div class="gm-field" [class.invalid]="manualForm.controls.flightNumber.invalid && submitted()">
-              <label for="fn">Flight no.</label>
+              <label for="fn">{{ 'Flight no.' | t }}</label>
               <div class="gm-input-wrap"><input id="fn" formControlName="flightNumber" placeholder="3121" maxlength="5" inputmode="numeric" (input)="normalize('manual', 'flightNumber', $event)" /></div>
             </div>
           </div>
           <div class="grid route">
             <div class="gm-field" [class.invalid]="manualForm.controls.from.invalid && submitted()">
-              <label for="from">From</label>
-              <div class="gm-input-wrap"><input id="from" formControlName="from" placeholder="OTP" maxlength="3" (input)="normalize('manual', 'from', $event)" /></div>
+              <label for="from">{{ 'From' | t }}</label>
+              <div class="gm-input-wrap"><input id="from" formControlName="from" [placeholder]="'OTP' | t" maxlength="3" (input)="normalize('manual', 'from', $event)" /></div>
             </div>
             <span class="swap"><ion-icon name="swap-horizontal" /></span>
             <div class="gm-field" [class.invalid]="manualForm.controls.to.invalid && submitted()">
-              <label for="to">To</label>
-              <div class="gm-input-wrap"><input id="to" formControlName="to" placeholder="FCO" maxlength="3" (input)="normalize('manual', 'to', $event)" /></div>
+              <label for="to">{{ 'To' | t }}</label>
+              <div class="gm-input-wrap"><input id="to" formControlName="to" [placeholder]="'FCO' | t" maxlength="3" (input)="normalize('manual', 'to', $event)" /></div>
             </div>
           </div>
           <div class="gm-field">
-            <label for="date">Departure (local time)</label>
+            <label for="date">{{ 'Departure (local time)' | t }}</label>
             <div class="gm-input-wrap"><ion-icon name="calendar-outline" /><input id="date" type="datetime-local" formControlName="date" /></div>
           </div>
           <div class="gm-field" [class.invalid]="manualForm.controls.seat.invalid && submitted()">
-            <label for="seat">Seat (optional)</label>
+            <label for="seat">{{ 'Seat (optional)' | t }}</label>
             <div class="gm-input-wrap"><input id="seat" formControlName="seat" placeholder="12A" maxlength="4" (input)="normalize('manual', 'seat', $event)" /></div>
           </div>
-          <button class="gm-btn" type="submit" [disabled]="busy()">Save flight</button>
+          <button class="gm-btn" type="submit" [disabled]="busy()">{{ 'Save flight' | t }}</button>
         </form>
       }
 
@@ -180,7 +180,7 @@
             <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>
             <ion-icon name="shield-outline" />
           </div>
-          <h2 class="h center">Verifying it’s yours</h2>
+          <h2 class="h center">{{ 'Verifying it’s yours' | t }}</h2>
           <ul class="checks" aria-live="polite">
             @for (c of checks(); track c.label) {
               <li [attr.data-state]="c.state">
@@ -191,7 +191,7 @@
                     @case ('run') { <i class="spin"></i> }
                   }
                 </span>
-                {{ c.label }}
+                {{ c.label | t }}
               </li>
             }
           </ul>
@@ -203,33 +203,33 @@
           <div class="done-screen">
             @let st = t.flights[0].verification?.status;
             <div class="badge-ok"><ion-icon [name]="st === 'verified' ? 'shield-checkmark' : 'airplane'" /></div>
-            <h2 class="h center">{{ st === 'verified' ? 'Ticket verified' : t.flights.length > 1 ? t.flights.length + ' flights added' : 'Flight added' }}</h2>
-            <p class="center muted">{{ st === 'verified' ? 'It’s in your name and now linked only to your account.' : st === 'pending' ? 'Your name is on the booking. It’s linked only to your account.' : 'We couldn’t confirm your name on it, so it’s marked unverified.' }}</p>
+            <h2 class="h center">{{ st === 'verified' ? ('Ticket verified' | t) : t.flights.length > 1 ? ('{n} flights added' | t: { n: t.flights.length }) : ('Flight added' | t) }}</h2>
+            <p class="center muted">{{ st === 'verified' ? ('It’s in your name and now linked only to your account.' | t) : st === 'pending' ? ('Your name is on the booking. It’s linked only to your account.' | t) : ('We couldn’t confirm your name on it, so it’s marked unverified.' | t) }}</p>
             @for (f of t.flights; track f.id) {
               <div class="ticket card" gmSheen="2">
                 <div class="t-row">
                   <div><span class="gm-label">{{ f.airline }} · {{ f.number }}</span><b class="route">{{ f.from.code }} <ion-icon name="airplane" /> {{ f.to.code }}</b></div>
                   @if (f.verification?.status === 'verified') {
-                    <span class="gm-chip success"><ion-icon name="checkmark" /> Verified</span>
+                    <span class="gm-chip success"><ion-icon name="checkmark" /> {{ 'Verified' | t }}</span>
                   } @else {
-                    <span class="gm-chip neutral">{{ f.verification?.status === 'pending' ? 'Name matched' : 'Unverified' }}</span>
+                    <span class="gm-chip neutral">{{ f.verification?.status === 'pending' ? ('Name matched' | t) : ('Unverified' | t) }}</span>
                   }
                 </div>
                 <div class="t-facts">
-                  <span><span class="gm-label">Passenger</span>{{ f.passengerName }}</span>
-                  <span><span class="gm-label">Seat</span>{{ f.seat || '—' }}</span>
-                  <span><span class="gm-label">Departs</span>{{ f.departure | shortDate: false : f.from.timezone }} {{ f.departure | clock: f.from.timezone }}</span>
+                  <span><span class="gm-label">{{ 'Passenger' | t }}</span>{{ f.passengerName }}</span>
+                  <span><span class="gm-label">{{ 'Seat' | t }}</span>{{ f.seat || '—' }}</span>
+                  <span><span class="gm-label">{{ 'Departs' | t }}</span>{{ f.departure | shortDate: false : f.from.timezone }} {{ f.departure | clock: f.from.timezone }}</span>
                 </div>
                 @if (f.baggage; as b) {
                   <div class="t-bags">
-                    <span><ion-icon name="bag-handle-outline" /> Personal item</span>
-                    <span [class.off]="!b.cabinBag"><ion-icon name="briefcase-outline" /> {{ b.cabinBag ? 'Cabin ' + b.cabinBag.maxKg + ' kg' : 'No cabin bag' }}</span>
-                    <span [class.off]="!b.checked.length"><ion-icon name="cube-outline" /> {{ b.checked.length ? 'Checked ' + b.checked[0].maxKg + ' kg' : 'No checked bag' }}</span>
+                    <span><ion-icon name="bag-handle-outline" /> {{ 'Personal item' | t }}</span>
+                    <span [class.off]="!b.cabinBag"><ion-icon name="briefcase-outline" /> {{ b.cabinBag ? ('Cabin {kg} kg' | t: { kg: b.cabinBag.maxKg }) : ('No cabin bag' | t) }}</span>
+                    <span [class.off]="!b.checked.length"><ion-icon name="cube-outline" /> {{ b.checked.length ? ('Checked {kg} kg' | t: { kg: b.checked[0].maxKg }) : ('No checked bag' | t) }}</span>
                   </div>
                 }
               </div>
             }
-            <button class="gm-btn" (click)="openTrip()"><ion-icon name="arrow-forward" /> Open trip</button>
+            <button class="gm-btn" (click)="openTrip()"><ion-icon name="arrow-forward" /> {{ 'Open trip' | t }}</button>
           </div>
         }
       }
@@ -238,20 +238,20 @@
         @if (failure(); as f) {
           <div class="fail-screen">
             <div class="badge-bad"><ion-icon name="alert-circle" /></div>
-            <h2 class="h center">{{ f.title }}</h2>
-            <p class="center muted">{{ f.body }}</p>
+            <h2 class="h center">{{ f.title | t }}</h2>
+            <p class="center muted">{{ f.body | t }}</p>
             <ul class="checks small">
               @for (c of checks(); track c.label) {
-                <li [attr.data-state]="c.state"><span class="dot">@if (c.state === 'ok') { <ion-icon name="checkmark" /> } @else if (c.state === 'bad') { <ion-icon name="close-outline" /> }</span>{{ c.label }}</li>
+                <li [attr.data-state]="c.state"><span class="dot">@if (c.state === 'ok') { <ion-icon name="checkmark" /> } @else if (c.state === 'bad') { <ion-icon name="close-outline" /> }</span>{{ c.label | t }}</li>
               }
             </ul>
             @if (f.code === 'pro_required') {
-              <button class="gm-btn" (click)="pro.open('trips')"><ion-icon name="sparkles" /> See Gatemate Pro</button>
+              <button class="gm-btn" (click)="pro.open('trips')"><ion-icon name="sparkles" /> {{ 'See Gatemate Pro' | t }}</button>
             }
             @if (f.code === 'name_mismatch' || f.code === 'legal_name_missing') {
-              <a class="gm-btn ghost" routerLink="/profile/edit"><ion-icon name="id-card-outline" /> Check my legal name</a>
+              <a class="gm-btn ghost" routerLink="/profile/edit"><ion-icon name="id-card-outline" /> {{ 'Check my legal name' | t }}</a>
             }
-            <button class="gm-btn" (click)="back()">Try another way</button>
+            <button class="gm-btn" (click)="back()">{{ 'Try another way' | t }}</button>
           </div>
         }
       }

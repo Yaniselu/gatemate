@@ -13,13 +13,14 @@ import { RouteMapComponent } from '../../shared/components/route-map.component';
 import { CountUpDirective } from '../../shared/directives/count-up.directive';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Period = 'all' | number;
 
 @Component({
   selector: 'gm-passport',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonContent, IonIcon, RouterLink, DecimalPipe, RouteMapComponent, CountUpDirective, RevealDirective, PressableDirective],
+  imports: [TranslatePipe, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonContent, IonIcon, RouterLink, DecimalPipe, RouteMapComponent, CountUpDirective, RevealDirective, PressableDirective],
   templateUrl: './passport.page.html',
   styleUrl: './passport.page.scss',
 })
@@ -54,8 +55,8 @@ export class PassportPage {
   readonly fact = computed(() => {
     const s = this.summary();
     if (!s.flights) return '';
-    if (s.laps >= 1) return `That’s ${s.laps.toFixed(1)}× around the Earth.`;
-    if (s.km >= 400) return `That’s ${Math.max(1, Math.round(s.laps * 100))}% of the way around the Earth.`;
+    if (s.laps >= 1) return tr('That’s {n}× around the Earth.', { n: s.laps.toFixed(1) });
+    if (s.km >= 400) return tr('That’s {n}% of the way around the Earth.', { n: Math.max(1, Math.round(s.laps * 100)) });
     return '';
   });
 

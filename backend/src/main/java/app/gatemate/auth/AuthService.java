@@ -61,6 +61,7 @@ public class AuthService {
         String[] parts = u.displayName.split("\\s+", 2);
         u.legalFirstName = parts[0];
         u.legalLastName = parts.length > 1 ? parts[1] : null;
+        u.lang = app.gatemate.common.Messages.lang(r.lang());
         users.save(u);
         return tokens.issue(u);
     }
@@ -134,7 +135,7 @@ public class AuthService {
             pr.expiresAt = Instant.now().plus(Duration.ofMinutes(30));
             resets.save(pr);
             try {
-                mail.sendPasswordResetCode(u.email, u.displayName, code);
+                mail.sendPasswordResetCode(u.email, u.displayName, code, u.lang);
             } catch (ApiException e) {
                 // Same answer either way, so the response never reveals whether the account exists.
             }

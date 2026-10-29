@@ -9,17 +9,18 @@ import { NetworkService } from './core/services/network.service';
 import { AppLockService } from './core/security/app-lock.service';
 import { LockScreenComponent } from './shared/components/lock-screen.component';
 import { BadgeToastComponent } from './shared/components/badge-toast.component';
+import { TranslatePipe } from './core/i18n/i18n.service';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonApp, IonIcon, IonRouterOutlet, LockScreenComponent, BadgeToastComponent],
+  imports: [TranslatePipe, IonApp, IonIcon, IonRouterOutlet, LockScreenComponent, BadgeToastComponent],
   template: `
     <ion-app>
       <div class="gm-ambient" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>
       <ion-router-outlet />
       @if (!net.online()) {
-        <div class="gm-offline" role="status"><ion-icon name="cloud-offline-outline" /> Offline · your trips and passes are saved on this phone</div>
+        <div class="gm-offline" role="status"><ion-icon name="cloud-offline-outline" /> {{ 'Offline · your trips and passes are saved on this phone' | t }}</div>
       }
       <gm-badge-toast />
       @if (lock.locked()) {

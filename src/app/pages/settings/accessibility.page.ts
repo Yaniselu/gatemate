@@ -2,44 +2,45 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToggle, IonToolbar } from '@ionic/angular/standalone';
 import { PrefsService } from '../../core/services/prefs.service';
 import { PlatformService } from '../../core/services/platform.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-accessibility',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonToggle],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonToggle],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Accessibility</ion-title>
+        <ion-title>{{ 'Accessibility' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
-        <span class="gm-label">Text size</span>
+        <span class="gm-label">{{ 'Text size' | t }}</span>
         <div class="sizes card">
           @for (s of sizes; track s.v) {
             <button [class.on]="prefs.textScale() === s.v" (click)="set({ textScale: s.v })" [attr.aria-pressed]="prefs.textScale() === s.v">
-              <span [style.font-size.px]="15 * s.v">Aa</span><small>{{ s.label }}</small>
+              <span [style.font-size.px]="15 * s.v">{{ 'Aa' | t }}</span><small>{{ s.label | t }}</small>
             </button>
           }
         </div>
-        <p class="preview card">Boarding for flight W6 3121 to Rome starts at gate B12 in 15 minutes.</p>
+        <p class="preview card">{{ 'Boarding for flight W6 3121 to Rome starts at gate B12 in 15 minutes.' | t }}</p>
 
-        <span class="gm-label">Display</span>
+        <span class="gm-label">{{ 'Display' | t }}</span>
         <div class="group card">
           <div class="row">
             <span class="gm-well accent"><ion-icon name="contrast-outline" /></span>
-            <div class="grow"><b>High contrast</b><small>Darker text, stronger borders, solid backgrounds</small></div>
-            <ion-toggle [checked]="prefs.highContrast()" (ionChange)="set({ highContrast: $event.detail.checked })" aria-label="High contrast" />
+            <div class="grow"><b>{{ 'High contrast' | t }}</b><small>{{ 'Darker text, stronger borders, solid backgrounds' | t }}</small></div>
+            <ion-toggle [checked]="prefs.highContrast()" (ionChange)="set({ highContrast: $event.detail.checked })" [aria-label]="'High contrast' | t" />
           </div>
           <div class="row">
             <span class="gm-well accent"><ion-icon name="pause-outline" /></span>
-            <div class="grow"><b>Reduce motion</b><small>Turns off animations and parallax</small></div>
-            <ion-toggle [checked]="prefs.reduceMotion()" (ionChange)="set({ reduceMotion: $event.detail.checked })" aria-label="Reduce motion" />
+            <div class="grow"><b>{{ 'Reduce motion' | t }}</b><small>{{ 'Turns off animations and parallax' | t }}</small></div>
+            <ion-toggle [checked]="prefs.reduceMotion()" (ionChange)="set({ reduceMotion: $event.detail.checked })" [aria-label]="'Reduce motion' | t" />
           </div>
         </div>
-        <p class="note">Gatemate also follows your phone’s Reduce Motion, VoiceOver/TalkBack and Bold Text settings.</p>
+        <p class="note">{{ 'Gatemate also follows your phone’s Reduce Motion, VoiceOver/TalkBack and Bold Text settings.' | t }}</p>
       </div>
     </ion-content>
   `,

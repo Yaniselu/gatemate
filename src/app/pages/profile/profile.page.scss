@@ -403,3 +403,37 @@
 @keyframes gm-stat-float {
   50% { transform: translate(-8px, -6px) scale(1.1); }
 }
+
+button.item {
+  width: 100%;
+  text-align: left;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+.lang-now {
+  margin-left: auto;
+  margin-right: 4px;
+  font-size: 14px;
+  color: var(--gm-ink-3);
+}
+.chev.open { transform: rotate(90deg); }
+.langs {
+  padding: 4px 14px 12px;
+  p { margin: 4px 2px 10px; font-size: 12.5px; color: var(--gm-ink-3); }
+  button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gm-ink);
+    background: none;
+    span { font-size: 20px; }
+    ion-icon { margin-left: auto; color: var(--gm-accent-strong); font-size: 20px; }
+    &.on { background: var(--gm-accent-soft); }
+  }
+}

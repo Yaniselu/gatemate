@@ -19,17 +19,27 @@ import { ReviewService } from '../../core/services/review.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { AirportDbService } from '../../core/services/airport-db.service';
 import { summarize } from '../../core/utils/travel-summary';
+import { I18nService, Lang, LANGUAGES, t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-profile',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, RouterLink, SkeletonComponent, CountUpDirective, RevealDirective, PressableDirective, SheenDirective, ShortDatePipe],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, RouterLink, SkeletonComponent, CountUpDirective, RevealDirective, PressableDirective, SheenDirective, ShortDatePipe],
   templateUrl: './profile.page.html',
   styleUrl: './profile.page.scss',
 })
 export class ProfilePage implements OnInit {
   protected pro = inject(ProService);
   protected auth = inject(AuthService);
+  protected i18n = inject(I18nService);
+  readonly languages = LANGUAGES;
+  readonly langOpen = signal(false);
+  readonly currentLang = computed(() => LANGUAGES.find((l) => l.code === this.i18n.lang()) ?? LANGUAGES[0]);
+
+  setLang(code: Lang) {
+    if (code === this.i18n.lang()) return;
+    void this.i18n.use(code);
+  }
   protected store = inject(TravelStore);
   protected prefs = inject(PrefsService);
   private chat = inject(ChatService);
@@ -92,12 +102,12 @@ export class ProfilePage implements OnInit {
 
   async signOut() {
     const alert = await this.alerts.create({
-      header: 'Sign out?',
-      message: 'Your trips stay safe in your account.',
+      header: tr('Sign out?'),
+      message: tr('Your trips stay safe in your account.'),
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
+        { text: tr('Cancel'), role: 'cancel' },
         {
-          text: 'Sign out',
+          text: tr('Sign out'),
           role: 'destructive',
           handler: () => {
             this.store.reset();
@@ -113,13 +123,13 @@ export class ProfilePage implements OnInit {
   /** App Store guideline 5.1.1(v): accounts created in-app must be deletable in-app. */
   async deleteAccount() {
     const alert = await this.alerts.create({
-      header: 'Delete account',
-      message: (this.pro.isPro() ? 'Deleting your account does not cancel your Gatemate Pro subscription — cancel it in your App Store / Google Play settings first. ' : '') + 'This permanently deletes your profile, trips, boarding passes and messages. Type DELETE to confirm.',
+      header: tr('Delete account'),
+      message: (this.pro.isPro() ? tr('Deleting your account does not cancel your Gatemate Pro subscription — cancel it in your App Store / Google Play settings first.') + ' ' : '') + tr('This permanently deletes your profile, trips, boarding passes and messages. Type DELETE to confirm.'),
       inputs: [{ name: 'confirm', type: 'text', placeholder: 'DELETE', attributes: { autocapitalize: 'characters', maxlength: 10 } }],
       buttons: [
-        { text: 'Cancel', role: 'cancel' },
+        { text: tr('Cancel'), role: 'cancel' },
         {
-          text: 'Delete forever',
+          text: tr('Delete forever'),
           role: 'destructive',
           handler: (data: { confirm?: string }) => {
             if ((data.confirm ?? '').trim().toUpperCase() !== 'DELETE') {

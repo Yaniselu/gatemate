@@ -1,6 +1,6 @@
 <ion-header class="gm-glass-header" [translucent]="true">
   <ion-toolbar>
-    <ion-title>Home</ion-title>
+    <ion-title>{{ 'Home' | t }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -14,16 +14,16 @@
       <div class="top">
         <div class="hello anim-fade-up">
           <span class="gm-label">{{ today }}</span>
-          <h1 class="gm-page-title">{{ greeting() }},<br />{{ auth.firstName() }}</h1>
+          <h1 class="gm-page-title">{{ greeting() | t }},<br />{{ auth.firstName() }}</h1>
         </div>
         <div class="top-actions">
-          <a class="gm-icon-btn" routerLink="/alerts" aria-label="Alerts">
+          <a class="gm-icon-btn" routerLink="/alerts" [aria-label]="'Alerts' | t">
             <ion-icon name="notifications-outline" />
             @if (store.unreadAlerts() > 0) {
               <span class="badge"></span>
             }
           </a>
-          <a class="avatar-btn" routerLink="/profile/edit" aria-label="Edit profile">
+          <a class="avatar-btn" routerLink="/profile/edit" [aria-label]="'Edit profile' | t">
             @if (auth.user()?.avatarUrl) {
               <img [src]="auth.user()!.avatarUrl" alt="" />
             } @else {
@@ -39,7 +39,7 @@
     @if (verifyReminder()) {
       <a class="verify card anim-fade-up" routerLink="/verify-email" gmPressable>
         <span class="gm-well tint" style="--c: #f59e0b"><ion-icon name="mail-unread-outline" /></span>
-        <span class="row-text"><b>Confirm your e-mail</b><small>Type the 6-digit code we sent to {{ auth.user()?.email }}</small></span>
+        <span class="row-text"><b>{{ 'Confirm your e-mail' | t }}</b><small>{{ 'Type the 6-digit code we sent to {email}' | t: { email: auth.user()?.email ?? '' } }}</small></span>
         <ion-icon name="chevron-forward" class="chev" />
       </a>
     }
@@ -53,7 +53,7 @@
         <div class="cover">
           <gm-city-image class="hero-bg" [code]="n.flight.to.code" [src]="n.flight.to.imageUrl" [alt]="n.flight.to.city" />
           <div class="cover-txt">
-            <span>Next flight</span>
+            <span>{{ 'Next flight' | t }}</span>
             <b>{{ n.flight.to.city }}</b>
           </div>
         </div>
@@ -68,7 +68,7 @@
             </div>
             <div class="badges">
               @if (n.flight.verification?.status === 'verified') {
-                <span class="verified" title="Ticket verified as yours"><ion-icon name="shield-checkmark" /></span>
+                <span class="verified" [title]="'Ticket verified as yours' | t"><ion-icon name="shield-checkmark" /></span>
               }
               <span class="status" [attr.data-status]="n.flight.status"><span class="gm-dot live"></span>{{ n.flight.status | flightStatus }}</span>
             </div>
@@ -88,13 +88,13 @@
 
           <div class="board">
             <div class="count">
-              <span class="gm-label light">Boarding in</span>
-              <gm-countdown [target]="n.flight.boardingTime" doneLabel="Boarding now" />
+              <span class="gm-label light">{{ 'Boarding in' | t }}</span>
+              <gm-countdown [target]="n.flight.boardingTime" [doneLabel]="'Boarding now' | t" />
             </div>
             <div class="facts">
-              <span><span class="gm-label light">Gate</span><b>{{ n.flight.gate ?? 'TBA' }}</b></span>
-              <span><span class="gm-label light">Term.</span><b>{{ n.flight.terminal ?? '—' }}</b></span>
-              <span><span class="gm-label light">Seat</span><b>{{ n.flight.seat ?? '—' }}</b></span>
+              <span><span class="gm-label light">{{ 'Gate' | t }}</span><b>{{ n.flight.gate ?? ('TBA' | t) }}</b></span>
+              <span><span class="gm-label light">{{ 'Term.' | t }}</span><b>{{ n.flight.terminal ?? '—' }}</b></span>
+              <span><span class="gm-label light">{{ 'Seat' | t }}</span><b>{{ n.flight.seat ?? '—' }}</b></span>
             </div>
           </div>
 
@@ -102,7 +102,7 @@
             <div class="bar"><span></span></div>
             @for (s of steps; track s; let i = $index) {
               <div class="step" [class.done]="i < stepIndex()" [class.current]="i === stepIndex()">
-                <i></i><small>{{ s }}</small>
+                <i></i><small>{{ s | t }}</small>
               </div>
             }
           </div>
@@ -111,9 +111,9 @@
     } @else {
       <div class="empty-hero card anim-scale-in">
         <div class="float-plane"><ion-icon name="airplane" /></div>
-        <h3>No upcoming flights</h3>
-        <p>Import your booking and Gatemate verifies it's yours, then sends gate and boarding alerts.</p>
-        <a class="gm-btn small" routerLink="/add-flight"><ion-icon name="add" /> Add a booking</a>
+        <h3>{{ 'No upcoming flights' | t }}</h3>
+        <p>{{ 'Import your booking and Gatemate verifies it’s yours, then sends gate and boarding alerts.' | t }}</p>
+        <a class="gm-btn small" routerLink="/add-flight"><ion-icon name="add" /> {{ 'Add a booking' | t }}</a>
       </div>
     }
 
@@ -126,29 +126,29 @@
       @for (a of actions; track a.label; let i = $index) {
         <button class="action" [gmReveal]="i" gmPressable (click)="open(a.link)">
           <span class="gm-well tint" [style.--c]="a.color"><ion-icon [name]="a.icon" /></span>
-          <span class="lbl">{{ a.label }}</span>
+          <span class="lbl">{{ a.label | t }}</span>
         </button>
       }
     </div>
 
     <!-- Bags -->
     @if (next()?.flight?.baggage; as bags) {
-      <div class="gm-section-title"><h2>Your baggage</h2><a (click)="open('bags')">Details</a></div>
+      <div class="gm-section-title"><h2>{{ 'Your baggage' | t }}</h2><a (click)="open('bags')">{{ 'Details' | t }}</a></div>
       <button class="bags card" gmReveal gmPressable (click)="open('bags')">
         <div class="bag">
           <span class="gm-well accent"><ion-icon name="bag-handle-outline" /></span>
-          <b>Personal item</b>
+          <b>{{ 'Personal item' | t }}</b>
           <small>{{ bags.personalItem.dimensionsCm.join(' × ') }} cm</small>
         </div>
         <div class="bag" [class.off]="!bags.cabinBag">
           <span class="gm-well" [class.accent]="bags.cabinBag"><ion-icon name="briefcase-outline" /></span>
-          <b>Cabin bag</b>
-          <small>{{ bags.cabinBag ? bags.cabinBag.maxKg + ' kg · ' + bags.cabinBag.dimensionsCm.join('×') : 'Not included' }}</small>
+          <b>{{ 'Cabin bag' | t }}</b>
+          <small>{{ bags.cabinBag ? bags.cabinBag.maxKg + ' kg · ' + bags.cabinBag.dimensionsCm.join('×') : ('Not included' | t) }}</small>
         </div>
         <div class="bag" [class.off]="!bags.checked.length">
           <span class="gm-well" [class.accent]="bags.checked.length"><ion-icon name="cube-outline" /></span>
-          <b>Checked</b>
-          <small>{{ bags.checked.length ? bags.checked[0].count + ' × ' + bags.checked[0].maxKg + ' kg' : 'Not included' }}</small>
+          <b>{{ 'Checked' | t }}</b>
+          <small>{{ bags.checked.length ? bags.checked[0].count + ' × ' + bags.checked[0].maxKg + ' kg' : ('Not included' | t) }}</small>
         </div>
       </button>
     }
@@ -158,31 +158,31 @@
       @if (next(); as n) {
         <button class="row" gmPressable (click)="open('/explore/' + n.flight.to.code + '?trip=' + n.trip.id)">
           <span class="gm-well tint" style="--c: #0fb5c3"><ion-icon name="compass-outline" /></span>
-          <span class="row-text"><b>Explore {{ n.flight.to.city }}</b><small>Sights, holidays, phrases, money and weather</small></span>
+          <span class="row-text"><b>{{ 'Explore {city}' | t: { city: n.flight.to.city } }}</b><small>{{ 'Sights, holidays, phrases, money and weather' | t }}</small></span>
           <ion-icon name="chevron-forward" class="chev" />
         </button>
       }
       <button class="row" gmPressable (click)="open('/inflight')">
         <span class="gm-well tint" style="--c: #f97316"><ion-icon name="game-controller-outline" /></span>
-        <span class="row-text"><b>In-flight</b><small>7 games, breathing and seat stretches · works offline</small></span>
+        <span class="row-text"><b>{{ 'In-flight' | t }}</b><small>{{ '7 games, breathing and seat stretches · works offline' | t }}</small></span>
         <ion-icon name="chevron-forward" class="chev" />
       </button>
       <button class="row" gmPressable (click)="open('/passport')">
         <span class="gm-well tint" style="--c: #10b981"><ion-icon name="earth" /></span>
-        <span class="row-text"><b>Travel passport</b><small>Your routes on a world map, countries and a card to share</small></span>
+        <span class="row-text"><b>{{ 'Travel passport' | t }}</b><small>{{ 'Your routes on a world map, countries and a card to share' | t }}</small></span>
         <ion-icon name="chevron-forward" class="chev" />
       </button>
       <button class="row" gmPressable (click)="open('/tools')">
         <span class="gm-well tint" style="--c: #8b5cf6"><ion-icon name="construct-outline" /></span>
-        <span class="row-text"><b>Travel tools</b><small>Currency, time zones, jet lag and liquids</small></span>
+        <span class="row-text"><b>{{ 'Travel tools' | t }}</b><small>{{ 'Currency, time zones, jet lag and liquids' | t }}</small></span>
         <ion-icon name="chevron-forward" class="chev" />
       </button>
     </div>
 
     <!-- Live updates -->
     <div class="gm-section-title">
-      <h2>Live updates @if (store.syncedAt()) { <span class="sync" title="Refreshing every minute"><i></i>live</span> }</h2>
-      <a routerLink="/alerts">See all</a>
+      <h2>{{ 'Live updates' | t }} @if (store.syncedAt()) { <span class="sync" [title]="'Refreshing every minute' | t"><i></i>{{ 'live' | t }}</span> }</h2>
+      <a routerLink="/alerts">{{ 'See all' | t }}</a>
     </div>
     <div class="alerts card">
       @if (store.alertsState() !== 'ready') {
@@ -197,8 +197,8 @@
           <div class="alert" [gmReveal]="i" [class.unread]="!a.read">
             <span class="gm-well" [style.color]="alertIcons[a.kind].color"><ion-icon [name]="alertIcons[a.kind].icon" /></span>
             <div class="grow">
-              <div class="t">{{ a.title }}</div>
-              <div class="b">{{ a.body }}</div>
+              <div class="t">{{ a.title | t }}</div>
+              <div class="b">{{ a.body | t }}</div>
             </div>
             <time>{{ a.createdAt | relTime }}</time>
           </div>
@@ -207,19 +207,19 @@
     </div>
 
     <!-- Tips -->
-    <div class="gm-section-title"><h2>Before you fly</h2></div>
+    <div class="gm-section-title"><h2>{{ 'Before you fly' | t }}</h2></div>
     <div class="tips" role="list">
       @for (t of tips; track t.title; let i = $index) {
         <div class="tip card" role="listitem" [gmReveal]="i">
           <span class="gm-well accent"><ion-icon [name]="t.icon" /></span>
-          <h3>{{ t.title }}</h3>
-          <p>{{ t.body }}</p>
+          <h3>{{ t.title | t }}</h3>
+          <p>{{ t.body | t }}</p>
         </div>
       }
     </div>
 
     @if (next(); as n) {
-      <div class="gm-section-title"><h2>{{ n.flight.to.city }} at a glance</h2><a (click)="open('guide')">City guide</a></div>
+      <div class="gm-section-title"><h2>{{ '{city} at a glance' | t: { city: n.flight.to.city } }}</h2><a (click)="open('guide')">{{ 'City guide' | t }}</a></div>
       <button class="dest card" gmReveal gmPressable (click)="open('guide')">
         @if (glance(); as g) {
           <div class="weather">
@@ -231,10 +231,10 @@
             }
           </div>
           <div class="dest-facts">
-            <span><span class="gm-label">Local time</span>{{ n.flight.arrival | clock: n.flight.to.timezone }} on landing</span>
-            <span><span class="gm-label">Currency</span>{{ g.country?.currency?.[0] ?? '—' }}</span>
-            <span><span class="gm-label">Plugs</span>{{ g.country?.plugs ? 'Type ' + g.country?.plugs : '—' }}</span>
-            <span><span class="gm-label">Emergency</span>{{ g.country?.sos?.general ?? g.country?.sos?.police ?? '—' }}</span>
+            <span><span class="gm-label">{{ 'Local time' | t }}</span>{{ '{time} on landing' | t: { time: (n.flight.arrival | clock: n.flight.to.timezone) } }}</span>
+            <span><span class="gm-label">{{ 'Currency' | t }}</span>{{ g.country?.currency?.[0] ?? '—' }}</span>
+            <span><span class="gm-label">{{ 'Plugs' | t }}</span>{{ g.country?.plugs ? ('Type {plugs}' | t: { plugs: g.country?.plugs ?? '' }) : '—' }}</span>
+            <span><span class="gm-label">{{ 'Emergency' | t }}</span>{{ g.country?.sos?.general ?? g.country?.sos?.police ?? '—' }}</span>
           </div>
         } @else {
           <gm-skeleton height="64px" radius="12px" />

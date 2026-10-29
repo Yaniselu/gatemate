@@ -34,10 +34,11 @@ export const ALERT_ICONS: Record<AlertKind, { icon: string; color: string }> = {
 
 import { LiveFlightService } from '../../core/services/live-flight.service';
 import { LiveFlightComponent } from '../../shared/components/live-flight.component';
+import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
 @Component({
   selector: 'gm-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LiveFlightComponent, 
+  imports: [TranslatePipe, LiveFlightComponent, 
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink,
     SkeletonComponent, CountdownComponent, RouteArcComponent, RevealDirective, PressableDirective, CityImageComponent,
     ClockPipe, RelativeTimePipe, FlightStatusPipe,
@@ -63,7 +64,7 @@ export class HomePage implements OnInit {
     const h = new Date(this.now()).getHours();
     return h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
   });
-  readonly today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  readonly today = new Date().toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' });
   readonly next = this.store.nextFlight;
   readonly loading = computed(() => this.store.tripsState() !== 'ready');
   /** Reminder to confirm the e-mail (only when this server can send codes). */

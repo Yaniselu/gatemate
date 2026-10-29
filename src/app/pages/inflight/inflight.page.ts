@@ -7,62 +7,63 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { SheenDirective } from '../../shared/directives/sheen.directive';
 import { DurationPipe } from '../../shared/pipes/time.pipes';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-inflight',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RouterLink, RevealDirective, PressableDirective, SheenDirective, DurationPipe],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RouterLink, RevealDirective, PressableDirective, SheenDirective, DurationPipe],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/home" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>In-flight</ion-title>
+        <ion-title>{{ 'In-flight' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hero glass smoke anim-scale-in" gmSheen="2">
           <div class="stars" aria-hidden="true">@for (s of stars; track $index) { <i [style.left.%]="s.x" [style.top.%]="s.y" [style.animation-delay.s]="s.d"></i> }</div>
-          <span class="gm-label light">Airplane mode friendly</span>
-          <h1>Make the flight fly by</h1>
+          <span class="gm-label light">{{ 'Airplane mode friendly' | t }}</span>
+          <h1>{{ 'Make the flight fly by' | t }}</h1>
           @if (flight(); as f) {
-            <p>{{ f.from.code }} → {{ f.to.code }} · {{ f.durationMinutes | duration }} in the air</p>
+            <p>{{ f.from.code }} → {{ f.to.code }} · {{ '{time} in the air' | t: { time: (f.durationMinutes | duration) } }}</p>
           } @else {
-            <p>Everything here works without Wi-Fi.</p>
+            <p>{{ 'Everything here works without Wi-Fi.' | t }}</p>
           }
           <div class="plane-track" aria-hidden="true"><span class="line"></span><ion-icon name="airplane" /></div>
         </div>
 
-        <div class="gm-section-title"><h2>Games</h2></div>
+        <div class="gm-section-title"><h2>{{ 'Games' | t }}</h2></div>
         <div class="games">
           @for (g of games; track g.link; let i = $index) {
             <a class="game card" [class.wide]="g.wide" [routerLink]="g.link" [gmReveal]="i" gmPressable>
               <div class="art" [style.background]="g.bg"><ion-icon [name]="g.icon" /></div>
-              <b>{{ g.title }}</b>
-              <small>{{ g.desc }}</small>
+              <b>{{ g.title | t }}</b>
+              <small>{{ g.desc | t }}</small>
               @if (g.bestLabel && scores.best()[g.key] !== undefined) {
-                <span class="best"><ion-icon name="trophy-outline" /> {{ g.bestLabel }} {{ scores.best()[g.key] }}</span>
+                <span class="best"><ion-icon name="trophy-outline" /> {{ g.bestLabel | t }} {{ scores.best()[g.key] }}</span>
               }
             </a>
           }
         </div>
 
-        <div class="gm-section-title"><h2>Feel good</h2></div>
+        <div class="gm-section-title"><h2>{{ 'Feel good' | t }}</h2></div>
         <div class="well card">
           @for (w of wellbeing; track w.link; let i = $index) {
             <a class="row" [routerLink]="w.link" [gmReveal]="i" gmPressable>
               <span class="gm-well accent"><ion-icon [name]="w.icon" /></span>
-              <div class="txt"><b>{{ w.title }}</b><small>{{ w.desc }}</small></div>
+              <div class="txt"><b>{{ w.title | t }}</b><small>{{ w.desc | t }}</small></div>
               <ion-icon name="chevron-forward" class="chev" />
             </a>
           }
         </div>
 
-        <div class="gm-section-title"><h2>Beat jet lag</h2></div>
+        <div class="gm-section-title"><h2>{{ 'Beat jet lag' | t }}</h2></div>
         <div class="tips card">
-          @for (t of jetlag; track t) { <p><ion-icon name="checkmark-circle" /> {{ t }}</p> }
+          @for (t of jetlag; track t) { <p><ion-icon name="checkmark-circle" /> {{ t | t }}</p> }
         </div>
-        <p class="disclaimer">Wellbeing content is general guidance, not medical advice. If you feel unwell, tell the cabin crew.</p>
+        <p class="disclaimer">{{ 'Wellbeing content is general guidance, not medical advice. If you feel unwell, tell the cabin crew.' | t }}</p>
       </div>
     </ion-content>
   `,

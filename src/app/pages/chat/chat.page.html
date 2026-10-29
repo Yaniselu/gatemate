@@ -1,8 +1,8 @@
 <ion-header class="gm-glass-header" [translucent]="true">
   <ion-toolbar>
-    <ion-title>Chat</ion-title>
+    <ion-title>{{ 'Chat' | t }}</ion-title>
     <ion-buttons slot="end">
-      <a class="new-pill" routerLink="/chat/new" aria-label="New group"><ion-icon name="add" /> New group</a>
+      <a class="new-pill" routerLink="/chat/new" [aria-label]="'New group' | t"><ion-icon name="add" /> {{ 'New group' | t }}</a>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -15,8 +15,8 @@
   <ion-header collapse="condense" class="gm-glass-header">
     <ion-toolbar>
       <div class="head">
-        <h1 class="gm-page-title anim-fade-up">Chats</h1>
-        <p class="gm-subtitle anim-fade-up" style="animation-delay: 60ms">Plan together with the people you travel with.</p>
+        <h1 class="gm-page-title anim-fade-up">{{ 'Chats' | t }}</h1>
+        <p class="gm-subtitle anim-fade-up" style="animation-delay: 60ms">{{ 'Plan together with the people you travel with.' | t }}</p>
       </div>
     </ion-toolbar>
   </ion-header>
@@ -24,12 +24,12 @@
   <div class="page">
     <div class="search glass">
       <ion-icon name="search-outline" />
-      <input type="search" placeholder="Search chats" maxlength="60" [value]="query()" (input)="onSearch($event)" aria-label="Search chats" />
+      <input type="search" [placeholder]="'Search chats' | t" maxlength="60" [value]="query()" (input)="onSearch($event)" [aria-label]="'Search chats' | t" />
     </div>
 
     <div class="filters">
       @for (f of filters; track f.id) {
-        <button [class.on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.label }}</button>
+        <button [class.on]="filter() === f.id" (click)="setFilter(f.id)">{{ f.label | t }}</button>
       }
     </div>
 
@@ -54,7 +54,7 @@
           </div>
           <div class="grow">
             <div class="row">
-              <b>{{ t.title }}</b>
+              <b>{{ t.title | t }}</b>
               <time>{{ t.lastMessage?.createdAt | relTime }}</time>
             </div>
             <div class="row">
@@ -63,7 +63,7 @@
                   <span class="typing">{{ chat.typing()[t.id] }} is typing<i></i><i></i><i></i></span>
                 } @else {
                   @if (t.lastMessage) {
-                    <span class="who">{{ t.lastMessage.authorId === 'me' ? 'You' : t.lastMessage.authorName.split(' ')[0] }}:</span> {{ t.lastMessage.text }}
+                    <span class="who">{{ t.lastMessage.authorId === 'me' ? ('You' | t) : t.lastMessage.authorName.split(' ')[0] }}:</span> {{ t.lastMessage.text }}
                   }
                 }
               </p>
@@ -78,9 +78,9 @@
       } @empty {
         <div class="gm-empty">
           <ion-icon name="chatbubbles-outline" />
-          <h3>No chats yet</h3>
-          <p>Every trip gets its own group chat. Or start a group now and invite your travel buddies.</p>
-          <a class="gm-btn small" routerLink="/chat/new"><ion-icon name="people-outline" /> Create a group</a>
+          <h3>{{ 'No chats yet' | t }}</h3>
+          <p>{{ 'Every trip gets its own group chat. Or start a group now and invite your travel buddies.' | t }}</p>
+          <a class="gm-btn small" routerLink="/chat/new"><ion-icon name="people-outline" /> {{ 'Create a group' | t }}</a>
         </div>
       }
     }
@@ -88,8 +88,8 @@
     <div class="safety card" gmReveal>
       <ion-icon name="shield-checkmark-outline" />
       <div>
-        <b>Safe & respectful</b>
-        <p>Flight lounges are moderated. Long-press any message to report it or block someone. <a routerLink="/legal/guidelines">Community Guidelines</a></p>
+        <b>{{ 'Safe & respectful' | t }}</b>
+        <p>{{ 'Flight lounges are moderated. Long-press any message to report it or block someone.' | t }} <a routerLink="/legal/guidelines">{{ 'Community Guidelines' | t }}</a></p>
       </div>
     </div>
 

@@ -4,7 +4,7 @@
       <ion-back-button defaultHref="/tabs/trips" text="" icon="chevron-back" />
     </ion-buttons>
     @if (trip(); as t) {
-      <div class="mini-title">{{ t.title }}</div>
+      <div class="mini-title">{{ t.title | t }}</div>
     }
   </ion-toolbar>
 </ion-header>
@@ -18,12 +18,12 @@
     <div class="sheet">
       <div class="title-row anim-fade-up">
         <div>
-          <h1>{{ t.title }}</h1>
+          <h1>{{ t.title | t }}</h1>
           <p>{{ t.startDate | shortDate }} – {{ t.endDate | shortDate }} · {{ t.destination.city }}, {{ t.destination.country }}</p>
         </div>
         <div class="title-side">
           <gm-avatar-stack [people]="t.travellers" />
-          <button class="share-trip" (click)="shareTrip()" [disabled]="sharing()" aria-label="Share trip countdown" gmPressable>
+          <button class="share-trip" (click)="shareTrip()" [disabled]="sharing()" [aria-label]="'Share trip countdown' | t" gmPressable>
             @if (sharing()) { <span class="spinner"></span> } @else { <ion-icon name="share-outline" /> }
           </button>
         </div>
@@ -32,7 +32,7 @@
       <nav class="tabs" role="tablist">
         @for (s of sections; track s.id) {
           <button role="tab" [class.on]="section() === s.id" [attr.aria-selected]="section() === s.id" (click)="select(s.id)">
-            <ion-icon [name]="s.icon" /> {{ s.label }}
+            <ion-icon [name]="s.icon" /> {{ s.label | t }}
           </button>
         }
       </nav>
@@ -63,35 +63,35 @@
                     <i><ion-icon name="airplane" /></i>
                   </div>
                   <div class="tl-point right">
-                    <b>@if (f.verification?.method === 'manual') {<span class="est" title="Estimated from distance">≈</span>}{{ f.arrival | clock: f.to.timezone }}</b>
+                    <b>@if (f.verification?.method === 'manual') {<span class="est" [title]="'Estimated from distance' | t">≈</span>}{{ f.arrival | clock: f.to.timezone }}</b>
                     <span class="code">{{ f.to.code }}</span>
                     <small>{{ f.to.city }}</small>
                   </div>
                 </div>
                 <div class="f-facts">
-                  <span><small>Date</small>{{ f.departure | shortDate: false : f.from.timezone }}</span>
-                  <span><small>Gate</small>{{ f.gate ?? 'TBA' }}</span>
-                  <span><small>Seat</small>{{ f.seat ?? '—' }}</span>
-                  <span><small>Distance</small>{{ f.distanceKm | number }} km</span>
+                  <span><small>{{ 'Date' | t }}</small>{{ f.departure | shortDate: false : f.from.timezone }}</span>
+                  <span><small>{{ 'Gate' | t }}</small>{{ f.gate ?? ('TBA' | t) }}</span>
+                  <span><small>{{ 'Seat' | t }}</small>{{ f.seat ?? '—' }}</span>
+                  <span><small>{{ 'Distance' | t }}</small>{{ f.distanceKm | number }} km</span>
                 </div>
                 @if (f.verification; as v) {
                   <details class="verify" [class.ok]="v.status === 'verified'">
                     <summary>
                       <ion-icon [name]="v.status === 'verified' ? 'shield-checkmark' : 'shield-outline'" />
-                      {{ v.status === 'verified' ? 'Ticket verified as yours' : 'Verification pending' }}
-                      <span class="method">{{ methodLabel(v.method) }}</span>
+                      {{ v.status === 'verified' ? ('Ticket verified as yours' | t) : ('Verification pending' | t) }}
+                      <span class="method">{{ methodLabel(v.method) | t }}</span>
                       <ion-icon name="chevron-down" class="chev" />
                     </summary>
                     <ul>
                       @for (c of v.checks; track c.label) {
-                        <li [class.bad]="!c.ok"><ion-icon [name]="c.ok ? 'checkmark-circle' : 'close-circle'" /> {{ c.label }}</li>
+                        <li [class.bad]="!c.ok"><ion-icon [name]="c.ok ? 'checkmark-circle' : 'close-circle'" /> {{ c.label | t }}</li>
                       }
                     </ul>
                   </details>
                 }
               </div>
             }
-            <a class="gm-btn ghost" routerLink="/add-flight"><ion-icon name="add-circle-outline" /> Add another flight</a>
+            <a class="gm-btn ghost" routerLink="/add-flight"><ion-icon name="add-circle-outline" /> {{ 'Add another flight' | t }}</a>
           </div>
         }
 
@@ -108,9 +108,9 @@
               @for (f of [upcomingFlights()[passIndex()]]; track f.id) {
                 <gm-boarding-pass class="anim-scale-in" [flight]="f" />
               }
-              <p class="hint"><ion-icon name="lock-closed-outline" /> Stored encrypted on this device and available offline.</p>
+              <p class="hint"><ion-icon name="lock-closed-outline" /> {{ 'Stored encrypted on this device and available offline.' | t }}</p>
             } @else {
-              <div class="gm-empty"><ion-icon name="ticket-outline" /><h3>No upcoming boarding passes</h3></div>
+              <div class="gm-empty"><ion-icon name="ticket-outline" /><h3>{{ 'No upcoming boarding passes' | t }}</h3></div>
             }
           </div>
         }
@@ -122,9 +122,9 @@
                 <div class="fare card">
                   <div>
                     <span class="gm-label">{{ f.number }} · {{ f.from.code }} → {{ f.to.code }}</span>
-                    <b>{{ f.fareName ?? 'Your fare' }}</b>
+                    <b>{{ f.fareName ?? ('Your fare' | t) }}</b>
                   </div>
-                  <span class="gm-chip" [class.neutral]="b.source !== 'airline'">{{ b.source === 'airline' ? 'From airline booking' : 'Estimated' }}</span>
+                  <span class="gm-chip" [class.neutral]="b.source !== 'airline'">{{ b.source === 'airline' ? ('From airline booking' | t) : ('Estimated' | t) }}</span>
                 </div>
                 <div class="bag-grid">
                   @for (item of bagList(b); track item.kind; let i = $index) {
@@ -149,42 +149,42 @@
                           }
                         </svg>
                       </div>
-                      <b>{{ item.title }}</b>
+                      <b>{{ item.title | t }}</b>
                       @if (item.bag; as bag) {
-                        <span class="dims">{{ bag.dimensionsCm[1] ? bag.dimensionsCm.join(' × ') + ' cm' : 'Up to ' + bag.dimensionsCm[0] + ' cm total' }}</span>
-                        <span class="kg">{{ bag.maxKg ? bag.count + ' × ' + bag.maxKg + ' kg' : 'Under the seat' }}</span>
-                        <span class="gm-chip success"><ion-icon name="checkmark" /> Included</span>
+                        <span class="dims">{{ bag.dimensionsCm[1] ? bag.dimensionsCm.join(' × ') + ' cm' : ('Up to {n} cm total' | t: { n: bag.dimensionsCm[0] }) }}</span>
+                        <span class="kg">{{ bag.maxKg ? bag.count + ' × ' + bag.maxKg + ' kg' : ('Under the seat' | t) }}</span>
+                        <span class="gm-chip success"><ion-icon name="checkmark" /> {{ 'Included' | t }}</span>
                       } @else {
-                        <span class="dims">Not in your fare</span>
-                        <span class="gm-chip neutral">Add with airline</span>
+                        <span class="dims">{{ 'Not in your fare' | t }}</span>
+                        <span class="gm-chip neutral">{{ 'Add with airline' | t }}</span>
                       }
                     </div>
                   }
                 </div>
                 @if (b.notes.length) {
                   <ul class="notes">
-                    @for (n of b.notes; track n) { <li><ion-icon name="information-circle-outline" /> {{ n }}</li> }
+                    @for (n of b.notes; track n) { <li><ion-icon name="information-circle-outline" /> {{ n | t }}</li> }
                   </ul>
                 }
               }
             }
 
-            <h3 class="sub">Will my bag fit?</h3>
+            <h3 class="sub">{{ 'Will my bag fit?' | t }}</h3>
             <div class="fit card">
               <div class="fit-inputs">
                 <label>L<input type="number" inputmode="numeric" min="1" max="200" [(ngModel)]="fitL" (ngModelChange)="checkFit()" /></label>
                 <label>W<input type="number" inputmode="numeric" min="1" max="200" [(ngModel)]="fitW" (ngModelChange)="checkFit()" /></label>
                 <label>H<input type="number" inputmode="numeric" min="1" max="200" [(ngModel)]="fitH" (ngModelChange)="checkFit()" /></label>
-                <label>kg<input type="number" inputmode="decimal" min="0" max="50" [(ngModel)]="fitKg" (ngModelChange)="checkFit()" /></label>
+                <label>{{ 'kg' | t }}<input type="number" inputmode="decimal" min="0" max="50" [(ngModel)]="fitKg" (ngModelChange)="checkFit()" /></label>
               </div>
               @if (fitResult(); as r) {
                 <div class="fit-result" [class.yes]="r.ok" [attr.data-key]="r.label">
                   <ion-icon [name]="r.ok ? 'checkmark-circle' : 'alert-circle'" />
-                  <div><b>{{ r.label }}</b><small>{{ r.detail }}</small></div>
+                  <div><b>{{ r.label | t }}</b><small>{{ r.detail | t }}</small></div>
                 </div>
               }
             </div>
-            <p class="hint">Allowances come from your booking. Airlines can change rules — check your airline's website before you fly.</p>
+            <p class="hint">{{ 'Allowances come from your booking. Airlines can change rules — check your airline’s website before you fly.' | t }}</p>
           </div>
         }
 
@@ -192,7 +192,7 @@
           <div class="section">
             <a class="explore-cta card" [routerLink]="['/explore', t.destination.code]" [queryParams]="{ trip: t.id }" gmPressable>
               <span class="gm-well accent"><ion-icon name="compass-outline" /></span>
-              <span class="txt"><b>Explore {{ t.destination.city }}</b><small>Top sights, holidays on your dates, phrases, money and what to pack</small></span>
+              <span class="txt"><b>{{ 'Explore {city}' | t: { city: t.destination.city } }}</b><small>{{ 'Top sights, holidays on your dates, phrases, money and what to pack' | t }}</small></span>
               <ion-icon name="chevron-forward" class="chev" />
             </a>
             <gm-destination-guide [iata]="t.destination.code" />
@@ -208,7 +208,7 @@
               </svg>
               <div>
                 <b>{{ checklistDone() }} of {{ t.checklist.length }} done</b>
-                <p>{{ checklistRatio() === 1 ? 'You are ready for take-off! 🎉' : 'Tick things off as you pack.' }}</p>
+                <p>{{ checklistRatio() === 1 ? ('You are ready for take-off! 🎉' | t) : ('Tick things off as you pack.' | t) }}</p>
               </div>
             </div>
             @for (c of t.checklist; track c.id; let i = $index) {
@@ -216,7 +216,7 @@
                 <span class="box">
                   <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
                 </span>
-                <span class="lbl">{{ c.label }}</span>
+                <span class="lbl">{{ c.label | t }}</span>
                 <span class="cat">{{ c.category }}</span>
               </button>
             }
@@ -226,16 +226,16 @@
         @case ('expenses') {
           <div class="section">
             <div class="total glass tinted anim-scale-in">
-              <small>Total trip spend</small>
+              <small>{{ 'Total trip spend' | t }}</small>
               <b>€{{ totalSpent() | number: '1.0-2' }}</b>
               <span>{{ t.expenses.length }} expenses · split between {{ t.travellers.length }}</span>
             </div>
 
-            <h3 class="sub">Balances</h3>
+            <h3 class="sub">{{ 'Balances' | t }}</h3>
             @for (b of balances(); track b.person.id; let i = $index) {
               <div class="balance" [gmReveal]="i">
                 <span class="av" [style.background]="b.person.color">{{ b.person.initials }}</span>
-                <span class="name">{{ b.person.id === 'me' ? 'You' : b.person.name }}</span>
+                <span class="name">{{ b.person.id === 'me' ? ('You' | t) : b.person.name }}</span>
                 <b [class.pos]="b.amount > 0" [class.neg]="b.amount < 0">
                   {{ b.amount > 0 ? 'gets back' : b.amount < 0 ? 'owes' : 'settled' }}
                   @if (b.amount !== 0) { €{{ (b.amount < 0 ? -b.amount : b.amount) | number: '1.2-2' }} }
@@ -245,39 +245,39 @@
 
             @if (t.expenses.length) {
               <div class="pro-actions">
-                <button class="gm-btn ghost small" (click)="openSettleUp()"><ion-icon name="swap-horizontal-outline" /> Settle up @if (!pro.isPro()) { <span class="pro-tag">PRO</span> }</button>
-                <button class="gm-btn ghost small" (click)="exportCsv()"><ion-icon name="download-outline" /> Export CSV @if (!pro.isPro()) { <span class="pro-tag">PRO</span> }</button>
+                <button class="gm-btn ghost small" (click)="openSettleUp()"><ion-icon name="swap-horizontal-outline" /> Settle up @if (!pro.isPro()) { <span class="pro-tag">{{ 'PRO' | t }}</span> }</button>
+                <button class="gm-btn ghost small" (click)="exportCsv()"><ion-icon name="download-outline" /> Export CSV @if (!pro.isPro()) { <span class="pro-tag">{{ 'PRO' | t }}</span> }</button>
               </div>
               @if (showSettle()) {
                 <div class="settle card anim-fade-up">
                   @for (s of settleUp(); track $index) {
-                    <div class="tr"><b>{{ s.from.id === 'me' ? 'You' : s.from.name }}</b><ion-icon name="arrow-forward" /><b>{{ s.to.id === 'me' ? 'you' : s.to.name }}</b><span>€{{ s.amount | number: '1.2-2' }}</span></div>
+                    <div class="tr"><b>{{ s.from.id === 'me' ? ('You' | t) : s.from.name }}</b><ion-icon name="arrow-forward" /><b>{{ s.to.id === 'me' ? ('you' | t) : s.to.name }}</b><span>€{{ s.amount | number: '1.2-2' }}</span></div>
                   } @empty {
-                    <p class="muted">Everyone is settled up.</p>
+                    <p class="muted">{{ 'Everyone is settled up.' | t }}</p>
                   }
                 </div>
               }
             }
 
-            <h3 class="sub">Expenses</h3>
+            <h3 class="sub">{{ 'Expenses' | t }}</h3>
             @for (e of t.expenses; track e.id; let i = $index) {
               <div class="expense" [gmReveal]="i">
                 <span class="ic"><ion-icon name="pricetag-outline" /></span>
-                <div class="grow"><b>{{ e.label }}</b><small>Paid by {{ e.paidBy === 'me' ? 'you' : personName(e.paidBy) }}</small></div>
+                <div class="grow"><b>{{ e.label | t }}</b><small>Paid by {{ e.paidBy === 'me' ? 'you' : personName(e.paidBy) }}</small></div>
                 <b>€{{ e.amount | number: '1.0-2' }}</b>
               </div>
             } @empty {
-              <p class="muted">No expenses yet.</p>
+              <p class="muted">{{ 'No expenses yet.' | t }}</p>
             }
 
             @if (addingExpense()) {
               <form class="add-exp card anim-fade-up" (ngSubmit)="saveExpense()">
-                <input name="label" [(ngModel)]="expenseLabel" placeholder="What was it?" maxlength="60" required />
+                <input name="label" [(ngModel)]="expenseLabel" [placeholder]="'What was it?' | t" maxlength="60" required />
                 <input name="amount" [(ngModel)]="expenseAmount" type="number" inputmode="decimal" min="0.01" max="100000" step="0.01" placeholder="€0.00" required />
-                <button class="gm-btn small" type="submit">Add</button>
+                <button class="gm-btn small" type="submit">{{ 'Add' | t }}</button>
               </form>
             } @else {
-              <button class="gm-btn ghost" (click)="addingExpense.set(true)"><ion-icon name="add-circle-outline" /> Add expense</button>
+              <button class="gm-btn ghost" (click)="addingExpense.set(true)"><ion-icon name="add-circle-outline" /> {{ 'Add expense' | t }}</button>
             }
           </div>
         }
@@ -287,12 +287,12 @@
             @for (p of t.travellers; track p.id; let i = $index) {
               <div class="person" [gmReveal]="i">
                 <span class="av big" [style.background]="p.color">{{ p.initials }}</span>
-                <div class="grow"><b>{{ p.id === 'me' ? 'You' : p.name }}</b><small>{{ i === 0 ? 'Organiser' : 'Traveller' }}</small></div>
+                <div class="grow"><b>{{ p.id === 'me' ? ('You' | t) : p.name }}</b><small>{{ i === 0 ? ('Organiser' | t) : ('Traveller' | t) }}</small></div>
               </div>
             }
             <div class="people-actions">
               @if (t.chatId) {
-                <a class="gm-btn" [routerLink]="['/chat', t.chatId]"><ion-icon name="chatbubbles-outline" /> Open group chat</a>
+                <a class="gm-btn" [routerLink]="['/chat', t.chatId]"><ion-icon name="chatbubbles-outline" /> {{ 'Open group chat' | t }}</a>
               }
               <gm-invite-panel [targetId]="t.id" [title]="t.title" />
             </div>

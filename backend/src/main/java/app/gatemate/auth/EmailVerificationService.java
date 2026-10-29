@@ -67,7 +67,7 @@ public class EmailVerificationService {
         v.expiresAt = Instant.now().plus(Duration.ofMinutes(30));
         v.attempts = 0;
         codes.save(v);
-        mail.sendVerificationCode(u.email, u.displayName, code);
+        mail.sendVerificationCode(u.email, u.displayName, code, u.lang);
     }
 
     /** Sends a code right after sign-up (after the account is saved); never fails the registration. */

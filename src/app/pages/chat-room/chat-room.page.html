@@ -5,19 +5,19 @@
       <div class="who">
         <span class="avatar" [style.background]="t.gradient">{{ t.emoji }}</span>
         <div>
-          <b>{{ t.title }}</b>
+          <b>{{ t.title | t }}</b>
           <small>
             @if (typing()) {
               <span class="typing-text">{{ typing() }} is typing…</span>
             } @else {
-              {{ t.subtitle }}
+              {{ t.subtitle | t }}
             }
           </small>
         </div>
       </div>
     }
     <ion-buttons slot="end">
-      <button class="gm-icon-btn menu" (click)="threadMenu()" aria-label="Chat options"><ion-icon name="ellipsis-horizontal" /></button>
+      <button class="gm-icon-btn menu" (click)="threadMenu()" [aria-label]="'Chat options' | t"><ion-icon name="ellipsis-horizontal" /></button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -26,7 +26,7 @@
   @if (thread()?.isPublic) {
     <div class="lounge-banner anim-fade-up">
       <ion-icon name="shield-checkmark-outline" />
-      <span>Public lounge for passengers on this flight. It is moderated — never share your booking reference, passport or payment details.</span>
+      <span>{{ 'Public lounge for passengers on this flight. It is moderated — never share your booking reference, passport or payment details.' | t }}</span>
     </div>
   }
 
@@ -40,7 +40,7 @@
     } @else {
       @for (r of rows(); track r.key) {
         @if (r.kind === 'day') {
-          <div class="day"><span>{{ r.label }}</span></div>
+          <div class="day"><span>{{ r.label | t }}</span></div>
         } @else {
           @let m = r.msg!;
           <div class="msg" [class.mine]="r.mine" [class.first]="r.first">
@@ -55,7 +55,7 @@
               (pointerleave)="pressEnd()"
               (contextmenu)="$event.preventDefault(); messageActions(m)"
             >
-              <span class="text selectable">{{ m.text }}</span>
+              <span class="text selectable">{{ m.text | t }}</span>
               <span class="meta">
                 {{ m.createdAt | clock }}
                 @if (r.mine) {
@@ -68,17 +68,17 @@
               </span>
             </div>
             @if (m.flagged) {
-              <small class="flag">Some words were hidden by our language filter.</small>
+              <small class="flag">{{ 'Some words were hidden by our language filter.' | t }}</small>
             }
             @if (m.status === 'failed') {
-              <button class="retry" (click)="messageActions(m)">Not sent · Tap to retry</button>
+              <button class="retry" (click)="messageActions(m)">{{ 'Not sent · Tap to retry' | t }}</button>
             }
           </div>
         }
       }
       @if (typing()) {
         <div class="msg">
-          <div class="bubble typing" aria-label="Someone is typing"><i></i><i></i><i></i></div>
+          <div class="bubble typing" [aria-label]="'Someone is typing' | t"><i></i><i></i><i></i></div>
         </div>
       }
     }
@@ -96,11 +96,11 @@
       (ngModelChange)="draft.set($event)"
       (keydown)="onKey($event)"
       [attr.maxlength]="maxLength"
-      placeholder="Message"
-      aria-label="Message"
+      [placeholder]="'Message' | t"
+      [aria-label]="'Message' | t"
       enterkeyhint="send"
     ></textarea>
-    <button class="send" [class.ready]="draft().trim().length > 0" (click)="send()" aria-label="Send" [disabled]="!draft().trim()">
+    <button class="send" [class.ready]="draft().trim().length > 0" (click)="send()" [aria-label]="'Send' | t" [disabled]="!draft().trim()">
       <ion-icon name="arrow-up" />
     </button>
   </div>

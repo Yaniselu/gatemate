@@ -1,15 +1,15 @@
 <ion-content class="auth">
   <div class="wrap">
-    <a class="gm-icon-btn back" routerLink="/auth/login" aria-label="Back to sign in"><ion-icon name="chevron-back" /></a>
+    <a class="gm-icon-btn back" routerLink="/auth/login" [aria-label]="'Back to sign in' | t"><ion-icon name="chevron-back" /></a>
 
     <div class="stagger">
-      <h1 style="--i: 0">Create your account</h1>
-      <p class="lead" style="--i: 1">Join in seconds — your trips sync securely across devices.</p>
+      <h1 style="--i: 0">{{ 'Create your account' | t }}</h1>
+      <p class="lead" style="--i: 1">{{ 'Join in seconds — your trips sync securely across devices.' | t }}</p>
 
       @if (socialAvailable) {
       <gm-social-buttons style="--i: 2; display: block" />
 
-      <div class="divider" style="--i: 3">or sign up with email</div>
+      <div class="divider" style="--i: 3">{{ 'or sign up with email' | t }}</div>
       }
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate style="--i: 4">
@@ -18,33 +18,33 @@
         }
 
         <div class="gm-field" [class.invalid]="invalid('name')">
-          <label for="name">Full name</label>
+          <label for="name">{{ 'Full name' | t }}</label>
           <div class="gm-input-wrap">
             <ion-icon name="person-outline" />
-            <input id="name" formControlName="name" autocomplete="name" placeholder="Alex Morgan" maxlength="60" />
+            <input id="name" formControlName="name" autocomplete="name" [placeholder]="'Alex Morgan' | t" maxlength="60" />
           </div>
           @if (invalid('name')) {
-            <span class="gm-error">Use letters only (2–60 characters).</span>
+            <span class="gm-error">{{ 'Use letters only (2–60 characters).' | t }}</span>
           }
         </div>
 
         <div class="gm-field" [class.invalid]="invalid('email')">
-          <label for="email">Email</label>
+          <label for="email">{{ 'Email' | t }}</label>
           <div class="gm-input-wrap">
             <ion-icon name="mail-outline" />
-            <input id="email" type="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="you@example.com" />
+            <input id="email" type="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" [placeholder]="'you@example.com' | t" />
           </div>
           @if (invalid('email')) {
-            <span class="gm-error">Enter a valid email address.</span>
+            <span class="gm-error">{{ 'Enter a valid email address.' | t }}</span>
           }
         </div>
 
         <div class="gm-field" [class.invalid]="invalid('password')">
-          <label for="password">Password</label>
+          <label for="password">{{ 'Password' | t }}</label>
           <div class="gm-input-wrap">
             <ion-icon name="key-outline" />
-            <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" placeholder="At least 10 characters" maxlength="128" />
-            <button type="button" class="gm-input-action" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+            <input id="password" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" [placeholder]="'At least 10 characters' | t" maxlength="128" />
+            <button type="button" class="gm-input-action" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? ('Hide password' | t) : ('Show password' | t)">
               <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'" />
             </button>
           </div>
@@ -57,11 +57,11 @@
             }
           </div>
           @if (form.controls.password.value) {
-            <span class="meter-label" [style.--c]="color">{{ s.label }}</span>
+            <span class="meter-label" [style.--c]="color">{{ s.label | t }}</span>
           }
           <div class="checks">
-            <span [class.ok]="s.checks.length"><ion-icon [name]="s.checks.length ? 'checkmark' : 'remove-outline'" />10+ chars</span>
-            <span [class.ok]="s.checks.upper && s.checks.lower"><ion-icon [name]="s.checks.upper && s.checks.lower ? 'checkmark' : 'remove-outline'" />Aa</span>
+            <span [class.ok]="s.checks.length"><ion-icon [name]="s.checks.length ? 'checkmark' : 'remove-outline'" />{{ '10+ chars' | t }}</span>
+            <span [class.ok]="s.checks.upper && s.checks.lower"><ion-icon [name]="s.checks.upper && s.checks.lower ? 'checkmark' : 'remove-outline'" />{{ 'Aa' | t }}</span>
             <span [class.ok]="s.checks.digit"><ion-icon [name]="s.checks.digit ? 'checkmark' : 'remove-outline'" />123</span>
             <span [class.ok]="s.checks.symbol"><ion-icon [name]="s.checks.symbol ? 'checkmark' : 'remove-outline'" />#!?</span>
           </div>
@@ -69,20 +69,20 @@
 
         <label class="check" [class.invalid]="invalid('age')">
           <input type="checkbox" formControlName="age" />
-          <span>I am at least 16 years old.</span>
+          <span>{{ 'I am at least 16 years old.' | t }}</span>
         </label>
         <label class="check" [class.invalid]="invalid('terms')">
           <input type="checkbox" formControlName="terms" />
-          <span>I agree to the <a routerLink="/legal/terms">Terms of Use</a>, <a routerLink="/legal/guidelines">Community Guidelines</a> and <a routerLink="/legal/privacy">Privacy Policy</a>.</span>
+          <span>{{ 'I agree to the' | t }} <a routerLink="/legal/terms">{{ 'Terms of Use' | t }}</a>, <a routerLink="/legal/guidelines">{{ 'Community Guidelines' | t }}</a> {{ 'and' | t }} <a routerLink="/legal/privacy">{{ 'Privacy Policy' | t }}</a>.</span>
         </label>
 
         <button class="gm-btn" type="submit" [disabled]="loading()" style="margin-top: 8px">
-          @if (loading()) { <span class="spinner"></span> } @else { Create account <ion-icon name="sparkles" /> }
+          @if (loading()) { <span class="spinner"></span> } @else { {{ 'Create account' | t }} <ion-icon name="sparkles" /> }
         </button>
-        @if (slow()) { <p class="slow-hint">Waking up the server — the first sign-in can take up to a minute.</p> }
+        @if (slow()) { <p class="slow-hint">{{ 'Waking up the server — the first sign-in can take up to a minute.' | t }}</p> }
       </form>
     </div>
 
-    <p class="switch">Already flying with us? <a routerLink="/auth/login">Sign in</a></p>
+    <p class="switch">{{ 'Already flying with us?' | t }} <a routerLink="/auth/login">{{ 'Sign in' | t }}</a></p>
   </div>
 </ion-content>

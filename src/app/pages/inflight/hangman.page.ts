@@ -3,6 +3,7 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, Io
 import { PlatformService } from '../../core/services/platform.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 const CITIES: [string, string][] = [
   ['BARCELONA', 'Spain'], ['LISBON', 'Portugal'], ['AMSTERDAM', 'Netherlands'], ['ISTANBUL', 'Türkiye'], ['REYKJAVIK', 'Iceland'], ['DUBROVNIK', 'Croatia'],
@@ -17,18 +18,18 @@ const LIVES = 6;
 @Component({
   selector: 'gm-hangman',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Guess the City</ion-title>
+        <ion-title>{{ 'Guess the City' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="sky glass smoke">
-          <div class="alt"><span class="gm-label light">Altitude</span><b>{{ (LIVES - misses()) * 6000 }} ft</b></div>
+          <div class="alt"><span class="gm-label light">{{ 'Altitude' | t }}</span><b>{{ (LIVES - misses()) * 6000 }} ft</b></div>
           <ion-icon name="airplane" class="plane" [style.--drop]="misses() / LIVES" [class.crash]="lost()" />
           <div class="ground"></div>
           <span class="hint">🌍 {{ country() }}</span>
@@ -42,8 +43,8 @@ const LIVES = 6;
         </div>
         @if (won() || lost()) {
           <div class="end card">
-            <h2>{{ won() ? 'Smooth landing! 🛬' : 'Go-around! It was ' + answer() }}</h2>
-            <button class="gm-btn" (click)="next()"><ion-icon name="arrow-forward" /> Next city</button>
+            <h2>{{ won() ? ('Smooth landing! 🛬' | t) : ('Go-around! It was {city}' | t: { city: answer() }) }}</h2>
+            <button class="gm-btn" (click)="next()"><ion-icon name="arrow-forward" /> {{ 'Next city' | t }}</button>
           </div>
         } @else {
           <div class="keys">
@@ -52,7 +53,7 @@ const LIVES = 6;
             }
           </div>
         }
-        <p class="streak">Cities guessed this session: <b>{{ wins() }}</b></p>
+        <p class="streak">{{ 'Cities guessed this session:' | t }} <b>{{ wins() }}</b></p>
       </div>
     </ion-content>
   `,

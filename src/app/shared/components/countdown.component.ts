@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Live HH:MM:SS countdown with digits that roll when they change. */
 @Component({
   selector: 'gm-countdown',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TranslatePipe],
   template: `
     @if (remaining() > 0) {
       <div class="units">
@@ -14,7 +16,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input
                 <span class="digit"><span class="roll">{{ d }}</span></span>
               }
             </div>
-            <small>{{ u.label }}</small>
+            <small>{{ u.label | t }}</small>
           </div>
         }
       </div>

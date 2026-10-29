@@ -7,53 +7,54 @@ import { PlatformService } from '../../core/services/platform.service';
 import { ToastService } from '../../core/services/toast.service';
 import { cleanText } from '../../core/security/sanitize';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-feedback',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, FormsModule],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, FormsModule],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/profile" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Send feedback</ion-title>
+        <ion-title>{{ 'Send feedback' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         @if (!sent()) {
-          <h1 class="anim-fade-up">How can we make Gatemate better?</h1>
-          <p class="muted anim-fade-up">Goes straight to the team. We read every message.</p>
+          <h1 class="anim-fade-up">{{ 'How can we make Gatemate better?' | t }}</h1>
+          <p class="muted anim-fade-up">{{ 'Goes straight to the team. We read every message.' | t }}</p>
 
-          <span class="gm-label lbl">How’s your experience so far?</span>
+          <span class="gm-label lbl">{{ 'How’s your experience so far?' | t }}</span>
           <div class="faces">
             @for (f of faces; track f.v) {
-              <button [class.on]="rating() === f.v" (click)="rate(f.v)" [attr.aria-label]="f.label"><span>{{ f.e }}</span><small>{{ f.label }}</small></button>
+              <button [class.on]="rating() === f.v" (click)="rate(f.v)" [attr.aria-label]="f.label | t"><span>{{ f.e }}</span><small>{{ f.label | t }}</small></button>
             }
           </div>
 
-          <span class="gm-label lbl">What is it about?</span>
+          <span class="gm-label lbl">{{ 'What is it about?' | t }}</span>
           <div class="topics">
-            @for (t of topics; track t) { <button [class.on]="topic() === t" (click)="topic.set(t)">{{ t }}</button> }
+            @for (t of topics; track t) { <button [class.on]="topic() === t" (click)="topic.set(t)">{{ t | t }}</button> }
           </div>
 
           <div class="gm-field">
-            <label for="msg">Tell us more <small>{{ message().length }}/1000</small></label>
-            <div class="gm-input-wrap area"><textarea id="msg" rows="5" maxlength="1000" [ngModel]="message()" (ngModelChange)="message.set($event)" placeholder="What happened, and what did you expect?"></textarea></div>
+            <label for="msg">{{ 'Tell us more' | t }} <small>{{ message().length }}/1000</small></label>
+            <div class="gm-input-wrap area"><textarea id="msg" rows="5" maxlength="1000" [ngModel]="message()" (ngModelChange)="message.set($event)" [placeholder]="'What happened, and what did you expect?' | t"></textarea></div>
           </div>
 
           <label class="check">
             <input type="checkbox" [ngModel]="contact()" (ngModelChange)="contact.set($event)" />
-            <span>You may reply to me at <b>{{ auth.user()?.email }}</b></span>
+            <span>{{ 'You may reply to me at' | t }} <b>{{ auth.user()?.email }}</b></span>
           </label>
 
-          <button class="gm-btn" (click)="send()" [disabled]="busy() || message().trim().length < 5"><ion-icon name="send" /> Send feedback</button>
+          <button class="gm-btn" (click)="send()" [disabled]="busy() || message().trim().length < 5"><ion-icon name="send" /> {{ 'Send feedback' | t }}</button>
         } @else {
           <div class="thanks anim-scale-in">
             <div class="heart"><ion-icon name="heart" /></div>
-            <h1>Thank you!</h1>
-            <p class="muted">Your feedback helps every traveller on Gatemate.</p>
-            <button class="gm-btn ghost" (click)="nav.back()">Done</button>
+            <h1>{{ 'Thank you!' | t }}</h1>
+            <p class="muted">{{ 'Your feedback helps every traveller on Gatemate.' | t }}</p>
+            <button class="gm-btn ghost" (click)="nav.back()">{{ 'Done' | t }}</button>
           </div>
         }
       </div>

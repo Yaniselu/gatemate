@@ -23,6 +23,7 @@ import { AchievementsService } from '../../core/services/achievements.service';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { SheenDirective } from '../../shared/directives/sheen.directive';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Step = 'choose' | 'airline' | 'email' | 'manual' | 'verifying' | 'done' | 'failed';
 interface Check {
@@ -39,7 +40,7 @@ const PNR = /^[A-Z0-9]{6}$/;
 @Component({
   selector: 'gm-add-flight',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, ReactiveFormsModule, RouterLink, RevealDirective, PressableDirective, SheenDirective, ClockPipe, ShortDatePipe],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, ReactiveFormsModule, RouterLink, RevealDirective, PressableDirective, SheenDirective, ClockPipe, ShortDatePipe],
   templateUrl: './add-flight.page.html',
   styleUrl: './add-flight.page.scss',
 })

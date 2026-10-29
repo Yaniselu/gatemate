@@ -52,11 +52,11 @@ class VerificationTest {
     @Test
     void signUpSendsACodeThatConfirmsTheEmail() throws Exception {
         String email = "v+" + UUID.randomUUID() + "@example.com";
-        var s = post("/api/v1/auth/register", null, "{\"name\":\"Ana Popescu\",\"email\":\"" + email + "\",\"password\":\"Correct-Horse-42!\"}", 200);
+        var s = post("/api/v1/auth/register", null, "{\"name\":\"Ana Popescu\",\"email\":\"" + email + "\",\"password\":\"Correct-Horse-42!\",\"lang\":\"ro\"}", 200);
         String access = s.get("accessToken").asString();
         org.junit.jupiter.api.Assertions.assertFalse(s.path("user").path("emailVerified").asBoolean());
         var code = ArgumentCaptor.forClass(String.class);
-        verify(mail).sendVerificationCode(eq(email), anyString(), code.capture());
+        verify(mail).sendVerificationCode(eq(email), anyString(), code.capture(), eq("ro"));
         org.junit.jupiter.api.Assertions.assertTrue(code.getValue().matches("\\d{6}"));
 
         String wrong = code.getValue().equals("000000") ? "111111" : "000000";
@@ -84,7 +84,7 @@ class VerificationTest {
         // Unknown addresses get the same answer.
         post("/api/v1/auth/password-reset", null, "{\"email\":\"nobody+" + UUID.randomUUID() + "@example.com\"}", 204);
         var code = ArgumentCaptor.forClass(String.class);
-        verify(mail).sendPasswordResetCode(eq(email), anyString(), code.capture());
+        verify(mail).sendPasswordResetCode(eq(email), anyString(), code.capture(), anyString());
 
         post("/api/v1/auth/password-reset/confirm", null, "{\"email\":\"" + email + "\",\"code\":\"" + (code.getValue().equals("123456") ? "654321" : "123456")
                 + "\",\"password\":\"Another-Horse-77!\"}", 400);

@@ -4,27 +4,28 @@ import { ApiError, GatemateApi } from '../../core/services/api';
 import { TravelStore } from '../../core/services/travel.store';
 import { ChatService } from '../../core/services/chat.service';
 import { PlatformService } from '../../core/services/platform.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Opened from a shared invite link: joins the trip or group, then goes there. */
 @Component({
   selector: 'gm-invite',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonIcon],
+  imports: [TranslatePipe, IonContent, IonIcon],
   template: `
     <ion-content [fullscreen]="true">
       <div class="wrap">
         @if (error(); as e) {
           <div class="card glass strong box anim-fade-up">
             <span class="icon err"><ion-icon name="link-outline" /></span>
-            <h1>Invite unavailable</h1>
+            <h1>{{ 'Invite unavailable' | t }}</h1>
             <p>{{ e }}</p>
-            <button class="gm-btn" (click)="home()">Go to Home</button>
+            <button class="gm-btn" (click)="home()">{{ 'Go to Home' | t }}</button>
           </div>
         } @else {
           <div class="card glass strong box">
             <span class="icon"><ion-icon name="airplane" /></span>
-            <h1>Joining your crew…</h1>
-            <p>Checking the invite link.</p>
+            <h1>{{ 'Joining your crew…' | t }}</h1>
+            <p>{{ 'Checking the invite link.' | t }}</p>
           </div>
         }
       </div>

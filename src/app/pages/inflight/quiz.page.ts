@@ -4,6 +4,7 @@ import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 const CODES: [string, string][] = [
   ['OTP', 'Bucharest'], ['CLJ', 'Cluj-Napoca'], ['IAS', 'Iași'], ['TSR', 'Timișoara'], ['LHR', 'London'], ['CDG', 'Paris'],
@@ -23,25 +24,25 @@ interface Q {
 @Component({
   selector: 'gm-quiz',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
-        <ion-title>Code Quiz</ion-title>
+        <ion-title>{{ 'Code Quiz' | t }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
-          <div class="card"><span class="gm-label">Round</span><b>{{ Math.min(round() + 1, rounds) }}/{{ rounds }}</b></div>
-          <div class="card"><span class="gm-label">Score</span><b>{{ score() }}</b></div>
-          <div class="card"><span class="gm-label">Streak</span><b>{{ streak() }}🔥</b></div>
+          <div class="card"><span class="gm-label">{{ 'Round' | t }}</span><b>{{ Math.min(round() + 1, rounds) }}/{{ rounds }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Score' | t }}</span><b>{{ score() }}</b></div>
+          <div class="card"><span class="gm-label">{{ 'Streak' | t }}</span><b>{{ streak() }}🔥</b></div>
         </div>
         @if (round() < rounds) {
           @if (q(); as qq) {
             <div class="board-q glass smoke">
-              <span class="gm-label light">Which city is</span>
+              <span class="gm-label light">{{ 'Which city is' | t }}</span>
               @for (k of [qq.code]; track k + round()) { <div class="code">{{ k }}</div> }
               <div class="timer"><span [style.animation-duration.s]="8" [class.run]="!picked()"></span></div>
             </div>
@@ -61,9 +62,9 @@ interface Q {
         } @else {
           <div class="end card">
             <ion-icon name="trophy" class="trophy" />
-            <h2>{{ record() ? 'New record!' : score() >= 70 ? 'Captain material!' : 'Nice flight!' }}</h2>
+            <h2>{{ record() ? ('New record!' | t) : score() >= 70 ? ('Captain material!' | t) : ('Nice flight!' | t) }}</h2>
             <p>You scored {{ score() }} points.</p>
-            <button class="gm-btn" (click)="start()"><ion-icon name="refresh-outline" /> Play again</button>
+            <button class="gm-btn" (click)="start()"><ion-icon name="refresh-outline" /> {{ 'Play again' | t }}</button>
           </div>
         }
       </div>

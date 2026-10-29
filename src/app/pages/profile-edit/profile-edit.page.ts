@@ -14,6 +14,7 @@ import { compressAvatar } from '../../core/utils/image';
 import { ProfilePatch, SeatPreference } from '../../core/models';
 import { HasUnsavedChanges } from '../../core/guards/unsaved.guard';
 import { AchievementsService } from '../../core/services/achievements.service';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 const PHONE = /^\+?[1-9]\d{6,14}$/;
 const LEGAL = /^[\p{L}][\p{L}\p{M}' -]{0,39}$/u;
@@ -21,7 +22,7 @@ const LEGAL = /^[\p{L}][\p{L}\p{M}' -]{0,39}$/u;
 @Component({
   selector: 'gm-profile-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, ReactiveFormsModule, AirportPickerComponent],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, ReactiveFormsModule, AirportPickerComponent],
   templateUrl: './profile-edit.page.html',
   styleUrl: './profile-edit.page.scss',
 })
@@ -154,11 +155,11 @@ export class ProfileEditPage implements HasUnsavedChanges {
   async confirmLeave(): Promise<boolean> {
     if (!this.dirty() || this.saving()) return true;
     const alert = await this.alerts.create({
-      header: 'Discard changes?',
-      message: 'You have unsaved changes to your profile.',
+      header: tr('Discard changes?'),
+      message: tr('You have unsaved changes to your profile.'),
       buttons: [
-        { text: 'Keep editing', role: 'cancel' },
-        { text: 'Discard', role: 'destructive' },
+        { text: tr('Keep editing'), role: 'cancel' },
+        { text: tr('Discard'), role: 'destructive' },
       ],
     });
     await alert.present();
