@@ -408,6 +408,13 @@
   }
 }
 
+.slow {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--gm-ink-3);
+}
+
 .action {
   display: flex;
   align-items: center;

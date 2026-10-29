@@ -18,6 +18,8 @@ export interface VeloMessage {
   /** Things Velo did in the app, e.g. checklist items it added. */
   actions: { tripId: string; added: string[] }[];
   streaming?: boolean;
+  /** Nothing arrived for a while: most likely the server is waking up. */
+  slow?: boolean;
   error?: string;
 }
 
@@ -80,14 +82,23 @@ export class VeloService {
     const abort = (this.abort = new AbortController());
     const patch = (fn: (m: VeloMessage) => VeloMessage) => this.messages.update((list) => list.map((m) => (m.id === reply.id ? fn(m) : m)));
 
+    let heard = false;
+    const slowTimer = setTimeout(() => !heard && patch((m) => ({ ...m, slow: true })), 6000);
     try {
-      await this.api.assistantChat(history, (e) => this.apply(e, patch), abort.signal);
+      await this.api.assistantChat(history, (e) => {
+        if (!heard) {
+          heard = true;
+          patch((m) => ({ ...m, slow: false }));
+        }
+        this.apply(e, patch);
+      }, abort.signal);
     } catch (e) {
       const msg = e instanceof ApiError ? e.message : t('Velo is unavailable right now. Try again in a moment.');
       patch((m) => ({ ...m, error: msg }));
     } finally {
+      clearTimeout(slowTimer);
       if (this.abort === abort) this.abort = null;
-      patch((m) => ({ ...m, streaming: false, error: m.error ?? (!m.text && !abort.signal.aborted ? t('Velo is unavailable right now. Try again in a moment.') : undefined) }));
+      patch((m) => ({ ...m, streaming: false, slow: false, error: m.error ?? (!m.text && !abort.signal.aborted ? t('Velo is unavailable right now. Try again in a moment.') : undefined) }));
       this.busy.set(false);
       void this.loadStatus();
     }

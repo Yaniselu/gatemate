@@ -63,6 +63,7 @@
                   <div class="text" [innerHTML]="m.text | richText"></div>
                 } @else if (m.streaming && !m.error) {
                   <div class="typing" [attr.aria-label]="'Velo is thinking' | t"><i></i><i></i><i></i></div>
+                  @if (m.slow) { <small class="slow">{{ 'The server is starting: the first answer can take up to a minute.' | t }}</small> }
                 }
                 @if (m.streaming && m.text) { <span class="caret" aria-hidden="true"></span> }
                 @for (a of m.actions; track $index) {

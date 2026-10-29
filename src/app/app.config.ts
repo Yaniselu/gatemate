@@ -1,6 +1,6 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { PreloadAllModules, provideRouter, RouteReuseStrategy, withComponentInputBinding, withHashLocation, withPreloading } from '@angular/router';
+import { provideRouter, RouteReuseStrategy, withComponentInputBinding, withHashLocation, withPreloading } from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -19,6 +19,8 @@ import { ReviewService } from './core/services/review.service';
 import { AchievementsService } from './core/services/achievements.service';
 import { gatemateNavAnimation } from './shared/animations/page-transition';
 import { registerIcons } from './icons';
+import { IdlePreloading } from './core/idle-preloading';
+import { ServerWarmupService } from './core/services/server-warmup.service';
 
 registerIcons();
 
@@ -28,10 +30,11 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular({ mode: 'ios', navAnimation: gatemateNavAnimation, innerHTMLTemplatesEnabled: false, sanitizerEnabled: true }),
-    provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding(), ...(environment.hashRouting ? [withHashLocation()] : [])),
+    provideRouter(routes, withPreloading(IdlePreloading), withComponentInputBinding(), ...(environment.hashRouting ? [withHashLocation()] : [])),
     provideHttpClient(withInterceptors([authInterceptor])),
     { provide: GatemateApi, useClass: environment.useMocks ? MockApi : HttpApi },
     provideAppInitializer(async () => {
+      inject(ServerWarmupService).start();
       const prefs = inject(PrefsService);
       const i18n = inject(I18nService);
       const auth = inject(AuthService);
