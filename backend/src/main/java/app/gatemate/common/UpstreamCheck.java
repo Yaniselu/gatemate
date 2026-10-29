@@ -16,7 +16,7 @@ import org.springframework.web.client.RestClient;
 public class UpstreamCheck {
     private static final Logger log = LoggerFactory.getLogger(UpstreamCheck.class);
     private static final List<String> TARGETS = List.of(
-            "https://api.airplanes.live/v2/callsign/TEST1", "https://opendata.adsb.fi/api/v2/callsign/TEST1", "https://api.adsb.lol/v2/callsign/TEST1",
+            "https://opendata.adsb.fi/api/v2/callsign/TEST1", "https://api.adsb.lol/v2/callsign/TEST1",
             "https://overpass.private.coffee/api/status", "https://overpass.kumi.systems/api/status", "https://overpass-api.de/api/status",
             "https://en.wikipedia.org/api/rest_v1/page/summary/Paris", "https://api.open-meteo.com/v1/forecast?latitude=44.4&longitude=26.1&current=temperature_2m");
     private final boolean enabled;

@@ -22,7 +22,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 public class AdsbService {
     private static final Logger log = LoggerFactory.getLogger(AdsbService.class);
-    private static final List<String> NETWORKS = List.of("https://api.airplanes.live/v2/callsign/", "https://opendata.adsb.fi/api/v2/callsign/",
+    private static final List<String> NETWORKS = List.of("https://opendata.adsb.fi/api/v2/callsign/",
             "https://api.adsb.lol/v2/callsign/");
     private static final Pattern NUMBER = Pattern.compile("^([A-Z0-9]{2})\\s*(\\d{1,4})([A-Z]?)$");
 

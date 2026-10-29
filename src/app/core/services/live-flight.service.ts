@@ -28,7 +28,7 @@ export interface LiveState {
 }
 
 /** ADS-B Exchange v2-compatible community networks (free, no key). */
-const ADSB = ['https://api.airplanes.live/v2/callsign/', 'https://opendata.adsb.fi/api/v2/callsign/', 'https://api.adsb.lol/v2/callsign/'];
+const ADSB = ['https://opendata.adsb.fi/api/v2/callsign/', 'https://api.adsb.lol/v2/callsign/'];
 
 interface Aircraft {
   flight?: string;
