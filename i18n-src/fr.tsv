@@ -1246,3 +1246,64 @@
 @manual	manuel
 @1 visit	1 visite
 @{n} visits	{n} visites
+@Velo is unavailable right now. Try again in a moment.	Velo n’est pas disponible pour le moment. Réessayez dans un instant.
+@Checking your trips	Je regarde vos voyages
+@Checking your flight	Je vérifie votre vol
+@Looking up the airport	Je cherche l’aéroport
+@Reading the destination guide	Je lis le guide de la destination
+@Converting currency	Conversion de devises
+@Checking your rights	Je vérifie vos droits
+@Adding to your checklist	Ajout à votre liste
+@Searching the web	Recherche sur le web
+@Plan more with Velo: 200 messages a day.	Planifiez plus avec Velo : 200 messages par jour.
+@10× more Velo	10× plus de Velo
+@200 messages a day with your AI travel agent, instead of 20.	200 messages par jour avec votre agent de voyage IA, au lieu de 20.
+@Prepare my next trip	Préparer mon prochain voyage
+@Plan my airport day	Planifier ma journée à l’aéroport
+@Destination briefing	Briefing destination
+@My flight is delayed	Mon vol est retardé
+@Documents & entry rules	Documents et règles d’entrée
+@What to pack	Quoi emporter
+@AI agent	Agent IA
+@New conversation	Nouvelle conversation
+@Hi {name}, I’m Velo	Bonjour {name}, je suis Velo
+@Your AI travel agent. I know your trips, I can search the web and I take care of things for you.	Votre agent de voyage IA. Je connais vos voyages, je cherche sur le web et je m’occupe de tout pour vous.
+@Built by Velosyntech	Conçu par Velosyntech
+@Velo is getting ready on our servers. Check back soon!	Velo se prépare sur nos serveurs. Revenez bientôt !
+@Let Velo handle it	Laissez Velo s’en occuper
+@Velo is thinking	Velo réfléchit
+@Added {n} items to your checklist	{n} éléments ajoutés à votre liste
+@Sources	Sources
+@You’ve used today’s Velo messages.	Vous avez utilisé les messages Velo du jour.
+@Get more with Pro	Plus avec Pro
+@{n} Velo messages left today	Il vous reste {n} messages Velo aujourd’hui
+@Ask Velo anything about your trip	Demandez n’importe quoi à Velo sur votre voyage
+@Stop	Arrêter
+@Velo can make mistakes. Check important details with your airline.	Velo peut se tromper. Vérifiez les informations importantes auprès de votre compagnie.
+@Ask Velo about {city}	Demandez à Velo à propos de {city}
+@Your AI travel agent, by Velosyntech	Votre agent de voyage IA, par Velosyntech
+@Let Velo prepare this list	Laissez Velo préparer cette liste
+@From your flights, the weather and the destination	D’après vos vols, la météo et la destination
+@{done} of {total} done	{done} sur {total} faits
+@Ask Velo	Demander à Velo
+@Prepare my next trip: check my flights and the destination, then add what I need to my checklist.	Prépare mon prochain voyage : vérifie mes vols et la destination, puis ajoute à ma liste ce dont j’ai besoin.
+@Plan my airport day for my next flight: when to leave, check-in, security and boarding, with times.	Planifie la journée de mon prochain vol : heure de départ, enregistrement, contrôle de sécurité et embarquement, avec les horaires.
+@Give me a short briefing on my next destination: money, plugs, transport, customs and public holidays during my trip.	Fais-moi un court briefing sur ma prochaine destination : argent, prises, transports, coutumes et jours fériés pendant mon voyage.
+@My flight is delayed. What are my rights and what should I do now?	Mon vol est retardé. Quels sont mes droits et que dois-je faire maintenant ?
+@What documents do I need for my next trip? Check the latest official entry rules.	De quels documents ai-je besoin pour mon prochain voyage ? Vérifie les dernières règles d’entrée officielles.
+@What should I pack for my next trip, given the weather and my baggage allowance?	Que dois-je emporter pour mon prochain voyage, selon la météo et ma franchise bagages ?
+@Velo is very busy right now. Try again in a minute.	Velo est très sollicité. Réessayez dans une minute.
+@Velo can’t help with that. Ask something about your travel.	Velo ne peut pas vous aider pour cela. Posez une question sur votre voyage.
+@Working on it	J’y travaille
+@You have no upcoming trips yet. Add a flight and I’ll plan the day with you ✈️	Vous n’avez pas encore de voyage à venir. Ajoutez un vol et je planifie la journée avec vous ✈️
+@Done! I added **{n} items** to your {city} checklist:	C’est fait ! J’ai ajouté **{n} éléments** à votre liste pour {city} :
+@Flight **{flight}** leaves **{time}** local time. Check in online 24 h before.	Le vol **{flight}** part le **{time}**, heure locale. Enregistrez-vous en ligne 24 h avant.
+@For **{flight}** ({from} → {to}, about {km} km), if you land **3 h or more** late you can claim **€{amount}** from the airline under EU261, unless the cause was extraordinary (weather, ATC strikes). Meanwhile they owe you meals and, overnight, a hotel. Ask the airline for the reason in writing.	Pour **{flight}** ({from} → {to}, environ {km} km), si vous arrivez avec **3 h ou plus** de retard, vous pouvez réclamer **{amount} €** à la compagnie selon le règlement EU261, sauf circonstances extraordinaires (météo, grèves du contrôle aérien). En attendant, elle vous doit des repas et, la nuit, un hôtel. Demandez le motif par écrit.
+@No visa needed for EU citizens. Always check the official travel advice before you fly.	Les citoyens de l’UE n’ont pas besoin de visa. Consultez toujours les conseils officiels avant de voler.
+@Your next flight is **{flight}** {from} → {to}, **{time}** local time, gate **{gate}**. I can prepare your checklist, plan the airport day or check your rights if it’s delayed.	Votre prochain vol est **{flight}** {from} → {to}, **{time}** heure locale, porte **{gate}**. Je peux préparer votre liste, planifier votre journée à l’aéroport ou vérifier vos droits en cas de retard.
+@Velo isn’t switched on on this server yet.	Velo n’est pas encore activé sur ce serveur.
+@You’ve used today’s Velo messages. They reset at midnight UTC.	Vous avez utilisé les messages Velo du jour. Ils se renouvellent à minuit (UTC).
+@You’ve used today’s free Velo messages. Gatemate Pro has 10× more.	Vous avez utilisé les messages Velo gratuits du jour. Gatemate Pro en offre 10× plus.
+@Start a new conversation.	Commencez une nouvelle conversation.
+@Ask Velo something.	Posez une question à Velo.
+@Velo, your AI travel agent by Velosyntech	Velo, votre agent de voyage IA, par Velosyntech

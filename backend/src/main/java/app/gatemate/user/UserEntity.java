@@ -19,6 +19,9 @@ public class UserEntity {
     public String homeAirport;
     /** App language (en, ro, es, fr, de, it) for push alerts and e-mails. */
     public String lang = "en";
+    /** Velo messages used on {@code aiDay} (UTC), for the daily allowance. */
+    public java.time.LocalDate aiDay;
+    public int aiCount;
     public String seatPreference;
     public String bio;
     public String avatarUrl;

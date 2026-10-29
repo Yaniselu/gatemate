@@ -97,6 +97,11 @@ gatemate:
     secret-api-key: ${REVENUECAT_SECRET_KEY:}
     entitlement: pro
     free-upcoming-trips: 3
+  assistant:
+    # Velo, the AI travel agent. Empty key = Velo is off. Set ANTHROPIC_API_KEY in the Render dashboard, never in git.
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: ${ASSISTANT_MODEL:claude-opus-5-5}
+    effort: ${ASSISTANT_EFFORT:low}
   integrations:
     unsplash-access-key: ${UNSPLASH_ACCESS_KEY:}
     aero-data-box-key: ${AERODATABOX_KEY:}

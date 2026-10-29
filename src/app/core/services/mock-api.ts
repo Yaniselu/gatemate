@@ -14,7 +14,8 @@ import { AIRLINES, sampleBaggage } from '../data/airlines';
 import { parseBcbp } from '../utils/bcbp';
 import { matchPassengerName } from '../utils/name-match';
 import { randomId } from '../security/crypto.util';
-import { ApiError, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { locale, t } from '../i18n/i18n.service';
+import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
 const ACCESS_TTL_MS = 15 * 60_000;
 
@@ -439,6 +440,60 @@ export class MockApi extends GatemateApi {
     const flight = this.ensureTrips().flatMap((t) => t.flights).find((f) => f.id === flightId);
     if (!flight) throw new ApiError('Flight not found.', 404);
     return this.delay(flight, 300, 700);
+  }
+
+  // ---------- Velo (demo) ----------
+  private veloUsed = 0;
+
+  async assistantStatus(): Promise<AssistantStatus> {
+    return this.delay({ enabled: true, used: this.veloUsed, limit: 20 }, 100, 250);
+  }
+
+  /** Demo agent: the same events the real one streams (tools, text, actions), built from the demo trips. */
+  async assistantChat(messages: AssistantTurn[], onEvent: (e: AssistantEvent) => void, signal: AbortSignal): Promise<void> {
+    this.veloUsed++;
+    const q = (messages[messages.length - 1]?.text ?? '').toLowerCase();
+    const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+    const emit = (e: AssistantEvent) => !signal.aborted && onEvent(e);
+    const tool = async (id: string, name: string, ms = 700) => {
+      emit({ type: 'tool', id, name });
+      await wait(ms);
+      emit({ type: 'tool_done', id, ok: true });
+    };
+    const write = async (text: string) => {
+      for (const chunk of text.match(/.{1,6}/gs) ?? []) {
+        if (signal.aborted) return;
+        emit({ type: 'delta', text: chunk });
+        await wait(18);
+      }
+    };
+    const when = (iso: string, tz: string) => new Date(iso).toLocaleString(locale(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: tz });
+    await wait(500);
+    await tool('t1', 'get_my_trips');
+    const trip = this.ensureTrips().filter((x) => +new Date(x.endDate) > Date.now()).sort((a, b) => +new Date(a.startDate) - +new Date(b.startDate))[0];
+    const f = trip?.flights[0];
+    if (!trip || !f) {
+      await write(t('You have no upcoming trips yet. Add a flight and I’ll plan the day with you ✈️'));
+    } else if (/(prepar|pregăt|checklist|list|pack|bagaj|valiz)/.test(q)) {
+      await tool('t2', 'get_destination_guide', 900);
+      const items = [t('Plug adapter (type {plugs})', { plugs: 'C/F' }), t('Card without FX fees or some {code}', { code: 'EUR' }), t('Offline map of {city}', { city: f.to.city })];
+      for (const label of items) await this.addChecklistItem(trip.id, label, 'packing');
+      emit({ type: 'tool', id: 't3', name: 'add_checklist_items' });
+      await wait(500);
+      emit({ type: 'action', kind: 'checklist', tripId: trip.id, added: items });
+      emit({ type: 'tool_done', id: 't3', ok: true });
+      await write(t('Done! I added **{n} items** to your {city} checklist:', { n: items.length, city: f.to.city }) + '\n' + items.map((i) => '- ' + i).join('\n') + '\n\n' + t('Flight **{flight}** leaves **{time}** local time. Check in online 24 h before.', { flight: f.number, time: when(f.departure, f.from.timezone) }));
+    } else if (/(delay|întârz|intarz|cancel|anul|compens|drept|right)/.test(q)) {
+      await tool('t2', 'estimate_compensation', 600);
+      await write(t('For **{flight}** ({from} → {to}, about {km} km), if you land **3 h or more** late you can claim **€{amount}** from the airline under EU261, unless the cause was extraordinary (weather, ATC strikes). Meanwhile they owe you meals and, overnight, a hotel. Ask the airline for the reason in writing.', { flight: f.number, from: f.from.code, to: f.to.code, km: f.distanceKm, amount: f.distanceKm <= 1500 ? 250 : 400 }));
+    } else if (/(visa|viză|viza|entry|intrare|pașaport|pasaport|passport|weather|vreme)/.test(q)) {
+      await tool('t2', 'web_search', 1300);
+      emit({ type: 'sources', items: [{ title: 'Re-open EU', url: 'https://reopen.europa.eu' }, { title: 'Ministry of Foreign Affairs', url: 'https://www.mae.ro' }] });
+      await write(t('{from} → {to} is inside the Schengen area: a valid ID card or passport is required.', { from: f.from.city, to: f.to.city }) + ' ' + t('No visa needed for EU citizens. Always check the official travel advice before you fly.'));
+    } else {
+      await write(t('Your next flight is **{flight}** {from} → {to}, **{time}** local time, gate **{gate}**. I can prepare your checklist, plan the airport day or check your rights if it’s delayed.', { flight: f.number, from: f.from.code, to: f.to.code, time: when(f.departure, f.from.timezone), gate: f.gate ?? t('TBA') }));
+    }
+    emit({ type: 'done' });
   }
 
   // ---------- Alerts ----------

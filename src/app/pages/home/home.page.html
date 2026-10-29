@@ -121,6 +121,13 @@
       <gm-live-flight class="live-card anim-scale-in" [flight]="lf" />
     }
 
+    <!-- Velo, the AI travel agent -->
+    <a class="velo-card anim-fade-up" routerLink="/assistant" gmPressable>
+      <i class="velo-orb" aria-hidden="true"></i>
+      <span class="row-text"><b>{{ 'Ask Velo' | t }}</b><small>{{ 'Your AI travel agent, by Velosyntech' | t }}</small></span>
+      <span class="velo-go"><ion-icon name="sparkles" /></span>
+    </a>
+
     <!-- Quick actions -->
     <div class="actions card">
       @for (a of actions; track a.label; let i = $index) {

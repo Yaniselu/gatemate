@@ -26,6 +26,7 @@ export class WelcomePage {
 
   /** What the app does, one line at a time. */
   readonly pitches = [
+    { icon: '✨', text: 'Velo, your AI travel agent by Velosyntech' },
     { icon: '🎫', text: 'Boarding passes that work offline' },
     { icon: '🔔', text: 'Gate, boarding and delay alerts' },
     { icon: '🗺️', text: 'Detailed airport maps to your gate' },

@@ -1,0 +1,127 @@
+<ion-header class="gm-glass-header" [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/home" text="" icon="chevron-back" /></ion-buttons>
+    <ion-title>
+      <span class="title"><i class="orb mini" aria-hidden="true"></i>Velo <small>{{ 'AI agent' | t }}</small></span>
+    </ion-title>
+    <ion-buttons slot="end">
+      @if (velo.messages().length) {
+        <button class="icon-btn" (click)="newChat()" [attr.aria-label]="'New conversation' | t"><ion-icon name="create-outline" /></button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    @if (!velo.messages().length) {
+      <section class="hero">
+        <div class="orb big" aria-hidden="true"><i></i><i></i><i></i></div>
+        <h1 class="anim-fade-up">{{ 'Hi {name}, I’m Velo' | t: { name: firstName() } }}</h1>
+        <p class="lead anim-fade-up" style="--i: 1">
+          {{ 'Your AI travel agent. I know your trips, I can search the web and I take care of things for you.' | t }}
+        </p>
+        <span class="by anim-fade-up" style="--i: 2"><ion-icon name="sparkles" /> {{ 'Built by Velosyntech' | t }}</span>
+      </section>
+
+      @if (off()) {
+        <div class="card pad notice anim-fade-up">
+          <ion-icon name="time-outline" />
+          <p>{{ 'Velo is getting ready on our servers. Check back soon!' | t }}</p>
+        </div>
+      } @else {
+        <h2 class="gm-label section">{{ 'Let Velo handle it' | t }}</h2>
+        <div class="auto-grid">
+          @for (a of automations; track a.title; let i = $index) {
+            <button class="auto card" [style.--c]="a.color" [style.--i]="i" (click)="run(a.prompt)" [disabled]="velo.busy()">
+              <span class="ic"><ion-icon [name]="a.icon" /></span>
+              <b>{{ a.title | t }}</b>
+            </button>
+          }
+        </div>
+      }
+    } @else {
+      <div class="thread" (click)="openLink($event)">
+        @for (m of velo.messages(); track m.id) {
+          @if (m.role === 'user') {
+            <div class="msg user anim-fade-up"><p>{{ m.text }}</p></div>
+          } @else {
+            <div class="msg bot anim-fade-up">
+              <i class="orb mini" [class.thinking]="m.streaming" aria-hidden="true"></i>
+              <div class="body">
+                @if (m.steps.length) {
+                  <div class="steps">
+                    @for (s of m.steps; track s.id) {
+                      <span class="step" [class]="s.state">
+                        @if (s.state === 'running') { <i class="spin"></i> } @else if (s.state === 'done') { <ion-icon name="checkmark-circle" /> } @else { <ion-icon name="alert-circle-outline" /> }
+                        <ion-icon [name]="stepIcon(s.name)" class="kind" />{{ stepLabel(s.name) | t }}
+                      </span>
+                    }
+                  </div>
+                }
+                @if (m.text) {
+                  <div class="text" [innerHTML]="m.text | richText"></div>
+                } @else if (m.streaming && !m.error) {
+                  <div class="typing" [attr.aria-label]="'Velo is thinking' | t"><i></i><i></i><i></i></div>
+                }
+                @if (m.streaming && m.text) { <span class="caret" aria-hidden="true"></span> }
+                @for (a of m.actions; track $index) {
+                  <a class="action" [routerLink]="['/trip', a.tripId]">
+                    <ion-icon name="checkbox-outline" />
+                    <span>{{ 'Added {n} items to your checklist' | t: { n: a.added.length } }}</span>
+                    <ion-icon name="chevron-forward" class="chev" />
+                  </a>
+                }
+                @if (m.sources.length) {
+                  <div class="sources">
+                    <span class="gm-label">{{ 'Sources' | t }}</span>
+                    @for (s of m.sources; track s.url) {
+                      <button (click)="open(s.url)" [title]="s.title"><ion-icon name="globe-outline" />{{ host(s.url) }}</button>
+                    }
+                  </div>
+                }
+                @if (m.error) {
+                  <p class="error"><ion-icon name="alert-circle-outline" /> {{ m.error }}</p>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="composer-wrap">
+  @if (left() !== null && left()! <= 5 && !off()) {
+    <div class="quota">
+      @if (left() === 0) {
+        {{ 'You’ve used today’s Velo messages.' | t }} <a routerLink="/pro" [queryParams]="{ reason: 'velo' }">{{ 'Get more with Pro' | t }}</a>
+      } @else {
+        {{ '{n} Velo messages left today' | t: { n: left()! } }}
+      }
+    </div>
+  }
+  <div class="composer glass strong">
+    <textarea
+      #input
+      rows="1"
+      [ngModel]="draft()"
+      (ngModelChange)="draft.set($event)"
+      (keydown)="onKey($event)"
+      maxlength="4000"
+      [placeholder]="'Ask Velo anything about your trip' | t"
+      [attr.aria-label]="'Ask Velo anything about your trip' | t"
+      [disabled]="off()"
+      enterkeyhint="send"
+    ></textarea>
+    @if (velo.busy()) {
+      <button class="send stop" (click)="velo.stop()" [attr.aria-label]="'Stop' | t"><ion-icon name="stop-circle" /></button>
+    } @else {
+      <button class="send" [class.ready]="draft().trim().length > 0" (click)="send()" [attr.aria-label]="'Send' | t" [disabled]="!draft().trim() || off()">
+        <ion-icon name="arrow-up" />
+      </button>
+    }
+  </div>
+  <small class="fine">{{ 'Velo can make mistakes. Check important details with your airline.' | t }}</small>
+</ion-footer>

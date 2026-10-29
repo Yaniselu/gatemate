@@ -8,6 +8,7 @@ import { ConfettiService } from '../../shared/components/confetti.service';
 import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 const FEATURES = [
+  { icon: 'sparkles', title: '10× more Velo', body: '200 messages a day with your AI travel agent, instead of 20.' },
   { icon: 'airplane-outline', title: 'Unlimited trips', body: 'Free accounts keep 3 upcoming trips at a time.' },
   { icon: 'compass-outline', title: 'Full city guides', body: 'Every top sight, not just the first eight.' },
   { icon: 'swap-horizontal-outline', title: 'Settle up in one tap', body: 'Who owes whom, with the fewest transfers, plus CSV export.' },
@@ -138,6 +139,7 @@ export class ProPage implements OnInit {
       case 'trips': return tr('You’ve reached 3 upcoming trips on the free plan. Go unlimited.');
       case 'explore': return tr('See every top sight in the cities you visit.');
       case 'expenses': return tr('Settle up with your travel group in one tap.');
+      case 'velo': return tr('Plan more with Velo: 200 messages a day.');
       default: return tr('Everything in Gatemate, without limits.');
     }
   });

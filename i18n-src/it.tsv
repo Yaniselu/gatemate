@@ -1246,3 +1246,64 @@
 @manual	manuale
 @1 visit	1 visita
 @{n} visits	{n} visite
+@Velo is unavailable right now. Try again in a moment.	Velo non è disponibile ora. Riprova tra un momento.
+@Checking your trips	Controllo i tuoi viaggi
+@Checking your flight	Controllo il tuo volo
+@Looking up the airport	Cerco l’aeroporto
+@Reading the destination guide	Leggo la guida della destinazione
+@Converting currency	Converto la valuta
+@Checking your rights	Controllo i tuoi diritti
+@Adding to your checklist	Aggiungo alla tua lista
+@Searching the web	Cerco sul web
+@Plan more with Velo: 200 messages a day.	Pianifica di più con Velo: 200 messaggi al giorno.
+@10× more Velo	10× più Velo
+@200 messages a day with your AI travel agent, instead of 20.	200 messaggi al giorno con il tuo agente di viaggio IA, invece di 20.
+@Prepare my next trip	Prepara il mio prossimo viaggio
+@Plan my airport day	Pianifica la giornata in aeroporto
+@Destination briefing	Briefing sulla destinazione
+@My flight is delayed	Il mio volo è in ritardo
+@Documents & entry rules	Documenti e regole d’ingresso
+@What to pack	Cosa mettere in valigia
+@AI agent	Agente IA
+@New conversation	Nuova conversazione
+@Hi {name}, I’m Velo	Ciao {name}, sono Velo
+@Your AI travel agent. I know your trips, I can search the web and I take care of things for you.	Il tuo agente di viaggio IA. Conosco i tuoi viaggi, cerco sul web e mi occupo delle cose per te.
+@Built by Velosyntech	Creato da Velosyntech
+@Velo is getting ready on our servers. Check back soon!	Velo si sta preparando sui nostri server. Torna presto!
+@Let Velo handle it	Lascia fare a Velo
+@Velo is thinking	Velo sta pensando
+@Added {n} items to your checklist	Ho aggiunto {n} cose alla tua lista
+@Sources	Fonti
+@You’ve used today’s Velo messages.	Hai usato i messaggi Velo di oggi.
+@Get more with Pro	Di più con Pro
+@{n} Velo messages left today	Ti restano {n} messaggi Velo oggi
+@Ask Velo anything about your trip	Chiedi a Velo qualsiasi cosa sul tuo viaggio
+@Stop	Ferma
+@Velo can make mistakes. Check important details with your airline.	Velo può sbagliare. Verifica i dettagli importanti con la compagnia aerea.
+@Ask Velo about {city}	Chiedi a Velo su {city}
+@Your AI travel agent, by Velosyntech	Il tuo agente di viaggio IA, di Velosyntech
+@Let Velo prepare this list	Lascia che Velo prepari questa lista
+@From your flights, the weather and the destination	Dai tuoi voli, dal meteo e dalla destinazione
+@{done} of {total} done	{done} di {total} fatte
+@Ask Velo	Chiedi a Velo
+@Prepare my next trip: check my flights and the destination, then add what I need to my checklist.	Prepara il mio prossimo viaggio: controlla i miei voli e la destinazione, poi aggiungi alla lista quello che mi serve.
+@Plan my airport day for my next flight: when to leave, check-in, security and boarding, with times.	Pianifica la giornata del mio prossimo volo: quando partire, check-in, controlli di sicurezza e imbarco, con gli orari.
+@Give me a short briefing on my next destination: money, plugs, transport, customs and public holidays during my trip.	Fammi un breve briefing sulla mia prossima destinazione: soldi, prese, trasporti, usanze e festività durante il viaggio.
+@My flight is delayed. What are my rights and what should I do now?	Il mio volo è in ritardo. Quali sono i miei diritti e cosa devo fare adesso?
+@What documents do I need for my next trip? Check the latest official entry rules.	Di quali documenti ho bisogno per il mio prossimo viaggio? Controlla le regole d’ingresso ufficiali più recenti.
+@What should I pack for my next trip, given the weather and my baggage allowance?	Cosa devo mettere in valigia per il prossimo viaggio, in base al meteo e al bagaglio incluso?
+@Velo is very busy right now. Try again in a minute.	Velo è molto richiesto ora. Riprova tra un minuto.
+@Velo can’t help with that. Ask something about your travel.	Velo non può aiutarti con questo. Chiedi qualcosa sul tuo viaggio.
+@Working on it	Ci sto lavorando
+@You have no upcoming trips yet. Add a flight and I’ll plan the day with you ✈️	Non hai ancora viaggi in programma. Aggiungi un volo e pianifico la giornata con te ✈️
+@Done! I added **{n} items** to your {city} checklist:	Fatto! Ho aggiunto **{n} cose** alla tua lista per {city}:
+@Flight **{flight}** leaves **{time}** local time. Check in online 24 h before.	Il volo **{flight}** parte **{time}**, ora locale. Fai il check-in online 24 h prima.
+@For **{flight}** ({from} → {to}, about {km} km), if you land **3 h or more** late you can claim **€{amount}** from the airline under EU261, unless the cause was extraordinary (weather, ATC strikes). Meanwhile they owe you meals and, overnight, a hotel. Ask the airline for the reason in writing.	Per **{flight}** ({from} → {to}, circa {km} km), se arrivi con **3 h o più** di ritardo puoi chiedere **{amount} €** alla compagnia secondo l’EU261, salvo circostanze eccezionali (meteo, scioperi del controllo aereo). Nel frattempo ti deve pasti e, per la notte, un hotel. Chiedi il motivo per iscritto.
+@No visa needed for EU citizens. Always check the official travel advice before you fly.	I cittadini UE non hanno bisogno del visto. Controlla sempre gli avvisi ufficiali prima di volare.
+@Your next flight is **{flight}** {from} → {to}, **{time}** local time, gate **{gate}**. I can prepare your checklist, plan the airport day or check your rights if it’s delayed.	Il tuo prossimo volo è **{flight}** {from} → {to}, **{time}** ora locale, gate **{gate}**. Posso preparare la lista, pianificare la giornata in aeroporto o controllare i tuoi diritti se è in ritardo.
+@Velo isn’t switched on on this server yet.	Velo non è ancora attivo su questo server.
+@You’ve used today’s Velo messages. They reset at midnight UTC.	Hai usato i messaggi Velo di oggi. Si azzerano a mezzanotte (UTC).
+@You’ve used today’s free Velo messages. Gatemate Pro has 10× more.	Hai usato i messaggi Velo gratuiti di oggi. Gatemate Pro ne ha 10× di più.
+@Start a new conversation.	Inizia una nuova conversazione.
+@Ask Velo something.	Chiedi qualcosa a Velo.
+@Velo, your AI travel agent by Velosyntech	Velo, il tuo agente di viaggio IA, di Velosyntech

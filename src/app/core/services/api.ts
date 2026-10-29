@@ -65,6 +65,29 @@ export interface EmailPreview {
   nameFound: boolean;
 }
 
+/** Velo, the AI travel agent: whether it's on, and today's messages. */
+export interface AssistantStatus {
+  enabled: boolean;
+  used: number;
+  limit: number;
+}
+
+export interface AssistantTurn {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
+/** What streams back while Velo answers. */
+export type AssistantEvent =
+  | { type: 'delta'; text: string }
+  | { type: 'tool'; id: string; name: string }
+  | { type: 'tool_done'; id: string; ok: boolean }
+  | { type: 'action'; kind: 'checklist'; tripId: string; added: string[] }
+  | { type: 'sources'; items: { title: string; url: string }[] }
+  | { type: 'truncated' }
+  | { type: 'done' }
+  | { type: 'error'; message: string };
+
 export abstract class GatemateApi {
   // Auth
   abstract loginWithPassword(email: string, password: string): Promise<Session>;
@@ -105,6 +128,11 @@ export abstract class GatemateApi {
   abstract toggleChecklistItem(tripId: string, itemId: string, done: boolean): Promise<void>;
   abstract addExpense(tripId: string, expense: Omit<Expense, 'id' | 'createdAt'>): Promise<Expense>;
   abstract getFlightStatus(flightId: string): Promise<Flight>;
+
+  // Velo (AI travel agent)
+  abstract assistantStatus(): Promise<AssistantStatus>;
+  /** Streams one answer; resolves when it's finished (or aborted). */
+  abstract assistantChat(messages: AssistantTurn[], onEvent: (e: AssistantEvent) => void, signal: AbortSignal): Promise<void>;
 
   // Alerts
   abstract getAlerts(): Promise<FlightAlert[]>;

@@ -195,19 +195,29 @@
               <span class="txt"><b>{{ 'Explore {city}' | t: { city: t.destination.city } }}</b><small>{{ 'Top sights, holidays on your dates, phrases, money and what to pack' | t }}</small></span>
               <ion-icon name="chevron-forward" class="chev" />
             </a>
+            <a class="velo-cta" [routerLink]="['/assistant']" [queryParams]="{ trip: t.id, prompt: 'Give me a short briefing on my next destination: money, plugs, transport, customs and public holidays during my trip.' }" gmPressable>
+              <i class="velo-orb" aria-hidden="true"></i>
+              <span class="txt"><b>{{ 'Ask Velo about {city}' | t: { city: t.destination.city } }}</b><small>{{ 'Your AI travel agent, by Velosyntech' | t }}</small></span>
+              <ion-icon name="sparkles" class="go" />
+            </a>
             <gm-destination-guide [iata]="t.destination.code" />
           </div>
         }
 
         @case ('checklist') {
           <div class="section">
+            <a class="velo-cta" [routerLink]="['/assistant']" [queryParams]="{ trip: t.id, prompt: 'Prepare my next trip: check my flights and the destination, then add what I need to my checklist.' }" gmPressable>
+              <i class="velo-orb" aria-hidden="true"></i>
+              <span class="txt"><b>{{ 'Let Velo prepare this list' | t }}</b><small>{{ 'From your flights, the weather and the destination' | t }}</small></span>
+              <ion-icon name="sparkles" class="go" />
+            </a>
             <div class="ring-row card anim-scale-in">
               <svg viewBox="0 0 80 80" class="ring">
                 <circle cx="40" cy="40" r="34" class="bg" />
                 <circle cx="40" cy="40" r="34" class="fg" [style.stroke-dashoffset]="214 - 214 * checklistRatio()" />
               </svg>
               <div>
-                <b>{{ checklistDone() }} of {{ t.checklist.length }} done</b>
+                <b>{{ '{done} of {total} done' | t: { done: checklistDone(), total: t.checklist.length } }}</b>
                 <p>{{ checklistRatio() === 1 ? ('You are ready for take-off! 🎉' | t) : ('Tick things off as you pack.' | t) }}</p>
               </div>
             </div>

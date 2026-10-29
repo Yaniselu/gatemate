@@ -1246,3 +1246,64 @@
 @manual	manual
 @1 visit	1 vizită
 @{n} visits	{n} vizite
+@Velo is unavailable right now. Try again in a moment.	Velo nu e disponibil acum. Încearcă din nou imediat.
+@Checking your trips	Mă uit în călătoriile tale
+@Checking your flight	Verific zborul
+@Looking up the airport	Caut aeroportul
+@Reading the destination guide	Citesc ghidul destinației
+@Converting currency	Calculez cursul valutar
+@Checking your rights	Verific drepturile tale
+@Adding to your checklist	Adaug în listă
+@Searching the web	Caut pe web
+@Plan more with Velo: 200 messages a day.	Planifică mai mult cu Velo: 200 de mesaje pe zi.
+@10× more Velo	De 10× mai mult Velo
+@200 messages a day with your AI travel agent, instead of 20.	200 de mesaje pe zi cu agentul tău AI de călătorie, în loc de 20.
+@Prepare my next trip	Pregătește-mi următoarea călătorie
+@Plan my airport day	Planul zilei de zbor
+@Destination briefing	Ce trebuie să știu despre destinație
+@My flight is delayed	Zborul meu întârzie
+@Documents & entry rules	Acte și reguli de intrare
+@What to pack	Ce să pun în bagaj
+@AI agent	Agent AI
+@New conversation	Conversație nouă
+@Hi {name}, I’m Velo	Salut, {name}! Sunt Velo
+@Your AI travel agent. I know your trips, I can search the web and I take care of things for you.	Agentul tău AI de călătorie. Îți știu călătoriile, caut pe web și rezolv lucruri pentru tine.
+@Built by Velosyntech	Creat de Velosyntech
+@Velo is getting ready on our servers. Check back soon!	Velo se pregătește pe serverele noastre. Revino în curând!
+@Let Velo handle it	Lasă-l pe Velo să se ocupe
+@Velo is thinking	Velo se gândește
+@Added {n} items to your checklist	Am adăugat {n} lucruri în listă
+@Sources	Surse
+@You’ve used today’s Velo messages.	Ai folosit mesajele Velo de azi.
+@Get more with Pro	Primește mai multe cu Pro
+@{n} Velo messages left today	Îți mai rămân {n} mesaje Velo azi
+@Ask Velo anything about your trip	Întreabă-l pe Velo orice despre călătorie
+@Stop	Oprește
+@Velo can make mistakes. Check important details with your airline.	Velo poate greși. Verifică detaliile importante cu compania aeriană.
+@Ask Velo about {city}	Întreabă-l pe Velo despre {city}
+@Your AI travel agent, by Velosyntech	Agentul tău AI de călătorie, creat de Velosyntech
+@Let Velo prepare this list	Lasă-l pe Velo să pregătească lista
+@From your flights, the weather and the destination	Din zborurile tale, vreme și destinație
+@{done} of {total} done	{done} din {total} gata
+@Ask Velo	Întreabă-l pe Velo
+@Prepare my next trip: check my flights and the destination, then add what I need to my checklist.	Pregătește-mi următoarea călătorie: verifică-mi zborurile și destinația, apoi adaugă în listă ce-mi trebuie.
+@Plan my airport day for my next flight: when to leave, check-in, security and boarding, with times.	Planifică-mi ziua de zbor pentru următorul zbor: când plec, check-in, controlul de securitate și îmbarcarea, cu ore.
+@Give me a short briefing on my next destination: money, plugs, transport, customs and public holidays during my trip.	Spune-mi pe scurt ce trebuie să știu despre următoarea destinație: bani, prize, transport, obiceiuri și sărbători legale în timpul călătoriei.
+@My flight is delayed. What are my rights and what should I do now?	Zborul meu întârzie. Ce drepturi am și ce ar trebui să fac acum?
+@What documents do I need for my next trip? Check the latest official entry rules.	Ce acte îmi trebuie pentru următoarea călătorie? Verifică cele mai noi reguli oficiale de intrare.
+@What should I pack for my next trip, given the weather and my baggage allowance?	Ce să pun în bagaj pentru următoarea călătorie, ținând cont de vreme și de bagajul inclus?
+@Velo is very busy right now. Try again in a minute.	Velo e foarte ocupat acum. Încearcă din nou peste un minut.
+@Velo can’t help with that. Ask something about your travel.	Velo nu te poate ajuta cu asta. Întreabă ceva despre călătoria ta.
+@Working on it	Lucrez la asta
+@You have no upcoming trips yet. Add a flight and I’ll plan the day with you ✈️	Încă nu ai călătorii viitoare. Adaugă un zbor și îți planific ziua ✈️
+@Done! I added **{n} items** to your {city} checklist:	Gata! Am adăugat **{n} lucruri** în lista pentru {city}:
+@Flight **{flight}** leaves **{time}** local time. Check in online 24 h before.	Zborul **{flight}** pleacă **{time}**, ora locală. Fă check-in online cu 24 h înainte.
+@For **{flight}** ({from} → {to}, about {km} km), if you land **3 h or more** late you can claim **€{amount}** from the airline under EU261, unless the cause was extraordinary (weather, ATC strikes). Meanwhile they owe you meals and, overnight, a hotel. Ask the airline for the reason in writing.	Pentru **{flight}** ({from} → {to}, cam {km} km), dacă aterizezi cu **3 h sau mai mult** întârziere, poți cere **{amount} €** de la companie conform EU261, cu excepția cauzelor extraordinare (vreme, greve ale controlorilor de trafic). Între timp îți datorează mese și, peste noapte, hotel. Cere companiei motivul în scris.
+@No visa needed for EU citizens. Always check the official travel advice before you fly.	Cetățenii UE nu au nevoie de viză. Verifică mereu recomandările oficiale de călătorie înainte de zbor.
+@Your next flight is **{flight}** {from} → {to}, **{time}** local time, gate **{gate}**. I can prepare your checklist, plan the airport day or check your rights if it’s delayed.	Următorul tău zbor e **{flight}** {from} → {to}, **{time}** ora locală, poarta **{gate}**. Pot să-ți pregătesc lista, să-ți planific ziua în aeroport sau să-ți verific drepturile dacă întârzie.
+@Velo isn’t switched on on this server yet.	Velo nu e încă pornit pe acest server.
+@You’ve used today’s Velo messages. They reset at midnight UTC.	Ai folosit mesajele Velo de azi. Se resetează la miezul nopții (UTC).
+@You’ve used today’s free Velo messages. Gatemate Pro has 10× more.	Ai folosit mesajele Velo gratuite de azi. Gatemate Pro are de 10× mai multe.
+@Start a new conversation.	Începe o conversație nouă.
+@Ask Velo something.	Întreabă-l ceva pe Velo.
+@Velo, your AI travel agent by Velosyntech	Velo, agentul tău AI de călătorie, de la Velosyntech

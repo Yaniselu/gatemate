@@ -1,10 +1,11 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, Injector } from '@angular/core';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
-import { ApiError, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 import { currentLang, t } from '../i18n/i18n.service';
+import { AuthService } from './auth.service';
 
 // Generous: a free-tier server can take ~50 s to wake up after being idle.
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -14,6 +15,7 @@ const REQUEST_TIMEOUT_MS = 120_000;
 export class HttpApi extends GatemateApi {
   private http = inject(HttpClient);
   private base = environment.apiUrl;
+  private injector = inject(Injector);
 
   private async call<T>(req: Observable<T>): Promise<T> {
     try {
@@ -113,6 +115,70 @@ export class HttpApi extends GatemateApi {
   }
   getFlightStatus(flightId: string) {
     return this.call(this.http.get<Flight>(`${this.base}/flights/${enc(flightId)}/status`));
+  }
+
+  assistantStatus() {
+    return this.call(this.http.get<AssistantStatus>(`${this.base}/assistant`));
+  }
+
+  /**
+   * Server-sent events over fetch (HttpClient buffers the whole response, which would hide the streaming). Same
+   * token rules as the interceptor: our own origin only, refreshed once on 401.
+   */
+  async assistantChat(messages: AssistantTurn[], onEvent: (e: AssistantEvent) => void, signal: AbortSignal): Promise<void> {
+    const auth = this.injector.get(AuthService);
+    const send = async (token: string | null) =>
+      fetch(`${this.base}/assistant/chat`, {
+        method: 'POST',
+        signal,
+        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', 'X-Requested-With': 'Gatemate', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ messages }),
+      });
+    let res: Response;
+    try {
+      res = await send(await auth.getAccessToken());
+      if (res.status === 401) res = await send((await auth.refresh())?.accessToken ?? null);
+    } catch (e) {
+      if (signal.aborted) return;
+      throw new ApiError(t('No connection. Check your internet and try again.'), 0);
+    }
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      const api = typeof body?.code === 'string' && typeof body?.message === 'string' && res.status < 500;
+      throw new ApiError(api ? t(body.message) : t('Something went wrong on our side. Please try again.'), res.status, body?.code, Number(res.headers.get('Retry-After')) || undefined);
+    }
+    let buffer = '';
+    const flush = (final: boolean) => {
+      const parts = buffer.split(/\r?\n\r?\n/);
+      buffer = final ? '' : (parts.pop() ?? '');
+      for (const part of parts) {
+        const data = part.split(/\r?\n/).filter((l) => l.startsWith('data:')).map((l) => l.slice(5).replace(/^ /, '')).join('\n');
+        if (!data) continue;
+        try {
+          onEvent(JSON.parse(data) as AssistantEvent);
+        } catch {
+          // A malformed event is skipped; the rest of the answer still arrives.
+        }
+      }
+    };
+    try {
+      if (res.body) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          flush(false);
+        }
+      } else {
+        buffer = await res.text(); // no streaming support: the whole answer at once
+      }
+      buffer += '\n\n';
+      flush(true);
+    } catch (e) {
+      if (!signal.aborted) throw new ApiError(t('No connection. Check your internet and try again.'), 0);
+    }
   }
 
   getAlerts() {
