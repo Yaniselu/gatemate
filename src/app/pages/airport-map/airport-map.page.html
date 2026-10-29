@@ -7,7 +7,7 @@
 
 <ion-content [fullscreen]="true" [scrollY]="false">
   @if (airport(); as a) {
-    <gm-airport-plan class="full" [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [selectedPlace]="placeId()" [category]="category()" [zoom]="15.5" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
+    <gm-airport-plan class="full" [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [selectedPlace]="placeId()" [category]="category()" [level]="level()" [zoom]="15.5" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
 
     <div class="gate-bar glass" slot="fixed">
       @if (categories().length) {
@@ -32,6 +32,13 @@
       }
     </div>
 
+    @if (levels().length > 1) {
+      <div class="levels glass" slot="fixed" aria-label="Floor">
+        @for (l of levels().slice().reverse(); track l) {
+          <button [class.on]="level() === l" (click)="setLevel(l)" [attr.aria-label]="'Level ' + l">{{ levelName(l) }}</button>
+        }
+      </div>
+    }
     <div class="tools glass" slot="fixed">
       <button (click)="zoom(1)" aria-label="Zoom in"><ion-icon name="add" /></button>
       <button (click)="zoom(-1)" aria-label="Zoom out"><ion-icon name="remove-outline" /></button>

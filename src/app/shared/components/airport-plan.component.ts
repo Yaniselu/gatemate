@@ -36,6 +36,8 @@ export class AirportPlanComponent {
   readonly selectedPlace = input<string | null>(null);
   /** Show only this category's places (null = all). */
   readonly category = input<PoiKind | null>(null);
+  /** Floor to show; places on other floors are hidden (null = everything). */
+  readonly level = input<string | null>(null);
   readonly interactive = input(true);
   readonly zoom = input(15);
   readonly gateTap = output<string>();
@@ -56,7 +58,8 @@ export class AirportPlanComponent {
     effect(() => {
       const f = this.features();
       const c = this.category();
-      void this.ensure().then(() => this.drawBase(f, c));
+      const lv = this.level();
+      void this.ensure().then(() => this.drawBase(f, c, lv));
     });
     effect(() => {
       const f = this.features(), me = this.me(), gate = this.selectedGate(), place = this.selectedPlace();
@@ -114,9 +117,10 @@ export class AirportPlanComponent {
     el.classList.toggle('z-gates', z >= 16);
     el.classList.toggle('z-names', z >= 14);
     el.classList.toggle('z-far', z < 14);
+    el.classList.toggle('z-shops', z >= 17.5);
   }
 
-  private drawBase(features: MapFeature[], category: PoiKind | null) {
+  private drawBase(features: MapFeature[], category: PoiKind | null, level: string | null = null) {
     const L = this.L!, map = this.map!, layer = this.base!;
     layer.clearLayers();
     this.strips = [];
@@ -139,12 +143,23 @@ export class AirportPlanComponent {
         L.polygon(t.outline, { color: '#0fb5c3', weight: 2, fillColor: '#5fd6df', fillOpacity: 0.32, interactive: false, className: 'gm-terminal-outline' }).addTo(layer);
       }
     }
+    const here = (f: MapFeature) => onLevel(f.level, level);
+    // Inside the terminals: corridors (walkways) and rooms, so the floor plan reads like a building.
+    for (const c of by('corridor').filter(here)) L.polygon(c.outline!, { color: '#c9d4dd', weight: 1, fillColor: '#ffffff', fillOpacity: 0.95, interactive: false }).addTo(layer);
+    for (const r of by('room').filter(here)) L.polygon(r.outline!, { color: '#b9c6d2', weight: 1, fillColor: '#eef2f6', fillOpacity: 1, interactive: false }).addTo(layer);
+
+    const pois = features.filter((f) => f.kind === 'poi' && here(f) && (!category || f.poi === category));
+    // Shops, cafés, toilets… mapped as areas: their real footprint, in the category colour.
+    for (const p of pois.filter((x) => x.outline)) {
+      const meta = POI_META[p.poi ?? 'info'] ?? POI_META.info;
+      const shape = L.polygon(p.outline!, { color: meta.color, weight: 1.5, fillColor: meta.color, fillOpacity: 0.3, interactive: this.interactive() }).addTo(layer);
+      if (this.interactive()) shape.on('click', () => p.id && this.placeTap.emit(p.id));
+    }
     // Every place as a coloured dot (canvas: fast with hundreds of them).
-    const pois = features.filter((f) => f.kind === 'poi' && (!category || f.poi === category));
     for (const p of pois) {
       const meta = POI_META[p.poi ?? 'info'] ?? POI_META.info;
       const dot = L.circleMarker([p.lat, p.lon], {
-        radius: category ? 7 : 5.5,
+        radius: p.outline ? 4 : category ? 7 : 5.5,
         color: '#ffffff',
         weight: 1.5,
         fillColor: meta.color,
@@ -160,10 +175,17 @@ export class AirportPlanComponent {
     for (const t of by('terminal')) {
       L.marker([t.lat, t.lon], { icon: L.divIcon({ className: 'gm-plan-terminal', html: `<span>${esc(t.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
     }
+    // Names written inside the shops once zoomed in.
+    for (const p of pois.filter((x) => x.outline)) {
+      L.marker([p.lat, p.lon], { icon: L.divIcon({ className: 'gm-plan-shop', html: `<span>${esc(p.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
+    }
+    for (const r of by('room').filter(here)) {
+      if (r.ref) L.marker([r.lat, r.lon], { icon: L.divIcon({ className: 'gm-plan-shop room', html: `<span>${esc(r.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
+    }
     for (const r of by('runway')) {
       if (r.ref) L.marker([r.lat, r.lon], { icon: L.divIcon({ className: 'gm-plan-runway', html: `<span>${esc(r.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
     }
-    for (const g of by('gate')) {
+    for (const g of by('gate').filter(here)) {
       const m = L.marker([g.lat, g.lon], { icon: L.divIcon({ className: 'gm-plan-gate', html: `<span>${esc(g.ref)}</span>`, iconSize: undefined }), interactive: this.interactive() });
       m.on('click', () => this.gateTap.emit(g.ref));
       m.addTo(layer);
@@ -207,12 +229,33 @@ export class AirportPlanComponent {
 
   recenter() {
     this.framedFor = '';
-    this.drawBase(this.features(), this.category());
+    this.drawBase(this.features(), this.category(), this.level());
   }
 
   zoomBy(d: number) {
     if (this.map) this.map.setZoom(this.map.getZoom() + d);
   }
+}
+
+/** OSM "level" can be "1", "0;1" or "-1-2". Untagged things show on every floor. */
+export function onLevel(tag: string | undefined, level: string | null): boolean {
+  if (!level || !tag) return true;
+  return tag.split(';').some((part) => {
+    const t = part.trim();
+    const range = t.match(/^(-?\d+(?:\.\d+)?)-(-?\d+(?:\.\d+)?)$/);
+    if (range) return +level >= +range[1] && +level <= +range[2];
+    return t === level;
+  });
+}
+
+/** The floors the airport has, lowest first. */
+export function levelsOf(features: MapFeature[]): string[] {
+  const set = new Set<string>();
+  for (const f of features) {
+    if (!f.level || (f.kind !== 'poi' && f.kind !== 'room' && f.kind !== 'corridor')) continue;
+    for (const part of f.level.split(';')) if (/^-?\d+(\.\d+)?$/.test(part.trim())) set.add(part.trim());
+  }
+  return [...set].sort((a, b) => +a - +b);
 }
 
 function esc(s: string) {

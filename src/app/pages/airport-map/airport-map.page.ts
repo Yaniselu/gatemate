@@ -5,7 +5,7 @@ import { GatesService, MapFeature } from '../../core/services/gates.service';
 import { directionsUrl, LocationService, walkMinutes } from '../../core/services/location.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { PrefsService } from '../../core/services/prefs.service';
-import { AirportPlanComponent } from '../../shared/components/airport-plan.component';
+import { AirportPlanComponent, levelsOf } from '../../shared/components/airport-plan.component';
 import { POI_META, POI_ORDER, PoiKind } from '../../core/data/airport-poi';
 import { openState } from '../../core/utils/opening-hours';
 import { AchievementsService } from '../../core/services/achievements.service';
@@ -37,6 +37,18 @@ export class AirportMapPage implements OnInit, OnDestroy {
   readonly placeId = signal<string | null>(null);
   protected readonly meta = POI_META;
   readonly category = signal<PoiKind | null>(null);
+  readonly levels = computed(() => levelsOf(this.features() ?? []));
+  /** Floor on screen: the one you picked, else the one where most places are. */
+  readonly pickedLevel = signal<string | null>(null);
+  readonly level = computed(() => {
+    const all = this.levels();
+    if (all.length < 2) return null;
+    const p = this.pickedLevel();
+    if (p && all.includes(p)) return p;
+    const count = new Map<string, number>();
+    for (const f of this.features() ?? []) if (f.kind === 'poi' && f.level && all.includes(f.level)) count.set(f.level, (count.get(f.level) ?? 0) + 1);
+    return [...count.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? all[0];
+  });
   readonly categories = computed(() => {
     const have = new Set((this.features() ?? []).filter((f) => f.kind === 'poi').map((f) => f.poi!));
     return POI_ORDER.filter((k) => have.has(k));
@@ -69,7 +81,11 @@ export class AirportMapPage implements OnInit, OnDestroy {
     this.airport.set(a);
     if (this.gate()) this.selected.set(this.gate()!);
     if (this.place()) this.placeId.set(this.place()!);
+    // Opening a place from the guide: show its floor.
+    const lvl = () => (this.features() ?? []).find((f) => f.id === this.place())?.level?.split(';')[0]?.trim();
     await this.loadGates();
+    const l = this.place() ? lvl() : undefined;
+    if (l) this.pickedLevel.set(l);
   }
 
   readonly gatesError = signal(false);
@@ -101,6 +117,15 @@ export class AirportMapPage implements OnInit, OnDestroy {
     this.platform.selection();
     this.selected.set(null);
     this.placeId.set(this.placeId() === id ? null : id);
+  }
+
+  setLevel(l: string) {
+    this.platform.selection();
+    this.pickedLevel.set(l);
+  }
+
+  levelName(l: string) {
+    return l === '0' ? 'G' : l;
   }
 
   setCategory(c: PoiKind | null) {

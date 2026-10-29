@@ -183,3 +183,27 @@
     &.on { color: #fff; background: var(--c); i { background: #fff; } }
   }
 }
+
+.levels {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 16px;
+  button {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--gm-ink-2);
+    background: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s var(--gm-ease-spring);
+    &.on { color: #fff; background: var(--gm-accent-strong); transform: scale(1.06); }
+  }
+}

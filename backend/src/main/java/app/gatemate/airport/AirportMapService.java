@@ -112,24 +112,28 @@ public class AirportMapService {
         if (a.icao() != null && !a.icao().isBlank()) ids.add("[\"icao\"=\"" + a.icao() + "\"]");
         var sb = new StringBuilder();
         for (String t : ids) sb.append("way[\"aeroway\"=\"aerodrome\"]").append(t).append(";relation[\"aeroway\"=\"aerodrome\"]").append(t).append(";");
-        return "[out:json][timeout:60];(" + sb + ")->.ap;.ap out geom tags;.ap map_to_area->.a;(" + selectors("(area.a)") + ");out center tags;" + shapes("(area.a)");
+        return "[out:json][timeout:60];(" + sb + ")->.ap;.ap out geom tags;.ap map_to_area->.a;(" + selectors("(area.a)") + ")->.p;" + OUTPUTS + shapes("(area.a)");
     }
 
     static String aroundQuery(AirportCatalog.Airport a) {
         String near = "(around:3000," + a.lat() + "," + a.lon() + ")";
-        return "[out:json][timeout:60];(" + selectors(near) + ");out center tags;" + shapes(near);
+        return "[out:json][timeout:60];(" + selectors(near) + ")->.p;" + OUTPUTS + shapes(near);
     }
+
+    /** Points for nodes, outlines for shops and rooms mapped as areas, centres for big relations. */
+    private static final String OUTPUTS = "node.p;out;way.p;out geom tags;rel.p;out center tags;";
 
     /** Shapes for the drawn plan: terminals, aprons, runways and taxiways, with geometry. */
     private static String shapes(String scope) {
         return "(way[\"aeroway\"=\"terminal\"]" + scope + ";relation[\"aeroway\"=\"terminal\"]" + scope + ";way[\"building\"=\"terminal\"]" + scope
-                + ";way[\"aeroway\"~\"^(runway|taxiway|apron)$\"]" + scope + ";relation[\"aeroway\"=\"apron\"]" + scope + ";);out geom tags;";
+                + ";way[\"aeroway\"~\"^(runway|taxiway|apron)$\"]" + scope + ";relation[\"aeroway\"=\"apron\"]" + scope + ";);out geom tags;way[\"indoor\"~\"^(room|area|corridor)$\"]" + scope + ";out geom tags;";
     }
 
     public static List<MapFeature> parse(JsonNode elements) {
         var terminals = new ArrayList<MapFeature>();
         var shapes = new ArrayList<MapFeature>();
         var rest = new ArrayList<JsonNode>();
+        var outlines = new java.util.HashMap<String, List<double[]>>();
         Set<String> seen = new HashSet<>();
         for (JsonNode e : elements) {
             String key = e.path("type").asString("") + e.path("id").asLong();
@@ -155,17 +159,28 @@ public class AirportMapService {
                 double[] mid = line.get(line.size() / 2);
                 double width = parseWidth(t.path("width").asString(""), aw.equals("runway") ? 45 : 18);
                 shapes.add(new MapFeature(key, aw, aw.equals("runway") ? t.path("ref").asString("") : "", mid[0], mid[1], null, null, null, null, null, null, null, line, width));
+            } else if (e.has("geometry") && e.path("geometry").size() > 2) {
+                // Shops, cafés, rooms and corridors mapped as areas: keep their outline.
+                var ring = simplify(points(e.path("geometry")));
+                if (ring.size() > 2) outlines.put(key, ring);
+                rest.add(e);
             } else if (!shape || e.has("center") || e.has("lat")) rest.add(e);
         }
         var out = new ArrayList<MapFeature>(shapes);
         out.addAll(terminals);
         for (JsonNode e : rest) {
             JsonNode t = e.path("tags");
-            boolean hasPoint = e.has("lat") || e.has("center");
-            if (!hasPoint) continue;
-            double lat = e.has("lat") ? e.path("lat").asDouble() : e.path("center").path("lat").asDouble();
-            double lon = e.has("lon") ? e.path("lon").asDouble() : e.path("center").path("lon").asDouble();
             String id = e.path("type").asString("") + e.path("id").asLong();
+            var ring = outlines.get(id);
+            double[] mid = ring == null ? null : centroid(ring);
+            if (!e.has("lat") && !e.has("center") && mid == null) continue;
+            double lat = e.has("lat") ? e.path("lat").asDouble() : e.has("center") ? e.path("center").path("lat").asDouble() : mid[0];
+            double lon = e.has("lon") ? e.path("lon").asDouble() : e.has("center") ? e.path("center").path("lon").asDouble() : mid[1];
+            String indoor = t.path("indoor").asString("");
+            if (indoor.equals("corridor")) {
+                if (ring != null) out.add(new MapFeature(id, "corridor", "", lat, lon, null, null, blank(t.path("level").asString("")), null, null, null, List.of(ring)));
+                continue;
+            }
             if (t.path("aeroway").asString("").equals("terminal") || t.path("building").asString("").equals("terminal")) {
                 out.add(new MapFeature(id, "terminal", terminalName(t), lat, lon, null, null, null, null, null, null, null));
                 continue;
@@ -179,13 +194,18 @@ public class AirportMapService {
                 continue;
             }
             String poi = classify(t);
-            if (poi == null) continue;
+            if (poi == null) {
+                if (ring != null && (indoor.equals("room") || indoor.equals("area"))) {
+                    out.add(new MapFeature(id, "room", t.path("name").asString(t.path("ref").asString("")).trim(), lat, lon, null, terminal, level, null, null, null, List.of(ring)));
+                }
+                continue;
+            }
             String name = t.path("name").asString(t.path("brand").asString("")).trim();
             if (name.isEmpty() && (poi.equals("shop") || poi.equals("parking") || poi.equals("hotel"))) continue;
             String detail = blank(t.path("cuisine").asString("").replace('_', ' ').replace(";", ", "));
             if (detail == null) detail = blank(t.path("operator").asString(""));
             out.add(new MapFeature(id, "poi", name.isEmpty() ? fallbackName(poi, t) : name, lat, lon, poi, terminal, level, blank(t.path("opening_hours").asString("")),
-                    blank(t.path("brand").asString("")), detail, null));
+                    blank(t.path("brand").asString("")), detail, ring == null ? null : List.of(ring)));
         }
         return out;
     }
@@ -310,6 +330,13 @@ public class AirportMapService {
             if ((yi > lat) != (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) hit = !hit;
         }
         return hit;
+    }
+
+    private static double[] centroid(List<double[]> ring) {
+        int n = ring.size() > 1 && ring.get(0)[0] == ring.get(ring.size() - 1)[0] && ring.get(0)[1] == ring.get(ring.size() - 1)[1] ? ring.size() - 1 : ring.size();
+        double la = 0, lo = 0;
+        for (int i = 0; i < n; i++) { la += ring.get(i)[0]; lo += ring.get(i)[1]; }
+        return new double[] {la / n, lo / n};
     }
 
     private static String blank(String s) {

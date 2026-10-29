@@ -602,3 +602,29 @@ ion-content::part(scroll) {
 .z-far .gm-plan-runway {
   display: none;
 }
+
+.gm-plan-shop span {
+  display: inline-block;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0b1b2b;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 2px #fff;
+  pointer-events: none;
+}
+.gm-plan-shop.room span {
+  font-weight: 600;
+  color: #64748b;
+}
+/* Shop names only when zoomed in close enough to read them. */
+.leaflet-container:not(.z-shops) .gm-plan-shop {
+  display: none;
+}
+/* Close up, the terminal name steps back so shop names stay readable. */
+.z-shops .gm-plan-terminal span {
+  opacity: 0.35;
+}

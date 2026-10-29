@@ -12,7 +12,7 @@ export type { PoiKind } from '../data/airport-poi';
 
 export interface MapFeature {
   id?: string;
-  kind: 'gate' | 'terminal' | 'poi' | 'aerodrome' | 'runway' | 'taxiway' | 'apron';
+  kind: 'gate' | 'terminal' | 'poi' | 'aerodrome' | 'runway' | 'taxiway' | 'apron' | 'room' | 'corridor';
   ref: string;
   lat: number;
   lon: number;
@@ -34,7 +34,7 @@ export interface MapFeature {
 }
 
 interface Cached {
-  v: 3;
+  v: 4;
   savedAt: number;
   features: MapFeature[];
 }
@@ -173,7 +173,7 @@ export class GatesService {
         raw = localStorage.getItem(`gm_osm_${iata}`);
       }
       const c = raw ? (JSON.parse(raw) as Cached) : null;
-      return c?.v === 3 && Array.isArray(c.features) ? c : null;
+      return c?.v === 4 && Array.isArray(c.features) ? c : null;
     } catch {
       return null;
     }
@@ -181,7 +181,7 @@ export class GatesService {
 
   private async save(iata: string, features: MapFeature[]): Promise<void> {
     if (!features.length) return;
-    const data = JSON.stringify({ v: 3, savedAt: Date.now(), features } satisfies Cached);
+    const data = JSON.stringify({ v: 4, savedAt: Date.now(), features } satisfies Cached);
     try {
       if (Capacitor.isNativePlatform()) {
         await Filesystem.writeFile({ path: `osm/${iata}.json`, directory: Directory.Data, encoding: Encoding.UTF8, data, recursive: true });
@@ -212,17 +212,20 @@ function selectors(scope: string): string {
 function areaQuery(a: AirportRecord): string {
   const ids = [`["iata"="${a.iata}"]`, a.icao ? `["icao"="${a.icao}"]` : ''].filter(Boolean);
   const airport = ids.map((t) => `way["aeroway"="aerodrome"]${t};relation["aeroway"="aerodrome"]${t};`).join('');
-  return `[out:json][timeout:60];(${airport})->.ap;.ap out geom tags;.ap map_to_area->.a;(${selectors('(area.a)')});out center tags;${shapes('(area.a)')}`;
+  return `[out:json][timeout:60];(${airport})->.ap;.ap out geom tags;.ap map_to_area->.a;(${selectors('(area.a)')})->.p;${outputs}${shapes('(area.a)')}`;
 }
 
 function aroundQuery(a: AirportRecord): string {
   const near = `(around:3000,${a.lat},${a.lon})`;
-  return `[out:json][timeout:60];(${selectors(near)});out center tags;${shapes(near)}`;
+  return `[out:json][timeout:60];(${selectors(near)})->.p;${outputs}${shapes(near)}`;
 }
+
+/** Points for nodes, outlines for shops and rooms mapped as areas, centres for big relations. */
+const outputs = 'node.p;out;way.p;out geom tags;rel.p;out center tags;';
 
 /** Shapes for the drawn plan: terminals, aprons, runways and taxiways, with geometry. */
 function shapes(scope: string): string {
-  return `(way["aeroway"="terminal"]${scope};relation["aeroway"="terminal"]${scope};way["building"="terminal"]${scope};way["aeroway"~"^(runway|taxiway|apron)$"]${scope};relation["aeroway"="apron"]${scope};);out geom tags;`;
+  return `(way["aeroway"="terminal"]${scope};relation["aeroway"="terminal"]${scope};way["building"="terminal"]${scope};way["aeroway"~"^(runway|taxiway|apron)$"]${scope};relation["aeroway"="apron"]${scope};);out geom tags;way["indoor"~"^(room|area|corridor)$"]${scope};out geom tags;`;
 }
 
 /** Turns Overpass elements into map features, placing each facility in the terminal that contains it. */
@@ -230,6 +233,7 @@ export function parse(elements: OsmElement[]): MapFeature[] {
   const terminals: MapFeature[] = [];
   const shapes: MapFeature[] = [];
   const rest: OsmElement[] = [];
+  const outlines = new Map<string, [number, number][]>();
   const seen = new Set<string>();
   for (const e of elements) {
     const key = `${e.type}${e.id}`;
@@ -253,14 +257,25 @@ export function parse(elements: OsmElement[]): MapFeature[] {
       const mid = line[Math.floor(line.length / 2)];
       const width = parseFloat(t['width'] ?? '') || (aw === 'runway' ? 45 : 18);
       shapes.push({ id: key, kind: aw, ref: aw === 'runway' ? t['ref'] ?? '' : '', lat: mid[0], lon: mid[1], line, width });
+    } else if (e.geometry && e.geometry.length > 2) {
+      // Shops, cafés, rooms and corridors mapped as areas: keep their outline.
+      const ring = simplify(e.geometry.map((p) => [round(p.lat), round(p.lon)] as [number, number]));
+      if (ring.length > 2) outlines.set(key, ring);
+      rest.push(e);
     } else if (!hasShape || e.center || e.lat !== undefined) rest.push(e);
   }
 
   const out: MapFeature[] = [...shapes, ...terminals];
   for (const e of rest) {
     const t = e.tags ?? {};
-    const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon;
+    const ring = outlines.get(`${e.type}${e.id}`);
+    const mid = ring ? centroid(ring) : undefined;
+    const lat = e.lat ?? e.center?.lat ?? mid?.[0], lon = e.lon ?? e.center?.lon ?? mid?.[1];
     if (lat === undefined || lon === undefined) continue;
+    if (t['indoor'] === 'corridor') {
+      if (ring) out.push({ id: `${e.type}${e.id}`, kind: 'corridor', ref: '', lat, lon, outline: [ring], level: t['level'] || undefined });
+      continue;
+    }
     if (t['aeroway'] === 'terminal' || t['building'] === 'terminal') {
       // Terminal mapped only as a point: still shown and named on the plan.
       out.push({ id: `${e.type}${e.id}`, kind: 'terminal', ref: terminalName(t), lat, lon });
@@ -274,15 +289,24 @@ export function parse(elements: OsmElement[]): MapFeature[] {
       continue;
     }
     const poi = classify(t);
-    if (!poi) continue;
+    if (!poi) {
+      // A room with no shop or amenity tag (gate lounges, offices…): drawn so the floor plan reads as a building.
+      if (ring && (t['indoor'] === 'room' || t['indoor'] === 'area')) out.push({ ...base, kind: 'room', ref: (t['name'] || t['ref'] || '').trim(), outline: [ring] });
+      continue;
+    }
     const name = (t['name'] || t['brand'] || '').trim();
     // Unnamed shops/parking spaces are noise; unnamed toilets or ATMs are exactly what people look for.
     if (!name && (poi === 'shop' || poi === 'parking' || poi === 'hotel')) continue;
     const cuisine = t['cuisine']?.split(';').map((c) => c.trim().replace(/_/g, ' ')).join(', ');
     const detail = (cuisine ? cuisine.charAt(0).toUpperCase() + cuisine.slice(1) : '') || t['operator'] || undefined;
-    out.push({ ...base, kind: 'poi', poi, ref: name || fallbackName(poi, t), hours: t['opening_hours'] || undefined, brand: t['brand'] || undefined, detail });
+    out.push({ ...base, kind: 'poi', poi, ref: name || fallbackName(poi, t), hours: t['opening_hours'] || undefined, brand: t['brand'] || undefined, detail, outline: ring ? [ring] : undefined });
   }
   return out;
+}
+
+function centroid(ring: [number, number][]): [number, number] {
+  const pts = ring.length > 1 && ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1] ? ring.slice(0, -1) : ring;
+  return [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
 }
 
 /** ~10 cm precision is plenty and keeps the saved copy small. */
