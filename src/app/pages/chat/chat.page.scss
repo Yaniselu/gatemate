@@ -222,3 +222,22 @@
     font-weight: 600;
   }
 }
+
+.new-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 10px;
+  padding: 7px 13px 7px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #22c7d3, #0a93a6);
+  box-shadow: 0 6px 16px var(--gm-accent-glow);
+  animation: gm-scale-in 0.45s var(--gm-ease-spring) both;
+  transition: transform 0.2s var(--gm-ease-spring);
+  ion-icon { font-size: 18px; }
+  &:active { transform: scale(0.94); }
+}

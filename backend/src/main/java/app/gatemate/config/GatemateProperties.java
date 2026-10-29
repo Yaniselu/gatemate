@@ -34,7 +34,8 @@ public record GatemateProperties(
     public record Security(String tokenEncryptionKey, int maxLoginAttempts, Duration lockout) {}
 
     /** {@code sandbox}: return deterministic demo bookings (development only). */
-    public record Booking(boolean sandbox, String inboundSecret, List<String> airlineEmailDomains, String importDomain) {}
+    /** importAddress: the provider's inbound address with {token}, e.g. "1a2b3c+{token}@cloudmailin.net". */
+    public record Booking(boolean sandbox, String inboundSecret, List<String> airlineEmailDomains, String importDomain, String importAddress) {}
 
     public record Mail(String from, String resetUrl) {}
 

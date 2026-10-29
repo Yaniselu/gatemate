@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar, NavController } from '@ionic/angular/standalone';
-import { GatemateApi } from '../../core/services/api';
+import { ApiError, GatemateApi } from '../../core/services/api';
 import { ChatService } from '../../core/services/chat.service';
 import { TravelStore } from '../../core/services/travel.store';
 import { PlatformService } from '../../core/services/platform.service';
-import { ToastService } from '../../core/services/toast.service';
 import { ChatThread } from '../../core/models';
 import { cleanText } from '../../core/security/sanitize';
 import { InvitePanelComponent } from '../../shared/components/invite-panel.component';
@@ -54,8 +53,11 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
             }
           </div>
 
-          <button class="gm-btn" (click)="create()" [disabled]="busy() || !title().trim()">
-            @if (busy()) { <i class="spin"></i> } @else { <ion-icon name="add" /> Create group }
+          @if (error()) {
+            <p class="err anim-fade-up" role="alert"><ion-icon name="alert-circle" /> {{ error() }}</p>
+          }
+          <button class="gm-btn" (click)="create()" [disabled]="busy()">
+            @if (busy()) { <i class="spin"></i> Creating… } @else { <ion-icon name="add" /> Create group }
           </button>
         } @else {
           @if (created(); as c) {
@@ -89,6 +91,7 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
     .trips button { padding: 9px 14px; border-radius: 999px; background: var(--gm-surface); font-weight: 650; font-size: 14px; color: var(--gm-ink-2); transition: all .3s var(--gm-ease-spring); }
     .trips button.on { background: var(--gm-navy); color: #fff; }
     .open { margin-top: 18px; }
+    .err { display: flex; gap: 6px; align-items: center; margin: -8px 4px 14px; color: #c0392b; font-size: 14px; font-weight: 600; }
     .spin { width: 20px; height: 20px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; animation: gm-spin .8s linear infinite; }
   `,
 })
@@ -97,7 +100,6 @@ export class ChatNewPage implements OnInit {
   private chat = inject(ChatService);
   protected store = inject(TravelStore);
   private platform = inject(PlatformService);
-  private toast = inject(ToastService);
   private confetti = inject(ConfettiService);
   private achievements = inject(AchievementsService);
   private nav = inject(NavController);
@@ -109,6 +111,7 @@ export class ChatNewPage implements OnInit {
   readonly busy = signal(false);
   readonly bump = signal(false);
   readonly created = signal<ChatThread | null>(null);
+  readonly error = signal('');
 
   ngOnInit() {
     void this.store.loadTrips();
@@ -127,8 +130,10 @@ export class ChatNewPage implements OnInit {
   }
 
   async create() {
-    const title = cleanText(this.title(), 40);
-    if (!title) return;
+    const trip = this.store.upcomingTrips().find((x) => x.id === this.tripId());
+    // No name typed: use the trip's name, or a friendly default, instead of a dead button.
+    const title = cleanText(this.title(), 40) || trip?.title.slice(0, 40) || 'Travel group';
+    this.error.set('');
     this.busy.set(true);
     try {
       const thread = await this.api.createThread({ title, emoji: this.emoji(), tripId: this.tripId() ?? undefined });
@@ -137,8 +142,9 @@ export class ChatNewPage implements OnInit {
       this.platform.success();
       this.confetti.burst(0.5, 0.25, 60);
       void this.achievements.track('group_created');
-    } catch {
-      await this.toast.show('Could not create the group. Please try again.', 'error');
+    } catch (e) {
+      this.platform.error();
+      this.error.set(e instanceof ApiError && e.message ? e.message : 'Could not create the group. Please try again.');
     } finally {
       this.busy.set(false);
     }

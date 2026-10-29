@@ -58,7 +58,9 @@
   margin-top: 10px;
   border-radius: 22px;
   overflow: hidden;
-  background: #0f2233;
+  background: linear-gradient(120deg, #0f2233, #0b3a4a 35%, #0a5d6c 60%, #1b2f5a 85%, #0f2233);
+  background-size: 300% 300%;
+  animation: gm-hero-shift 16s ease-in-out infinite;
   color: #fff;
   box-shadow: 0 12px 30px rgba(8, 30, 48, 0.16);
   cursor: pointer;
@@ -70,6 +72,8 @@
   .hero-bg {
     position: absolute;
     inset: 0;
+    // Slow "Ken Burns" drift on the city photo.
+    animation: gm-ken-burns 22s ease-in-out infinite alternate;
   }
   .cover::after {
     content: '';
@@ -611,4 +615,41 @@
     font-size: 13.5px;
     font-weight: 600;
   }
+}
+
+.live-card {
+  margin: 14px 0 4px;
+}
+
+.sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  vertical-align: middle;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0a7f8f;
+  background: var(--gm-accent-soft);
+  i { width: 7px; height: 7px; border-radius: 50%; background: var(--gm-accent); animation: gm-sync-pulse 1.6s ease-in-out infinite; }
+}
+@keyframes gm-sync-pulse {
+  50% { opacity: 0.3; transform: scale(0.7); }
+}
+
+@keyframes gm-hero-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes gm-ken-burns {
+  from { transform: scale(1) translate(0, 0); }
+  to { transform: scale(1.12) translate(-2%, -2%); }
+}
+:host-context(.gm-reduce-motion) .hero,
+:host-context(.gm-reduce-motion) .hero-bg {
+  animation: none;
 }

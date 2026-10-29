@@ -58,6 +58,13 @@ export interface FeedbackInput {
  * Contract between the app and the Gatemate Java backend.
  * `MockApi` implements it in-memory for the front-end phase; `HttpApi` talks to the real server.
  */
+export interface EmailPreview {
+  flights: Flight[];
+  bookingRef?: string | null;
+  /** The account's legal name appears in the e-mail. */
+  nameFound: boolean;
+}
+
 export abstract class GatemateApi {
   // Auth
   abstract loginWithPassword(email: string, password: string): Promise<Session>;
@@ -80,6 +87,9 @@ export abstract class GatemateApi {
   abstract claimFlight(req: ClaimRequest): Promise<Trip>;
   /** Personal forwarding address; mail is accepted only from the account's verified email with valid airline DKIM. */
   abstract getImportEmail(): Promise<string>;
+  /** Reads flights out of a pasted confirmation e-mail without saving anything. */
+  abstract previewEmail(text: string): Promise<EmailPreview>;
+  abstract importEmail(text: string): Promise<Trip>;
   abstract createInvite(tripOrChatId: string): Promise<string>;
   /** Single-use invite token from a shared link; joins the trip or chat it points to. */
   abstract registerPushToken(token: string, platform: 'ios' | 'android'): Promise<void>;

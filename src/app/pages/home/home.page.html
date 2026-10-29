@@ -110,11 +110,15 @@
       </div>
     }
 
+    @if (liveFlight(); as lf) {
+      <gm-live-flight class="live-card anim-scale-in" [flight]="lf" />
+    }
+
     <!-- Quick actions -->
     <div class="actions card">
       @for (a of actions; track a.label; let i = $index) {
         <button class="action" [gmReveal]="i" gmPressable (click)="open(a.link)">
-          <span class="gm-well"><ion-icon [name]="a.icon" /></span>
+          <span class="gm-well tint" [style.--c]="a.color"><ion-icon [name]="a.icon" /></span>
           <span class="lbl">{{ a.label }}</span>
         </button>
       }
@@ -146,23 +150,23 @@
     <div class="rows card" gmReveal>
       @if (next(); as n) {
         <button class="row" gmPressable (click)="open('/explore/' + n.flight.to.code + '?trip=' + n.trip.id)">
-          <span class="gm-well accent"><ion-icon name="compass-outline" /></span>
+          <span class="gm-well tint" style="--c: #0fb5c3"><ion-icon name="compass-outline" /></span>
           <span class="row-text"><b>Explore {{ n.flight.to.city }}</b><small>Sights, holidays, phrases, money and weather</small></span>
           <ion-icon name="chevron-forward" class="chev" />
         </button>
       }
       <button class="row" gmPressable (click)="open('/inflight')">
-        <span class="gm-well"><ion-icon name="game-controller-outline" /></span>
+        <span class="gm-well tint" style="--c: #f97316"><ion-icon name="game-controller-outline" /></span>
         <span class="row-text"><b>In-flight</b><small>7 games, breathing and seat stretches · works offline</small></span>
         <ion-icon name="chevron-forward" class="chev" />
       </button>
       <button class="row" gmPressable (click)="open('/passport')">
-        <span class="gm-well"><ion-icon name="earth" /></span>
+        <span class="gm-well tint" style="--c: #10b981"><ion-icon name="earth" /></span>
         <span class="row-text"><b>Travel passport</b><small>Your routes on a world map, countries and a card to share</small></span>
         <ion-icon name="chevron-forward" class="chev" />
       </button>
       <button class="row" gmPressable (click)="open('/tools')">
-        <span class="gm-well"><ion-icon name="construct-outline" /></span>
+        <span class="gm-well tint" style="--c: #8b5cf6"><ion-icon name="construct-outline" /></span>
         <span class="row-text"><b>Travel tools</b><small>Currency, time zones, jet lag and liquids</small></span>
         <ion-icon name="chevron-forward" class="chev" />
       </button>
@@ -170,7 +174,7 @@
 
     <!-- Live updates -->
     <div class="gm-section-title">
-      <h2>Live updates</h2>
+      <h2>Live updates @if (store.syncedAt()) { <span class="sync" title="Refreshing every minute"><i></i>live</span> }</h2>
       <a routerLink="/alerts">See all</a>
     </div>
     <div class="alerts card">

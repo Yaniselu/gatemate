@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
-import { ApiError, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { ApiError, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
 // Generous: a free-tier server can take ~50 s to wake up after being idle.
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -60,6 +60,12 @@ export class HttpApi extends GatemateApi {
   }
   async getImportEmail() {
     return (await this.call(this.http.get<{ address: string }>(`${this.base}/me/import-email`))).address;
+  }
+  previewEmail(text: string) {
+    return this.call(this.http.post<EmailPreview>(`${this.base}/bookings/email/preview`, { text }));
+  }
+  importEmail(text: string) {
+    return this.call(this.http.post<Trip>(`${this.base}/bookings/email/import`, { text }));
   }
   async createInvite(id: string) {
     return (await this.call(this.http.post<{ url: string }>(`${this.base}/invites`, { targetId: id }))).url;

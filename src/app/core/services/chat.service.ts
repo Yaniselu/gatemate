@@ -27,7 +27,8 @@ export class ChatService {
       this.threads.set(await this.api.getThreads());
       this.threadsState.set('ready');
     } catch {
-      this.threadsState.set('error');
+      // A background refresh failing (offline) keeps the list on screen.
+      if (!force || this.threadsState() !== 'ready') this.threadsState.set('error');
     }
   }
 

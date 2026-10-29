@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 public class TripController {
     private final TripService trips;
     private final Repos.Flights flights;
+    private final AdsbService adsb;
 
-    public TripController(TripService trips, Repos.Flights flights) {
+    public TripController(TripService trips, Repos.Flights flights, AdsbService adsb) {
         this.trips = trips;
         this.flights = flights;
+        this.adsb = adsb;
     }
 
     @GetMapping("/trips")
@@ -34,6 +36,14 @@ public class TripController {
         var f = flights.findById(id).orElseThrow(() -> app.gatemate.common.ApiException.notFound("Flight"));
         trips.requireMember(f.tripId, CurrentUser.id());
         return trips.flightDto(f);
+    }
+
+    /** Live position (ADS-B) for a flight on one of your trips; 204 when no receiver hears it. */
+    @GetMapping("/flights/{id}/live")
+    public ResponseEntity<tools.jackson.databind.JsonNode> live(@PathVariable UUID id) {
+        var f = flights.findById(id).orElseThrow(() -> app.gatemate.common.ApiException.notFound("Flight"));
+        trips.requireMember(f.tripId, CurrentUser.id());
+        return adsb.find(f.flightNumber).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @PatchMapping("/trips/{tripId}/checklist/{itemId}")

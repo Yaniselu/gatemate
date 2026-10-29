@@ -56,10 +56,10 @@
     @if (store.tripsState() === 'ready') {
       @let s = travel();
       <div class="stats">
-        <div class="stat card" gmReveal="0"><ion-icon name="airplane" /><b [gmCountUp]="s.flights"></b><small>Flights taken</small></div>
-        <div class="stat card" gmReveal="1"><ion-icon name="globe-outline" /><b [gmCountUp]="s.km"></b><small>Kilometres flown</small></div>
-        <div class="stat card" gmReveal="2"><ion-icon name="earth" /><b [gmCountUp]="s.countries"></b><small>Countries visited</small></div>
-        <div class="stat card" gmReveal="3"><ion-icon name="time-outline" /><b [gmCountUp]="s.hours"></b><small>Hours in the air</small></div>
+        <div class="stat card" gmReveal="0" style="--c: #0fb5c3"><ion-icon name="airplane" /><b [gmCountUp]="s.flights"></b><small>Flights taken</small></div>
+        <div class="stat card" gmReveal="1" style="--c: #6366f1"><ion-icon name="globe-outline" /><b [gmCountUp]="s.km"></b><small>Kilometres flown</small></div>
+        <div class="stat card" gmReveal="2" style="--c: #10b981"><ion-icon name="earth" /><b [gmCountUp]="s.countries"></b><small>Countries visited</small></div>
+        <div class="stat card" gmReveal="3" style="--c: #f97316"><ion-icon name="time-outline" /><b [gmCountUp]="s.hours"></b><small>Hours in the air</small></div>
       </div>
     } @else {
       <div class="stats">

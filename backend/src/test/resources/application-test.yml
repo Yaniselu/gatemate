@@ -6,6 +6,8 @@ spring:
 gatemate:
   booking:
     sandbox: true
+    inbound-secret: test-inbound-secret
+    import-address: "abc123+{token}@cloudmailin.net"
   integrations:
     public-data-enabled: false
   billing:

@@ -149,6 +149,21 @@
     color: var(--gm-accent-strong);
     background: var(--gm-accent-soft);
   }
+
+  // Colour per feature: set --c on the element.
+  &.tint {
+    color: var(--c);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--c) 18%, #fff), color-mix(in srgb, var(--c) 8%, #fff));
+    border-color: color-mix(in srgb, var(--c) 16%, transparent);
+  }
+  ion-icon {
+    transition: transform 0.35s var(--gm-ease-spring);
+  }
+}
+// The icon gives a little hop when its row or tile is pressed.
+:active > .gm-well ion-icon,
+.gm-pressed > .gm-well ion-icon {
+  transform: scale(1.18) rotate(-8deg);
 }
 
 // Glass header used by every tab page.

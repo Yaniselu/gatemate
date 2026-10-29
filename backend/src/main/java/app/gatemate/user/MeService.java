@@ -136,9 +136,11 @@ public class MeService {
             u.importToken = Crypto.token(9).toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "x");
             users.save(u);
         }
+        String template = props.booking().importAddress();
+        if (template != null && template.contains("{token}")) return template.replace("{token}", u.importToken);
         String domain = props.booking().importDomain();
         if (domain == null || domain.isBlank()) {
-            throw new ApiException(HttpStatus.NOT_IMPLEMENTED, "import_unavailable", "Email import isn't set up yet. Scan your boarding pass instead.");
+            throw new ApiException(HttpStatus.NOT_IMPLEMENTED, "import_unavailable", "Forwarding isn't switched on yet. Paste the e-mail instead.");
         }
         return "trips+" + u.importToken + "@" + domain;
     }

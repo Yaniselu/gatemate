@@ -7,7 +7,7 @@
 
 <ion-content [fullscreen]="true" [scrollY]="false">
   @if (airport(); as a) {
-    <gm-sat-map class="full" [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [zoom]="15.5" (gateTap)="pick($event)" />
+    <gm-sat-map class="full" [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [selectedPlace]="placeId()" [zoom]="15.5" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
 
     <div class="gate-bar glass" slot="fixed">
       @if (gatesError()) {
@@ -32,6 +32,18 @@
     </div>
 
     <div class="sheet glass strong" slot="fixed">
+      @if (placeFeature(); as p) {
+        <div class="place anim-fade-up" [style.--c]="meta[p.poi!].color">
+          <span class="ic"><ion-icon [name]="meta[p.poi!].icon" /></span>
+          <div class="txt">
+            <b>{{ p.ref }}</b>
+            <small>{{ p.detail || meta[p.poi!].label }}@if (p.terminal) { · {{ p.terminal }} }@if (p.level) { · Level {{ p.level }} }</small>
+            @if (placeOpen(); as o) { <span class="hours" [class.open]="o.open">{{ o.open ? 'Open' : 'Closed' }} · {{ o.label }}</span> }
+            @else if (p.hours) { <span class="hours">{{ p.hours }}</span> }
+          </div>
+          <button class="x" (click)="placeId.set(null)" aria-label="Close"><ion-icon name="close" /></button>
+        </div>
+      }
       @if (distance(); as d) {
         @if (d.far) {
           <div class="sum">
@@ -41,7 +53,7 @@
         } @else {
           <div class="sum">
             <div>
-              <span class="gm-label">{{ d.toGate ? 'To gate ' + selected() : 'To the airport' }}</span>
+              <span class="gm-label">{{ targetLabel() }}</span>
               <b class="big">{{ d.minutes }} min</b><small>{{ fmt(d.meters) }} straight line · walking estimate</small>
             </div>
             <ion-icon name="walk-outline" class="walk" />

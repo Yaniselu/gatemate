@@ -94,11 +94,35 @@
 }
 
 .stat {
+  --c: var(--gm-accent);
+  position: relative;
+  overflow: hidden;
   padding: 16px;
+  background: linear-gradient(150deg, #fff 55%, color-mix(in srgb, var(--c) 10%, #fff));
 
   ion-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 12px;
     font-size: 22px;
-    color: var(--gm-accent-strong);
+    color: #fff;
+    background: var(--c);
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 35%, transparent);
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    right: -24px;
+    bottom: -24px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+    animation: gm-stat-float 6s ease-in-out infinite;
   }
   b {
     display: block;
@@ -374,4 +398,8 @@
   .chev {
     color: var(--gm-ink-3);
   }
+}
+
+@keyframes gm-stat-float {
+  50% { transform: translate(-8px, -6px) scale(1.1); }
 }

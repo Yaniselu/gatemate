@@ -6,6 +6,8 @@ import { directionsUrl, LocationService, walkMinutes } from '../../core/services
 import { PlatformService } from '../../core/services/platform.service';
 import { PrefsService } from '../../core/services/prefs.service';
 import { SatMapComponent } from '../../shared/components/sat-map.component';
+import { POI_META } from '../../core/data/airport-poi';
+import { openState } from '../../core/utils/opening-hours';
 import { AchievementsService } from '../../core/services/achievements.service';
 
 @Component({
@@ -18,6 +20,8 @@ import { AchievementsService } from '../../core/services/achievements.service';
 export class AirportMapPage implements OnInit, OnDestroy {
   readonly iata = input<string>();
   readonly gate = input<string>();
+  /** Facility id from the airport guide (?place=). */
+  readonly place = input<string>();
 
   private db = inject(AirportDbService);
   private gates = inject(GatesService);
@@ -30,6 +34,13 @@ export class AirportMapPage implements OnInit, OnDestroy {
   readonly airport = signal<AirportRecord | null>(null);
   readonly features = signal<MapFeature[] | null>(null);
   readonly selected = signal<string | null>(null);
+  readonly placeId = signal<string | null>(null);
+  protected readonly meta = POI_META;
+  readonly placeFeature = computed(() => (this.placeId() ? (this.features() ?? []).find((f) => f.id === this.placeId()) : undefined));
+  readonly placeOpen = computed(() => {
+    const p = this.placeFeature(), a = this.airport();
+    return p && a ? openState(p.hours, a.tz) : null;
+  });
   readonly gateList = computed(() =>
     (this.features() ?? []).filter((f) => f.kind === 'gate').sort((a, b) => a.ref.localeCompare(b.ref, undefined, { numeric: true })),
   );
@@ -41,7 +52,7 @@ export class AirportMapPage implements OnInit, OnDestroy {
   readonly distance = computed(() => {
     const me = this.me(), a = this.airport();
     if (!me || !a) return null;
-    const t = this.target();
+    const t = this.placeFeature() ?? this.target();
     const meters = haversineKm(me.lat, me.lon, t?.lat ?? a.lat, t?.lon ?? a.lon) * 1000;
     return { meters: Math.round(meters), minutes: walkMinutes(meters), toGate: !!t, far: meters > 3000 };
   });
@@ -52,6 +63,7 @@ export class AirportMapPage implements OnInit, OnDestroy {
     const a = this.db.get(this.iata() ?? this.prefs.homeAirport()) ?? this.db.get('OTP')!;
     this.airport.set(a);
     if (this.gate()) this.selected.set(this.gate()!);
+    if (this.place()) this.placeId.set(this.place()!);
     await this.loadGates();
   }
 
@@ -76,7 +88,20 @@ export class AirportMapPage implements OnInit, OnDestroy {
 
   pick(ref: string) {
     this.platform.selection();
+    this.placeId.set(null);
     this.selected.set(this.selected() === ref ? null : ref);
+  }
+
+  pickPlace(id: string) {
+    this.platform.selection();
+    this.selected.set(null);
+    this.placeId.set(this.placeId() === id ? null : id);
+  }
+
+  targetLabel(): string {
+    const p = this.placeFeature();
+    if (p) return 'To ' + p.ref;
+    return this.selected() ? 'To gate ' + this.selected() : 'To the airport';
   }
 
   async locateMe() {

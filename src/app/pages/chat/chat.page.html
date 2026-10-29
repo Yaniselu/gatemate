@@ -1,5 +1,10 @@
 <ion-header class="gm-glass-header" [translucent]="true">
-  <ion-toolbar><ion-title>Chat</ion-title></ion-toolbar>
+  <ion-toolbar>
+    <ion-title>Chat</ion-title>
+    <ion-buttons slot="end">
+      <a class="new-pill" routerLink="/chat/new" aria-label="New group"><ion-icon name="add" /> New group</a>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -10,7 +15,6 @@
   <ion-header collapse="condense" class="gm-glass-header">
     <ion-toolbar>
       <div class="head">
-        <a class="new-btn anim-scale-in" routerLink="/chat/new" aria-label="New group"><ion-icon name="create-outline" /></a>
         <h1 class="gm-page-title anim-fade-up">Chats</h1>
         <p class="gm-subtitle anim-fade-up" style="animation-delay: 60ms">Plan together with the people you travel with.</p>
       </div>
@@ -75,7 +79,8 @@
         <div class="gm-empty">
           <ion-icon name="chatbubbles-outline" />
           <h3>No chats yet</h3>
-          <p>Every trip gets its own group chat. Invite friends from a trip.</p>
+          <p>Every trip gets its own group chat. Or start a group now and invite your travel buddies.</p>
+          <a class="gm-btn small" routerLink="/chat/new"><ion-icon name="people-outline" /> Create a group</a>
         </div>
       }
     }

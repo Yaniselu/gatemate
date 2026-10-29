@@ -213,4 +213,82 @@ class ApiFlowTest {
     void airportsArePublic() throws Exception {
         mvc.perform(get("/api/v1/airports").param("q", "bucharest")).andExpect(status().isOk()).andExpect(jsonPath("$[*].iata", hasItem("OTP")));
     }
+
+    static String emailText(LocalDate day) {
+        var d = day.format(java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy", java.util.Locale.ENGLISH));
+        return "Your booking is confirmed!\nBooking reference: K7Q2MX\nPassenger: MS ANA POPESCU\n\n"
+                + "Outbound flight W6 3121\n" + d + "\nBucharest (OTP) 06:10 → London Luton (LTN) 07:55\nSeat 12A\n\nTotal paid 129.99 EUR";
+    }
+
+    @Test
+    void pastedConfirmationEmailCreatesAVerifiedNameTrip() throws Exception {
+        String access = register("mail+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
+        mvc.perform(patch("/api/v1/me").header("Authorization", "Bearer " + access).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"legalFirstName\":\"Ana\",\"legalLastName\":\"Popescu\"}")).andExpect(status().isOk());
+        String body = json.writeValueAsString(java.util.Map.of("text", emailText(LocalDate.now().plusDays(20))));
+        var preview = post("/api/v1/bookings/email/preview", access, body, 200);
+        org.junit.jupiter.api.Assertions.assertEquals(1, preview.path("flights").size());
+        var f = preview.path("flights").get(0);
+        org.junit.jupiter.api.Assertions.assertEquals("W6 3121", f.path("number").asString());
+        org.junit.jupiter.api.Assertions.assertEquals("Wizz Air", f.path("airline").asString());
+        org.junit.jupiter.api.Assertions.assertEquals("OTP", f.path("from").path("code").asString());
+        org.junit.jupiter.api.Assertions.assertEquals("LTN", f.path("to").path("code").asString());
+        org.junit.jupiter.api.Assertions.assertEquals("12A", f.path("seat").asString());
+        org.junit.jupiter.api.Assertions.assertEquals("K7Q2MX", preview.path("bookingRef").asString());
+        org.junit.jupiter.api.Assertions.assertTrue(preview.path("nameFound").asBoolean());
+        // 06:10 in Bucharest.
+        var dep = java.time.Instant.parse(f.path("departure").asString()).atZone(java.time.ZoneId.of("Europe/Bucharest"));
+        org.junit.jupiter.api.Assertions.assertEquals(java.time.LocalTime.of(6, 10), dep.toLocalTime());
+
+        var trip = post("/api/v1/bookings/email/import", access, body, 200);
+        org.junit.jupiter.api.Assertions.assertEquals("pending", trip.path("flights").get(0).path("verification").path("status").asString());
+        org.junit.jupiter.api.Assertions.assertEquals("email", trip.path("flights").get(0).path("verification").path("method").asString());
+        post("/api/v1/bookings/email/import", access, body, 409);
+        post("/api/v1/bookings/email/preview", access, "{\"text\":\"Thanks for shopping with us\"}", 422);
+    }
+
+    @Test
+    void forwardedEmailNeedsTheOwnersAuthenticatedAddress() throws Exception {
+        String email = "fwd+" + UUID.randomUUID() + "@example.com";
+        String access = register(email).get("accessToken").asString();
+        mvc.perform(patch("/api/v1/me").header("Authorization", "Bearer " + access).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"legalFirstName\":\"Ana\",\"legalLastName\":\"Popescu\"}")).andExpect(status().isOk());
+        String address = mvc.perform(get("/api/v1/me/import-email").header("Authorization", "Bearer " + access)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        org.junit.jupiter.api.Assertions.assertTrue(address.contains("@cloudmailin.net"), address);
+        String to = address.replaceAll(".*?([a-z0-9]+\\+[a-z0-9]+@cloudmailin\\.net).*", "$1");
+        String text = emailText(LocalDate.now().plusDays(30));
+
+        java.util.function.BiFunction<String, String, String> postmark = (from, spf) -> json.writeValueAsString(java.util.Map.of(
+                "FromFull", java.util.Map.of("Email", from), "ToFull", java.util.List.of(java.util.Map.of("Email", to)), "TextBody", text,
+                "Headers", java.util.List.of(java.util.Map.of("Name", "Received-SPF", "Value", spf))));
+        String basic = "Basic " + java.util.Base64.getEncoder().encodeToString("gatemate:test-inbound-secret".getBytes());
+
+        // Wrong secret.
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/inbound/email").contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("x:nope".getBytes())).content(postmark.apply(email, "Pass"))).andExpect(status().isUnauthorized());
+        // Someone else forwarding to this address, and a forged "from" that fails SPF: accepted (202) but nothing imported.
+        for (String bad : java.util.List.of(postmark.apply("stranger@example.com", "Pass"), postmark.apply(email, "Fail"))) {
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/inbound/email").contentType(MediaType.APPLICATION_JSON)
+                    .header("Authorization", basic).content(bad)).andExpect(status().isAccepted());
+        }
+        mvc.perform(get("/api/v1/trips").header("Authorization", "Bearer " + access)).andExpect(jsonPath("$", hasSize(0)));
+        // The owner forwarding from their own, authenticated address.
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/inbound/email").contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", basic).content(postmark.apply(email, "Pass (sender SPF authorized)"))).andExpect(status().isAccepted());
+        mvc.perform(get("/api/v1/trips").header("Authorization", "Bearer " + access)).andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].flights[0].verification.status").value("verified"));
+    }
+
+    @Test
+    void groupLinkedToATripIncludesItsTravellers() throws Exception {
+        String access = register("grp+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
+        var trip = post("/api/v1/flights", access, "{\"carrier\":\"RO\",\"flightNumber\":\"301\",\"from\":\"OTP\",\"to\":\"CDG\",\"date\":\""
+                + LocalDate.now().plusDays(5) + "T10:30:00\"}", 200);
+        var g = post("/api/v1/chats", access, "{\"title\":\"Paris squad\",\"emoji\":\"🏖️\",\"tripId\":\"" + trip.path("id").asString() + "\"}", 200);
+        org.junit.jupiter.api.Assertions.assertEquals("Paris squad", g.path("title").asString());
+        post("/api/v1/chats", access, "{\"title\":\"No trip\",\"emoji\":\"✈️\"}", 200);
+        String other = register("grp2+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
+        post("/api/v1/chats", other, "{\"title\":\"Sneaky\",\"emoji\":\"✈️\",\"tripId\":\"" + trip.path("id").asString() + "\"}", 404);
+    }
 }

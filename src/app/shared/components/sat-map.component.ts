@@ -2,8 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, effect, inj
 import type * as Leaflet from 'leaflet';
 import { environment } from '../../../environments/environment';
 import { MapFeature } from '../../core/services/gates.service';
-
-const POI_GLYPH: Record<string, string> = { food: '☕', pharmacy: '✚', toilets: 'WC', money: '€', charging: '⚡', shop: '🛍', info: 'i' };
+import { POI_META } from '../../core/data/airport-poi';
 
 /**
  * Satellite map (Leaflet + raster imagery, loaded lazily so it costs nothing until opened).
@@ -31,6 +30,9 @@ export class SatMapComponent {
   readonly features = input<MapFeature[]>([]);
   readonly me = input<{ lat: number; lon: number } | null>(null);
   readonly selectedGate = input<string | null>(null);
+  /** A facility to highlight and fly to (its id). */
+  readonly selectedPlace = input<string | null>(null);
+  readonly placeTap = output<string>();
   readonly interactive = input(true);
   readonly zoom = input(15);
   readonly gateTap = output<string>();
@@ -53,7 +55,8 @@ export class SatMapComponent {
       const f = this.features();
       const me = this.me();
       const sel = this.selectedGate();
-      void this.ensure().then(() => this.draw(f, me, sel));
+      const place = this.selectedPlace();
+      void this.ensure().then(() => this.draw(f, me, sel, place));
     });
     inject(DestroyRef).onDestroy(() => {
       this.resize?.disconnect();
@@ -112,11 +115,14 @@ export class SatMapComponent {
 
   private resize?: ResizeObserver;
 
-  private draw(features: MapFeature[], me: { lat: number; lon: number } | null, selected: string | null) {
+  private draw(features: MapFeature[], me: { lat: number; lon: number } | null, selected: string | null, place: string | null = null) {
     const L = this.L!;
     this.layer!.clearLayers();
     for (const f of features) {
       if (f.kind === 'terminal') {
+        for (const ring of f.outline ?? []) {
+          L.polygon(ring, { color: '#5ee7f0', weight: 2, opacity: 0.9, fillColor: '#22c7d3', fillOpacity: 0.12, interactive: false, className: 'gm-terminal-outline' }).addTo(this.layer!);
+        }
         L.marker([f.lat, f.lon], { icon: L.divIcon({ className: 'gm-pin-terminal', html: `<span>${esc(f.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(this.layer!);
       } else if (f.kind === 'gate') {
         const on = selected && f.ref.toUpperCase() === selected.toUpperCase();
@@ -127,19 +133,27 @@ export class SatMapComponent {
         m.on('click', () => this.gateTap.emit(f.ref));
         m.addTo(this.layer!);
       } else if (this.interactive()) {
-        L.marker([f.lat, f.lon], { icon: L.divIcon({ className: `gm-pin-poi ${f.poi}`, html: `<span title="${esc(f.ref)}">${POI_GLYPH[f.poi ?? 'info']}</span>`, iconSize: undefined }) })
-          .bindTooltip(esc(f.ref), { direction: 'top', offset: [0, -10] })
+        const meta = POI_META[f.poi ?? 'info'] ?? POI_META.info;
+        const on = !!place && f.id === place;
+        const m = L.marker([f.lat, f.lon], {
+          icon: L.divIcon({ className: `gm-pin-poi${on ? ' on' : ''}`, html: `<span style="--c:${meta.color}" title="${esc(f.ref)}">${meta.glyph}</span>`, iconSize: undefined }),
+          zIndexOffset: on ? 1500 : 0,
+        })
+          .bindTooltip(esc(f.ref), { direction: 'top', offset: [0, -12], permanent: on })
           .addTo(this.layer!);
+        m.on('click', () => f.id && this.placeTap.emit(f.id));
       }
     }
+    const focus = place ? features.find((f) => f.id === place) : undefined;
+    if (focus && !me) this.map!.setView([focus.lat, focus.lon], 18, { animate: true });
     if (me) {
       L.marker([me.lat, me.lon], { icon: L.divIcon({ className: 'gm-pin-me', html: '<i></i>', iconSize: [22, 22] }), zIndexOffset: 2000 }).addTo(this.layer!);
-      const gate = selected ? features.find((f) => f.kind === 'gate' && f.ref.toUpperCase() === selected.toUpperCase()) : undefined;
+      const gate = (selected ? features.find((f) => f.kind === 'gate' && f.ref.toUpperCase() === selected.toUpperCase()) : undefined) ?? focus;
       if (gate) {
         L.polyline([[me.lat, me.lon], [gate.lat, gate.lon]], { color: '#22c7d3', weight: 4, dashArray: '2 10', lineCap: 'round', className: 'gm-route' }).addTo(this.layer!);
         this.map!.fitBounds(L.latLngBounds([[me.lat, me.lon], [gate.lat, gate.lon]]).pad(0.35), { maxZoom: 18, animate: true });
       }
-    } else if (selected) {
+    } else if (selected && !focus) {
       const gate = features.find((f) => f.kind === 'gate' && f.ref.toUpperCase() === selected.toUpperCase());
       if (gate) this.map!.setView([gate.lat, gate.lon], 17, { animate: true });
     }

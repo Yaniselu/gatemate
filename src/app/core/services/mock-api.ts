@@ -14,7 +14,7 @@ import { AIRLINES, sampleBaggage } from '../data/airlines';
 import { parseBcbp } from '../utils/bcbp';
 import { matchPassengerName } from '../utils/name-match';
 import { randomId } from '../security/crypto.util';
-import { ApiError, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { ApiError, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
 const ACCESS_TTL_MS = 15 * 60_000;
 
@@ -252,6 +252,46 @@ export class MockApi extends GatemateApi {
 
   async getImportEmail(): Promise<string> {
     return this.delay(`trips+${(this.user?.id ?? 'demo').slice(-8).toLowerCase()}@in.gatemate.app`, 200, 400);
+  }
+
+  /** Demo reader: same idea as the server's (flight number, two airport codes, date, time). */
+  private async readEmail(text: string): Promise<{ input: NewFlightInput; ref?: string; nameFound: boolean }> {
+    await this.airportDb.load();
+    const fn = text.match(/\b([A-Z][A-Z0-9])\s?(\d{1,4})\b/);
+    const pair = text.match(/\(([A-Z]{3})\)[^(]*\(([A-Z]{3})\)/) ?? text.match(/\b([A-Z]{3})\s*(?:-|–|→|to)\s*([A-Z]{3})\b/);
+    const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const dm = text.match(/(\d{1,2})\s+([A-Za-z]{3})[a-z]*\.?\s+(\d{4})/) ;
+    const iso = text.match(/(\d{4})-(\d{2})-(\d{2})/);
+    const date = iso ? `${iso[1]}-${iso[2]}-${iso[3]}` : dm && months.includes(dm[2].toLowerCase()) ? `${dm[3]}-${String(months.indexOf(dm[2].toLowerCase()) + 1).padStart(2, '0')}-${dm[1].padStart(2, '0')}` : null;
+    const time = text.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+    if (!fn || !pair || !date || !this.airportDb.get(pair[1]) || !this.airportDb.get(pair[2])) {
+      throw new ApiError('We couldn’t find a flight in this e-mail. Make sure it includes the flight number, the airports and the date.', 422, 'no_flights');
+    }
+    const ref = text.match(/(?:booking|reservation|confirmation)\s*(?:reference|code|number)?\s*[:#]?\s*([A-Z0-9]{6})\b/i)?.[1];
+    const last = (this.user?.legalLastName ?? '').toLowerCase();
+    return {
+      input: { carrier: fn[1], flightNumber: fn[2], from: pair[1], to: pair[2], date: `${date}T${time ? time[1].padStart(2, '0') + ':' + time[2] : '12:00'}`, bookingRef: ref, passengerName: `${this.user?.legalFirstName ?? ''} ${this.user?.legalLastName ?? ''}`.trim() || 'Traveller' },
+      ref,
+      nameFound: !!last && text.toLowerCase().includes(last),
+    };
+  }
+
+  async previewEmail(text: string): Promise<EmailPreview> {
+    const r = await this.readEmail(text);
+    const trip = await this.addFlight(r.input);
+    // Preview only: take the demo trip back out.
+    this.trips = this.ensureTrips().filter((t) => t.id !== trip.id);
+    return this.delay({ flights: trip.flights, bookingRef: r.ref ?? null, nameFound: r.nameFound }, 300, 600);
+  }
+
+  async importEmail(text: string): Promise<Trip> {
+    const r = await this.readEmail(text);
+    const trip = await this.addFlight(r.input);
+    trip.flights[0].verification = { status: r.nameFound ? 'pending' : 'unverified', method: 'email', checkedAt: new Date().toISOString(), checks: [
+      { label: 'Flights read from the airline’s confirmation e-mail', ok: true },
+      { label: r.nameFound ? 'Your legal name appears on the booking' : 'Your legal name wasn’t found in the e-mail', ok: r.nameFound },
+    ] };
+    return this.delay(trip, 400, 700);
   }
 
   private invites = new Map<string, { type: 'trip' | 'chat'; id: string }>();

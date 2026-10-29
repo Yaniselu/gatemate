@@ -71,6 +71,7 @@ gatemate:
     inbound-secret: ${INBOUND_EMAIL_SECRET:}
     airline-email-domains: ${AIRLINE_EMAIL_DOMAINS:wizzair.com,ryanair.com,lufthansa.com,tarom.ro,easyjet.com,britishairways.com,klm.com,airfrance.fr,emirates.com,qatarairways.com,turkishairlines.com}
     import-domain: ${IMPORT_EMAIL_DOMAIN:}
+    import-address: ${IMPORT_EMAIL_ADDRESS:}
   mail:
     from: ${MAIL_FROM:no-reply@gatemate.app}
     reset-url: ${RESET_URL:https://gatemate.app/reset}

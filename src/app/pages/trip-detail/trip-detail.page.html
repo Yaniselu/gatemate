@@ -40,6 +40,9 @@
       @switch (section()) {
         @case ('flights') {
           <div class="section">
+            @if (liveFlight(); as lf) {
+              <gm-live-flight class="live anim-scale-in" [flight]="lf" />
+            }
             @if (upcomingFlights()[0]; as nf) {
               <gm-airport-day class="card day anim-fade-up" [flight]="nf" />
             }

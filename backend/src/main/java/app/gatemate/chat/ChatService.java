@@ -28,9 +28,11 @@ public class ChatService {
     private final ModerationEntities.Reports reports;
     private final UserRepository users;
     private final SimpMessagingTemplate broker;
+    private final app.gatemate.trip.Repos.Members tripMembers;
 
     public ChatService(ChatRepos.Threads threads, ChatRepos.Members members, ChatRepos.Messages messages, ModerationEntities.Blocks blocks,
-            ModerationEntities.Reports reports, UserRepository users, SimpMessagingTemplate broker) {
+            ModerationEntities.Reports reports, UserRepository users, SimpMessagingTemplate broker, app.gatemate.trip.Repos.Members tripMembers) {
+        this.tripMembers = tripMembers;
         this.threads = threads;
         this.members = members;
         this.messages = messages;
@@ -59,8 +61,21 @@ public class ChatService {
         th.emoji = Text.clean(in.emoji(), 16);
         th.createdBy = me;
         if (th.title.isBlank()) throw ApiException.badRequest("title_required", "Give your group a name.");
+        if (th.emoji.isBlank()) th.emoji = "✈️";
+        UUID trip = null;
+        if (in.tripId() != null && !in.tripId().isBlank()) {
+            try {
+                trip = UUID.fromString(in.tripId());
+            } catch (IllegalArgumentException e) {
+                throw ApiException.badRequest("bad_trip", "Invalid trip.");
+            }
+            if (!tripMembers.existsByTripIdAndUserId(trip, me)) throw ApiException.notFound("Trip");
+            th.tripId = trip;
+        }
         threads.save(th);
         join(th.id, me);
+        // A group linked to a trip starts with everyone already on that trip.
+        if (trip != null) for (var m : tripMembers.findByTripId(trip)) join(th.id, m.userId);
         return dto(th, me);
     }
 

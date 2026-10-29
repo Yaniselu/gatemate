@@ -1,17 +1,12 @@
 package app.gatemate.booking;
 
-import app.gatemate.airport.AirportCatalog;
 import app.gatemate.common.ApiException;
 import app.gatemate.common.Crypto;
 import app.gatemate.config.GatemateProperties;
-import app.gatemate.trip.FlightEntity;
-import app.gatemate.trip.Repos;
-import app.gatemate.trip.TripService;
 import app.gatemate.user.UserRepository;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.OffsetDateTime;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -20,124 +15,128 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Receives airline confirmation e-mails forwarded to the user's personal import address (via the mail provider's inbound webhook).
- * A booking is imported only if ALL hold:
- *  - the webhook carries our shared secret;
- *  - the message was forwarded by the account's own verified e-mail address;
- *  - the original sender's domain is a known airline domain and its DKIM signature passed;
- *  - the reservation (schema.org FlightReservation markup) is in the account's legal name.
+ * Receives confirmation e-mails forwarded to the user's personal import address, from the mail provider's inbound
+ * webhook (Postmark, CloudMailin, or our own normalised format). A booking is imported only if:
+ *  - the webhook carries our shared secret (X-Gatemate-Secret header, or HTTP Basic password in the webhook URL);
+ *  - the address token belongs to an account;
+ *  - the message was sent from that account's e-mail address, and the sender's domain passed SPF or DKIM
+ *    (so nobody can forge a forward "from" you).
+ * The airline's own signature doesn't survive forwarding, so the passenger name is checked against the account's
+ * legal name instead and shown on the flight.
  */
 @RestController
 @RequestMapping("/api/v1/inbound/email")
 public class InboundEmailController {
     private static final Logger log = LoggerFactory.getLogger(InboundEmailController.class);
-    private static final Pattern JSON_LD = Pattern.compile("<script[^>]*application/ld\\+json[^>]*>(.*?)</script>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-    private static final Pattern TOKEN = Pattern.compile("^trips\\+([a-z0-9]{6,32})@", Pattern.CASE_INSENSITIVE);
+    private static final Pattern TOKEN = Pattern.compile("\\+([a-z0-9]{6,32})@", Pattern.CASE_INSENSITIVE);
 
     private final GatemateProperties props;
     private final UserRepository users;
-    private final Repos.Flights flights;
-    private final TripService trips;
-    private final AirportCatalog airports;
-    private final JsonMapper json;
+    private final EmailImportService imports;
 
-    public InboundEmailController(GatemateProperties props, UserRepository users, Repos.Flights flights, TripService trips, AirportCatalog airports, JsonMapper json) {
+    public InboundEmailController(GatemateProperties props, UserRepository users, EmailImportService imports) {
         this.props = props;
         this.users = users;
-        this.flights = flights;
-        this.trips = trips;
-        this.airports = airports;
-        this.json = json;
+        this.imports = imports;
     }
 
-    /** Normalised inbound payload (map the provider's fields to this in its webhook template). */
-    public record Inbound(String to, String from, String originalFrom, String dkimDomain, boolean dkimPass, String html) {}
+    /** What we need from any provider's payload. */
+    record Mail(List<String> recipients, String from, boolean senderAuthenticated, String html, String text) {}
 
     @PostMapping
-    @Transactional
-    public ResponseEntity<Void> receive(@RequestHeader(name = "X-Gatemate-Secret", required = false) String secret, @RequestBody Inbound in) {
+    public ResponseEntity<Void> receive(@RequestHeader(name = "X-Gatemate-Secret", required = false) String secret,
+            @RequestHeader(name = "Authorization", required = false) String authorization, @RequestBody JsonNode body) {
         String expected = props.booking().inboundSecret();
-        if (expected == null || expected.isBlank() || secret == null || !Crypto.constantTimeEquals(expected, secret)) {
+        String given = secret != null ? secret : basicPassword(authorization);
+        if (expected == null || expected.isBlank() || given == null || !Crypto.constantTimeEquals(expected, given)) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "unauthorized", "Bad signature.");
         }
         // Always 202 from here on, so senders can't probe which addresses exist.
         try {
-            importMail(in);
+            importMail(normalise(body));
         } catch (Exception e) {
-            log.info("inbound mail rejected: {}", e.getMessage());
+            log.info("inbound mail not imported: {}", e.getMessage());
         }
         return ResponseEntity.accepted().build();
     }
 
-    void importMail(Inbound in) {
-        Matcher t = TOKEN.matcher(in.to() == null ? "" : in.to().trim());
-        if (!t.find()) throw new IllegalArgumentException("unknown recipient");
-        var user = users.findByImportToken(t.group(1).toLowerCase(Locale.ROOT)).orElseThrow(() -> new IllegalArgumentException("unknown token"));
-        if (!user.emailVerified || user.email == null || !user.email.equalsIgnoreCase(address(in.from()))) throw new IllegalArgumentException("not forwarded by owner");
-        String domain = in.dkimDomain() == null ? "" : in.dkimDomain().toLowerCase(Locale.ROOT);
-        boolean airline = props.booking().airlineEmailDomains() != null
-                && props.booking().airlineEmailDomains().stream().anyMatch(d -> domain.equals(d) || domain.endsWith("." + d));
-        if (!in.dkimPass() || !airline || !address(in.originalFrom()).endsWith(domain)) throw new IllegalArgumentException("sender not verified");
-        if (user.legalFirstName == null || user.legalLastName == null) throw new IllegalArgumentException("legal name missing");
-
-        for (JsonNode r : reservations(in.html())) {
-            String name = r.path("underName").path("name").asString("");
-            int sp = name.trim().lastIndexOf(' ');
-            if (sp < 0) continue;
-            if (!NameMatcher.match(name.substring(0, sp), name.substring(sp + 1), user.legalFirstName, user.legalLastName).ok()) continue;
-            JsonNode fl = r.path("reservationFor");
-            String carrier = fl.path("airline").path("iataCode").asString("");
-            String number = fl.path("flightNumber").asString("").replaceFirst("^" + carrier, "");
-            var from = airports.get(fl.path("departureAirport").path("iataCode").asString(""));
-            var to = airports.get(fl.path("arrivalAirport").path("iataCode").asString(""));
-            if (carrier.isBlank() || number.isBlank() || from.isEmpty() || to.isEmpty()) continue;
-            Instant dep = OffsetDateTime.parse(fl.path("departureTime").asString()).toInstant();
-            Instant arr = fl.hasNonNull("arrivalTime") ? OffsetDateTime.parse(fl.path("arrivalTime").asString()).toInstant() : null;
-            String ref = r.path("reservationNumber").asString("");
-            String claimKey = String.join("|", ref, carrier + number, dep.toString().substring(0, 10), NameMatcher.normalize(user.legalLastName)).toUpperCase(Locale.ROOT);
-            if (flights.findByClaimKey(claimKey).isPresent()) continue;
-
-            var f = new FlightEntity();
-            f.airlineCode = carrier;
-            f.airlineName = fl.path("airline").path("name").asString(carrier);
-            f.flightNumber = carrier + " " + number;
-            f.fromIata = from.get().iata();
-            f.toIata = to.get().iata();
-            f.departureAt = dep;
-            f.arrivalAt = arr != null ? arr : dep.plus(Duration.ofMinutes(Math.round(30 + AirportCatalog.distanceKm(from.get(), to.get()) / 800 * 60)));
-            f.boardingAt = dep.minus(Duration.ofMinutes(40));
-            f.seat = r.path("airplaneSeat").asString(null);
-            f.bookingRef = ref;
-            f.passengerName = user.legalFirstName + " " + user.legalLastName;
-            f.claimKey = claimKey;
-            f.verificationJson = "{\"status\":\"verified\",\"method\":\"email\",\"checkedAt\":\"" + Instant.now()
-                    + "\",\"checks\":[{\"label\":\"Signed e-mail from " + domain + "\",\"ok\":true},{\"label\":\"Passenger name matches your legal name\",\"ok\":true}]}";
-            trips.createWithFlight(user.id, f);
-        }
-    }
-
-    private List<JsonNode> reservations(String html) {
-        var out = new ArrayList<JsonNode>();
-        if (html == null) return out;
-        Matcher m = JSON_LD.matcher(html);
-        while (m.find()) {
-            try {
-                JsonNode n = json.readTree(m.group(1));
-                for (JsonNode x : n.isArray() ? n : List.of(n)) if ("FlightReservation".equals(x.path("@type").asString(""))) out.add(x);
-            } catch (Exception ignored) {
-                // not JSON-LD we understand
+    void importMail(Mail m) {
+        String token = null;
+        for (String r : m.recipients()) {
+            Matcher t = TOKEN.matcher(r);
+            if (t.find()) {
+                token = t.group(1).toLowerCase(Locale.ROOT);
+                break;
             }
         }
-        return out;
+        if (token == null) throw new IllegalArgumentException("no import token in recipients");
+        var user = users.findByImportToken(token).orElseThrow(() -> new IllegalArgumentException("unknown token"));
+        if (user.email == null || !user.email.equalsIgnoreCase(address(m.from()))) throw new IllegalArgumentException("not forwarded from the account's e-mail");
+        if (!m.senderAuthenticated()) throw new IllegalArgumentException("sender failed SPF/DKIM");
+        imports.importInto(user, m.html(), m.text(), "Forwarded from your account e-mail (" + address(m.from()) + ")");
+        log.info("inbound mail imported for user {}", user.id);
     }
 
-    private static String address(String header) {
+    static Mail normalise(JsonNode b) {
+        var to = new ArrayList<String>();
+        if (b.has("FromFull") || b.has("HtmlBody") || b.has("TextBody")) {
+            // Postmark inbound
+            for (String f : List.of("ToFull", "CcFull", "BccFull")) for (JsonNode r : b.path(f)) to.add(r.path("Email").asString(""));
+            to.add(b.path("OriginalRecipient").asString(""));
+            String from = b.path("FromFull").path("Email").asString(b.path("From").asString(""));
+            boolean auth = false;
+            for (JsonNode h : b.path("Headers")) {
+                String name = h.path("Name").asString("").toLowerCase(Locale.ROOT), value = h.path("Value").asString("").toLowerCase(Locale.ROOT);
+                if (name.equals("received-spf") && value.startsWith("pass")) auth = true;
+                if (name.equals("authentication-results") && authPass(value, from)) auth = true;
+            }
+            return new Mail(to, from, auth, b.path("HtmlBody").asString(null), b.path("TextBody").asString(null));
+        }
+        if (b.has("envelope")) {
+            // CloudMailin (JSON normalised format)
+            JsonNode env = b.path("envelope");
+            to.add(env.path("to").asString(""));
+            for (JsonNode r : env.path("recipients")) to.add(r.asString(""));
+            to.add(b.path("headers").path("to").asString(""));
+            String from = b.path("headers").path("from").asString(env.path("from").asString(""));
+            boolean spf = env.path("spf").path("result").asString("").equalsIgnoreCase("pass")
+                    && address(from).endsWith("@" + env.path("spf").path("domain").asString("~").toLowerCase(Locale.ROOT));
+            boolean dkim = authPass(b.path("headers").path("authentication_results").asString("").toLowerCase(Locale.ROOT), from);
+            return new Mail(to, from, spf || dkim, b.path("html").asString(null), b.path("plain").asString(null));
+        }
+        // Our own normalised format.
+        to.add(b.path("to").asString(""));
+        return new Mail(to, b.path("from").asString(""), b.path("dkimPass").asBoolean(false), b.path("html").asString(null), b.path("text").asString(null));
+    }
+
+    /** "dkim=pass header.d=gmail.com" or "spf=pass smtp.mailfrom=…@gmail.com" for the sender's own domain. */
+    static boolean authPass(String results, String from) {
+        String a = address(from);
+        String domain = a.contains("@") ? a.substring(a.indexOf('@') + 1) : "";
+        if (domain.isEmpty()) return false;
+        Matcher d = Pattern.compile("dkim=pass[^;]*header\\.(?:d|i)=@?([a-z0-9.-]+)").matcher(results);
+        while (d.find()) if (domain.equals(d.group(1)) || domain.endsWith("." + d.group(1))) return true;
+        Matcher s = Pattern.compile("spf=pass[^;]*smtp\\.mailfrom=(?:[^@;\\s]*@)?([a-z0-9.-]+)").matcher(results);
+        while (s.find()) if (domain.equals(s.group(1))) return true;
+        return false;
+    }
+
+    private static String basicPassword(String authorization) {
+        if (authorization == null || !authorization.regionMatches(true, 0, "Basic ", 0, 6)) return null;
+        try {
+            String decoded = new String(Base64.getDecoder().decode(authorization.substring(6).trim()), StandardCharsets.UTF_8);
+            int colon = decoded.indexOf(':');
+            return colon < 0 ? null : decoded.substring(colon + 1);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    static String address(String header) {
         if (header == null) return "";
         int lt = header.indexOf('<'), gt = header.indexOf('>');
         return (lt >= 0 && gt > lt ? header.substring(lt + 1, gt) : header).trim().toLowerCase(Locale.ROOT);

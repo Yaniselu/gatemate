@@ -32,10 +32,12 @@ export const ALERT_ICONS: Record<AlertKind, { icon: string; color: string }> = {
   checklist: { icon: 'checkmark-done', color: '#2FD18A' },
 };
 
+import { LiveFlightService } from '../../core/services/live-flight.service';
+import { LiveFlightComponent } from '../../shared/components/live-flight.component';
 @Component({
   selector: 'gm-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
+  imports: [LiveFlightComponent, 
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink,
     SkeletonComponent, CountdownComponent, RouteArcComponent, RevealDirective, PressableDirective, CityImageComponent,
     ClockPipe, RelativeTimePipe, FlightStatusPipe,
@@ -64,6 +66,12 @@ export class HomePage implements OnInit {
   readonly today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
   readonly next = this.store.nextFlight;
   readonly loading = computed(() => this.store.tripsState() !== 'ready');
+  private live = inject(LiveFlightService);
+  /** Next flight while it can be tracked live (an hour before departure until after landing). */
+  readonly liveFlight = computed(() => {
+    const now = this.now();
+    return this.store.trips().flatMap((t) => t.flights).find((f) => this.live.inWindow(f, now)) ?? null;
+  });
 
   readonly steps = ['Check-in', 'Security', 'Gate', 'Boarding', 'Take-off'];
   readonly stepIndex = computed(() => {
@@ -86,14 +94,14 @@ export class HomePage implements OnInit {
   });
 
   readonly actions = [
-    { label: 'Add booking', icon: 'add-circle-outline', link: '/add-flight' },
-    { label: 'Pass', icon: 'qr-code-outline', link: 'pass' },
-    { label: 'Airport map', icon: 'map-outline', link: '/airport-map' },
-    { label: 'In-flight', icon: 'game-controller-outline', link: '/inflight' },
-    { label: 'Baggage', icon: 'bag-handle-outline', link: 'bags' },
-    { label: 'Checklist', icon: 'checkmark-done', link: 'checklist' },
-    { label: 'Trip chat', icon: 'chatbubbles-outline', link: 'trip-chat' },
-    { label: 'Your rights', icon: 'shield-checkmark-outline', link: '/rights' },
+    { label: 'Add booking', icon: 'add-circle-outline', link: '/add-flight', color: '#0fb5c3' },
+    { label: 'Pass', icon: 'qr-code-outline', link: 'pass', color: '#6366f1' },
+    { label: 'Airport map', icon: 'map-outline', link: '/airport-map', color: '#10b981' },
+    { label: 'In-flight', icon: 'game-controller-outline', link: '/inflight', color: '#f97316' },
+    { label: 'Baggage', icon: 'bag-handle-outline', link: 'bags', color: '#ec4899' },
+    { label: 'Checklist', icon: 'checkmark-done', link: 'checklist', color: '#8b5cf6' },
+    { label: 'Trip chat', icon: 'chatbubbles-outline', link: 'trip-chat', color: '#0ea5e9' },
+    { label: 'Your rights', icon: 'shield-checkmark-outline', link: '/rights', color: '#f59e0b' },
   ];
 
   readonly tips = [

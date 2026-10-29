@@ -109,6 +109,16 @@ export class TravelStore {
       }, 800);
     });
 
+    // Live updates: while a flight is within a day and a half, re-check gates, delays and alerts every minute
+    // (only when the app is on screen and online), and straight away when the app comes back to the foreground.
+    setInterval(() => {
+      if (!this.liveWindow() || document.visibilityState !== 'visible') return;
+      void this.refreshLive();
+    }, 60_000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.auth.status() === 'signed-in') void this.refreshLive();
+    });
+
     // Back online: replace the saved copy with fresh data.
     let wasOnline = true;
     effect(() => {
@@ -155,6 +165,24 @@ export class TravelStore {
       }
     })();
     return this.inflight;
+  }
+
+  /** Last time trips and alerts were refreshed from the server. */
+  readonly syncedAt = signal<number | null>(null);
+
+  private liveWindow(): boolean {
+    const n = this.nextFlight();
+    if (!n || this.auth.status() !== 'signed-in' || !this.network.online()) return false;
+    const dep = +new Date(n.flight.departure);
+    return dep - Date.now() < 36 * 3600_000 && Date.now() < +new Date(n.flight.arrival) + 2 * 3600_000;
+  }
+
+  private lastLive = 0;
+  async refreshLive(): Promise<void> {
+    if (Date.now() - this.lastLive < 20_000 || !this.network.online()) return;
+    this.lastLive = Date.now();
+    await Promise.all([this.loadTrips(true), this.loadAlerts(true)]).catch(() => {});
+    this.syncedAt.set(Date.now());
   }
 
   private async restoreCache(): Promise<void> {

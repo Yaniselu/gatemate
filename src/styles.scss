@@ -397,26 +397,29 @@ ion-refresher ion-refresher-content {
   border: 1px solid rgba(255, 255, 255, 0.35);
 }
 .gm-pin-poi span {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   font-size: 11px;
+  line-height: 1;
   color: #fff;
-  background: rgba(139, 124, 246, 0.9);
+  background: var(--c, #8b7cf6);
   border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s var(--gm-ease-spring);
 }
-.gm-pin-poi.food span {
-  background: rgba(255, 138, 91, 0.95);
+.gm-pin-poi.on span {
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  box-shadow: 0 0 0 7px color-mix(in srgb, var(--c, #8b7cf6) 35%, transparent), 0 6px 16px rgba(0, 0, 0, 0.4);
+  animation: gm-pop 0.5s var(--gm-ease-spring);
 }
-.gm-pin-poi.pharmacy span {
-  background: rgba(255, 90, 95, 0.95);
+.gm-terminal-outline {
+  animation: gm-outline-in 0.9s var(--gm-ease-out) both;
 }
-.gm-pin-poi.money span {
-  background: rgba(47, 209, 138, 0.95);
-}
-.gm-pin-poi.toilets span {
-  background: rgba(94, 200, 255, 0.95);
-  font-size: 9px;
+@keyframes gm-outline-in {
+  from { opacity: 0; }
 }
 .gm-pin-me i {
   display: block;
@@ -527,3 +530,24 @@ ion-content::part(scroll) {
 @keyframes gm-arc-draw { to { stroke-dashoffset: 0; } }
 .gm-reduce-motion .gm-arc:not(.upcoming) { animation: none; stroke-dashoffset: 0; }
 @media (prefers-reduced-motion: reduce) { .gm-arc:not(.upcoming) { animation: none; stroke-dashoffset: 0; } }
+
+/* Live aircraft on the route map. */
+.gm-live-plane {
+  display: grid;
+  place-items: center;
+  span {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 17px;
+    color: #fff;
+    background: #0b1b2b;
+    box-shadow: 0 0 0 6px rgba(15, 181, 195, 0.35), 0 6px 14px rgba(0, 0, 0, 0.35);
+    animation: gm-live-ping 2s ease-in-out infinite;
+  }
+}
+@keyframes gm-live-ping {
+  50% { box-shadow: 0 0 0 11px rgba(15, 181, 195, 0.12), 0 6px 14px rgba(0, 0, 0, 0.35); }
+}

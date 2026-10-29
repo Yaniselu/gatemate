@@ -86,21 +86,55 @@
       @case ('email') {
         <div class="email anim-fade-up">
           <div class="env-art" aria-hidden="true"><ion-icon name="mail-outline" /><span class="fly"><ion-icon name="paper-plane-outline" /></span></div>
-          <h2 class="h center">Forward your confirmation</h2>
-          <p class="center muted">Forward the airline’s booking email to your private address. It must come from <b>{{ auth.user()?.email }}</b> — we also check the airline’s digital signature (DKIM), so forged emails are rejected.</p>
-          <div class="addr glass" gmSheen>
-            @if (importEmail(); as e) {
-              <span class="selectable">{{ e }}</span>
-              <button class="gm-btn small" (click)="copyEmail()"><ion-icon name="copy-outline" /> Copy</button>
-            } @else {
-              <span class="muted">Creating your address…</span>
+          <h2 class="h center">Add it from the e-mail</h2>
+          <p class="center muted">Open the airline’s confirmation e-mail, select all the text, copy it and paste it here. We read every flight in the booking.</p>
+
+          <div class="paste card">
+            <textarea rows="6" placeholder="Paste the confirmation e-mail here…" [value]="emailText()" (input)="setEmailText($any($event.target).value)" aria-label="Confirmation e-mail text"></textarea>
+            <div class="paste-actions">
+              <button class="gm-btn ghost small" (click)="pasteEmail()"><ion-icon name="clipboard-outline" /> Paste</button>
+              <button class="gm-btn small" (click)="readEmail()" [disabled]="emailBusy() || !emailText().trim()">
+                @if (emailBusy()) { <span class="spinner"></span> Reading… } @else { <ion-icon name="sparkles-outline" /> Find flights }
+              </button>
+            </div>
+          </div>
+          @if (emailError()) { <p class="email-err anim-fade-up" role="alert"><ion-icon name="alert-circle" /> {{ emailError() }}</p> }
+
+          @if (emailPreview(); as p) {
+            <div class="found anim-scale-in">
+              <span class="gm-label">Found {{ p.flights.length }} flight{{ p.flights.length === 1 ? '' : 's' }}@if (p.bookingRef) { · booking {{ p.bookingRef }} }</span>
+              @for (f of p.flights; track f.id; let i = $index) {
+                <div class="found-flight card" [style.--i]="i">
+                  <div class="ff-route"><b>{{ f.from.code }}</b><span class="ff-line"><ion-icon name="airplane" /></span><b>{{ f.to.code }}</b></div>
+                  <div class="ff-meta">
+                    <span>{{ f.number }} · {{ f.airline }}</span>
+                    <span>{{ f.departure | shortDate: true : f.from.timezone }} · {{ f.departure | clock: f.from.timezone }} → {{ f.arrival | clock: f.to.timezone }}</span>
+                    <small>{{ f.from.city }} → {{ f.to.city }}@if (f.seat) { · Seat {{ f.seat }} }</small>
+                  </div>
+                </div>
+              }
+              <div class="name-row" [class.ok]="p.nameFound">
+                <ion-icon [name]="p.nameFound ? 'shield-checkmark' : 'warning-outline'" />
+                {{ p.nameFound ? 'Your name (' + legalName() + ') is on this booking.' : 'We couldn’t find ' + (legalName() || 'your legal name') + ' in the e-mail, so the flights will be marked unverified.' }}
+              </div>
+              <button class="gm-btn" (click)="addFromEmail()"><ion-icon name="add-circle-outline" /> Add {{ p.flights.length === 1 ? 'this flight' : 'these ' + p.flights.length + ' flights' }}</button>
+            </div>
+          }
+
+          <div class="forward">
+            <span class="gm-label">Or forward it</span>
+            @switch (forwardState()) {
+              @case ('ready') {
+                <p class="muted">Forward the e-mail from <b>{{ auth.user()?.email }}</b> to your private address. We check it really came from you, then the trip appears here.</p>
+                <div class="addr glass" gmSheen>
+                  <span class="selectable">{{ importEmail() }}</span>
+                  <button class="gm-btn small" (click)="copyEmail()"><ion-icon name="copy-outline" /> Copy</button>
+                </div>
+              }
+              @case ('loading') { <p class="muted">Getting your private address…</p> }
+              @default { <p class="muted">Forwarding to a private address isn’t switched on for this server yet. Pasting works right away.</p> }
             }
           </div>
-          <ol class="steps-list">
-            <li>Open the confirmation email from your airline.</li>
-            <li>Tap Forward and paste the address above.</li>
-            <li>Your trip appears here within a minute, verified.</li>
-          </ol>
         </div>
       }
 
@@ -167,19 +201,24 @@
       @case ('done') {
         @if (result(); as t) {
           <div class="done-screen">
-            <div class="badge-ok"><ion-icon name="shield-checkmark" /></div>
-            <h2 class="h center">Ticket verified</h2>
-            <p class="center muted">It’s in your name and now linked only to your account.</p>
+            @let st = t.flights[0].verification?.status;
+            <div class="badge-ok"><ion-icon [name]="st === 'verified' ? 'shield-checkmark' : 'airplane'" /></div>
+            <h2 class="h center">{{ st === 'verified' ? 'Ticket verified' : t.flights.length > 1 ? t.flights.length + ' flights added' : 'Flight added' }}</h2>
+            <p class="center muted">{{ st === 'verified' ? 'It’s in your name and now linked only to your account.' : st === 'pending' ? 'Your name is on the booking. It’s linked only to your account.' : 'We couldn’t confirm your name on it, so it’s marked unverified.' }}</p>
             @for (f of t.flights; track f.id) {
               <div class="ticket card" gmSheen="2">
                 <div class="t-row">
                   <div><span class="gm-label">{{ f.airline }} · {{ f.number }}</span><b class="route">{{ f.from.code }} <ion-icon name="airplane" /> {{ f.to.code }}</b></div>
-                  <span class="gm-chip success"><ion-icon name="checkmark" /> Verified</span>
+                  @if (f.verification?.status === 'verified') {
+                    <span class="gm-chip success"><ion-icon name="checkmark" /> Verified</span>
+                  } @else {
+                    <span class="gm-chip neutral">{{ f.verification?.status === 'pending' ? 'Name matched' : 'Unverified' }}</span>
+                  }
                 </div>
                 <div class="t-facts">
                   <span><span class="gm-label">Passenger</span>{{ f.passengerName }}</span>
-                  <span><span class="gm-label">Seat</span>{{ f.seat ?? '—' }}</span>
-                  <span><span class="gm-label">Fare</span>{{ f.fareName ?? '—' }}</span>
+                  <span><span class="gm-label">Seat</span>{{ f.seat || '—' }}</span>
+                  <span><span class="gm-label">Departs</span>{{ f.departure | shortDate: false : f.from.timezone }} {{ f.departure | clock: f.from.timezone }}</span>
                 </div>
                 @if (f.baggage; as b) {
                   <div class="t-bags">

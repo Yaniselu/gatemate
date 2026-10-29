@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonContent, IonHeader, IonIcon, IonRefresher, IonRefresherContent, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonButtons, IonContent, IonHeader, IonIcon, IonRefresher, IonRefresherContent, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { ChatService } from '../../core/services/chat.service';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
@@ -11,7 +11,7 @@ import { PlatformService } from '../../core/services/platform.service';
 @Component({
   selector: 'gm-chat',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink, SkeletonComponent, RevealDirective, PressableDirective, RelativeTimePipe],
+  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, IonRefresher, IonRefresherContent, RouterLink, SkeletonComponent, RevealDirective, PressableDirective, RelativeTimePipe],
   templateUrl: './chat.page.html',
   styleUrl: './chat.page.scss',
 })
@@ -37,6 +37,11 @@ export class ChatPage implements OnInit {
 
   ngOnInit(): void {
     void this.chat.loadThreads();
+  }
+
+  /** Coming back to the tab (e.g. after creating a group or adding a trip): show new chats straight away. */
+  ionViewWillEnter(): void {
+    if (this.chat.threadsState() === 'ready') void this.chat.loadThreads(true);
   }
 
   setFilter(f: 'all' | 'groups' | 'lounges') {

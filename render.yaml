@@ -28,5 +28,10 @@ services:
       # Gatemate Pro: shared secret for the RevenueCat webhook (generated; paste it into RevenueCat).
       - key: REVENUECAT_WEBHOOK_SECRET
         generateValue: true
+      # Email import: shared secret for the inbound mail webhook (generated) and the provider address with {token}.
+      - key: INBOUND_EMAIL_SECRET
+        generateValue: true
+      - key: IMPORT_EMAIL_ADDRESS
+        sync: false
       - key: CORS_ORIGINS
         value: capacitor://localhost,https://localhost,http://localhost

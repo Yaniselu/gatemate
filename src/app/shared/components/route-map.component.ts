@@ -24,6 +24,8 @@ const BASE = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_
 })
 export class RouteMapComponent {
   readonly routes = input<RouteLine[]>([]);
+  /** Live aircraft position, drawn as a plane pointing along its track. */
+  readonly plane = input<{ lat: number; lon: number; heading?: number } | null>(null);
   readonly offline = signal(false);
   private host = viewChild.required<ElementRef<HTMLElement>>('host');
   private L?: typeof Leaflet;
@@ -35,7 +37,8 @@ export class RouteMapComponent {
   constructor() {
     effect(() => {
       const r = this.routes();
-      void (this.init ??= this.create()).then(() => this.draw(r));
+      const p = this.plane();
+      void (this.init ??= this.create()).then(() => this.draw(r, p));
     });
     inject(DestroyRef).onDestroy(() => {
       this.resize?.disconnect();
@@ -68,7 +71,7 @@ export class RouteMapComponent {
     setTimeout(() => this.map?.invalidateSize(), 300);
   }
 
-  private draw(routes: RouteLine[]) {
+  private draw(routes: RouteLine[], plane: { lat: number; lon: number; heading?: number } | null = null) {
     const L = this.L!, map = this.map!, layer = this.layer!;
     layer.clearLayers();
     const bounds: [number, number][] = [];
@@ -99,7 +102,12 @@ export class RouteMapComponent {
           .addTo(layer);
       }
     });
-    if (bounds.length) map.fitBounds(L.latLngBounds(bounds).pad(0.25), { maxZoom: 5, animate: false });
+    if (plane) {
+      const html = `<span style="transform: rotate(${(plane.heading ?? 0) - 45}deg)">✈</span>`;
+      L.marker([plane.lat, plane.lon], { icon: L.divIcon({ className: 'gm-live-plane', html, iconSize: [30, 30] }), zIndexOffset: 3000, interactive: false }).addTo(layer);
+      bounds.push([plane.lat, plane.lon]);
+    }
+    if (bounds.length) map.fitBounds(L.latLngBounds(bounds).pad(0.25), { maxZoom: plane ? 6 : 5, animate: false });
     else map.setView([30, 10], 1.5);
   }
 }

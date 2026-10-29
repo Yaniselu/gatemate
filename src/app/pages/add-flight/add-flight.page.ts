@@ -10,7 +10,8 @@ import { NotificationsService } from '../../core/services/notifications.service'
 import { environment } from '../../../environments/environment';
 import { ProService } from '../../core/services/pro.service';
 import { PassReaderService } from '../../core/services/pass-reader.service';
-import { ApiError, GatemateApi } from '../../core/services/api';
+import { ApiError, EmailPreview, GatemateApi } from '../../core/services/api';
+import { ClockPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
 import { AIRLINES, AirlineOption } from '../../core/data/airlines';
 import { BcbpError, BoardingPassData, parseBcbp } from '../../core/utils/bcbp';
 import { matchPassengerName } from '../../core/utils/name-match';
@@ -38,7 +39,7 @@ const PNR = /^[A-Z0-9]{6}$/;
 @Component({
   selector: 'gm-add-flight',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, ReactiveFormsModule, RouterLink, RevealDirective, PressableDirective, SheenDirective],
+  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, ReactiveFormsModule, RouterLink, RevealDirective, PressableDirective, SheenDirective, ClockPipe, ShortDatePipe],
   templateUrl: './add-flight.page.html',
   styleUrl: './add-flight.page.scss',
 })
@@ -67,6 +68,12 @@ export class AddFlightPage {
     return q ? AIRLINES.filter((a) => a.name.toLowerCase().includes(q) || a.code.toLowerCase().includes(q)) : AIRLINES;
   });
   readonly importEmail = signal<string | null>(null);
+  /** 'off' when the server has no inbound mail provider yet: then only pasting is offered. */
+  readonly forwardState = signal<'loading' | 'ready' | 'off'>('loading');
+  readonly emailText = signal('');
+  readonly emailPreview = signal<EmailPreview | null>(null);
+  readonly emailBusy = signal(false);
+  readonly emailError = signal('');
   readonly checks = signal<Check[]>([]);
   readonly result = signal<Trip | null>(null);
   readonly failure = signal<{ title: string; body: string; code?: string } | null>(null);
@@ -89,10 +96,11 @@ export class AddFlightPage {
   readonly submitted = signal(false);
 
   readonly methods: { id: string; icon: string; title: string; body: string; badge?: string }[] = [
-    { id: 'airline', icon: 'airplane-outline', title: 'Import from airline', body: 'Booking reference + last name. Bags and seats included.', badge: 'Best' },
+    { id: 'email', icon: 'mail-outline', title: 'From the confirmation e-mail', body: 'Paste it or forward it. Every flight in the booking, with times.', badge: 'Best' },
     { id: 'scan', icon: 'scan-outline', title: 'Scan boarding pass', body: 'Paper pass or another phone’s screen.' },
     { id: 'upload', icon: 'image-outline', title: 'Upload a screenshot', body: 'From the Wizz Air, Ryanair or any airline app.' },
-    { id: 'email', icon: 'mail-outline', title: 'Forward the confirmation email', body: 'We read it automatically and verify the sender.' },
+    // Direct airline lookups need airline partnerships; the demo build shows how it works.
+    ...(environment.useMocks ? [{ id: 'airline', icon: 'airplane-outline', title: 'Import from airline', body: 'Booking reference + last name. Bags and seats included.' }] : []),
   ];
 
   // ----- Navigation -----
@@ -171,7 +179,70 @@ export class AddFlightPage {
 
   async openEmail() {
     this.step.set('email');
-    if (!this.importEmail()) this.importEmail.set(await this.api.getImportEmail());
+    this.emailError.set('');
+    if (this.importEmail()) return;
+    this.forwardState.set('loading');
+    try {
+      this.importEmail.set(await this.api.getImportEmail());
+      this.forwardState.set('ready');
+    } catch {
+      this.forwardState.set('off');
+    }
+  }
+
+  async pasteEmail() {
+    try {
+      const t = await navigator.clipboard.readText();
+      if (t) this.setEmailText(t);
+      else await this.toast.show('Nothing to paste. Copy the e-mail text first.');
+    } catch {
+      await this.toast.show('Tap and hold in the box, then choose Paste.');
+    }
+  }
+
+  setEmailText(t: string) {
+    this.emailText.set(t.slice(0, 200_000));
+    this.emailPreview.set(null);
+    this.emailError.set('');
+  }
+
+  async readEmail() {
+    const text = this.emailText().trim();
+    if (text.length < 20) {
+      this.emailError.set('Paste the whole confirmation e-mail: flight number, airports and date.');
+      this.platform.error();
+      return;
+    }
+    this.emailBusy.set(true);
+    this.emailError.set('');
+    try {
+      this.emailPreview.set(await this.api.previewEmail(text));
+      this.platform.success();
+    } catch (e) {
+      this.platform.error();
+      this.emailError.set(e instanceof ApiError ? e.message : 'We couldn’t read this e-mail. Please try again.');
+    } finally {
+      this.emailBusy.set(false);
+    }
+  }
+
+  async addFromEmail() {
+    const p = this.emailPreview();
+    if (!p) return;
+    const n = p.flights.length;
+    await this.runChecks(
+      [`Reading ${n} flight${n === 1 ? '' : 's'} from your e-mail`, p.nameFound ? `Matching “${this.legalName()}” on the booking` : 'Your name isn’t in the e-mail: adding as unverified', 'Checking it isn’t linked to another account', 'Creating your trip'],
+      async (advance) => {
+        await advance(true);
+        await advance(true);
+        const trip = await this.api.importEmail(this.emailText());
+        await advance(true);
+        await advance(true);
+        this.emailText.set('');
+        this.emailPreview.set(null);
+        return trip;
+      },
+    );
   }
 
   async copyEmail() {

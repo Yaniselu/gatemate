@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnInit, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, OnInit, signal, untracked } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -23,6 +23,8 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { ClockPipe, DurationPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
 import { FlightStatusPipe } from '../../shared/pipes/status.pipe';
 import { AirportDayComponent } from '../../shared/components/airport-day.component';
+import { LiveFlightComponent } from '../../shared/components/live-flight.component';
+import { LiveFlightService } from '../../core/services/live-flight.service';
 import { DestinationService } from '../../core/services/destination.service';
 import { renderTripCard } from '../../core/utils/trip-card';
 import { isShareCancel, shareCanvas } from '../../core/utils/share-image';
@@ -34,7 +36,7 @@ type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' 
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonIcon, RouterLink, FormsModule, DecimalPipe,
-    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, AirportDayComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
+    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, AirportDayComponent, LiveFlightComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
   ],
   templateUrl: './trip-detail.page.html',
   styleUrl: './trip-detail.page.scss',
@@ -68,6 +70,13 @@ export class TripDetailPage implements OnInit {
   readonly scrollY = signal(0);
 
   readonly passIndex = signal(0);
+  private live = inject(LiveFlightService);
+  private clockTick = signal(Date.now());
+  /** The trip's flight that is in the air or about to be (tracked live). */
+  readonly liveFlight = computed(() => {
+    const now = this.clockTick();
+    return (this.trip()?.flights ?? []).find((f) => this.live.inWindow(f, now));
+  });
   readonly upcomingFlights = computed(() => (this.trip()?.flights ?? []).filter((f) => new Date(f.arrival).getTime() > Date.now()));
 
   readonly checklistDone = computed(() => this.trip()?.checklist.filter((c) => c.done).length ?? 0);
@@ -158,6 +167,8 @@ export class TripDetailPage implements OnInit {
     effect(() => {
       if (this.trip()) untracked(() => this.checkFit());
     });
+    const t = setInterval(() => this.clockTick.set(Date.now()), 60_000);
+    inject(DestroyRef).onDestroy(() => clearInterval(t));
   }
 
   ngOnInit(): void {
