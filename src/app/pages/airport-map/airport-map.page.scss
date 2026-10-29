@@ -171,3 +171,15 @@
   .hours { font-size: 12px; font-weight: 650; color: #c2410c; &.open { color: #15803d; } }
   .x { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(11, 27, 43, 0.06); font-size: 18px; color: var(--gm-ink-2); }
 }
+
+.cats {
+  margin-bottom: 8px;
+  button {
+    --c: var(--gm-navy);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+    &.on { color: #fff; background: var(--c); i { background: #fff; } }
+  }
+}

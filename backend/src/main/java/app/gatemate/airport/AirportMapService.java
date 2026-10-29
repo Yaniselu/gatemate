@@ -31,7 +31,12 @@ public class AirportMapService {
     private static final Logger log = LoggerFactory.getLogger(AirportMapService.class);
 
     public record MapFeature(String id, String kind, String ref, double lat, double lon, String poi, String terminal, String level, String hours,
-            String brand, String detail, List<List<double[]>> outline) {}
+            String brand, String detail, List<List<double[]>> outline, List<double[]> line, Double width) {
+        MapFeature(String id, String kind, String ref, double lat, double lon, String poi, String terminal, String level, String hours, String brand,
+                String detail, List<List<double[]>> outline) {
+            this(id, kind, ref, lat, lon, poi, terminal, level, hours, brand, detail, outline, null, null);
+        }
+    }
 
     private static final Map<String, String> AMENITY = new LinkedHashMap<>();
     static {
@@ -107,37 +112,53 @@ public class AirportMapService {
         if (a.icao() != null && !a.icao().isBlank()) ids.add("[\"icao\"=\"" + a.icao() + "\"]");
         var sb = new StringBuilder();
         for (String t : ids) sb.append("way[\"aeroway\"=\"aerodrome\"]").append(t).append(";relation[\"aeroway\"=\"aerodrome\"]").append(t).append(";");
-        return "[out:json][timeout:60];(" + sb + ")->.ap;.ap map_to_area->.a;(" + selectors("(area.a)")
-                + ");out center tags;(way[\"aeroway\"=\"terminal\"](area.a);relation[\"aeroway\"=\"terminal\"](area.a););out geom tags;";
+        return "[out:json][timeout:60];(" + sb + ")->.ap;.ap out geom tags;.ap map_to_area->.a;(" + selectors("(area.a)") + ");out center tags;" + shapes("(area.a)");
     }
 
     static String aroundQuery(AirportCatalog.Airport a) {
         String near = "(around:3000," + a.lat() + "," + a.lon() + ")";
-        return "[out:json][timeout:60];(" + selectors(near) + ");out center tags;(way[\"aeroway\"=\"terminal\"]" + near + ";relation[\"aeroway\"=\"terminal\"]" + near
-                + ";);out geom tags;";
+        return "[out:json][timeout:60];(" + selectors(near) + ");out center tags;" + shapes(near);
+    }
+
+    /** Shapes for the drawn plan: terminals, aprons, runways and taxiways, with geometry. */
+    private static String shapes(String scope) {
+        return "(way[\"aeroway\"=\"terminal\"]" + scope + ";relation[\"aeroway\"=\"terminal\"]" + scope + ";way[\"building\"=\"terminal\"]" + scope
+                + ";way[\"aeroway\"~\"^(runway|taxiway|apron)$\"]" + scope + ";relation[\"aeroway\"=\"apron\"]" + scope + ";);out geom tags;";
     }
 
     public static List<MapFeature> parse(JsonNode elements) {
         var terminals = new ArrayList<MapFeature>();
+        var shapes = new ArrayList<MapFeature>();
         var rest = new ArrayList<JsonNode>();
         Set<String> seen = new HashSet<>();
         for (JsonNode e : elements) {
             String key = e.path("type").asString("") + e.path("id").asLong();
             if (!seen.add(key)) continue;
             JsonNode t = e.path("tags");
-            if ("terminal".equals(t.path("aeroway").asString(""))) {
+            String aw = t.path("aeroway").asString("");
+            boolean terminal = aw.equals("terminal") || t.path("building").asString("").equals("terminal");
+            boolean shape = e.has("geometry") || e.has("members");
+            if (shape && (terminal || aw.equals("aerodrome") || aw.equals("apron"))) {
                 var rings = new ArrayList<List<double[]>>();
-                if (e.has("geometry")) rings.add(points(e.path("geometry")));
-                for (JsonNode m : e.path("members")) if (!"inner".equals(m.path("role").asString("")) && m.has("geometry")) rings.add(points(m.path("geometry")));
-                rings.removeIf(List::isEmpty);
+                if (e.has("geometry")) rings.add(simplify(points(e.path("geometry"))));
+                for (JsonNode m : e.path("members")) if (!"inner".equals(m.path("role").asString("")) && m.has("geometry")) rings.add(simplify(points(m.path("geometry"))));
+                rings.removeIf(r -> r.size() < 3);
                 if (rings.isEmpty()) continue;
                 double la = 0, lo = 0;
                 int n = 0;
                 for (var r : rings) for (double[] p : r) { la += p[0]; lo += p[1]; n++; }
-                terminals.add(new MapFeature(key, "terminal", terminalName(t), la / n, lo / n, null, null, null, null, null, null, rings));
-            } else rest.add(e);
+                if (terminal) terminals.add(new MapFeature(key, "terminal", terminalName(t), la / n, lo / n, null, null, null, null, null, null, rings));
+                else shapes.add(new MapFeature(key, aw, aw.equals("aerodrome") ? t.path("name").asString("") : "", la / n, lo / n, null, null, null, null, null, null, rings));
+            } else if (e.has("geometry") && (aw.equals("runway") || aw.equals("taxiway"))) {
+                var line = simplify(points(e.path("geometry")));
+                if (line.size() < 2) continue;
+                double[] mid = line.get(line.size() / 2);
+                double width = parseWidth(t.path("width").asString(""), aw.equals("runway") ? 45 : 18);
+                shapes.add(new MapFeature(key, aw, aw.equals("runway") ? t.path("ref").asString("") : "", mid[0], mid[1], null, null, null, null, null, null, null, line, width));
+            } else if (!shape || e.has("center") || e.has("lat")) rest.add(e);
         }
-        var out = new ArrayList<MapFeature>(terminals);
+        var out = new ArrayList<MapFeature>(shapes);
+        out.addAll(terminals);
         for (JsonNode e : rest) {
             JsonNode t = e.path("tags");
             boolean hasPoint = e.has("lat") || e.has("center");
@@ -145,8 +166,12 @@ public class AirportMapService {
             double lat = e.has("lat") ? e.path("lat").asDouble() : e.path("center").path("lat").asDouble();
             double lon = e.has("lon") ? e.path("lon").asDouble() : e.path("center").path("lon").asDouble();
             String id = e.path("type").asString("") + e.path("id").asLong();
+            if (t.path("aeroway").asString("").equals("terminal") || t.path("building").asString("").equals("terminal")) {
+                out.add(new MapFeature(id, "terminal", terminalName(t), lat, lon, null, null, null, null, null, null, null));
+                continue;
+            }
             String terminal = t.hasNonNull("terminal") ? terminalLabel(t.path("terminal").asString()) : null;
-            if (terminal == null) for (var term : terminals) if (term.outline().stream().anyMatch(r -> inside(lat, lon, r))) { terminal = term.ref(); break; }
+            if (terminal == null) for (var term : terminals) if (term.outline() != null && term.outline().stream().anyMatch(r -> inside(lat, lon, r))) { terminal = term.ref(); break; }
             String level = blank(t.path("level").asString(""));
             if ("gate".equals(t.path("aeroway").asString(""))) {
                 String ref = t.path("ref").asString(t.path("name").asString("")).trim();
@@ -219,8 +244,51 @@ public class AirportMapService {
 
     private static List<double[]> points(JsonNode geometry) {
         var out = new ArrayList<double[]>();
-        for (JsonNode p : geometry) out.add(new double[] {p.path("lat").asDouble(), p.path("lon").asDouble()});
+        for (JsonNode p : geometry) out.add(new double[] {Math.round(p.path("lat").asDouble() * 1e6) / 1e6, Math.round(p.path("lon").asDouble() * 1e6) / 1e6});
         return out;
+    }
+
+    /** Douglas–Peucker: drops points that change the shape by less than ~1 m. */
+    static List<double[]> simplify(List<double[]> pts) {
+        if (pts.size() < 4) return pts;
+        double[] first = pts.get(0), last = pts.get(pts.size() - 1);
+        if (first[0] == last[0] && first[1] == last[1]) {
+            // Closed ring: simplify it as an open path, then close it again.
+            var open = new ArrayList<>(simplify(pts.subList(0, pts.size() - 1)));
+            open.add(first);
+            return open;
+        }
+        boolean[] keep = new boolean[pts.size()];
+        keep[0] = keep[pts.size() - 1] = true;
+        var stack = new java.util.ArrayDeque<int[]>();
+        stack.push(new int[] {0, pts.size() - 1});
+        while (!stack.isEmpty()) {
+            int[] ab = stack.pop();
+            double[] a = pts.get(ab[0]), b = pts.get(ab[1]);
+            double dx = b[1] - a[1], dy = b[0] - a[0], len = Math.max(Math.hypot(dx, dy), 1e-12), max = 0;
+            int idx = -1;
+            for (int i = ab[0] + 1; i < ab[1]; i++) {
+                double[] p = pts.get(i);
+                double d = Math.abs(dy * p[1] - dx * p[0] + b[1] * a[0] - b[0] * a[1]) / len;
+                if (d > max) { max = d; idx = i; }
+            }
+            if (max > 0.00001 && idx > 0) {
+                keep[idx] = true;
+                stack.push(new int[] {ab[0], idx});
+                stack.push(new int[] {idx, ab[1]});
+            }
+        }
+        var out = new ArrayList<double[]>();
+        for (int i = 0; i < pts.size(); i++) if (keep[i]) out.add(pts.get(i));
+        return out;
+    }
+
+    private static double parseWidth(String s, double fallback) {
+        try {
+            return Double.parseDouble(s.replaceAll("[^0-9.]", ""));
+        } catch (Exception e) {
+            return fallback;
+        }
     }
 
     private static String terminalName(JsonNode t) {

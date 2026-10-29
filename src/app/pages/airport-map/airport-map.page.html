@@ -1,15 +1,23 @@
 <ion-header class="gm-glass-header" [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/airport" text="" icon="chevron-back" /></ion-buttons>
-    <ion-title>{{ airport()?.iata ?? '' }} · Satellite</ion-title>
+    <ion-title>{{ airport()?.iata ?? '' }} · Airport map</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" [scrollY]="false">
   @if (airport(); as a) {
-    <gm-sat-map class="full" [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [selectedPlace]="placeId()" [zoom]="15.5" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
+    <gm-airport-plan class="full" [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [selectedPlace]="placeId()" [category]="category()" [zoom]="15.5" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
 
     <div class="gate-bar glass" slot="fixed">
+      @if (categories().length) {
+        <div class="chips cats">
+          <button [class.on]="!category()" (click)="setCategory(null)">All</button>
+          @for (c of categories(); track c) {
+            <button [class.on]="category() === c" [style.--c]="meta[c].color" (click)="setCategory(c)"><i></i>{{ meta[c].label }}</button>
+          }
+        </div>
+      }
       @if (gatesError()) {
         <div class="err-row"><span class="gm-label">Gate data needs an internet connection</span><button (click)="loadGates()">Retry</button></div>
       } @else {

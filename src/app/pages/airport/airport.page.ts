@@ -10,7 +10,7 @@ import { POI_META, POI_ORDER, PoiKind } from '../../core/data/airport-poi';
 import { openState } from '../../core/utils/opening-hours';
 import { directionsUrl, LocationService, walkMinutes } from '../../core/services/location.service';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
-import { SatMapComponent } from '../../shared/components/sat-map.component';
+import { AirportPlanComponent } from '../../shared/components/airport-plan.component';
 import { AirportPickerComponent } from '../../shared/components/airport-picker.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
@@ -20,7 +20,7 @@ import { PressableDirective } from '../../shared/directives/pressable.directive'
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink,
-    SkeletonComponent, SatMapComponent, AirportPickerComponent, RevealDirective, PressableDirective,
+    SkeletonComponent, AirportPlanComponent, AirportPickerComponent, RevealDirective, PressableDirective,
   ],
   templateUrl: './airport.page.html',
   styleUrl: './airport.page.scss',

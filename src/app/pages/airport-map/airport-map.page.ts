@@ -5,15 +5,15 @@ import { GatesService, MapFeature } from '../../core/services/gates.service';
 import { directionsUrl, LocationService, walkMinutes } from '../../core/services/location.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { PrefsService } from '../../core/services/prefs.service';
-import { SatMapComponent } from '../../shared/components/sat-map.component';
-import { POI_META } from '../../core/data/airport-poi';
+import { AirportPlanComponent } from '../../shared/components/airport-plan.component';
+import { POI_META, POI_ORDER, PoiKind } from '../../core/data/airport-poi';
 import { openState } from '../../core/utils/opening-hours';
 import { AchievementsService } from '../../core/services/achievements.service';
 
 @Component({
   selector: 'gm-airport-map',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, SatMapComponent],
+  imports: [IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, AirportPlanComponent],
   templateUrl: './airport-map.page.html',
   styleUrl: './airport-map.page.scss',
 })
@@ -29,13 +29,18 @@ export class AirportMapPage implements OnInit, OnDestroy {
   private platform = inject(PlatformService);
   private prefs = inject(PrefsService);
   private achievements = inject(AchievementsService);
-  private map = viewChild(SatMapComponent);
+  private map = viewChild(AirportPlanComponent);
 
   readonly airport = signal<AirportRecord | null>(null);
   readonly features = signal<MapFeature[] | null>(null);
   readonly selected = signal<string | null>(null);
   readonly placeId = signal<string | null>(null);
   protected readonly meta = POI_META;
+  readonly category = signal<PoiKind | null>(null);
+  readonly categories = computed(() => {
+    const have = new Set((this.features() ?? []).filter((f) => f.kind === 'poi').map((f) => f.poi!));
+    return POI_ORDER.filter((k) => have.has(k));
+  });
   readonly placeFeature = computed(() => (this.placeId() ? (this.features() ?? []).find((f) => f.id === this.placeId()) : undefined));
   readonly placeOpen = computed(() => {
     const p = this.placeFeature(), a = this.airport();
@@ -96,6 +101,11 @@ export class AirportMapPage implements OnInit, OnDestroy {
     this.platform.selection();
     this.selected.set(null);
     this.placeId.set(this.placeId() === id ? null : id);
+  }
+
+  setCategory(c: PoiKind | null) {
+    this.platform.selection();
+    this.category.set(c);
   }
 
   targetLabel(): string {

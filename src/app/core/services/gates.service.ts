@@ -12,7 +12,7 @@ export type { PoiKind } from '../data/airport-poi';
 
 export interface MapFeature {
   id?: string;
-  kind: 'gate' | 'terminal' | 'poi';
+  kind: 'gate' | 'terminal' | 'poi' | 'aerodrome' | 'runway' | 'taxiway' | 'apron';
   ref: string;
   lat: number;
   lon: number;
@@ -25,12 +25,16 @@ export interface MapFeature {
   brand?: string;
   /** Cuisine, operator or shop type. */
   detail?: string;
-  /** Terminal outline rings, [lat, lon]. */
+  /** Outline rings (terminals, aprons, airport boundary), [lat, lon]. */
   outline?: [number, number][][];
+  /** Centre line of a runway or taxiway, [lat, lon]. */
+  line?: [number, number][];
+  /** Real width in metres (runways, taxiways), so the drawing scales with zoom. */
+  width?: number;
 }
 
 interface Cached {
-  v: 2;
+  v: 3;
   savedAt: number;
   features: MapFeature[];
 }
@@ -169,7 +173,7 @@ export class GatesService {
         raw = localStorage.getItem(`gm_osm_${iata}`);
       }
       const c = raw ? (JSON.parse(raw) as Cached) : null;
-      return c?.v === 2 && Array.isArray(c.features) ? c : null;
+      return c?.v === 3 && Array.isArray(c.features) ? c : null;
     } catch {
       return null;
     }
@@ -177,7 +181,7 @@ export class GatesService {
 
   private async save(iata: string, features: MapFeature[]): Promise<void> {
     if (!features.length) return;
-    const data = JSON.stringify({ v: 2, savedAt: Date.now(), features } satisfies Cached);
+    const data = JSON.stringify({ v: 3, savedAt: Date.now(), features } satisfies Cached);
     try {
       if (Capacitor.isNativePlatform()) {
         await Filesystem.writeFile({ path: `osm/${iata}.json`, directory: Directory.Data, encoding: Encoding.UTF8, data, recursive: true });
@@ -208,17 +212,23 @@ function selectors(scope: string): string {
 function areaQuery(a: AirportRecord): string {
   const ids = [`["iata"="${a.iata}"]`, a.icao ? `["icao"="${a.icao}"]` : ''].filter(Boolean);
   const airport = ids.map((t) => `way["aeroway"="aerodrome"]${t};relation["aeroway"="aerodrome"]${t};`).join('');
-  return `[out:json][timeout:60];(${airport})->.ap;.ap map_to_area->.a;(${selectors('(area.a)')});out center tags;(way["aeroway"="terminal"](area.a);relation["aeroway"="terminal"](area.a););out geom tags;`;
+  return `[out:json][timeout:60];(${airport})->.ap;.ap out geom tags;.ap map_to_area->.a;(${selectors('(area.a)')});out center tags;${shapes('(area.a)')}`;
 }
 
 function aroundQuery(a: AirportRecord): string {
   const near = `(around:3000,${a.lat},${a.lon})`;
-  return `[out:json][timeout:60];(${selectors(near)});out center tags;(way["aeroway"="terminal"]${near};relation["aeroway"="terminal"]${near};);out geom tags;`;
+  return `[out:json][timeout:60];(${selectors(near)});out center tags;${shapes(near)}`;
+}
+
+/** Shapes for the drawn plan: terminals, aprons, runways and taxiways, with geometry. */
+function shapes(scope: string): string {
+  return `(way["aeroway"="terminal"]${scope};relation["aeroway"="terminal"]${scope};way["building"="terminal"]${scope};way["aeroway"~"^(runway|taxiway|apron)$"]${scope};relation["aeroway"="apron"]${scope};);out geom tags;`;
 }
 
 /** Turns Overpass elements into map features, placing each facility in the terminal that contains it. */
 export function parse(elements: OsmElement[]): MapFeature[] {
   const terminals: MapFeature[] = [];
+  const shapes: MapFeature[] = [];
   const rest: OsmElement[] = [];
   const seen = new Set<string>();
   for (const e of elements) {
@@ -226,22 +236,37 @@ export function parse(elements: OsmElement[]): MapFeature[] {
     if (seen.has(key)) continue;
     seen.add(key);
     const t = e.tags ?? {};
-    if (t['aeroway'] === 'terminal') {
-      const rings = e.geometry ? [e.geometry.map((p) => [p.lat, p.lon] as [number, number])]
-        : (e.members ?? []).filter((m) => m.role !== 'inner' && m.geometry?.length).map((m) => m.geometry!.map((p) => [p.lat, p.lon] as [number, number]));
+    const aw = t['aeroway'];
+    const hasShape = !!e.geometry || !!e.members?.some((m) => m.geometry);
+    if (hasShape && (aw === 'terminal' || t['building'] === 'terminal' || aw === 'aerodrome' || aw === 'apron')) {
+      const rings = (e.geometry ? [e.geometry] : (e.members ?? []).filter((m) => m.role !== 'inner' && m.geometry?.length).map((m) => m.geometry!))
+        .map((g) => simplify(g.map((p) => [round(p.lat), round(p.lon)] as [number, number])))
+        .filter((r) => r.length > 2);
       if (!rings.length) continue;
       const pts = rings.flat();
       const lat = pts.reduce((s, p) => s + p[0], 0) / pts.length, lon = pts.reduce((s, p) => s + p[1], 0) / pts.length;
-      terminals.push({ id: key, kind: 'terminal', ref: terminalName(t), lat, lon, outline: rings });
-    } else rest.push(e);
+      if (aw === 'aerodrome') shapes.push({ id: key, kind: 'aerodrome', ref: t['name'] ?? '', lat, lon, outline: rings });
+      else if (aw === 'apron') shapes.push({ id: key, kind: 'apron', ref: '', lat, lon, outline: rings });
+      else terminals.push({ id: key, kind: 'terminal', ref: terminalName(t), lat, lon, outline: rings });
+    } else if (e.geometry && (aw === 'runway' || aw === 'taxiway')) {
+      const line = simplify(e.geometry.map((p) => [round(p.lat), round(p.lon)] as [number, number]));
+      const mid = line[Math.floor(line.length / 2)];
+      const width = parseFloat(t['width'] ?? '') || (aw === 'runway' ? 45 : 18);
+      shapes.push({ id: key, kind: aw, ref: aw === 'runway' ? t['ref'] ?? '' : '', lat: mid[0], lon: mid[1], line, width });
+    } else if (!hasShape || e.center || e.lat !== undefined) rest.push(e);
   }
 
-  const out: MapFeature[] = [...terminals];
+  const out: MapFeature[] = [...shapes, ...terminals];
   for (const e of rest) {
     const t = e.tags ?? {};
     const lat = e.lat ?? e.center?.lat, lon = e.lon ?? e.center?.lon;
     if (lat === undefined || lon === undefined) continue;
-    const terminal = t['terminal'] ? terminalLabel(t['terminal']) : terminals.find((x) => x.outline!.some((r) => inside(lat, lon, r)))?.ref;
+    if (t['aeroway'] === 'terminal' || t['building'] === 'terminal') {
+      // Terminal mapped only as a point: still shown and named on the plan.
+      out.push({ id: `${e.type}${e.id}`, kind: 'terminal', ref: terminalName(t), lat, lon });
+      continue;
+    }
+    const terminal = t['terminal'] ? terminalLabel(t['terminal']) : terminals.find((x) => x.outline?.some((r) => inside(lat, lon, r)))?.ref;
     const base = { id: `${e.type}${e.id}`, lat, lon, terminal, level: t['level'] || undefined };
     if (t['aeroway'] === 'gate') {
       const ref = (t['ref'] || t['name'] || '').trim();
@@ -258,6 +283,37 @@ export function parse(elements: OsmElement[]): MapFeature[] {
     out.push({ ...base, kind: 'poi', poi, ref: name || fallbackName(poi, t), hours: t['opening_hours'] || undefined, brand: t['brand'] || undefined, detail });
   }
   return out;
+}
+
+/** ~10 cm precision is plenty and keeps the saved copy small. */
+function round(x: number): number {
+  return Math.round(x * 1e6) / 1e6;
+}
+
+/** Douglas–Peucker: drops points that change the shape by less than ~1 m. */
+function simplify(pts: [number, number][], eps = 0.00001): [number, number][] {
+  if (pts.length < 4) return pts;
+  const [f, l] = [pts[0], pts[pts.length - 1]];
+  // Closed ring: simplify it as an open path, then close it again.
+  if (f[0] === l[0] && f[1] === l[1]) return [...simplify(pts.slice(0, -1), eps), f];
+  const keep = new Uint8Array(pts.length);
+  keep[0] = keep[pts.length - 1] = 1;
+  const stack: [number, number][] = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop()!;
+    const [ay, ax] = pts[a], [by, bx] = pts[b];
+    const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1e-12;
+    let max = 0, idx = -1;
+    for (let i = a + 1; i < b; i++) {
+      const d = Math.abs(dy * pts[i][1] - dx * pts[i][0] + bx * ay - by * ax) / len;
+      if (d > max) [max, idx] = [d, i];
+    }
+    if (max > eps && idx > 0) {
+      keep[idx] = 1;
+      stack.push([a, idx], [idx, b]);
+    }
+  }
+  return pts.filter((_, i) => keep[i]);
 }
 
 function terminalName(t: Record<string, string>): string {

@@ -551,3 +551,54 @@ ion-content::part(scroll) {
 @keyframes gm-live-ping {
   50% { box-shadow: 0 0 0 11px rgba(15, 181, 195, 0.12), 0 6px 14px rgba(0, 0, 0, 0.35); }
 }
+
+/* Drawn airport plan labels. */
+.gm-plan-terminal span,
+.gm-plan-gate span,
+.gm-plan-runway span {
+  display: inline-flex;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-weight: 750;
+  pointer-events: none;
+}
+.gm-plan-terminal span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #fff;
+  background: #0a7f8f;
+  box-shadow: 0 3px 10px rgba(10, 127, 143, 0.35);
+}
+.gm-plan-runway span {
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+  color: #fff;
+  background: #374151;
+}
+.gm-plan-gate span {
+  min-width: 22px;
+  justify-content: center;
+  padding: 2px 5px;
+  border-radius: 6px;
+  font-size: 10px;
+  color: #0b1b2b;
+  background: #fff;
+  border: 1px solid #b8c4ce;
+  pointer-events: auto;
+}
+.gm-plan-gate.on span {
+  padding: 4px 8px;
+  font-size: 13px;
+  color: #fff;
+  background: #0b1b2b;
+  border-color: #fff;
+  box-shadow: 0 0 0 6px rgba(15, 181, 195, 0.35);
+  animation: gm-pop 0.5s var(--gm-ease-spring);
+}
+/* Gates only when zoomed in, so the overview stays readable. */
+.leaflet-container:not(.z-gates) .gm-plan-gate:not(.on),
+.z-far .gm-plan-runway {
+  display: none;
+}

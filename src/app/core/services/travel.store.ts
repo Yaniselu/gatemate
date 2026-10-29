@@ -7,6 +7,7 @@ import { AirportDbService, haversineKm } from './airport-db.service';
 import { LocationService } from './location.service';
 import { AuthService, TRIPS_CACHE_KEY } from './auth.service';
 import { NetworkService } from './network.service';
+import { GatesService } from './gates.service';
 import { SecureStorageService } from '../security/secure-storage.service';
 
 interface TripsCache {
@@ -26,6 +27,8 @@ export class TravelStore {
   private auth = inject(AuthService);
   private storage = inject(SecureStorageService);
   private network = inject(NetworkService);
+  private gates = inject(GatesService);
+  private prefetched = new Set<string>();
   private inflight: Promise<void> | null = null;
   private persistTimer?: ReturnType<typeof setTimeout>;
   /** Server alerts (gate changes, delays, chat) — device reminders are derived from trips below. */
@@ -157,6 +160,7 @@ export class TravelStore {
         this.savedAt.set(null);
         this.trips.set(trips);
         this.tripsState.set('ready');
+        setTimeout(() => void this.prefetchAirports(), 3000);
       } catch {
         // Keep showing the saved copy rather than an error screen.
         if (!this.savedAt()) this.tripsState.set('error');
@@ -183,6 +187,26 @@ export class TravelStore {
     this.lastLive = Date.now();
     await Promise.all([this.loadTrips(true), this.loadAlerts(true)]).catch(() => {});
     this.syncedAt.set(Date.now());
+  }
+
+  /**
+   * Downloads the plans of the airports on upcoming trips in the background, so the airport map opens instantly
+   * (and works offline) on the day. One airport at a time, each at most once per session.
+   */
+  private async prefetchAirports(): Promise<void> {
+    const codes = this.upcomingTrips()
+      .flatMap((t) => t.flights)
+      .filter((f) => +new Date(f.departure) - Date.now() < 30 * 86_400_000)
+      .flatMap((f) => [f.from.code, f.to.code])
+      .filter((c, i, a) => a.indexOf(c) === i && !this.prefetched.has(c))
+      .slice(0, 4);
+    if (!codes.length || !this.network.online()) return;
+    await this.db.load().catch(() => {});
+    for (const c of codes) {
+      this.prefetched.add(c);
+      const a = this.db.get(c);
+      if (a) await this.gates.get(a).catch(() => this.prefetched.delete(c));
+    }
   }
 
   private async restoreCache(): Promise<void> {

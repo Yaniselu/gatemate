@@ -16,12 +16,22 @@ class AirportMapParseTest {
           {"type":"node","id":4,"lat":44.574,"lon":26.081,"tags":{"aeroway":"gate","ref":"B12"}},
           {"type":"node","id":5,"lat":44.580,"lon":26.100,"tags":{"amenity":"parking"}},
           {"type":"node","id":6,"lat":44.571,"lon":26.082,"tags":{"shop":"duty_free","name":"Dufry"}},
-          {"type":"node","id":2,"lat":44.572,"lon":26.085,"tags":{"amenity":"cafe","name":"Starbucks"}}
+          {"type":"node","id":2,"lat":44.572,"lon":26.085,"tags":{"amenity":"cafe","name":"Starbucks"}},
+          {"type":"way","id":7,"tags":{"aeroway":"runway","ref":"08R/26L","width":"45"},
+           "geometry":[{"lat":44.560,"lon":26.060},{"lat":44.5600001,"lon":26.070},{"lat":44.5600001,"lon":26.080},{"lat":44.560,"lon":26.100}]},
+          {"type":"way","id":8,"tags":{"aeroway":"apron"},
+           "geometry":[{"lat":44.565,"lon":26.080},{"lat":44.565,"lon":26.090},{"lat":44.568,"lon":26.090},{"lat":44.568,"lon":26.080},{"lat":44.565,"lon":26.080}]}
         ]""";
 
     @Test
     void placesFacilitiesInTheirTerminal() throws Exception {
         var features = AirportMapService.parse(JsonMapper.builder().build().readTree(SAMPLE));
+        assertThat(features).extracting(AirportMapService.MapFeature::kind).startsWith("runway", "apron", "terminal");
+        var runway = features.get(0);
+        assertThat(runway.ref()).isEqualTo("08R/26L");
+        assertThat(runway.width()).isEqualTo(45.0);
+        assertThat(runway.line()).hasSize(2); // the straight middle point is simplified away
+        features = features.subList(2, features.size());
         assertThat(features).extracting(AirportMapService.MapFeature::ref).containsExactly("Terminal 1", "Starbucks", "Toilets", "B12", "Dufry");
         var cafe = features.get(1);
         assertThat(cafe.poi()).isEqualTo("coffee");

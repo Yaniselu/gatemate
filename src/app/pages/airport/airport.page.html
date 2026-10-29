@@ -24,11 +24,11 @@
     @if (airport(); as a) {
       <!-- Satellite preview -->
       <a class="map-card" [routerLink]="['/airport-map', a.iata]" [queryParams]="{ gate: myFlight()?.gate }" gmPressable>
-        <gm-sat-map [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [interactive]="false" [zoom]="14.5" [selectedGate]="myFlight()?.gate ?? null" />
+        <gm-airport-plan [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [interactive]="false" [zoom]="14.5" [selectedGate]="myFlight()?.gate ?? null" />
         <div class="map-overlay glass smoke">
           <div>
             <b>{{ a.name }}</b>
-            <small>{{ features() === null ? 'Loading gates…' : gateCount() ? gateCount() + ' gates mapped' : 'Satellite view' }} · {{ localTime() }} local</small>
+            <small>{{ features() === null ? 'Loading the plan…' : places().length + ' places · ' + gateCount() + ' gates' }} · {{ localTime() }} local</small>
           </div>
           <span class="open"><ion-icon name="expand-outline" /></span>
         </div>
