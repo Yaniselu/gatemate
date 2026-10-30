@@ -111,6 +111,7 @@
               @for (f of [upcomingFlights()[passIndex()]]; track f.id) {
                 <gm-flight-journey [flight]="f" />
                 <gm-boarding-pass class="anim-scale-in" [flight]="f" />
+                <gm-seat-map [flight]="f" />
               }
               <p class="hint"><ion-icon name="lock-closed-outline" /> {{ 'Stored encrypted on this device and available offline.' | t }}</p>
             } @else {
