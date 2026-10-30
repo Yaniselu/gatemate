@@ -1553,3 +1553,24 @@
 @Show on lock screen	Afficher sur l’écran verrouillé
 @On your lock screen	Sur votre écran verrouillé
 @Countdown on the lock screen, Dynamic Island and Apple Watch	Compte à rebours sur l’écran verrouillé, la Dynamic Island et l’Apple Watch
+@When you land in {city}	À votre arrivée à {city}
+@Getting from the airport to where you stay	De l’aéroport à votre hébergement
+@Where are you staying? Hotel or address	Où logez-vous ? Hôtel ou adresse
+@Where are you staying?	Où logez-vous ?
+@Take an Uber or Bolt	Prenez un Uber ou un Bolt
+@Take public transport	Prenez les transports en commun
+@You land at night, when buses and metro may not run.	Vous atterrissez la nuit, quand bus et métro peuvent ne pas circuler.
+@Split between {n}, it costs about the same as the ticket and is faster.	Partagé à {n}, cela coûte à peu près le prix du ticket et c’est plus rapide.
+@Saves about {min} minutes for around €{eur} more each.	Gagnez environ {min} minutes pour environ {eur} € de plus chacun.
+@Saves about €{eur} each for a slightly longer trip.	Économisez environ {eur} € chacun pour un trajet un peu plus long.
+@Much cheaper, and not much slower.	Beaucoup moins cher, et pas beaucoup plus lent.
+@each	par personne
+@Public transport	Transports en commun
+@may not run at night	peut ne pas circuler la nuit
+@{km} km from the airport · arriving {time}	{km} km de l’aéroport · arrivée à {time}
+@Transit route	Itinéraire transports
+@Where to find them	Où les trouver
+@Ride-hailing: book once you have your bags; the app shows the exact pick-up point, usually a marked zone outside Arrivals or in the short-stay car park, not the taxi rank.	VTC : réservez une fois vos bagages récupérés ; l’appli indique le point de prise en charge exact, souvent une zone signalée devant les Arrivées ou au parking courte durée, pas la station de taxis.
+@Check the plate and driver’s name in the app before you get in. Ignore drivers offering rides inside the terminal.	Vérifiez la plaque et le nom du chauffeur dans l’appli avant de monter. Ignorez les chauffeurs qui proposent des courses dans le terminal.
+@Public transport: follow the bus, train or metro signs from Arrivals; buy the ticket at the machine or with a contactless card where it’s accepted.	Transports en commun : suivez les panneaux bus, train ou métro depuis les Arrivées ; achetez le ticket au distributeur ou payez sans contact là où c’est accepté.
+@Prices and times are estimates from typical fares and straight-line distance; the apps show the real price before you book.	Prix et durées estimés à partir de tarifs types et de la distance à vol d’oiseau ; les applis affichent le vrai prix avant la réservation.

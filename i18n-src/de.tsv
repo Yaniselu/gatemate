@@ -1553,3 +1553,24 @@
 @Show on lock screen	Auf dem Sperrbildschirm zeigen
 @On your lock screen	Auf deinem Sperrbildschirm
 @Countdown on the lock screen, Dynamic Island and Apple Watch	Countdown auf Sperrbildschirm, Dynamic Island und Apple Watch
+@When you land in {city}	Wenn du in {city} landest
+@Getting from the airport to where you stay	Vom Flughafen zu deiner Unterkunft
+@Where are you staying? Hotel or address	Wo übernachtest du? Hotel oder Adresse
+@Where are you staying?	Wo übernachtest du?
+@Take an Uber or Bolt	Nimm ein Uber oder Bolt
+@Take public transport	Nimm die Öffis
+@You land at night, when buses and metro may not run.	Du landest nachts, wenn Bus und U-Bahn eventuell nicht fahren.
+@Split between {n}, it costs about the same as the ticket and is faster.	Geteilt durch {n} kostet es etwa so viel wie das Ticket und ist schneller.
+@Saves about {min} minutes for around €{eur} more each.	Spart etwa {min} Minuten für rund {eur} € mehr pro Person.
+@Saves about €{eur} each for a slightly longer trip.	Spart etwa {eur} € pro Person bei etwas längerer Fahrt.
+@Much cheaper, and not much slower.	Viel günstiger und kaum langsamer.
+@each	pro Person
+@Public transport	Öffentliche Verkehrsmittel
+@may not run at night	fährt nachts eventuell nicht
+@{km} km from the airport · arriving {time}	{km} km vom Flughafen · Ankunft {time}
+@Transit route	Öffi-Route
+@Where to find them	Wo du sie findest
+@Ride-hailing: book once you have your bags; the app shows the exact pick-up point, usually a marked zone outside Arrivals or in the short-stay car park, not the taxi rank.	Ride-Hailing: erst buchen, wenn du dein Gepäck hast; die App zeigt den genauen Abholpunkt, meist eine markierte Zone vor der Ankunft oder im Kurzzeitparkhaus, nicht der Taxistand.
+@Check the plate and driver’s name in the app before you get in. Ignore drivers offering rides inside the terminal.	Prüfe Kennzeichen und Fahrernamen in der App, bevor du einsteigst. Ignoriere Fahrer, die im Terminal Fahrten anbieten.
+@Public transport: follow the bus, train or metro signs from Arrivals; buy the ticket at the machine or with a contactless card where it’s accepted.	Öffis: Folge ab der Ankunft den Schildern zu Bus, Bahn oder U-Bahn; Ticket am Automaten oder kontaktlos zahlen, wo möglich.
+@Prices and times are estimates from typical fares and straight-line distance; the apps show the real price before you book.	Preise und Zeiten sind Schätzungen aus typischen Tarifen und Luftlinie; die Apps zeigen den echten Preis vor der Buchung.

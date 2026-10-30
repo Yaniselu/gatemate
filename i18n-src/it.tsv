@@ -1554,3 +1554,24 @@
 @Show on lock screen	Mostra nella schermata di blocco
 @On your lock screen	Nella schermata di blocco
 @Countdown on the lock screen, Dynamic Island and Apple Watch	Conto alla rovescia su schermata di blocco, Dynamic Island e Apple Watch
+@When you land in {city}	Quando atterri a {city}
+@Getting from the airport to where you stay	Dall’aeroporto al tuo alloggio
+@Where are you staying? Hotel or address	Dove alloggi? Hotel o indirizzo
+@Where are you staying?	Dove alloggi?
+@Take an Uber or Bolt	Prendi un Uber o un Bolt
+@Take public transport	Usa i mezzi pubblici
+@You land at night, when buses and metro may not run.	Atterri di notte, quando bus e metro potrebbero non circolare.
+@Split between {n}, it costs about the same as the ticket and is faster.	Diviso in {n}, costa circa come il biglietto ed è più veloce.
+@Saves about {min} minutes for around €{eur} more each.	Risparmi circa {min} minuti per circa {eur} € in più a testa.
+@Saves about €{eur} each for a slightly longer trip.	Risparmi circa {eur} € a testa per un viaggio un po’ più lungo.
+@Much cheaper, and not much slower.	Molto più economico e non molto più lento.
+@each	a testa
+@Public transport	Trasporto pubblico
+@may not run at night	potrebbe non circolare di notte
+@{km} km from the airport · arriving {time}	{km} km dall’aeroporto · arrivo alle {time}
+@Transit route	Percorso mezzi
+@Where to find them	Dove trovarli
+@Ride-hailing: book once you have your bags; the app shows the exact pick-up point, usually a marked zone outside Arrivals or in the short-stay car park, not the taxi rank.	Uber/Bolt: prenota quando hai i bagagli; l’app mostra il punto di ritiro esatto, di solito una zona segnalata fuori dagli Arrivi o nel parcheggio a breve sosta, non il posteggio taxi.
+@Check the plate and driver’s name in the app before you get in. Ignore drivers offering rides inside the terminal.	Controlla targa e nome dell’autista nell’app prima di salire. Ignora chi offre corse dentro il terminal.
+@Public transport: follow the bus, train or metro signs from Arrivals; buy the ticket at the machine or with a contactless card where it’s accepted.	Mezzi pubblici: segui i cartelli per bus, treno o metro dagli Arrivi; compra il biglietto alla macchinetta o paga contactless dove accettato.
+@Prices and times are estimates from typical fares and straight-line distance; the apps show the real price before you book.	Prezzi e tempi sono stime da tariffe tipiche e distanza in linea d’aria; le app mostrano il prezzo reale prima di prenotare.

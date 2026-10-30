@@ -1554,3 +1554,24 @@
 @Show on lock screen	Arată pe ecranul de blocare
 @On your lock screen	Pe ecranul de blocare
 @Countdown on the lock screen, Dynamic Island and Apple Watch	Numărătoare pe ecranul de blocare, Dynamic Island și Apple Watch
+@When you land in {city}	Când aterizezi în {city}
+@Getting from the airport to where you stay	Cum ajungi de la aeroport la cazare
+@Where are you staying? Hotel or address	Unde stai? Hotel sau adresă
+@Where are you staying?	Unde stai?
+@Take an Uber or Bolt	Ia un Uber sau Bolt
+@Take public transport	Mergi cu transportul public
+@You land at night, when buses and metro may not run.	Aterizezi noaptea, când autobuzele și metroul s-ar putea să nu circule.
+@Split between {n}, it costs about the same as the ticket and is faster.	Împărțit la {n}, costă cam cât biletul și e mai rapid.
+@Saves about {min} minutes for around €{eur} more each.	Economisești cam {min} minute pentru circa {eur} € în plus de persoană.
+@Saves about €{eur} each for a slightly longer trip.	Economisești cam {eur} € de persoană, pentru un drum puțin mai lung.
+@Much cheaper, and not much slower.	Mult mai ieftin și nu mult mai lent.
+@each	de persoană
+@Public transport	Transport public
+@may not run at night	poate să nu circule noaptea
+@{km} km from the airport · arriving {time}	{km} km de aeroport · sosire la {time}
+@Transit route	Traseu transport
+@Where to find them	Unde le găsești
+@Ride-hailing: book once you have your bags; the app shows the exact pick-up point, usually a marked zone outside Arrivals or in the short-stay car park, not the taxi rank.	Uber/Bolt: comandă după ce ți-ai luat bagajele; aplicația arată exact punctul de preluare, de obicei o zonă marcată în fața Sosirilor sau în parcarea de scurtă durată, nu la stația de taxi.
+@Check the plate and driver’s name in the app before you get in. Ignore drivers offering rides inside the terminal.	Verifică numărul mașinii și numele șoferului în aplicație înainte să urci. Ignoră șoferii care îți oferă curse în terminal.
+@Public transport: follow the bus, train or metro signs from Arrivals; buy the ticket at the machine or with a contactless card where it’s accepted.	Transport public: urmează indicatoarele pentru autobuz, tren sau metrou din zona Sosiri; cumpără biletul de la automat sau plătește contactless unde se acceptă.
+@Prices and times are estimates from typical fares and straight-line distance; the apps show the real price before you book.	Prețurile și timpii sunt estimări din tarife tipice și distanța în linie dreaptă; aplicațiile arată prețul real înainte să comanzi.
