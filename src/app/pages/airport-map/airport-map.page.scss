@@ -138,7 +138,7 @@
     font-weight: 650;
     font-size: 13px;
     color: #fff;
-    background: var(--gm-ink);
+    background: var(--gm-solid);
   }
 }
 
@@ -183,7 +183,7 @@
     align-items: center;
     gap: 6px;
     i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
-    &.on { color: #fff; background: var(--c); i { background: #fff; } }
+    &.on { color: #fff; background: var(--c); i { background: var(--gm-card-bg); } }
   }
 }
 

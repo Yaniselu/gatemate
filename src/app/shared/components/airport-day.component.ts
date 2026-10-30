@@ -44,9 +44,9 @@ import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
     li { position: relative; display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; animation: day-in .5s var(--gm-ease-out) both; animation-delay: calc(var(--i) * 45ms); }
     li:not(:last-child)::after { content: ''; position: absolute; left: 16px; top: 40px; bottom: -8px; width: 2px; background: var(--gm-line); }
     li.done:not(:last-child)::after { background: var(--gm-accent); }
-    .dot { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; color: var(--gm-ink-3); background: #f1f4f7; position: relative; z-index: 1; transition: background .3s, color .3s; }
+    .dot { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; color: var(--gm-ink-3); background: var(--gm-surface); position: relative; z-index: 1; transition: background .3s, color .3s; }
     li.done .dot { color: #fff; background: var(--gm-accent); }
-    li.now .dot { color: #fff; background: var(--gm-ink); box-shadow: 0 0 0 5px rgba(15, 181, 195, .22); animation: day-pulse 2s ease-in-out infinite; }
+    li.now .dot { color: #fff; background: var(--gm-solid); box-shadow: 0 0 0 5px rgba(15, 181, 195, .22); animation: day-pulse 2s ease-in-out infinite; }
     .txt { display: flex; flex-direction: column; min-width: 0; }
     .txt b { font-size: 14.5px; color: var(--gm-ink); }
     .txt small { font-size: 12.5px; color: var(--gm-ink-3); }

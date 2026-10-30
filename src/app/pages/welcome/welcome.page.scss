@@ -237,7 +237,7 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
+    background: var(--gm-card-bg);
     box-shadow: 0 14px 30px rgba(6, 60, 72, 0.22);
     animation: gm-pop 0.7s var(--gm-ease-spring) both 0.2s;
 
@@ -303,7 +303,7 @@ h1 {
     }
     i.on {
       width: 18px;
-      background: #fff;
+      background: var(--gm-card-bg);
     }
   }
 }
@@ -322,7 +322,7 @@ h1 {
   position: absolute;
   inset: 0;
   z-index: 10;
-  background: #fff;
+  background: var(--gm-card-bg);
   clip-path: circle(0% at 92% 4%);
   pointer-events: none;
 }

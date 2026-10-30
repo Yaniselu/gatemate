@@ -22,7 +22,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
     .boxes { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; cursor: text; }
     .box { height: 58px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800;
       color: var(--gm-ink); background: #f4f7fa; border: 1.5px solid var(--gm-card-border); transition: border-color .2s, transform .25s var(--gm-ease-spring), background .2s; }
-    .box.filled { background: #fff; border-color: rgba(var(--gm-accent-rgb), .5); animation: gm-pop .3s var(--gm-ease-spring); }
+    .box.filled { background: var(--gm-card-bg); border-color: rgba(var(--gm-accent-rgb), .5); animation: gm-pop .3s var(--gm-ease-spring); }
     .box.caret { border-color: var(--gm-accent); box-shadow: 0 0 0 4px rgba(var(--gm-accent-rgb), .12); }
     .error .box { border-color: #e5484d; animation: code-shake .4s; }
     input { position: absolute; inset: 0; opacity: 0; font-size: 16px; color: transparent; caret-color: transparent; }

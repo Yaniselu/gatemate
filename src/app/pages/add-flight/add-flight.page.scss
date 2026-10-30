@@ -208,7 +208,7 @@
   gap: 10px;
   padding: 10px;
   border-radius: 14px;
-  background: #fff;
+  background: var(--gm-card-bg);
   border: 1px solid var(--gm-card-border);
   text-align: left;
   color: var(--gm-ink);
@@ -240,7 +240,7 @@
     right: -6px;
     font-size: 20px;
     color: var(--gm-accent);
-    background: #fff;
+    background: var(--gm-card-bg);
     border-radius: 50%;
     animation: gm-pop 0.4s var(--gm-ease-spring);
   }
@@ -560,7 +560,7 @@
       color: var(--gm-accent-deep);
 
       &.off {
-        background: #f1f4f7;
+        background: var(--gm-surface);
         color: var(--gm-ink-3);
       }
     }
@@ -631,7 +631,7 @@
     flex: 1;
     height: 2px;
     background: repeating-linear-gradient(90deg, var(--gm-accent) 0 6px, transparent 6px 11px);
-    ion-icon { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(90deg); color: var(--gm-accent-deep); background: #fff; border-radius: 50%; padding: 2px; font-size: 18px; animation: gm-plane-glide 2.4s ease-in-out infinite; }
+    ion-icon { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(90deg); color: var(--gm-accent-deep); background: var(--gm-card-bg); border-radius: 50%; padding: 2px; font-size: 18px; animation: gm-plane-glide 2.4s ease-in-out infinite; }
   }
   .ff-meta {
     display: flex;

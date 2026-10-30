@@ -8,6 +8,8 @@ import { Preferences } from '@capacitor/preferences';
 import { AuthService } from '../../core/services/auth.service';
 import { onboardedKey } from '../onboarding/onboarding.page';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { PrefsService } from '../../core/services/prefs.service';
+import { ThemePickerComponent } from '../../shared/components/theme-picker.component';
 
 interface TabDef {
   id: string;
@@ -19,7 +21,7 @@ interface TabDef {
 @Component({
   selector: 'gm-tabs',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
+  imports: [TranslatePipe, ThemePickerComponent, IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
   template: `
     <ion-tabs (ionTabsDidChange)="changed($event.tab)">
       <ion-tab-bar slot="bottom" class="gm-tabbar" [style.--index]="index()">
@@ -37,6 +39,17 @@ interface TabDef {
         }
       </ion-tab-bar>
     </ion-tabs>
+    @if (askTheme()) {
+      <div class="theme-ask" role="dialog" aria-modal="true" [attr.aria-label]="'How should Gatemate look?' | t">
+        <div class="sheet">
+          <i class="grab"></i>
+          <h2>{{ 'How should Gatemate look?' | t }}</h2>
+          <p>{{ 'Pick a look. You can change it any time in Profile → Accessibility.' | t }}</p>
+          <gm-theme-picker />
+          <button class="gm-btn block" (click)="confirmTheme()">{{ 'Continue' | t }}</button>
+        </div>
+      </div>
+    }
   `,
   styleUrl: './tabs.page.scss',
 })
@@ -46,6 +59,13 @@ export class TabsPage {
   private router = inject(Router);
 
   private auth = inject(AuthService);
+  private prefs = inject(PrefsService);
+  /** Asked once, after the first sign-in on this device. */
+  readonly askTheme = computed(() => !this.prefs.themeChosen());
+
+  confirmTheme() {
+    void this.prefs.setTheme(this.prefs.theme());
+  }
 
   constructor() {
     // First sign-in on this device: ask for the home airport and notifications once.

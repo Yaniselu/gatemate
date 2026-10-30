@@ -86,7 +86,7 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
     .created p { color: var(--gm-ink-3); margin: 0 0 8px; line-height: 1.45; }
     .lbl { margin: 6px 4px 8px; }
     .emojis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }
-    .emojis button { aspect-ratio: 1; border-radius: 14px; font-size: 24px; background: #fff; border: 1px solid var(--gm-card-border); transition: transform .3s var(--gm-ease-spring), border-color .2s; animation: gm-scale-in .35s var(--gm-ease-spring) both; animation-delay: calc(var(--i) * 25ms); }
+    .emojis button { aspect-ratio: 1; border-radius: 14px; font-size: 24px; background: var(--gm-card-bg); border: 1px solid var(--gm-card-border); transition: transform .3s var(--gm-ease-spring), border-color .2s; animation: gm-scale-in .35s var(--gm-ease-spring) both; animation-delay: calc(var(--i) * 25ms); }
     .emojis button.on { border-color: var(--gm-accent); transform: scale(1.1); box-shadow: 0 0 0 4px rgba(var(--gm-accent-rgb), .12); }
     .trips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
     .trips button { padding: 9px 14px; border-radius: 999px; background: var(--gm-surface); font-weight: 650; font-size: 14px; color: var(--gm-ink-2); transition: all .3s var(--gm-ease-spring); }

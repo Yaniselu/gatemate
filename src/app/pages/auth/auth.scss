@@ -1,5 +1,5 @@
 .auth {
-  --background: #fff;
+  --background: var(--gm-card-bg);
 }
 
 .wrap {
@@ -32,7 +32,7 @@
     align-items: center;
     justify-content: center;
     font-size: 34px;
-    background: #fff;
+    background: var(--gm-card-bg);
     border: 1px solid var(--gm-card-border);
     box-shadow: 0 10px 24px rgba(11, 40, 60, 0.1);
 
@@ -119,7 +119,7 @@ h1 {
 }
 
 .google {
-  background: #fff;
+  background: var(--gm-card-bg);
   color: #1f1f1f;
   border: 1px solid #dadce0;
   svg {

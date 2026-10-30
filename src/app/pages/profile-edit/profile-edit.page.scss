@@ -136,7 +136,7 @@
 }
 
 .gm-input-wrap.readonly {
-  background: #f7f9fb;
+  background: var(--gm-surface);
   input {
     color: var(--gm-ink-3);
   }
@@ -184,7 +184,7 @@
     left: 4px;
     width: calc((100% - 8px) / 3);
     border-radius: 11px;
-    background: #fff;
+    background: var(--gm-card-bg);
     box-shadow: 0 3px 10px rgba(11, 40, 60, 0.1);
     transform: translateX(calc(var(--x) * 100%));
     transition: transform 0.5s var(--gm-ease-spring);

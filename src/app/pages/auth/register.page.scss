@@ -78,7 +78,7 @@
     margin: 0;
     border-radius: 8px;
     border: 2px solid #cfdae3;
-    background: #fff;
+    background: var(--gm-card-bg);
     display: grid;
     place-content: center;
     transition: background 0.2s, border-color 0.2s, transform 0.2s var(--gm-ease-spring);

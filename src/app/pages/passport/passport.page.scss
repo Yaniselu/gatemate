@@ -18,10 +18,10 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--gm-ink-2);
-    background: #f1f4f7;
+    background: var(--gm-surface);
     transition: background 0.25s, color 0.25s, transform 0.2s var(--gm-ease-spring);
     &:active { transform: scale(0.95); }
-    &.on { color: #fff; background: var(--gm-ink); }
+    &.on { color: #fff; background: var(--gm-solid); }
   }
 }
 

@@ -74,10 +74,10 @@ const LIVES = 6;
     .word.won .slot { color: #138a57; border-color: var(--gm-mint); }
     .word.lost .slot { border-color: var(--gm-coral); }
     .keys { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-    .keys button { height: 44px; border-radius: 10px; background: #fff; border: 1px solid var(--gm-card-border); font-weight: 750; font-size: 16px; color: var(--gm-ink); transition: transform .2s var(--gm-ease-spring); }
+    .keys button { height: 44px; border-radius: 10px; background: var(--gm-card-bg); border: 1px solid var(--gm-card-border); font-weight: 750; font-size: 16px; color: var(--gm-ink); transition: transform .2s var(--gm-ease-spring); }
     .keys button:active { transform: scale(.9); }
     .keys button.hit { background: rgba(47,209,138,.15); color: #138a57; border-color: transparent; }
-    .keys button.miss { background: #f1f4f7; color: #b6c2cf; border-color: transparent; }
+    .keys button.miss { background: var(--gm-surface); color: #b6c2cf; border-color: transparent; }
     .end { padding: 18px; text-align: center; animation: gm-scale-in .4s var(--gm-ease-spring); }
     .end h2 { font-size: 19px; margin: 0 0 12px; }
     .streak { text-align: center; color: var(--gm-ink-3); font-size: 13px; margin-top: 16px; }

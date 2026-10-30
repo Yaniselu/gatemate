@@ -58,7 +58,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
     .calc { padding: 16px; border-radius: 22px; }
     .opts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .opts button { padding: 10px 4px; border-radius: 12px; background: var(--gm-surface); font-weight: 650; font-size: 12.5px; color: var(--gm-ink-2); transition: all .3s var(--gm-ease-spring); }
-    .opts button.on { background: var(--gm-ink); color: #fff; transform: scale(1.03); }
+    .opts button.on { background: var(--gm-solid); color: #fff; transform: scale(1.03); }
     .amount { margin-top: 16px; }
     .amount small { color: var(--gm-ink-3); font-weight: 600; }
     .amount b { display: block; font-size: 44px; font-weight: 850; color: var(--gm-accent-strong); letter-spacing: -.03em; animation: gm-scale-in .4s var(--gm-ease-spring); }

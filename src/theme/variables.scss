@@ -23,6 +23,8 @@
   --gm-line: rgba(11, 27, 43, 0.08);
   --gm-bg: #ffffff;
   --gm-surface: #f5f8fb;
+  /** Solid fill for selected chips and badges with white text on top. */
+  --gm-solid: #0b1b2b;
 
   // Liquid Glass — translucent, heavily blurred and saturated, with a bright specular rim.
   --gm-glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.28) 100%);
@@ -102,4 +104,74 @@
   --ion-color-medium-contrast-rgb: 255, 255, 255;
   --ion-color-medium-shade: #667588;
   --ion-color-medium-tint: #8291a4;
+}
+
+// Dark appearance: chosen in Accessibility → Appearance, or following the phone. Same tokens, night values.
+html.gm-dark {
+  color-scheme: dark;
+
+  --gm-accent-soft: rgba(15, 181, 195, 0.16);
+  --gm-accent-deep: #5fd8e3;
+  --gm-accent-glow: rgba(34, 199, 211, 0.4);
+
+  --gm-ink: #e9eff7;
+  --gm-ink-2: #b4c0d0;
+  --gm-ink-3: #7d8ba1;
+  --gm-line: rgba(255, 255, 255, 0.08);
+  --gm-bg: #070b16;
+  --gm-surface: #151d2d;
+  --gm-solid: #0a93a6;
+
+  --gm-glass-bg: linear-gradient(160deg, rgba(30, 41, 62, 0.72) 0%, rgba(17, 25, 41, 0.5) 100%);
+  --gm-glass-bg-strong: linear-gradient(160deg, rgba(30, 41, 62, 0.9) 0%, rgba(17, 25, 41, 0.78) 100%);
+  --gm-glass-border: rgba(255, 255, 255, 0.1);
+  --gm-glass-blur: blur(28px) saturate(160%) brightness(0.9);
+  --gm-glass-shadow: 0 18px 44px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 0.5px rgba(255, 255, 255, 0.06);
+
+  --gm-card-bg: #0f1726;
+  --gm-card-border: #1e293b;
+  --gm-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  --ion-background-color: var(--gm-bg);
+  --ion-background-color-rgb: 7, 11, 22;
+  --ion-text-color: var(--gm-ink);
+  --ion-text-color-rgb: 233, 239, 247;
+  --ion-item-background: transparent;
+  --ion-card-background: var(--gm-card-bg);
+  --ion-toolbar-background: transparent;
+  --ion-tab-bar-background: transparent;
+
+  --ion-color-secondary: #e9eff7;
+  --ion-color-secondary-rgb: 233, 239, 247;
+  --ion-color-secondary-contrast: #0b1b2b;
+  --ion-color-secondary-contrast-rgb: 11, 27, 43;
+
+  body {
+    background: var(--gm-bg);
+  }
+
+  // The floating tab bar and other frosted surfaces drawn with fixed white gradients.
+  ion-tab-bar.gm-tabbar {
+    background: linear-gradient(160deg, rgba(30, 41, 62, 0.82), rgba(15, 23, 38, 0.66)) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  ion-tab-bar.gm-tabbar::before,
+  ion-tab-bar.gm-tabbar .indicator {
+    background: radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 60%), rgba(var(--gm-accent-rgb), 0.18) !important;
+  }
+  ion-tab-button {
+    --color: var(--gm-ink-3);
+    --color-selected: var(--gm-accent);
+  }
+  input, textarea, select {
+    color: var(--gm-ink);
+  }
+  ion-modal, ion-popover, ion-action-sheet, ion-alert {
+    --background: var(--gm-card-bg);
+    --color: var(--gm-ink);
+  }
+  .leaflet-container {
+    filter: brightness(0.82) contrast(1.05) saturate(0.9);
+  }
 }

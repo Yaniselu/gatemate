@@ -1,5 +1,6 @@
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { LiveActivityService } from './core/services/live-activity.service';
-import { ChangeDetectionStrategy, Component, effect, inject, NgZone } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, NgZone, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
@@ -43,6 +44,18 @@ export class App {
       root.style.setProperty('--gm-text-zoom', String(this.prefs.textScale()));
       root.classList.toggle('gm-reduce-motion', this.prefs.reduceMotion());
       root.classList.toggle('gm-high-contrast', this.prefs.highContrast());
+    });
+    // Appearance: the chosen theme, or the phone's while it's set to follow it.
+    const media = typeof matchMedia !== 'undefined' ? matchMedia('(prefers-color-scheme: dark)') : null;
+    const systemDark = signal(media?.matches ?? false);
+    media?.addEventListener('change', (e) => systemDark.set(e.matches));
+    effect(() => {
+      const theme = this.prefs.theme();
+      const dark = theme === 'dark' || (theme === 'system' && systemDark());
+      const root = document.documentElement;
+      root.classList.toggle('gm-dark', dark);
+      root.classList.toggle('ion-palette-dark', dark);
+      if (Capacitor.isNativePlatform()) void StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(() => {});
     });
     // Wake a sleeping (free-tier) server while the user is still on the welcome / sign-in screen.
     if (!environment.useMocks) {

@@ -73,7 +73,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
     .hero h1 { color: #fff; font-size: 26px; font-weight: 800; margin: 6px 0 4px; }
     .hero p { margin: 0; color: rgba(255,255,255,.75); }
     .gm-label.light { color: rgba(255,255,255,.6); }
-    .stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: twinkle 3s ease-in-out infinite; }
+    .stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--gm-card-bg); animation: twinkle 3s ease-in-out infinite; }
     @keyframes twinkle { 50% { opacity: .2; } }
     .plane-track { position: relative; height: 26px; margin-top: 18px; }
     .plane-track .line { position: absolute; left: 0; right: 0; top: 12px; border-top: 2px dashed rgba(255,255,255,.3); }

@@ -23,6 +23,9 @@ export class PrefsService {
   readonly textScale = signal(1);
   readonly reduceMotion = signal(false);
   readonly highContrast = signal(false);
+  /** Appearance: follow the phone, or always light / dark. `themeChosen` is false until the user has picked once. */
+  readonly theme = signal<'system' | 'light' | 'dark'>('system');
+  readonly themeChosen = signal(true);
 
   private loaded: Promise<void> | null = null;
 
@@ -35,6 +38,9 @@ export class PrefsService {
       if ([1, 1.15, 1.3].includes(scale)) this.textScale.set(scale);
       this.reduceMotion.set((await this.read('reduceMotion')) === '1');
       this.highContrast.set((await this.read('highContrast')) === '1');
+      const theme = await this.read('theme');
+      if (theme === 'light' || theme === 'dark' || theme === 'system') this.theme.set(theme);
+      this.themeChosen.set(!!theme);
       try {
         const n = JSON.parse((await this.read('notifications')) || 'null');
         if (n && typeof n === 'object') this.notifications.set({ ...DEFAULT_NOTIFS, ...pickBooleans(n) });
@@ -43,6 +49,12 @@ export class PrefsService {
       }
     })();
     return this.loaded;
+  }
+
+  async setTheme(theme: 'system' | 'light' | 'dark'): Promise<void> {
+    this.theme.set(theme);
+    this.themeChosen.set(true);
+    await this.write('theme', theme);
   }
 
   async setOnboarded(): Promise<void> {

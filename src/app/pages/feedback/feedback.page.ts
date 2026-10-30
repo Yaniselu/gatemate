@@ -66,7 +66,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
     .muted { color: var(--gm-ink-3); margin: 0 0 16px; }
     .lbl { margin: 18px 4px 8px; }
     .faces { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-    .faces button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px; border-radius: 14px; background: #fff; border: 1px solid var(--gm-card-border); transition: transform .3s var(--gm-ease-spring), border-color .2s; }
+    .faces button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px; border-radius: 14px; background: var(--gm-card-bg); border: 1px solid var(--gm-card-border); transition: transform .3s var(--gm-ease-spring), border-color .2s; }
     .faces span { font-size: 28px; filter: grayscale(.6); transition: filter .2s, transform .3s var(--gm-ease-spring); }
     .faces small { font-size: 10.5px; color: var(--gm-ink-3); font-weight: 600; }
     .faces button.on { border-color: var(--gm-accent); transform: translateY(-3px); box-shadow: 0 8px 18px rgba(var(--gm-accent-rgb), .18); }

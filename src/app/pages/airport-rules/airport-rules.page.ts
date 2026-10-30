@@ -110,13 +110,13 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
       color: var(--gm-ink-2); background: var(--gm-surface); transition: background .25s, color .25s, transform .25s var(--gm-ease-spring); }
     .chips button ion-icon { font-size: 16px; color: var(--c, var(--gm-ink-3)); transition: color .25s; }
     .chips button:active { transform: scale(.95); }
-    .chips button.on { color: #fff; background: var(--c, var(--gm-ink)); }
+    .chips button.on { color: #fff; background: var(--c, var(--gm-solid)); }
     .chips button.on ion-icon { color: #fff; }
 
     .must-only { display: inline-flex; align-items: center; gap: 10px; margin: 10px 2px 2px; font-size: 14px; font-weight: 600; color: var(--gm-ink-2); cursor: pointer; }
     .must-only input { position: absolute; opacity: 0; pointer-events: none; }
     .switch { position: relative; width: 40px; height: 24px; border-radius: 999px; background: #cbd5e1; transition: background .25s; }
-    .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff;
+    .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--gm-card-bg);
       box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .3s var(--gm-ease-spring); }
     .must-only input:checked + .switch { background: #ef4444; }
     .must-only input:checked + .switch::after { transform: translateX(16px); }

@@ -97,7 +97,7 @@ const GROUP: Record<string, Filter> = {
     .filters em { font-style: normal; margin-left: 4px; padding: 1px 6px; border-radius: 8px; background: var(--gm-coral); color: #fff; font-size: 11px; }
     .grp { margin: 10px 4px 8px; }
     .list { padding: 0 14px; overflow: hidden; }
-    .alert { position: relative; display: flex; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--gm-line); background: #fff; touch-action: pan-y; transition: transform .25s var(--gm-ease-out), opacity .25s, max-height .3s; max-height: 220px; }
+    .alert { position: relative; display: flex; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--gm-line); background: var(--gm-card-bg); touch-action: pan-y; transition: transform .25s var(--gm-ease-out), opacity .25s, max-height .3s; max-height: 220px; }
     .alert:last-child { border-bottom: 0; }
     .alert.gone { transform: translateX(110%) !important; opacity: 0; max-height: 0; padding: 0; }
     .alert.unread .t::after { content: ''; display: inline-block; width: 7px; height: 7px; margin-left: 6px; border-radius: 50%; background: var(--gm-accent); vertical-align: middle; }

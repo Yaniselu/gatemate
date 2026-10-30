@@ -19,7 +19,7 @@
     font-weight: 600;
     line-height: 1.2;
     color: var(--gm-ink-2);
-    background: #f1f4f7;
+    background: var(--gm-surface);
     transition: background 0.25s, color 0.25s, transform 0.2s var(--gm-ease-spring);
 
     ion-icon {
@@ -30,7 +30,7 @@
     }
     &.on {
       color: #fff;
-      background: var(--gm-ink);
+      background: var(--gm-solid);
     }
   }
 }
@@ -56,7 +56,7 @@
     height: 44px;
     border-radius: 12px;
     border: 1px solid var(--gm-card-border);
-    background: #f7f9fb;
+    background: var(--gm-surface);
     padding: 0 10px;
     font-size: 15px;
     font-weight: 600;
@@ -78,7 +78,7 @@
   border-radius: 50%;
   font-size: 20px;
   color: var(--gm-ink);
-  background: #f1f4f7;
+  background: var(--gm-surface);
   transition: transform 0.35s var(--gm-ease-spring);
 
   &:active {
@@ -92,7 +92,7 @@
   padding: 0 14px;
   border-radius: 14px;
   border: 1px solid var(--gm-card-border);
-  background: #f7f9fb;
+  background: var(--gm-surface);
   font-size: 28px;
   font-weight: 700;
   color: var(--gm-ink);
@@ -100,7 +100,7 @@
 
   &:focus {
     border-color: var(--gm-accent);
-    background: #fff;
+    background: var(--gm-card-bg);
   }
 }
 .result {
@@ -219,7 +219,7 @@
   padding: 0 14px;
   margin-bottom: 12px;
   border-radius: 14px;
-  background: #f1f4f7;
+  background: var(--gm-surface);
 
   ion-icon {
     color: var(--gm-ink-3);

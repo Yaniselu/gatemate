@@ -55,7 +55,7 @@ interface Tile {
     .again { display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--gm-ink); }
     .board { --gap: 8px; --size: calc((100% - 5 * var(--gap)) / 4); position: relative; aspect-ratio: 1; padding: var(--gap); border-radius: 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); touch-action: none; }
     .cell { border-radius: 12px; background: rgba(11,27,43,.06); }
-    .tile { position: absolute; width: var(--size); height: var(--size); left: calc(var(--gap) + var(--c) * (var(--size) + var(--gap))); top: calc(var(--gap) + var(--r) * (var(--size) + var(--gap))); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 850; font-size: 26px; color: var(--gm-ink); background: #fff; box-shadow: 0 4px 10px rgba(11,40,60,.12); transition: left .14s ease, top .14s ease; z-index: 3; }
+    .tile { position: absolute; width: var(--size); height: var(--size); left: calc(var(--gap) + var(--c) * (var(--size) + var(--gap))); top: calc(var(--gap) + var(--r) * (var(--size) + var(--gap))); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 850; font-size: 26px; color: var(--gm-ink); background: var(--gm-card-bg); box-shadow: 0 4px 10px rgba(11,40,60,.12); transition: left .14s ease, top .14s ease; z-index: 3; }
     .tile.fresh { animation: gm-scale-in .22s var(--gm-ease-spring); }
     .tile.merged { animation: gm-pop .25s var(--gm-ease-spring); }
     .tile[data-v="4"] { background: #e6f8fa; }

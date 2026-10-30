@@ -24,8 +24,8 @@ type LL = { lat: number; lon: number };
     <span class="attr">{{ '© OpenStreetMap contributors' | t }}</span>
   `,
   styles: `
-    :host { position: relative; display: block; overflow: hidden; background: #eef2f4; }
-    .plan { position: absolute; inset: 0; background: #eef2f4; }
+    :host { position: relative; display: block; overflow: hidden; background: var(--gm-surface); }
+    .plan { position: absolute; inset: 0; background: var(--gm-surface); }
     .attr { position: absolute; right: 8px; bottom: 4px; z-index: 500; font-size: 9px; color: #64748b; pointer-events: none; }
     .empty { position: absolute; inset: 0; z-index: 450; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 13px; pointer-events: none; }
   `,

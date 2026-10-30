@@ -6,7 +6,8 @@ import { Preferences } from '@capacitor/preferences';
 import { Flight } from '../../core/models';
 import { AirportDbService, AirportRecord } from '../../core/services/airport-db.service';
 import { GatesService, MapFeature } from '../../core/services/gates.service';
-import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
+import { TravelStore } from '../../core/services/travel.store';
+import { locale, t, TranslatePipe } from '../../core/i18n/i18n.service';
 import { publicFetch } from '../../core/utils/public-fetch';
 
 interface Place {
@@ -29,6 +30,18 @@ const PRICES: Record<string, { base: number; km: number; min: number; floor: num
   NL: { base: 3.0, km: 1.5, min: 0.25, floor: 8, ticket: 3.4 },
 };
 const DEFAULT_PRICE = { base: 2.5, km: 1.1, min: 0.2, floor: 6, ticket: 2.5 };
+/** Typical economy rental per day in € (insurance basics included, fuel not). */
+const RENTAL_DAY: Record<string, number> = { RO: 25, ES: 35, IT: 40, FR: 45, DE: 50, GB: 45, PT: 30, GR: 35, BE: 45, NL: 50 };
+const RENTAL_RE = /rent|rental|închiri|alquiler|location|noleggio|vermietung|avis|hertz|sixt|europcar|enterprise|budget|goldcar|thrifty|national|alamo|autonom/i;
+
+/** What the rental desk will ask for. */
+export const RENTAL_DOCS = [
+  'Driving licence, valid and held for at least 1–2 years',
+  'Passport or ID card',
+  'Credit card in the main driver’s name, for the deposit (debit cards are often refused)',
+  'Booking voucher or confirmation number',
+  'International Driving Permit if your licence isn’t from the EU or not in the Latin alphabet',
+];
 
 function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
   const R = 6371, r = Math.PI / 180;
@@ -89,6 +102,32 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
         <p class="dist">{{ '{km} km from the airport · arriving {time}' | t: { km: (p.km | number: '1.0-1'), time: arrivalClock() } }}</p>
       }
 
+      <h4>{{ 'Rent a car' | t }}</h4>
+      <div class="rent">
+        <div class="rent-top">
+          <span class="o-h"><ion-icon name="key-outline" />{{ 'Car rental' | t }}</span>
+          <b>≈ €{{ rentDay() }}{{ ' / day' | t }}</b>
+          <small>{{ 'Best if you’ll drive outside the city; fuel, parking and tolls are extra.' | t }}</small>
+        </div>
+        <p class="where">
+          <ion-icon name="location-outline" />
+          @if (desks().length) {
+            <span>{{ 'Rental desks at this airport:' | t }} <b>{{ deskNames() }}</b></span>
+          } @else {
+            <span>{{ 'Rental desks are usually in the arrivals hall; you pick the car up in the rental car park next to the terminal.' | t }}</span>
+          }
+        </p>
+        <ul class="docs">
+          @for (d of docs; track d) { <li><ion-icon name="document-text-outline" />{{ d | t }}</li> }
+          <li><ion-icon name="camera-outline" />{{ 'Before you drive off, film the car all round and check the fuel level.' | t }}</li>
+          @if (airport()?.country === 'RO') { <li><ion-icon name="pricetag-outline" />{{ 'In Romania the car needs a rovinietă (road vignette) outside towns; rental cars usually have it.' | t }}</li> }
+        </ul>
+        <button class="add-docs" (click)="addDocs()" [disabled]="docsAdded() !== null">
+          <ion-icon [name]="docsAdded() !== null ? 'checkmark-circle' : 'add-circle-outline'" />
+          {{ (docsAdded() !== null ? 'Added to your checklist' : 'Add the documents to my checklist') | t }}
+        </button>
+      </div>
+
       <div class="links">
         <a class="btn uber" [href]="uberLink()" target="_blank" rel="noopener"><ion-icon name="car" />Uber</a>
         <a class="btn bolt" [href]="boltLink()" target="_blank" rel="noopener"><ion-icon name="flash" />Bolt</a>
@@ -144,6 +183,17 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
     .tips li { display: flex; gap: 8px; padding: 5px 0; font-size: 13.5px; line-height: 1.4; color: var(--gm-ink-2); }
     .tips ion-icon { flex: none; margin-top: 2px; font-size: 16px; color: #0fb5c3; }
     .fine { margin: 8px 0 0; font-size: 11.5px; color: var(--gm-ink-3); }
+    .rent { padding: 12px; border-radius: 18px; background: var(--gm-surface); }
+    .rent-top b { display: block; margin-top: 4px; font-size: 19px; font-weight: 850; }
+    .rent-top small { display: block; font-size: 12.5px; color: var(--gm-ink-2); line-height: 1.4; }
+    .where { display: flex; gap: 8px; margin: 10px 0 6px; font-size: 13px; line-height: 1.4; color: var(--gm-ink-2); }
+    .where ion-icon { flex: none; margin-top: 2px; color: #f97316; }
+    .docs { margin: 0; padding: 0; list-style: none; }
+    .docs li { display: flex; gap: 8px; padding: 4px 0; font-size: 13px; line-height: 1.4; color: var(--gm-ink-2); }
+    .docs ion-icon { flex: none; margin-top: 2px; font-size: 15px; color: #0fb5c3; }
+    .add-docs { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 42px; margin-top: 10px; border-radius: 14px;
+      font-size: 13.5px; font-weight: 750; color: #fff; background: var(--gm-solid); }
+    .add-docs:disabled { opacity: .85; background: #10b981; }
   `,
 })
 export class ArrivalTransportComponent implements OnInit {
@@ -153,6 +203,11 @@ export class ArrivalTransportComponent implements OnInit {
   readonly people = input(1);
   private db = inject(AirportDbService);
   private gates = inject(GatesService);
+  private store = inject(TravelStore);
+  readonly docs = RENTAL_DOCS;
+  readonly desks = signal<MapFeature[]>([]);
+  readonly docsAdded = signal<number | null>(null);
+  readonly rentDay = computed(() => RENTAL_DAY[this.airport()?.country ?? ''] ?? 40);
 
   readonly airport = signal<AirportRecord | null>(null);
   readonly stay = signal<Place | null>(null);
@@ -233,6 +288,8 @@ export class ArrivalTransportComponent implements OnInit {
     return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}&travelmode=transit`;
   });
 
+  readonly deskNames = computed(() => [...new Set(this.desks().map((d) => d.ref))].join(', '));
+
   async ngOnInit() {
     try {
       await this.db.load();
@@ -246,7 +303,11 @@ export class ArrivalTransportComponent implements OnInit {
       }
       // Bus stops and stations mapped at the airport (from the airport plan, if it's already loaded or cached).
       if (a) {
-        void this.gates.get(a).then((f) => this.stops.set(f.filter((x) => x.kind === 'poi' && x.poi === 'transport' && x.ref && !/taxi|rental|închirieri/i.test(x.ref)).slice(0, 4))).catch(() => {});
+        void this.gates.get(a).then((f) => {
+          const transport = f.filter((x) => x.kind === 'poi' && x.poi === 'transport' && x.ref);
+          this.desks.set(transport.filter((x) => RENTAL_RE.test(x.ref + ' ' + (x.detail ?? ''))).slice(0, 6));
+          this.stops.set(transport.filter((x) => !/taxi/i.test(x.ref) && !RENTAL_RE.test(x.ref + ' ' + (x.detail ?? ''))).slice(0, 4));
+        }).catch(() => {});
       }
     } catch {
       /* offline: the links still work */
@@ -276,6 +337,16 @@ export class ArrivalTransportComponent implements OnInit {
       }));
     } catch {
       this.results.set([]);
+    }
+  }
+
+  /** Puts the rental documents on the trip's checklist. */
+  async addDocs() {
+    try {
+      const n = await this.store.addChecklistItems(this.tripId(), this.docs.map((d) => ({ label: t(d).split(',')[0].split(' (')[0], category: 'documents' as const })));
+      this.docsAdded.set(n);
+    } catch {
+      this.docsAdded.set(0);
     }
   }
 

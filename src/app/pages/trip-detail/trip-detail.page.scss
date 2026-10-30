@@ -68,7 +68,7 @@
   margin-top: -32px;
   padding: 22px 18px 0;
   border-radius: 28px 28px 0 0;
-  background: #fff;
+  background: var(--gm-card-bg);
   min-height: 70vh;
   box-shadow: 0 -10px 30px rgba(11, 40, 60, 0.06);
 }
@@ -217,7 +217,7 @@ gm-airport-day.day {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: #fff;
+    background: var(--gm-card-bg);
     color: var(--gm-accent-strong);
     display: flex;
     align-items: center;
@@ -274,7 +274,7 @@ gm-airport-day.day {
     font-weight: 650;
     color: var(--gm-ink-2);
     &.on {
-      background: var(--gm-ink);
+      background: var(--gm-solid);
       color: #fff;
     }
   }
@@ -523,7 +523,7 @@ gm-airport-day.day {
 
     &:focus {
       border-color: var(--gm-accent);
-      background: #fff;
+      background: var(--gm-card-bg);
     }
   }
 }
@@ -738,7 +738,7 @@ gm-airport-day.day {
 
     &:focus {
       border-color: var(--gm-accent);
-      background: #fff;
+      background: var(--gm-card-bg);
     }
   }
 }

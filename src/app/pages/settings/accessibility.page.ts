@@ -3,11 +3,12 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, Io
 import { PrefsService } from '../../core/services/prefs.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { ThemePickerComponent } from '../../shared/components/theme-picker.component';
 
 @Component({
   selector: 'gm-accessibility',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonToggle],
+  imports: [TranslatePipe, ThemePickerComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, IonToggle],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
@@ -17,6 +18,8 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
     </ion-header>
     <ion-content [fullscreen]="true">
       <div class="page">
+        <span class="gm-label">{{ 'Appearance' | t }}</span>
+        <gm-theme-picker />
         <span class="gm-label">{{ 'Text size' | t }}</span>
         <div class="sizes card">
           @for (s of sizes; track s.v) {

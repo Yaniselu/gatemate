@@ -294,7 +294,7 @@
 
     &.current {
       i {
-        background: #fff;
+        background: var(--gm-card-bg);
         border-color: #fff;
         box-shadow: 0 0 0 5px rgba(156, 242, 247, 0.25);
         animation: pulse-step 1.8s ease-in-out infinite;

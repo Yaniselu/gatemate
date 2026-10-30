@@ -22,7 +22,7 @@
     left: 5px;
     width: calc(50% - 5px);
     border-radius: 10px;
-    background: #fff;
+    background: var(--gm-card-bg);
     box-shadow: 0 1px 3px rgba(11, 40, 60, 0.12);
     transform: translateX(calc(var(--x) * 100%));
     transition: transform 0.5s var(--gm-ease-spring);

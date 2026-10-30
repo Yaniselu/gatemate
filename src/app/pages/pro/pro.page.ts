@@ -84,7 +84,7 @@ const FEATURES = [
     </ion-content>
   `,
   styles: `
-    .close { position: absolute; top: calc(env(safe-area-inset-top) + 10px); right: 14px; z-index: 5; width: 36px; height: 36px; border-radius: 50%; background: #f1f4f7; color: var(--gm-ink); font-size: 20px; display: flex; align-items: center; justify-content: center; }
+    .close { position: absolute; top: calc(env(safe-area-inset-top) + 10px); right: 14px; z-index: 5; width: 36px; height: 36px; border-radius: 50%; background: var(--gm-surface); color: var(--gm-ink); font-size: 20px; display: flex; align-items: center; justify-content: center; }
     .wrap { padding: calc(env(safe-area-inset-top) + 40px) 20px calc(env(safe-area-inset-bottom) + 24px); }
     .hero { text-align: center; margin-bottom: 18px; }
     .crown { width: 64px; height: 64px; border-radius: 20px; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #fff;
@@ -96,7 +96,7 @@ const FEATURES = [
     .features b { display: block; font-size: 15.5px; }
     .features small { color: var(--gm-ink-3); font-size: 13px; }
     .plans { display: grid; gap: 10px; }
-    .plan { position: relative; display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: #fff; border: 1.5px solid var(--gm-card-border); text-align: left; color: var(--gm-ink); transition: border-color .2s, transform .2s var(--gm-ease-spring); }
+    .plan { position: relative; display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: var(--gm-card-bg); border: 1.5px solid var(--gm-card-border); text-align: left; color: var(--gm-ink); transition: border-color .2s, transform .2s var(--gm-ease-spring); }
     .plan:active { transform: scale(.98); }
     .plan.on { border-color: var(--gm-accent-strong); box-shadow: 0 0 0 3px rgba(15,181,195,.12); }
     .radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #c7d0d8; flex: none; transition: all .2s; }

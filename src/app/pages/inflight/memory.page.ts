@@ -61,7 +61,7 @@ const ICONS = ['airplane', 'earth', 'ticket', 'bag-handle', 'compass', 'camera',
     .tile.flipped { transform: rotateY(180deg); }
     .face { position: absolute; inset: 0; border-radius: 16px; display: flex; align-items: center; justify-content: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; font-size: 28px; }
     .back { background: linear-gradient(135deg, #12304a, #0a6e80); color: rgba(255,255,255,.35); box-shadow: 0 6px 14px rgba(8,36,56,.18), inset 0 1px 0 rgba(255,255,255,.2); }
-    .front { transform: rotateY(180deg); background: #fff; color: var(--gm-accent-strong); border: 1px solid var(--gm-card-border); box-shadow: var(--gm-card-shadow); }
+    .front { transform: rotateY(180deg); background: var(--gm-card-bg); color: var(--gm-accent-strong); border: 1px solid var(--gm-card-border); box-shadow: var(--gm-card-shadow); }
     .matched .front { background: var(--gm-accent-soft); animation: gm-pop .45s var(--gm-ease-spring); }
   `,
 })
