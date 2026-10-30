@@ -15,6 +15,7 @@ import { ReviewService } from '../../core/services/review.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { cleanText } from '../../core/security/sanitize';
 import { BoardingPassComponent } from '../../shared/components/boarding-pass.component';
+import { FlightJourneyComponent } from '../../shared/components/flight-journey.component';
 import { AvatarStackComponent } from '../../shared/components/avatar-stack.component';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { ProService } from '../../core/services/pro.service';
@@ -37,7 +38,7 @@ type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' 
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslatePipe, 
     IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonIcon, RouterLink, FormsModule, DecimalPipe,
-    BoardingPassComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, AirportDayComponent, LiveFlightComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
+    BoardingPassComponent, FlightJourneyComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, AirportDayComponent, LiveFlightComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
   ],
   templateUrl: './trip-detail.page.html',
   styleUrl: './trip-detail.page.scss',

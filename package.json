@@ -53,10 +53,12 @@
     "@capgo/capacitor-social-login": "^8.7.5",
     "@ionic/angular": "^8.8.19",
     "@revenuecat/purchases-capacitor": "^13.8.0",
+    "@types/three": "^0.170.0",
     "@zxing/library": "^0.23.0",
     "ionicons": "^8.1.0",
     "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",
+    "three": "^0.170.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
