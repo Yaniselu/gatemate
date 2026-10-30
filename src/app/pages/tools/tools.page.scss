@@ -154,7 +154,7 @@
   padding: 12px;
   border-radius: 14px;
   text-align: left;
-  background: #f5f8fa;
+  background: var(--gm-surface);
   color: var(--gm-ink);
   transition: transform 0.2s var(--gm-ease-spring);
 

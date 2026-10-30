@@ -77,7 +77,7 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
   styles: `
     .page { padding: 10px 16px 40px; max-width: 540px; margin: 0 auto; }
     .preview, .created { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 6px 0 20px; text-align: center; }
-    .avatar { width: 84px; height: 84px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 42px; background: linear-gradient(135deg, #e6f8fa, #fff); border: 1px solid var(--gm-card-border); box-shadow: var(--gm-card-shadow); margin-bottom: 8px; }
+    .avatar { width: 84px; height: 84px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 42px; background: linear-gradient(135deg, var(--gm-accent-soft), var(--gm-card-bg)); border: 1px solid var(--gm-card-border); box-shadow: var(--gm-card-shadow); margin-bottom: 8px; }
     .avatar.bump { animation: gm-bounce-icon .5s var(--gm-ease-spring); }
     .avatar.big { width: 104px; height: 104px; font-size: 52px; animation: gm-pop .6s var(--gm-ease-spring); }
     .preview b { font-size: 18px; }

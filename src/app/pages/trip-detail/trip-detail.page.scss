@@ -648,7 +648,7 @@ gm-airport-day.day {
   }
 
   &.off {
-    background: #fafbfc;
+    background: var(--gm-surface);
     .bag-art svg {
       fill: #dfe6ec;
       stroke: #dfe6ec;

@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       display: block;
       position: relative;
       overflow: hidden;
-      background: #edf2f6;
+      background: var(--gm-surface);
     }
     :host::after {
       content: '';

@@ -22,7 +22,7 @@ import { Traveller } from '../../core/models';
       animation: gm-pop .5s var(--gm-ease-spring) both; animation-delay: calc(var(--i) * 70ms);
     }
     .av:first-child { margin-left: 0; }
-    .more { background: #e9eef3; color: var(--gm-ink-2); }
+    .more { background: var(--gm-surface); color: var(--gm-ink-2); }
   `,
 })
 export class AvatarStackComponent {

@@ -68,7 +68,7 @@
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: #e6eaef;
+    background: var(--gm-surface);
   }
 
   .avatar {
@@ -98,7 +98,7 @@
   position: relative;
   overflow: hidden;
   padding: 16px;
-  background: linear-gradient(150deg, #fff 55%, color-mix(in srgb, var(--c) 10%, #fff));
+  background: linear-gradient(150deg, var(--gm-card-bg) 55%, color-mix(in srgb, var(--c) 16%, transparent));
 
   ion-icon {
     display: grid;
@@ -158,7 +158,7 @@
     align-items: center;
     justify-content: center;
     font-size: 28px;
-    background: #eef2f6;
+    background: var(--gm-surface);
     color: #a9b6c3;
     overflow: hidden;
   }
@@ -317,7 +317,7 @@
 .lv-bar {
   height: 5px;
   border-radius: 3px;
-  background: #edf2f6;
+  background: var(--gm-surface);
   overflow: hidden;
 
   span {

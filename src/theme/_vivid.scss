@@ -1,0 +1,305 @@
+// Vivid layer: colour, deeper Liquid Glass and motion on top of the base design.
+//   1. A slow aurora behind every screen, so glass has colour to bend.
+//   2. Cards become frosted glass with a specular rim and a tinted shadow.
+//   3. Stronger glass for floating layers, with a light sheen that sweeps across.
+//   4. Gradient titles, glowing buttons, colourful icon wells.
+//   5. Content rises in, staggered, on every page.
+// Everything that moves stops under Reduce Motion (phone setting or Accessibility → Reduce motion).
+
+// ---------- tokens ----------
+:root {
+  --gm-aurora-1: rgba(34, 199, 211, 0.55);
+  --gm-aurora-2: rgba(139, 92, 246, 0.42);
+  --gm-aurora-3: rgba(236, 72, 153, 0.32);
+  --gm-aurora-4: rgba(249, 115, 22, 0.28);
+  --gm-aurora-5: rgba(14, 165, 233, 0.38);
+  --gm-aurora-base: linear-gradient(180deg, #eaf8fd 0%, #f1edff 55%, #fff0ea 100%);
+
+  --gm-glass-bg: linear-gradient(155deg, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.22) 100%);
+  --gm-glass-bg-strong: linear-gradient(155deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.5) 100%);
+  --gm-glass-border: rgba(255, 255, 255, 0.85);
+  --gm-glass-blur: blur(34px) saturate(240%) brightness(1.08);
+  --gm-glass-shadow: 0 22px 50px rgba(37, 52, 120, 0.16), 0 3px 10px rgba(37, 52, 120, 0.08),
+    inset 0 1.5px 0 rgba(255, 255, 255, 1), inset 0 -12px 28px rgba(255, 255, 255, 0.2),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.7);
+
+  --gm-frost: rgba(255, 255, 255, 0.66);
+  --gm-frost-strong: rgba(255, 255, 255, 0.8);
+  --gm-frost-blur: blur(22px) saturate(190%);
+  --gm-frost-rim: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  --gm-frost-shadow: 0 14px 34px rgba(48, 63, 140, 0.12), 0 2px 6px rgba(48, 63, 140, 0.06);
+
+  --gm-rainbow: linear-gradient(110deg, #0fb5c3, #6366f1 35%, #a855f7 55%, #ec4899 75%, #f97316);
+}
+
+html.gm-dark {
+  --gm-aurora-1: rgba(34, 199, 211, 0.24);
+  --gm-aurora-2: rgba(139, 92, 246, 0.26);
+  --gm-aurora-3: rgba(236, 72, 153, 0.16);
+  --gm-aurora-4: rgba(249, 115, 22, 0.1);
+  --gm-aurora-5: rgba(14, 165, 233, 0.18);
+  --gm-aurora-base: linear-gradient(180deg, #050913 0%, #0a0b1f 55%, #110918 100%);
+
+  --gm-glass-bg: linear-gradient(155deg, rgba(40, 52, 82, 0.62) 0%, rgba(16, 22, 40, 0.4) 100%);
+  --gm-glass-bg-strong: linear-gradient(155deg, rgba(40, 52, 82, 0.82) 0%, rgba(16, 22, 40, 0.66) 100%);
+  --gm-glass-border: rgba(255, 255, 255, 0.14);
+  --gm-glass-blur: blur(34px) saturate(180%) brightness(0.95);
+  --gm-glass-shadow: 0 22px 50px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+
+  --gm-frost: rgba(20, 28, 46, 0.62);
+  --gm-frost-strong: rgba(20, 28, 46, 0.8);
+  --gm-frost-blur: blur(22px) saturate(160%);
+  --gm-frost-rim: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --gm-frost-shadow: 0 14px 34px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+// Inside screens, cards and wells are frosted (modals and sheets outside keep their solid colours).
+ion-content {
+  --gm-card-bg: var(--gm-frost);
+  --gm-card-border: rgba(255, 255, 255, 0.7);
+  --gm-surface: rgba(255, 255, 255, 0.5);
+}
+html.gm-dark ion-content {
+  --gm-card-border: rgba(255, 255, 255, 0.08);
+  --gm-surface: rgba(255, 255, 255, 0.06);
+}
+
+// ---------- 1. aurora ----------
+// The base wash sits on <html>, the moving glows on body::before, and body stays clear so they show through.
+html:root {
+  background: var(--gm-aurora-base);
+}
+html body {
+  background: transparent;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: -25%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(46% 36% at 22% 26%, var(--gm-aurora-1), transparent 72%),
+    radial-gradient(42% 34% at 80% 22%, var(--gm-aurora-2), transparent 72%),
+    radial-gradient(48% 38% at 72% 70%, var(--gm-aurora-3), transparent 72%),
+    radial-gradient(40% 32% at 26% 76%, var(--gm-aurora-4), transparent 72%),
+    radial-gradient(38% 32% at 50% 48%, var(--gm-aurora-5), transparent 72%);
+  filter: saturate(1.15);
+  animation: gm-aurora 34s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes gm-aurora {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  33% {
+    transform: translate3d(4%, -3%, 0) rotate(8deg) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-5%, 4%, 0) rotate(-6deg) scale(1.04);
+  }
+  100% {
+    transform: translate3d(3%, 5%, 0) rotate(12deg) scale(1.12);
+  }
+}
+
+// ---------- 2. frosted cards ----------
+ion-content .card {
+  background: var(--gm-frost);
+  border-color: var(--gm-card-border);
+  box-shadow: var(--gm-frost-rim), var(--gm-frost-shadow);
+  -webkit-backdrop-filter: var(--gm-frost-blur);
+  backdrop-filter: var(--gm-frost-blur);
+  transition: transform 0.35s var(--gm-ease-spring), box-shadow 0.35s var(--gm-ease-out);
+}
+ion-content :is(a, button).card:active,
+ion-content .card.gm-pressed {
+  transform: scale(0.975);
+  box-shadow: var(--gm-frost-rim), 0 6px 16px rgba(48, 63, 140, 0.1);
+}
+
+// ---------- 3. stronger glass + sweeping sheen ----------
+.glass:not(.smoke):not(.tinted):not(.flat)::after {
+  background:
+    linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 46%, rgba(255, 255, 255, 0.1) 52%, transparent 66%) 0 0 / 250% 100% no-repeat,
+    radial-gradient(240px circle at var(--mx, 18%) var(--my, -10%), rgba(255, 255, 255, 0.6), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 40%);
+  animation: gm-sheen 7s var(--gm-ease-in-out) infinite;
+}
+@keyframes gm-sheen {
+  0%,
+  55% {
+    background-position: 160% 0, 0 0, 0 0;
+  }
+  100% {
+    background-position: -60% 0, 0 0, 0 0;
+  }
+}
+.glass.tinted {
+  background: linear-gradient(135deg, #0fb5c3, #3b82f6 55%, #8b5cf6);
+  background-size: 200% 200%;
+  box-shadow: 0 16px 36px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation: gm-flow 12s ease-in-out infinite alternate;
+}
+
+ion-header.gm-glass-header ion-toolbar {
+  --background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.38));
+  -webkit-backdrop-filter: blur(34px) saturate(230%);
+  backdrop-filter: blur(34px) saturate(230%);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.7), 0 1px 0 rgba(99, 102, 241, 0.08);
+}
+html.gm-dark ion-header.gm-glass-header ion-toolbar {
+  --background: linear-gradient(180deg, rgba(14, 20, 36, 0.72), rgba(14, 20, 36, 0.5));
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+ion-header.gm-glass-header[collapse='condense'] ion-toolbar {
+  --background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+ion-tab-bar.gm-tabbar {
+  -webkit-backdrop-filter: blur(36px) saturate(240%) brightness(1.06) !important;
+  backdrop-filter: blur(36px) saturate(240%) brightness(1.06) !important;
+  box-shadow: 0 20px 44px rgba(48, 63, 140, 0.2), inset 0 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 0 0 0.5px rgba(255, 255, 255, 0.7) !important;
+}
+ion-tab-bar.gm-tabbar .indicator {
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.25) 60%),
+    linear-gradient(135deg, rgba(34, 199, 211, 0.35), rgba(139, 92, 246, 0.3)) !important;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+html.gm-dark ion-tab-bar.gm-tabbar .indicator {
+  background: linear-gradient(135deg, rgba(34, 199, 211, 0.35), rgba(139, 92, 246, 0.35)) !important;
+}
+
+// ---------- 4. colour ----------
+.gm-page-title,
+.hero h1 {
+  background: var(--gm-rainbow);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: gm-flow 9s ease-in-out infinite alternate;
+}
+@keyframes gm-flow {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+.gm-btn:not(.dark):not(.ghost) {
+  background: linear-gradient(120deg, #0fb5c3, #3b82f6 40%, #8b5cf6 70%, #0fb5c3);
+  background-size: 250% 100%;
+  box-shadow: 0 14px 30px rgba(59, 130, 246, 0.32), 0 4px 10px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  animation: gm-flow 6s ease-in-out infinite alternate;
+}
+
+.gm-well {
+  color: var(--gm-accent-strong);
+  background: linear-gradient(145deg, rgba(34, 199, 211, 0.18), rgba(139, 92, 246, 0.14));
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+html.gm-dark .gm-well {
+  color: #5fd8e3;
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+.gm-well.tint {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--c) 26%, transparent), color-mix(in srgb, var(--c) 10%, transparent));
+}
+
+.gm-chip {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+// ---------- 5. motion ----------
+// Page content rises in, one block after another. Zero specificity: components' own animations win.
+:where(ion-content .page, ion-content .section) > :where(:not([class*='anim-']):not(.gm-reveal):not(ion-refresher)) {
+  animation: gm-rise 0.6s var(--gm-ease-out) both;
+}
+@for $i from 1 through 14 {
+  :where(ion-content .page, ion-content .section) > :where(:nth-child(#{$i})) {
+    animation-delay: #{($i - 1) * 45}ms;
+  }
+}
+@keyframes gm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+}
+
+// Icons in wells and chips give a gentle hop on press; arrows nudge forward.
+:active > ion-icon.chev,
+:active > .chev {
+  transform: translateX(3px);
+  transition: transform 0.25s var(--gm-ease-spring);
+}
+
+// Live dots and badges breathe.
+.gm-live-dot,
+.live {
+  animation: gm-breathe 2.4s ease-in-out infinite;
+}
+@keyframes gm-breathe {
+  50% {
+    opacity: 0.6;
+    transform: scale(0.96);
+  }
+}
+
+// ---------- reduced motion ----------
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  .glass::after,
+  .glass.tinted,
+  .gm-page-title,
+  .hero h1,
+  .gm-btn,
+  :where(ion-content .page, ion-content .section) > * {
+    animation: none !important;
+  }
+}
+// High contrast keeps solid, opaque surfaces.
+html.gm-high-contrast ion-content {
+  --gm-card-bg: #ffffff;
+  --gm-surface: #f1f4f7;
+}
+html.gm-high-contrast.gm-dark ion-content {
+  --gm-card-bg: #0f1726;
+  --gm-surface: #151d2d;
+}
+html.gm-high-contrast ion-content .card {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+// Light-on-white pills drawn with fixed translucent white: frosted dark in dark mode.
+html.gm-dark :is(.edit-btn, .gm-chip.neutral, .segment),
+html.gm-dark ion-content .edit-btn {
+  background: var(--gm-surface) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+// The old plain-white canvas layer (app root) steps aside for the aurora.
+.gm-ambient {
+  background: transparent !important;
+}
+
+// Sheets and action sheets: frosted, and dark in dark mode.
+html.gm-dark ion-modal.gm-sheet-modal {
+  --background: rgba(15, 22, 38, 0.92);
+}
+html.gm-dark ion-action-sheet.gm-sheet {
+  --background: rgba(15, 22, 38, 0.86);
+}

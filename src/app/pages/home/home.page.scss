@@ -663,7 +663,7 @@
   text-decoration: none;
   color: var(--gm-ink);
   border-color: rgba(245, 158, 11, 0.35);
-  background: linear-gradient(135deg, #fffbeb, #fff);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), var(--gm-card-bg));
   .row-text { flex: 1; display: flex; flex-direction: column; b { font-size: 15px; } small { color: var(--gm-ink-3); font-size: 12.5px; } }
   .chev { color: var(--gm-ink-3); }
 }

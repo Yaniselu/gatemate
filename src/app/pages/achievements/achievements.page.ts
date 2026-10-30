@@ -104,7 +104,7 @@ import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
     .prog { position: absolute; inset: 0; transform: rotate(-90deg); }
     .prog circle { fill: none; stroke: #edf2f6; stroke-width: 4; }
     .prog .p { stroke: var(--gm-accent); stroke-linecap: round; stroke-dasharray: 182; transition: stroke-dashoffset 1s var(--gm-ease-out); }
-    .disc { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #a9b6c3; background: #eef2f6; position: relative; overflow: hidden; }
+    .disc { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #a9b6c3; background: var(--gm-surface); position: relative; overflow: hidden; }
     .earned .disc { color: #fff; background: linear-gradient(135deg, #e7b98a, #b7703f); box-shadow: 0 6px 14px rgba(183,112,63,.35), inset 0 1px 0 rgba(255,255,255,.5); }
     .earned[data-tier='silver'] .disc, [data-tier='silver'] .earned .disc { background: linear-gradient(135deg, #e6edf3, #8fa3b5); box-shadow: 0 6px 14px rgba(110,130,150,.35); }
     .earned[data-tier='gold'] .disc, [data-tier='gold'] .earned .disc { background: linear-gradient(135deg, #ffd27a, #e09b1c); box-shadow: 0 6px 14px rgba(224,155,28,.4); }
@@ -116,7 +116,7 @@ import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
     .medal.big .disc { width: 88px; height: 88px; font-size: 38px; animation: gm-pop .6s var(--gm-ease-spring); }
     .detail h3 { margin: 4px 0; font-size: 20px; font-weight: 800; }
     .detail p { margin: 0 0 12px; color: var(--gm-ink-2); }
-    .bar { height: 6px; border-radius: 3px; background: #edf2f6; overflow: hidden; margin-bottom: 8px; }
+    .bar { height: 6px; border-radius: 3px; background: var(--gm-surface); overflow: hidden; margin-bottom: 8px; }
     .bar span { display: block; height: 100%; background: var(--gm-accent); transform-origin: left; transition: transform .8s var(--gm-ease-out); }
     .detail small { display: block; color: var(--gm-ink-3); margin-bottom: 14px; }
     .fine { text-align: center; font-size: 12px; color: var(--gm-ink-3); margin-top: 18px; }

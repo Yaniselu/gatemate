@@ -13,7 +13,7 @@
   padding: 5px;
   border-radius: 14px;
   margin: 8px 0 18px;
-  background: #eef1f4;
+  background: var(--gm-surface);
 
   .thumb {
     position: absolute;
@@ -200,7 +200,7 @@
     flex: 1;
     height: 4px;
     border-radius: 4px;
-    background: #edf2f6;
+    background: var(--gm-surface);
     overflow: hidden;
 
     span {
