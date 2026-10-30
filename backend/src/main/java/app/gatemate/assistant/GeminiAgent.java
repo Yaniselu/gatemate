@@ -44,18 +44,28 @@ final class GeminiAgent {
     }
 
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build();
-    private final String key, model, baseUrl;
+    private final String key;
+    /** Endpoint + model pairs to try, in order; the first that accepts the key is remembered. */
+    private final List<String> routes = new ArrayList<>();
+    private volatile int route;
     private final List<Map<String, Object>> declarations;
     private final JsonMapper json;
     private final java.util.concurrent.atomic.AtomicInteger nextId = new java.util.concurrent.atomic.AtomicInteger();
 
     GeminiAgent(String key, String model, String baseUrl, List<Map<String, Object>> declarations, JsonMapper json) {
         this.key = key;
-        this.model = model;
-        this.baseUrl = baseUrl == null || baseUrl.isBlank() ? "https://generativelanguage.googleapis.com" : baseUrl.replaceAll("/+$", "");
+        // Google AI Studio keys (AIza…) use the Gemini API; Vertex AI express keys (AQ.…) use Vertex. Both take the same
+        // request; try the likely one first. The model alias may not exist on both, so fall back to a pinned model.
+        List<String> endpoints = baseUrl != null && !baseUrl.isBlank() ? List.of(baseUrl.replaceAll("/+$", "") + "/v1beta/models/")
+                : key.startsWith("AQ.") ? List.of(VERTEX, STUDIO) : List.of(STUDIO, VERTEX);
+        var models = new java.util.LinkedHashSet<>(List.of(model, "gemini-flash-latest", "gemini-2.5-flash"));
+        for (String e : endpoints) for (String m : models) routes.add(e + URLEncoder.encode(m, StandardCharsets.UTF_8) + ":streamGenerateContent?alt=sse");
         this.declarations = declarations;
         this.json = json;
     }
+
+    private static final String STUDIO = "https://generativelanguage.googleapis.com/v1beta/models/";
+    private static final String VERTEX = "https://aiplatform.googleapis.com/v1/publishers/google/models/";
 
     static String system() {
         return AssistantService.SYSTEM
@@ -113,19 +123,30 @@ final class GeminiAgent {
         body.put("contents", contents);
         body.put("tools", List.of(Map.of("functionDeclarations", declarations)));
         body.put("generationConfig", Map.of("maxOutputTokens", 8192));
-        var req = HttpRequest.newBuilder(URI.create(baseUrl + "/v1beta/models/" + URLEncoder.encode(model, StandardCharsets.UTF_8) + ":streamGenerateContent?alt=sse"))
-                .timeout(Duration.ofMinutes(3))
-                .header("Content-Type", "application/json")
-                .header("x-goog-api-key", key)
-                .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)))
-                .build();
-        HttpResponse<java.util.stream.Stream<String>> res = http.send(req, HttpResponse.BodyHandlers.ofLines());
-        if (res.statusCode() != 200) {
+        String payload = json.writeValueAsString(body);
+        HttpResponse<java.util.stream.Stream<String>> res;
+        for (int r = route; ; r++) {
+            var req = HttpRequest.newBuilder(URI.create(routes.get(r)))
+                    .timeout(Duration.ofMinutes(3))
+                    .header("Content-Type", "application/json")
+                    .header("x-goog-api-key", key)
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .build();
+            res = http.send(req, HttpResponse.BodyHandlers.ofLines());
+            if (res.statusCode() == 200) {
+                if (r != route) log.info("Velo on Gemini uses {}", routes.get(r).replaceAll(":stream.*", ""));
+                route = r;
+                break;
+            }
             String err;
             try (var lines = res.body()) {
                 err = lines.collect(Collectors.joining("\n"));
             }
-            throw new Failure(res.statusCode(), err);
+            // Wrong endpoint for this kind of key, or a model this endpoint doesn't have: try the next route.
+            boolean wrongRoute = res.statusCode() == 401 || res.statusCode() == 403 || res.statusCode() == 404
+                    || (res.statusCode() == 400 && err.contains("API key"));
+            if (!wrongRoute || r + 1 >= routes.size()) throw new Failure(res.statusCode(), err);
+            log.warn("Gemini route {} refused ({}), trying the next one", routes.get(r).replaceAll(":stream.*", ""), res.statusCode());
         }
         var reply = new Reply();
         StringBuilder text = new StringBuilder();
