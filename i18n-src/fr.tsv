@@ -1308,3 +1308,180 @@
 @Ask Velo something.	Posez une question à Velo.
 @Velo, your AI travel agent by Velosyntech	Velo, votre agent de voyage IA, par Velosyntech
 @The server is starting: the first answer can take up to a minute.	Le serveur démarre : la première réponse peut prendre jusqu’à une minute.
+@Before you leave	Avant de partir
+@Check-in & bags	Enregistrement et bagages
+@Security check	Contrôle de sûreté
+@Liquids	Liquides
+@Electronics & batteries	Électronique et batteries
+@Passport & border	Passeport et frontière
+@Gate & boarding	Porte et embarquement
+@Connections	Correspondances
+@Duty-free & customs	Duty-free et douane
+@Health & medicines	Santé et médicaments
+@Kids, pets & assistance	Enfants, animaux et assistance
+@Safety & behaviour	Sécurité et comportement
+@Check in online	Enregistrez-vous en ligne
+@Most airlines open online check-in 24–48 h before departure. Some low-cost airlines charge extra to check in at the airport.	La plupart des compagnies ouvrent l’enregistrement en ligne 24 à 48 h avant le vol. Certaines low-cost font payer l’enregistrement à l’aéroport.
+@Arrive in good time	Arrivez en avance
+@Aim for 2 h before short-haul and 3 h before long-haul flights. Add time at big airports and in holiday periods.	Visez 2 h avant un court-courrier et 3 h avant un long-courrier. Prévoyez plus dans les grands aéroports et pendant les vacances.
+@Your name must match your ID	Votre nom doit correspondre à votre pièce d’identité
+@The name on the booking must match your passport or ID card exactly. Fixing it later can cost a fee.	Le nom de la réservation doit correspondre exactement à votre passeport ou carte d’identité. Le corriger ensuite peut être payant.
+@Check your document’s expiry date	Vérifiez la date d’expiration
+@Many countries outside the EU require a passport valid for 3–6 months after your stay. An expired ID means no boarding.	Beaucoup de pays hors UE exigent un passeport valable 3 à 6 mois après votre séjour. Un document expiré, c’est pas d’embarquement.
+@Weigh your bags at home	Pesez vos bagages à la maison
+@Excess-weight fees at the desk cost much more than adding weight online before you fly.	L’excédent de poids au comptoir coûte bien plus cher que de l’ajouter en ligne avant le vol.
+@Keep your boarding pass offline	Gardez votre carte d’embarquement hors ligne
+@Save it in Gatemate or your phone’s wallet: airport Wi-Fi and signal are often weak at the busiest moment.	Enregistrez-la dans Gatemate ou le portefeuille du téléphone : le Wi-Fi et le réseau de l’aéroport lâchent souvent au pire moment.
+@Bag drop closes early	Le dépôt bagages ferme tôt
+@Usually 40–60 minutes before departure. After that, your bag won’t be accepted even if the plane is still there.	En général 40 à 60 minutes avant le départ. Ensuite, votre bagage est refusé même si l’avion est encore là.
+@Cabin bag size depends on your fare	Le bagage cabine dépend du tarif
+@Each airline has its own size and weight limits, and many basic fares include only a small bag that fits under the seat.	Chaque compagnie a ses limites de taille et de poids, et beaucoup de tarifs de base n’incluent qu’un petit sac sous le siège.
+@Valuables stay with you	Les objets de valeur restent avec vous
+@Keep money, jewellery, keys, medicines, documents and electronics in your cabin bag, never in checked luggage.	Argent, bijoux, clés, médicaments, papiers et électronique vont en cabine, jamais en soute.
+@Label your bag and take a photo	Étiquetez votre bagage et prenez-le en photo
+@Put your name and phone number outside and inside the bag. A photo helps a lot if it gets lost.	Mettez nom et téléphone à l’extérieur et à l’intérieur. Une photo aide beaucoup en cas de perte.
+@Remove old bag tags	Retirez les anciennes étiquettes
+@Old barcode stickers can confuse the scanners and send your bag to the wrong airport.	Les vieux codes-barres peuvent tromper les scanners et envoyer votre bagage dans un autre aéroport.
+@Sports gear and big items need booking	L’équipement sportif se réserve
+@Skis, bikes, musical instruments and other bulky items have their own rules and fees. Book them before you fly.	Skis, vélos, instruments de musique et objets encombrants ont leurs règles et frais. Réservez-les avant le vol.
+@Boarding pass ready at security	Carte d’embarquement prête au contrôle
+@It’s scanned at the entrance to security, and you’ll show it again at the gate.	Elle est scannée à l’entrée du contrôle et vous la montrerez de nouveau à la porte.
+@Laptops and liquids out of the bag	Ordinateurs et liquides hors du sac
+@Unless the airport has new CT scanners and says otherwise, put laptops, tablets and your liquids bag in a separate tray.	Sauf si l’aéroport a de nouveaux scanners CT et l’indique, mettez ordinateur, tablette et sac de liquides dans un bac à part.
+@Empty your pockets	Videz vos poches
+@Coins, keys, phone, belt and watch go in the tray. Jackets and big coats go through the scanner too.	Pièces, clés, téléphone, ceinture et montre vont dans le bac. Vestes et manteaux passent aussi au scanner.
+@No sharp objects in the cabin	Pas d’objets tranchants en cabine
+@Knives, scissors with blades over 6 cm, tools and anything that could be used as a weapon must go in checked luggage.	Couteaux, ciseaux à lames de plus de 6 cm, outils et tout ce qui peut servir d’arme vont en soute.
+@Wear easy shoes	Portez des chaussures faciles
+@Some airports ask you to take off boots and shoes with metal parts. Slip-ons make the queue faster.	Certains aéroports font retirer les bottes et chaussures avec du métal. Des chaussures sans lacets accélèrent la file.
+@You can ask for a hand search	Vous pouvez demander une fouille manuelle
+@In the EU you can usually ask for a manual search instead of the body scanner, and for a private room if you prefer.	Dans l’UE, vous pouvez en général demander une palpation au lieu du scanner corporel, et une pièce à part si vous préférez.
+@100 ml per container	100 ml par contenant
+@Every liquid, gel, paste, cream or spray in your cabin bag must be in a container of 100 ml or less, even if it’s half empty.	Chaque liquide, gel, pâte, crème ou spray en cabine doit être dans un contenant de 100 ml maximum, même à moitié vide.
+@One clear 1-litre bag	Un seul sac transparent d’un litre
+@All containers must fit in one resealable, transparent bag of about 20 × 20 cm. One bag per passenger.	Tous les contenants doivent tenir dans un sac transparent refermable d’environ 20 × 20 cm. Un sac par passager.
+@Food can count as liquid	La nourriture peut compter comme liquide
+@Yoghurt, jam, honey, sauces, hummus and soft cheese follow the liquids rule.	Yaourt, confiture, miel, sauces, houmous et fromage à pâte molle suivent la règle des liquides.
+@Baby food and medicines are exempt	Nourriture pour bébé et médicaments exemptés
+@Baby milk, baby food and liquid medicines you need during the trip may exceed 100 ml. You may be asked to show or taste them.	Lait et repas pour bébé et médicaments liquides nécessaires au voyage peuvent dépasser 100 ml. On peut vous demander de les montrer.
+@Duty-free liquids stay sealed	Les liquides duty-free restent scellés
+@Keep them in the sealed security bag with the receipt until your final destination, especially if you change planes.	Gardez-les dans le sac scellé avec le ticket jusqu’à destination finale, surtout en cas de correspondance.
+@Rules differ between airports	Les règles varient selon l’aéroport
+@Some airports with new CT scanners allow up to 2 litres and keep liquids in the bag. Your return airport may not, so pack for the strictest one.	Certains aéroports équipés de scanners CT autorisent jusqu’à 2 litres laissés dans le sac. Celui du retour peut-être pas : préparez-vous pour le plus strict.
+@Bring an empty bottle	Prenez une gourde vide
+@Take it through security empty and fill it at a water fountain on the other side.	Passez-la vide au contrôle et remplissez-la à une fontaine de l’autre côté.
+@Power banks only in the cabin	Batteries externes uniquement en cabine
+@Spare lithium batteries and power banks are banned from checked bags. Up to 100 Wh is fine, 100–160 Wh needs airline approval, above 160 Wh is forbidden.	Les batteries lithium de rechange et powerbanks sont interdites en soute. Jusqu’à 100 Wh OK, 100 à 160 Wh avec accord de la compagnie, au-delà de 160 Wh interdit.
+@Many airlines ban charging from power banks	Beaucoup de compagnies interdisent de recharger avec une batterie externe
+@More and more airlines forbid using a power bank on board. Keep it with you, not in the overhead bin.	De plus en plus de compagnies interdisent l’usage des powerbanks à bord. Gardez-la sur vous, pas dans le coffre à bagages.
+@Devices must switch on	Les appareils doivent s’allumer
+@Security can ask you to turn on a phone or laptop. A device with a dead battery may not be allowed on board, so charge before you go.	Au contrôle, on peut vous demander d’allumer téléphone ou ordinateur. Un appareil déchargé peut être refusé : chargez-le avant.
+@Airplane mode when asked	Mode avion quand on vous le demande
+@Switch to airplane mode when the crew asks. Wi-Fi and Bluetooth are usually allowed after take-off.	Passez en mode avion à la demande de l’équipage. Wi-Fi et Bluetooth sont généralement autorisés après le décollage.
+@E-cigarettes in the cabin only	Cigarettes électroniques en cabine uniquement
+@Vapes must travel with you, never in checked bags, and can’t be used or charged on board.	Les vapoteuses voyagent avec vous, jamais en soute, et ne peuvent être ni utilisées ni rechargées à bord.
+@Smart bags: battery out	Valises connectées : batterie retirée
+@Suitcases with a built-in battery are only accepted in the hold if you remove the battery and keep it with you.	Les valises à batterie intégrée ne vont en soute que si vous retirez la batterie et la gardez sur vous.
+@Drones near airports: never	Drones près des aéroports : jamais
+@Pack drones in the cabin with batteries protected. Flying them near an airport is a serious offence.	Mettez le drone en cabine, batteries protégées. Le faire voler près d’un aéroport est une infraction grave.
+@In the EU, an ID card is enough for EU citizens	Dans l’UE, la carte d’identité suffit aux citoyens de l’UE
+@EU citizens can fly within the EU with a valid ID card or passport. Outside the EU you usually need a passport.	Les citoyens de l’UE peuvent voyager dans l’UE avec une carte d’identité ou un passeport valide. Hors UE, il faut en général un passeport.
+@Schengen: no border check, but carry ID	Schengen : pas de contrôle, mais gardez vos papiers
+@There’s no passport control between Schengen countries, but the airline and police can still ask for your document.	Il n’y a pas de contrôle des passeports entre pays Schengen, mais la compagnie et la police peuvent demander votre document.
+@EES: fingerprints and photo at the border	EES : empreintes et photo à la frontière
+@Non-EU travellers entering the Schengen area are registered in the Entry/Exit System on their first visit. Expect longer queues.	Les voyageurs hors UE entrant dans l’espace Schengen sont enregistrés dans le système d’entrée/sortie à leur première visite. Prévoyez plus d’attente.
+@UK: passport and ETA	Royaume-Uni : passeport et ETA
+@Most visitors to the UK, EU citizens included, need an Electronic Travel Authorisation, and EU ID cards are generally not accepted.	La plupart des visiteurs, citoyens de l’UE compris, ont besoin d’une autorisation électronique (ETA), et la carte d’identité n’est en général pas acceptée.
+@USA: approved ESTA before you board	États-Unis : ESTA approuvé avant d’embarquer
+@Visa Waiver travellers, Romanians included, need an approved ESTA before boarding a flight to the United States.	Les voyageurs du programme Visa Waiver, Roumains compris, doivent avoir un ESTA approuvé avant d’embarquer vers les États-Unis.
+@Keep a copy of your passport	Gardez une copie du passeport
+@A photo or scan stored separately makes getting a replacement much faster if you lose it.	Une photo ou un scan conservé à part accélère beaucoup le remplacement en cas de perte.
+@The gate closes 15–20 minutes before departure	La porte ferme 15 à 20 minutes avant
+@Gates close on time, even if you’re still in the security queue. Check the gate closing time on your boarding pass.	Les portes ferment à l’heure, même si vous êtes encore au contrôle. Vérifiez l’heure de fermeture sur votre carte d’embarquement.
+@Gates change	Les portes changent
+@Watch the departure screens or turn on Gatemate alerts: gates often change at the last minute.	Surveillez les écrans ou activez les alertes Gatemate : les portes changent souvent au dernier moment.
+@Boarding pass and ID at the gate	Carte d’embarquement et pièce d’identité à la porte
+@Both are checked again before you board, so keep them at hand.	Les deux sont vérifiées avant l’embarquement : gardez-les à portée de main.
+@Big bags may go in the hold at the gate	Les gros bagages peuvent partir en soute à la porte
+@When the overhead bins are full, cabin bags can be taken at the gate, and on some fares you’ll pay a fee.	Quand les coffres sont pleins, les bagages cabine peuvent être pris à la porte, et selon le tarif c’est payant.
+@Board with your group	Embarquez avec votre groupe
+@Wait until your group or zone is called. It’s printed on your boarding pass.	Attendez l’appel de votre groupe ou zone, indiqué sur la carte d’embarquement.
+@Last call really is the last	Le dernier appel est vraiment le dernier
+@If you’re not at the gate, your bag can be unloaded and your seat given to someone else.	Si vous n’êtes pas à la porte, votre bagage peut être débarqué et votre place donnée à quelqu’un d’autre.
+@Respect the minimum connection time	Respectez le temps minimum de correspondance
+@Every airport sets a minimum time to change planes. On a single booking, the airline must rebook you if you miss the connection.	Chaque aéroport fixe un délai minimum. Sur une seule réservation, la compagnie doit vous réacheminer si vous ratez la correspondance.
+@Separate tickets, your own risk	Billets séparés, risque pour vous
+@With two separate bookings you collect and re-check your bag yourself, and nobody has to help if you miss the second flight.	Avec deux réservations séparées, vous récupérez et réenregistrez vous-même votre bagage, et personne ne doit vous aider si vous ratez le second vol.
+@Leaving Schengen means passport control	Sortir de Schengen, c’est un contrôle des passeports
+@Changing between Schengen and non-Schengen flights adds a passport check. Allow extra time.	Passer d’un vol Schengen à un vol non-Schengen ajoute un contrôle des passeports. Prévoyez du temps.
+@You may go through security again	Vous repasserez peut-être la sûreté
+@Many airports screen transfer passengers again. Duty-free liquids without a sealed bag can be confiscated.	Beaucoup d’aéroports recontrôlent les passagers en correspondance. Les liquides duty-free sans sac scellé peuvent être confisqués.
+@Follow “Transfer”, not “Exit”	Suivez « Correspondances », pas « Sortie »
+@Going out through arrivals by mistake can mean queuing for security all over again.	Sortir par erreur par les arrivées peut vous obliger à refaire toute la file de sûreté.
+@Arriving in the EU from outside	En arrivant dans l’UE depuis l’extérieur
+@By air you can bring duty-free: 200 cigarettes, 1 L of spirits or 2 L of fortified wine, 4 L of wine, 16 L of beer and other goods worth up to €430.	En avion, vous pouvez rapporter en franchise : 200 cigarettes, 1 L d’alcool fort ou 2 L de vin muté, 4 L de vin, 16 L de bière et d’autres biens jusqu’à 430 €.
+@Declare €10,000 or more in cash	Déclarez 10 000 € ou plus en espèces
+@Entering or leaving the EU with €10,000 or more (or the same in other currencies) must be declared to customs.	Entrer ou sortir de l’UE avec 10 000 € ou plus (ou l’équivalent) doit être déclaré à la douane.
+@No meat or dairy into the EU	Pas de viande ni de produits laitiers dans l’UE
+@Meat, milk and products made from them are banned when you arrive from outside the EU, with very few exceptions.	Viande, lait et produits dérivés sont interdits en provenance de l’extérieur de l’UE, à de rares exceptions près.
+@Within the EU: goods for personal use	Dans l’UE : biens pour usage personnel
+@Travelling between EU countries there’s no duty-free limit, but customs may ask questions above guide levels like 800 cigarettes or 10 L of spirits.	Entre pays de l’UE, pas de franchise, mais la douane peut poser des questions au-delà de seuils indicatifs comme 800 cigarettes ou 10 L d’alcool fort.
+@Fake goods can be seized	Les contrefaçons peuvent être saisies
+@Counterfeit clothes, bags or watches can be confiscated at customs, and you may be fined.	Vêtements, sacs ou montres contrefaits peuvent être saisis en douane, avec une amende possible.
+@Tax-free shopping for non-EU residents	Détaxe pour les résidents hors UE
+@Non-EU residents can get VAT back: have the form stamped by customs before you check in your bag.	Les résidents hors UE peuvent récupérer la TVA : faites tamponner le formulaire à la douane avant d’enregistrer le bagage.
+@Medicines in your cabin bag	Médicaments en bagage cabine
+@Keep essential medicines with you, in their original packaging, with enough for possible delays.	Gardez vos médicaments essentiels avec vous, dans leur emballage d’origine, avec de quoi tenir en cas de retard.
+@Carry the prescription	Prenez l’ordonnance
+@For injections, strong painkillers or large quantities, bring the prescription or a doctor’s letter. Some countries need a permit.	Pour les injections, antidouleurs forts ou grandes quantités, ayez l’ordonnance ou un certificat médical. Certains pays exigent une autorisation.
+@European Health Insurance Card	Carte européenne d’assurance maladie
+@Take your EHIC when you travel in the EU. It covers necessary public healthcare on the same terms as locals.	Emportez votre CEAM dans l’UE. Elle couvre les soins publics nécessaires aux mêmes conditions que les habitants.
+@Pregnant? Check the airline’s rules	Enceinte ? Vérifiez les règles
+@Airlines usually ask for a doctor’s certificate after week 28 and may refuse travel from week 36 (32 for twins).	Les compagnies demandent souvent un certificat après la 28e semaine et peuvent refuser le vol dès la 36e (32e pour des jumeaux).
+@Move on long flights	Bougez sur les longs vols
+@Walk, stretch and drink water to lower the risk of blood clots. Try the stretching routine in Gatemate’s in-flight section.	Marchez, étirez-vous et buvez de l’eau pour limiter le risque de caillots. Essayez les étirements de la section En vol de Gatemate.
+@Every child needs their own document	Chaque enfant a besoin de son document
+@Babies too: each child needs their own valid ID card or passport.	Les bébés aussi : chaque enfant doit avoir sa propre carte d’identité ou son passeport valide.
+@Romanian minors travelling with one parent	Mineurs roumains voyageant avec un parent
+@A Romanian child leaving the country without both parents needs a notarised consent from the parent who isn’t travelling.	Un enfant roumain qui quitte le pays sans ses deux parents doit avoir l’accord notarié du parent absent.
+@Babies under 2 fly on your lap	Les bébés de moins de 2 ans voyagent sur vos genoux
+@With a special belt from the crew, one infant per adult. Car seats and strollers follow each airline’s rules.	Avec une ceinture fournie par l’équipage, un bébé par adulte. Sièges auto et poussettes selon la compagnie.
+@Free help for reduced mobility	Assistance gratuite pour mobilité réduite
+@In the EU, airports must assist passengers with reduced mobility for free. Ask for it at least 48 hours before the flight.	Dans l’UE, les aéroports doivent aider gratuitement les passagers à mobilité réduite. Demandez-la au moins 48 heures avant.
+@Children flying alone	Enfants voyageant seuls
+@Most airlines offer an escort service for unaccompanied children, usually from age 5, for a fee.	La plupart des compagnies proposent un accompagnement des enfants non accompagnés, souvent dès 5 ans, payant.
+@Flying with a pet	Voyager avec un animal
+@Some airlines take small pets in the cabin. In the EU they need a pet passport, a microchip and a valid rabies vaccination.	Certaines compagnies acceptent les petits animaux en cabine. Dans l’UE, il faut un passeport, une puce et un vaccin antirabique valide.
+@Never joke about bombs or weapons	Ne plaisantez jamais sur les bombes ou les armes
+@Staff must treat every remark as real. You can be denied boarding, fined or arrested.	Le personnel doit prendre chaque remarque au sérieux. Refus d’embarquement, amende ou arrestation possibles.
+@Only drink alcohol the crew serves	Seulement l’alcool servi à bord
+@Drinking your own alcohol on board is forbidden, and drunk passengers can be refused boarding.	Boire son propre alcool à bord est interdit, et un passager ivre peut se voir refuser l’embarquement.
+@No smoking anywhere on board	Interdiction de fumer à bord
+@That includes e-cigarettes and the toilets, which have smoke detectors. Fines are high.	Cigarettes électroniques comprises, et dans les toilettes équipées de détecteurs. Les amendes sont lourdes.
+@Follow crew instructions	Suivez les consignes de l’équipage
+@Ignoring them is an offence. Disruptive passengers can be fined, banned by the airline or prosecuted.	Les ignorer est une infraction. Les passagers perturbateurs risquent amende, interdiction de vol ou poursuites.
+@Seatbelt on when the sign is lit	Ceinture attachée quand le signal est allumé
+@Keep it loosely fastened whenever you’re seated, even when the sign is off: turbulence can be sudden.	Gardez-la légèrement attachée quand vous êtes assis, même signal éteint : les turbulences peuvent être soudaines.
+@Never leave bags unattended	Ne laissez jamais vos bagages sans surveillance
+@Unattended bags are treated as a threat: the area can be evacuated and the bag destroyed.	Un bagage abandonné est traité comme une menace : la zone peut être évacuée et le bagage détruit.
+@Don’t carry anything for strangers	Ne transportez rien pour des inconnus
+@Never accept a parcel or bag from someone you don’t know, however kind the request.	N’acceptez jamais un colis ou un sac d’un inconnu, même si la demande semble gentille.
+@Emergency exit row rules	Règles des rangées d’issue de secours
+@You must be an adult, fit and willing to help in an emergency. No infants and nothing stored at your feet.	Il faut être adulte, en forme et prêt à aider en cas d’urgence. Pas de bébé ni de sac à vos pieds.
+@Airport rules	Règles de l’aéroport
+@From your front door to your seat: the rules that save you time, money and stress.	De votre porte à votre siège : les règles qui vous font gagner du temps, de l’argent et du calme.
+@rules	règles
+@categories	catégories
+@works offline	fonctionne hors ligne
+@Search the rules: power bank, liquids, passport…	Chercher : batterie externe, liquides, passeport…
+@Search the rules	Chercher dans les règles
+@Must	Obligatoire
+@Tip	Conseil
+@Only the must-knows	Seulement l’obligatoire
+@No rule matches. Try another word, or ask Velo.	Aucune règle ne correspond. Essayez un autre mot ou demandez à Velo.
+@Not sure about your airport?	Un doute sur votre aéroport ?
+@Velo checks the rules for your next flight and the airports on your route.	Velo vérifie les règles de votre prochain vol et des aéroports de votre trajet.
+@Which airport and security rules apply to my next flight? Check my route, my cabin bag and any connection.	Quelles règles d’aéroport et de sûreté s’appliquent à mon prochain vol ? Vérifie mon trajet, mon bagage cabine et l’éventuelle correspondance.
+@General rules for the EU and most airlines, checked in 2026. Airlines, airports and countries can be stricter: confirm with them before you fly.	Règles générales pour l’UE et la plupart des compagnies, vérifiées en 2026. Compagnies, aéroports et pays peuvent être plus stricts : vérifiez avant de partir.
+@Rules	Règles
+@Liquids, power banks, documents, boarding and customs	Liquides, batteries externes, papiers, embarquement et douane

@@ -101,7 +101,7 @@
                 <b>{{ r.item }}</b>
                 <span class="tags">
                   <em [attr.data-v]="r.cabin">{{ 'Cabin' | t }} {{ r.cabin === 'yes' ? '✓' : r.cabin === 'no' ? '✕' : ('limits' | t) }}</em>
-                  <em [attr.data-v]="r.hold">Checked {{ r.hold === 'yes' ? '✓' : r.hold === 'no' ? '✕' : 'limits' }}</em>
+                  <em [attr.data-v]="r.hold">{{ 'Checked' | t }} {{ r.hold === 'yes' ? '✓' : r.hold === 'no' ? '✕' : ('limits' | t) }}</em>
                 </span>
                 @if (openRule() === r.item) { <small class="note">{{ r.note | t }}</small> }
               </span>

@@ -104,7 +104,7 @@ export class HomePage implements OnInit {
     { label: 'In-flight', icon: 'game-controller-outline', link: '/inflight', color: '#f97316' },
     { label: 'Baggage', icon: 'bag-handle-outline', link: 'bags', color: '#ec4899' },
     { label: 'Checklist', icon: 'checkmark-done', link: 'checklist', color: '#8b5cf6' },
-    { label: 'Trip chat', icon: 'chatbubbles-outline', link: 'trip-chat', color: '#0ea5e9' },
+    { label: 'Airport rules', icon: 'reader-outline', link: '/airport-rules', color: '#0ea5e9' },
     { label: 'Your rights', icon: 'shield-checkmark-outline', link: '/rights', color: '#f59e0b' },
   ];
 

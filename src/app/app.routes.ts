@@ -49,6 +49,7 @@ export const routes: Routes = [
     ],
   },
   { path: 'alerts', canActivate: [authGuard], loadComponent: () => import('./pages/alerts/alerts.page').then((m) => m.AlertsPage) },
+  { path: 'airport-rules', canActivate: [authGuard], loadComponent: () => import('./pages/airport-rules/airport-rules.page').then((m) => m.AirportRulesPage) },
   { path: 'rights', canActivate: [authGuard], loadComponent: () => import('./pages/rights/rights.page').then((m) => m.RightsPage) },
   { path: 'settings/notifications', canActivate: [authGuard], loadComponent: () => import('./pages/settings/notification-settings.page').then((m) => m.NotificationSettingsPage) },
   { path: 'settings/accessibility', canActivate: [authGuard], loadComponent: () => import('./pages/settings/accessibility.page').then((m) => m.AccessibilityPage) },

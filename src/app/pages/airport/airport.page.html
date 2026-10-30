@@ -34,6 +34,12 @@
         </div>
       </a>
 
+      <a class="rules-card" routerLink="/airport-rules" gmPressable gmReveal>
+        <span class="ic"><ion-icon name="reader-outline" /></span>
+        <span class="txt"><b>{{ 'Airport rules' | t }}</b><small>{{ 'Liquids, power banks, documents, boarding and customs' | t }}</small></span>
+        <ion-icon name="chevron-forward" class="chev" />
+      </a>
+
       <!-- Your gate -->
       @if (myFlight(); as f) {
         <div class="gate card" gmReveal>
