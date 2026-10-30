@@ -38,7 +38,7 @@ const PHASES = [
     </ion-content>
   `,
   styles: `
-    .calm { --background: radial-gradient(120% 80% at 50% 20%, #e6f8fa 0%, #ffffff 60%); }
+    .calm { --background: radial-gradient(120% 80% at 50% 20%, rgba(15, 181, 195, .16) 0%, transparent 60%); }
     .wrap { display: flex; flex-direction: column; align-items: center; padding: 24px 24px 40px; }
     .orb-wrap { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; margin: 10px 0 18px; }
     .halo { position: absolute; inset: 20px; border-radius: 50%; background: radial-gradient(circle, rgba(15,181,195,.28), transparent 70%); transition-property: transform; transition-timing-function: ease-in-out; transform: scale(.7); }

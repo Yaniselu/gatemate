@@ -61,19 +61,22 @@
             "outputPath": {
               "base": "www",
               "browser": ""
-            }
+            },
+            "allowedCommonJsDependencies": [
+              "leaflet"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.2MB",
+                  "maximumWarning": "1.4MB",
                   "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "12kB",
+                  "maximumWarning": "16kB",
                   "maximumError": "24kB"
                 }
               ],
@@ -107,12 +110,12 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.2MB",
+                  "maximumWarning": "1.4MB",
                   "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "12kB",
+                  "maximumWarning": "16kB",
                   "maximumError": "24kB"
                 }
               ],

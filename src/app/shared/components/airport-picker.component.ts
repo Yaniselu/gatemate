@@ -7,6 +7,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 /** Full-screen glass sheet to search ~5,300 airports by code, city, name or country. */
 @Component({
+  host: { '(document:keydown.escape)': 'closed.emit()' },
   selector: 'gm-airport-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslatePipe, IonIcon],

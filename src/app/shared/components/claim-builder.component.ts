@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonIcon } from '@ionic/angular/standalone';
 import { Capacitor } from '@capacitor/core';
@@ -184,12 +184,22 @@ export class ClaimBuilderComponent implements OnInit {
     return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.split('\n').slice(2).join('\n'))}`;
   });
 
+  constructor() {
+    // Fill in what Gatemate knows whenever the chosen flight changes (or the trips finish loading).
+    effect(() => {
+      const f = this.flight();
+      untracked(() => {
+        if (!f) return;
+        this.name.set(f.passengerName || '');
+        this.delay.set(f.delayMinutes ? Math.max(0, Math.round((f.delayMinutes / 60) * 2) / 2) : 3.5);
+        this.cancelled.set(f.status === 'cancelled');
+        this.reason.set('');
+      });
+    });
+  }
+
   ngOnInit() {
     void this.db.load().catch(() => {});
-    const f = this.flight();
-    if (f?.passengerName) this.name.set(f.passengerName);
-    if (f?.delayMinutes) this.delay.set(Math.round((f.delayMinutes / 60) * 2) / 2);
-    if (f?.status === 'cancelled') this.cancelled.set(true);
   }
 
   day(f: Flight) {

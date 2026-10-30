@@ -43,7 +43,7 @@
             @if (liveFlight(); as lf) {
               <gm-live-flight class="live anim-scale-in" [flight]="lf" />
             }
-            @if (upcomingFlights()[0] ?? t.flights[0]; as jf) {
+            @if (upcomingFlights().at(0) ?? t.flights.at(0); as jf) {
               @for (x of [jf]; track x.id) { <gm-flight-journey [flight]="x" /> }
               @if (liveActivity.supported) {
                 <button class="lock-btn" (click)="showOnLockScreen(jf)" gmPressable>

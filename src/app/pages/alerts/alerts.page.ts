@@ -27,7 +27,7 @@ const GROUP: Record<string, Filter> = {
         <ion-title>{{ 'Alerts' | t }}</ion-title>
         <ion-buttons slot="end">
           @if (store.unreadAlerts() > 0) {
-            <button class="mark" (click)="markAll()">{{ 'Mark all read' | t }}</button>
+            <button class="mark" (click)="markAll()" [attr.aria-label]="'Mark all read' | t" [title]="'Mark all read' | t"><ion-icon name="checkmark-done" /></button>
           }
         </ion-buttons>
       </ion-toolbar>
@@ -90,7 +90,7 @@ const GROUP: Record<string, Filter> = {
   `,
   styles: `
     .page { padding: 8px 16px 40px; }
-    .mark { background: none; color: var(--gm-accent-strong); font-weight: 650; font-size: 15px; margin-right: 10px; }
+    .mark { width: 40px; height: 40px; margin-right: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--gm-accent-strong); background: var(--gm-accent-soft); }
     .filters { display: flex; gap: 8px; overflow-x: auto; margin: 4px -16px 14px; padding: 2px 16px; scrollbar-width: none; }
     .filters button { flex: none; padding: 8px 14px; border-radius: 999px; background: var(--gm-surface); font-weight: 650; font-size: 13.5px; color: var(--gm-ink-2); transition: all .3s var(--gm-ease-spring); }
     .filters button.on { background: var(--gm-navy); color: #fff; }

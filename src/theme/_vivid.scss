@@ -127,8 +127,8 @@ html.gm-dark ion-tab-bar.gm-tabbar .indicator {
 }
 
 // ---------- colour, without continuous repaints ----------
-.gm-page-title,
-.hero h1 {
+// Page titles only: hero cards with their own dark backgrounds keep their white headings.
+.gm-page-title {
   background: var(--gm-title-gradient);
   -webkit-background-clip: text;
   background-clip: text;

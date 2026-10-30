@@ -12,7 +12,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
   template: `
     <label class="boxes" [class.error]="error()" (click)="focus()">
       @for (i of slots; track i) {
-        <span class="box" [class.filled]="value().length > i" [class.caret]="value().length === i">{{ value()[i] ?? '' }}</span>
+        <span class="box" [class.filled]="value().length > i" [class.caret]="value().length === i">{{ value().at(i) ?? '' }}</span>
       }
       <input #field type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" [aria-label]="'6-digit code' | t"
         [value]="value()" (input)="onInput($event)" (keydown.enter)="complete.emit(value())" />
