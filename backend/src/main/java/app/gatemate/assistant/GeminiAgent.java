@@ -58,7 +58,8 @@ final class GeminiAgent {
         // the same request. The model alias may not exist on both, so fall back to a pinned model.
         List<String> endpoints = baseUrl != null && !baseUrl.isBlank() ? List.of(baseUrl.replaceAll("/+$", "") + "/v1beta/models/")
                 : List.of(STUDIO, VERTEX);
-        var models = new java.util.LinkedHashSet<>(List.of(model, "gemini-flash-latest", "gemini-2.5-flash"));
+        // Overloaded (503) or out of quota (429) on one model: the next one usually answers (quotas are per model).
+        var models = new java.util.LinkedHashSet<>(List.of(model, "gemini-flash-latest", "gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash-lite"));
         for (String e : endpoints) for (String m : models) routes.add(e + URLEncoder.encode(m, StandardCharsets.UTF_8) + ":generateContent");
         this.declarations = declarations;
         this.json = json;
@@ -155,7 +156,7 @@ final class GeminiAgent {
                 route = r;
                 break;
             }
-            String err = res.body();
+            String err = res.body().replaceAll("\\s+", " ");
             int code = res.statusCode();
             // This model doesn't take that kind of thinking setting: try the next kind on the same route.
             if (code == 400 && err.toLowerCase(java.util.Locale.ROOT).contains("thinking") && thinking + 1 < THINKING.size()) {
@@ -165,8 +166,10 @@ final class GeminiAgent {
             }
             // Wrong endpoint for this kind of key, or a model this endpoint doesn't have: try the next route.
             boolean wrongRoute = code == 401 || code == 403 || code == 404 || (code == 400 && err.contains("API key"));
-            if (!wrongRoute || r + 1 >= routes.size()) throw new Failure(code, err);
-            log.warn("Gemini route {} refused ({}), trying the next one", routes.get(r).replaceAll(":generate.*", ""), code);
+            boolean busy = code == 429 || code >= 500;
+            if (!(wrongRoute || busy) || r + 1 >= routes.size()) throw new Failure(code, err);
+            log.warn("Gemini route {} {} ({}), trying the next one", routes.get(r).replaceAll(":generate.*", ""), busy ? "busy" : "refused", code);
+            if (busy) Thread.sleep(300);
             r++;
         }
 

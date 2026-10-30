@@ -60,7 +60,11 @@ class GeminiAssistantTest {
                 reply(ex, 200, toolTurn());
             } else if (n == 3) {
                 reply(ex, 200, answerTurn());
-            } else if (n == 4) {
+            } else if (n == 4) { // this model is overloaded…
+                reply(ex, 503, "{\n  \"error\": {\"code\": 503, \"status\": \"UNAVAILABLE\", \"message\": \"The model is overloaded.\"}\n}");
+            } else if (n == 5) { // …the next one answers
+                reply(ex, 200, answerTurn());
+            } else if (n <= 8) { // every remaining model is out of quota
                 reply(ex, 429, "{\"error\":{\"code\":429,\"status\":\"RESOURCE_EXHAUSTED\"}}");
             } else { // never answers within the timeout
                 try {
@@ -143,6 +147,13 @@ class GeminiAssistantTest {
         assertThat(echoed).contains("\"functionCall\"").contains("sig-123").contains("\"functionResponse\"").contains("\"id\":\"call-1\"").contains("Euro cash");
 
         // Quota exhausted on Google's side: the app gets "busy", not a crash.
+        // Overloaded model: the same turn is answered by the next model, which is then kept.
+        List<Map<String, Object>> retried = new ArrayList<>();
+        assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Salut")), retried::add);
+        assertThat(retried.get(retried.size() - 1)).containsEntry("type", "done");
+        assertThat(paths.get(3)).contains("gemini-flash-latest");
+        assertThat(paths.get(4)).contains("/gemini-2.5-flash:");
+
         List<Map<String, Object>> later = new ArrayList<>();
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Și vremea?")), later::add);
         assertThat(later).containsExactly(Map.of("type", "error", "message", "busy"));
