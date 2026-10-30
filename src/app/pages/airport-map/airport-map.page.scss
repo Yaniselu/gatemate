@@ -1,6 +1,9 @@
+/* Leaflet's panes use z-indexes up to 1000: keep them inside the map so the header and back button stay on top. */
 .full {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  isolation: isolate;
 }
 
 .gate-bar {
@@ -186,9 +189,8 @@
 
 .levels {
   position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 12px;
+  top: calc(340px + env(safe-area-inset-top));
   z-index: 1000;
   display: flex;
   flex-direction: column;
