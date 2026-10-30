@@ -109,10 +109,20 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
   private destroyed = false;
   private lastHud = 0;
   private observer?: IntersectionObserver;
+  private scrolling = false;
+  private scrollTimer?: ReturnType<typeof setTimeout>;
+  private unlisten?: () => void;
   private resizer?: ResizeObserver;
   private readonly reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   async ngAfterViewInit() {
+    // Let the page transition finish and the screen settle before building the 3D scene.
+    await new Promise<void>((done) => {
+      const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+      if (ric) ric(() => done(), { timeout: 1200 });
+      else setTimeout(done, 450);
+    });
+    if (this.destroyed) return;
     try {
       const [mod] = await Promise.all([import('./flight-journey.scene'), this.airports.load()]);
       if (this.destroyed) return;
@@ -136,10 +146,26 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
       this.ready.set(true);
       this.observer = new IntersectionObserver(([e]) => {
         this.visible = e.isIntersecting;
-        if (this.visible && !this.reduced) this.play();
+        if (this.visible && !this.reduced && !this.scrolling) this.play();
         else this.pause();
       }, { threshold: 0.25 });
       this.observer.observe(this.host.nativeElement);
+      // Scrolling gets the GPU to itself: the film holds while the page moves and picks up when it stops.
+      const content = this.host.nativeElement.closest('ion-content') as (HTMLElement & { getScrollElement?: () => Promise<HTMLElement> }) | null;
+      const scroller = await content?.getScrollElement?.();
+      if (scroller && !this.destroyed) {
+        const onScroll = () => {
+          this.scrolling = true;
+          this.pause();
+          clearTimeout(this.scrollTimer);
+          this.scrollTimer = setTimeout(() => {
+            this.scrolling = false;
+            if (this.visible && !this.reduced) this.play();
+          }, 180);
+        };
+        this.zone.runOutsideAngular(() => scroller.addEventListener('scroll', onScroll, { passive: true }));
+        this.unlisten = () => scroller.removeEventListener('scroll', onScroll);
+      }
     } catch {
       this.failed.set(true);
     }
@@ -203,6 +229,8 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
     this.destroyed = true;
     this.pause();
     this.observer?.disconnect();
+    this.unlisten?.();
+    clearTimeout(this.scrollTimer);
     this.resizer?.disconnect();
     this.scene?.dispose();
   }

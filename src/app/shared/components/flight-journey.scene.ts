@@ -45,8 +45,10 @@ export class FlightJourneyScene {
   private lastAct = '';
 
   constructor(private canvas: HTMLCanvasElement, from: JourneyEnd, to: JourneyEnd) {
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // Retina phones get 1.5× with MSAA off-loaded to the higher density; it looks the same and costs far less.
+    const dpr = window.devicePixelRatio || 1;
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: dpr < 2, alpha: false, powerPreference: 'high-performance' });
+    this.renderer.setPixelRatio(Math.min(dpr, 1.5));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
@@ -684,7 +686,7 @@ function buildJet(track: Track) {
  * v along it (0 = tail, 1 = nose).
  */
 function fuselageTexture(track: Track) {
-  const W = 2048, H = 1024;
+  const W = 1024, H = 512;
   return canvasTex(W, H, (c) => {
     c.fillStyle = '#f5f8fc';
     c.fillRect(0, 0, W, H);
@@ -709,12 +711,12 @@ function fuselageTexture(track: Track) {
         if (Math.abs(v - 0.5) < 0.012) continue; // over-wing exit gap
         c.fillStyle = '#1e293b';
         c.beginPath();
-        c.roundRect(W * u - 7, yAt(v) - 9, 14, 18, 6);
+        c.roundRect(W * u - 3.5, yAt(v) - 4.5, 7, 9, 3);
         c.fill();
       }
       c.strokeStyle = '#94a3b8';
-      c.lineWidth = 3;
-      for (const v of [0.86, 0.2]) c.strokeRect(W * u - 16, yAt(v) - 34, 32, 68);
+      c.lineWidth = 1.5;
+      for (const v of [0.86, 0.2]) c.strokeRect(W * u - 8, yAt(v) - 17, 16, 34);
     }
     // Cockpit windscreen across the crown near the nose.
     c.fillStyle = '#0b1220';
@@ -726,7 +728,7 @@ function fuselageTexture(track: Track) {
     c.closePath();
     c.fill();
     c.strokeStyle = '#f5f8fc';
-    c.lineWidth = 6;
+    c.lineWidth = 3;
     for (const u of [0.66, 0.75, 0.84]) {
       c.beginPath();
       c.moveTo(W * u, yAt(0.915));
@@ -735,7 +737,7 @@ function fuselageTexture(track: Track) {
     }
     // Small registration on the rear fuselage.
     c.fillStyle = '#334155';
-    c.font = '700 26px Inter, system-ui, sans-serif';
+    c.font = '700 13px Inter, system-ui, sans-serif';
     c.save();
     c.translate(W * 0.585, yAt(0.13));
     c.rotate(-Math.PI / 2);
