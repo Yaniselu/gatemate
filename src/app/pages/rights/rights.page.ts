@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { ClaimBuilderComponent } from '../../shared/components/claim-builder.component';
 
 @Component({
   selector: 'gm-rights',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RevealDirective],
+  imports: [TranslatePipe, ClaimBuilderComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, RevealDirective],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
@@ -43,6 +44,8 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
             <div><b>{{ s.title | t }}</b><p>{{ s.body | t }}</p></div>
           </div>
         }
+
+        <gm-claim-builder />
 
         <p class="disclaimer">{{ 'This is general information, not legal advice. Eligibility depends on your route, airline and the cause of disruption. Contact your airline or national enforcement body for a binding answer.' | t }}</p>
       </div>
