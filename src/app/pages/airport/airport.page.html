@@ -24,7 +24,7 @@
     @if (airport(); as a) {
       <!-- Satellite preview -->
       <a class="map-card" [routerLink]="['/airport-map', a.iata]" [queryParams]="{ gate: myFlight()?.gate }" gmPressable>
-        <gm-airport-plan [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [interactive]="false" [zoom]="14.5" [selectedGate]="myFlight()?.gate ?? null" />
+        <gm-airport-plan [center]="view(a)" [features]="features() ?? []" [interactive]="false" [zoom]="planZoom(a, 14.5, true)" [selectedGate]="myFlight()?.gate ?? null" />
         <div class="map-overlay glass smoke">
           <div>
             <b>{{ a.name }}</b>
@@ -39,6 +39,37 @@
         <span class="txt"><b>{{ 'Airport rules' | t }}</b><small>{{ 'Liquids, power banks, documents, boarding and customs' | t }}</small></span>
         <ion-icon name="chevron-forward" class="chev" />
       </a>
+
+      @if (facts(); as fx) {
+        <section class="about card" gmReveal>
+          <h3 class="about-h"><span class="ai"><ion-icon name="information-circle-outline" /></span>{{ 'About this airport' | t }}</h3>
+          <div class="facts">
+            @for (f of fx.facts; track f.label) {
+              <div class="fact"><span class="fi"><ion-icon [name]="f.icon" /></span><div><small>{{ f.label | t }}</small><p>{{ f.value | t }}</p></div></div>
+            }
+          </div>
+          <h4>{{ 'Inside the terminal' | t }}</h4>
+          <ul class="inside">
+            @for (x of fx.inside; track x) { <li><ion-icon name="checkmark-circle" />{{ x | t }}</li> }
+          </ul>
+          <h4>{{ 'Getting there' | t }}</h4>
+          <div class="facts">
+            @for (tp of fx.transport; track tp.title) {
+              <div class="fact"><span class="fi"><ion-icon [name]="tp.icon" /></span><div><small>{{ tp.title | t }}</small><p>{{ tp.body | t }}</p></div></div>
+            }
+          </div>
+          <h4>{{ 'Airlines and destinations' | t }}</h4>
+          @for (al of fx.airlines; track al.name) {
+            <div class="airline">
+              <b>{{ al.name | t }}</b>
+              <div class="dests">@for (d of al.destinations; track d) { <span>{{ d }}</span> }</div>
+              @if (al.note) { <small>{{ al.note | t }}</small> }
+            </div>
+          }
+          <p class="note"><ion-icon name="alert-circle-outline" />{{ fx.note | t }}</p>
+          <small class="checked">{{ fx.checked | t }}</small>
+        </section>
+      }
 
       <!-- Your gate -->
       @if (myFlight(); as f) {

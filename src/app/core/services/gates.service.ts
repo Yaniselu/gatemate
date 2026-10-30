@@ -51,6 +51,12 @@ const OVERPASS = [
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
 const STAGGER_MS = 5000;
+/** Airports we've drawn ourselves, bundled with the app (instant and offline), used instead of OpenStreetMap. */
+export const CURATED_MAPS = new Set(['CRA']);
+/** Where a plan opens (on the terminal rather than the runway midpoint) for airports with a hand-drawn plan. */
+export const PLAN_VIEW: Record<string, { lat: number; lon: number; zoom: number; preview: number }> = {
+  CRA: { lat: 44.3157, lon: 23.8830, zoom: 17.25, preview: 16.5 },
+};
 const FRESH_MS = 3 * 86_400_000;
 const KEEP_MS = 30 * 86_400_000;
 
@@ -90,6 +96,7 @@ export class GatesService {
 
   /** Ignores the saved copy (pull to refresh). */
   refresh(a: AirportRecord): Promise<MapFeature[]> {
+    if (CURATED_MAPS.has(a.iata)) return this.get(a);
     this.memory.delete(a.iata);
     const p = this.network(a).then(async (f) => {
       await this.save(a.iata, f);
@@ -100,6 +107,11 @@ export class GatesService {
   }
 
   private async load(a: AirportRecord): Promise<MapFeature[]> {
+    if (CURATED_MAPS.has(a.iata)) {
+      const res = await fetch(`data/maps/${a.iata}.json`);
+      if (!res.ok) throw new Error(`map ${a.iata}: ${res.status}`);
+      return parse(((await res.json()) as { elements: OsmElement[] }).elements);
+    }
     const cached = await this.read(a.iata);
     if (cached && Date.now() - cached.savedAt < KEEP_MS) {
       if (Date.now() - cached.savedAt > FRESH_MS) {

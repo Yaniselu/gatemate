@@ -7,7 +7,7 @@
 
 <ion-content [fullscreen]="true" [scrollY]="false">
   @if (airport(); as a) {
-    <gm-airport-plan class="full" [center]="{ lat: a.lat, lon: a.lon }" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [selectedPlace]="placeId()" [category]="category()" [level]="level()" [zoom]="15.5" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
+    <gm-airport-plan class="full" [center]="view(a)" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [selectedPlace]="placeId()" [category]="category()" [level]="level()" [zoom]="planZoom(a, 15.5)" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
 
     <div class="gate-bar glass" slot="fixed">
       @if (categories().length) {

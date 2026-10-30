@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { AirportDbService, AirportRecord, haversineKm } from '../../core/services/airport-db.service';
-import { GatesService, MapFeature } from '../../core/services/gates.service';
+import { GatesService, MapFeature, PLAN_VIEW } from '../../core/services/gates.service';
 import { directionsUrl, LocationService, walkMinutes } from '../../core/services/location.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { PrefsService } from '../../core/services/prefs.service';
@@ -162,5 +162,16 @@ export class AirportMapPage implements OnInit, OnDestroy {
 
   fmt(m: number) {
     return m < 1000 ? `${m} m` : `${(m / 1000).toFixed(m < 10_000 ? 1 : 0)} km`;
+  }
+
+  /** Opening point of the plan: the terminal for hand-drawn airports, else the airport's reference point. */
+  view(a: { iata: string; lat: number; lon: number }) {
+    const v = PLAN_VIEW[a.iata];
+    return v ? { lat: v.lat, lon: v.lon } : { lat: a.lat, lon: a.lon };
+  }
+
+  planZoom(a: { iata: string }, fallback: number, preview = false) {
+    const v = PLAN_VIEW[a.iata];
+    return v ? (preview ? v.preview : v.zoom) : fallback;
   }
 }

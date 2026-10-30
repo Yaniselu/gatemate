@@ -469,3 +469,143 @@
     opacity: 0.8;
   }
 }
+
+.about {
+  margin: 12px 0 4px;
+  padding: 16px;
+
+  .about-h {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    font-size: 17px;
+    font-weight: 800;
+  }
+  .ai {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.12);
+  }
+  h4 {
+    margin: 18px 0 8px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--gm-ink-3);
+  }
+  .facts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .fact {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+
+    small {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gm-ink-3);
+    }
+    p {
+      margin: 1px 0 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--gm-ink);
+    }
+  }
+  .fi {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: var(--gm-accent-deep);
+    background: var(--gm-accent-soft);
+  }
+  .inside {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--gm-ink-2);
+    }
+    ion-icon {
+      flex: none;
+      margin-top: 2px;
+      font-size: 16px;
+      color: var(--gm-mint, #10b981);
+    }
+  }
+  .airline {
+    padding: 10px 0;
+
+    & + .airline {
+      border-top: 1px solid var(--gm-card-border);
+    }
+    b {
+      font-size: 15px;
+    }
+    small {
+      display: block;
+      margin-top: 6px;
+      font-size: 12.5px;
+      line-height: 1.4;
+      color: var(--gm-ink-3);
+    }
+  }
+  .dests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+
+    span {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 650;
+      color: var(--gm-ink-2);
+      background: var(--gm-surface);
+    }
+  }
+  .note {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0 6px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #92400e;
+    background: rgba(245, 158, 11, 0.12);
+
+    ion-icon {
+      flex: none;
+      margin-top: 2px;
+      font-size: 16px;
+    }
+  }
+  .checked {
+    font-size: 11.5px;
+    color: var(--gm-ink-3);
+  }
+}

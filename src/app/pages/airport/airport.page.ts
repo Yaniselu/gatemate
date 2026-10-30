@@ -5,13 +5,14 @@ import { TravelStore } from '../../core/services/travel.store';
 import { PrefsService } from '../../core/services/prefs.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { AirportDbService, AirportRecord, haversineKm } from '../../core/services/airport-db.service';
-import { GatesService, MapFeature } from '../../core/services/gates.service';
+import { GatesService, MapFeature, PLAN_VIEW } from '../../core/services/gates.service';
 import { POI_META, POI_ORDER, PoiKind } from '../../core/data/airport-poi';
 import { openState } from '../../core/utils/opening-hours';
 import { directionsUrl, LocationService, walkMinutes } from '../../core/services/location.service';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { AirportPlanComponent } from '../../shared/components/airport-plan.component';
 import { AirportPickerComponent } from '../../shared/components/airport-picker.component';
+import { AIRPORT_FACTS } from '../../core/data/airport-facts';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
@@ -57,6 +58,8 @@ export class AirportPage implements OnInit {
     const g = this.myFlight()?.gate?.toUpperCase();
     return g ? this.features()?.find((f) => f.kind === 'gate' && f.ref.toUpperCase() === g) : undefined;
   });
+  /** Hand-checked details (terminal, runway, transport, airlines) for airports we know well. */
+  readonly facts = computed(() => AIRPORT_FACTS[this.airport()?.iata ?? ''] ?? null);
   readonly gateCount = computed(() => this.features()?.filter((f) => f.kind === 'gate').length ?? 0);
   readonly distanceToAirportKm = computed(() => {
     const a = this.airport(), f = this.location.fix();
@@ -221,6 +224,17 @@ export class AirportPage implements OnInit {
 
   km(n: number) {
     return n < 1 ? `${Math.round(n * 1000)} m` : n < 100 ? `${n.toFixed(1)} km` : `${Math.round(n)} km`;
+  }
+
+  /** Opening point of the plan: the terminal for hand-drawn airports, else the airport's reference point. */
+  view(a: { iata: string; lat: number; lon: number }) {
+    const v = PLAN_VIEW[a.iata];
+    return v ? { lat: v.lat, lon: v.lon } : { lat: a.lat, lon: a.lon };
+  }
+
+  planZoom(a: { iata: string }, fallback: number, preview = false) {
+    const v = PLAN_VIEW[a.iata];
+    return v ? (preview ? v.preview : v.zoom) : fallback;
   }
 }
 
