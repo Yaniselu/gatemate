@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.json.JsonMapper;
@@ -52,8 +51,9 @@ final class GeminiAgent {
     private final JsonMapper json;
     private final java.util.concurrent.atomic.AtomicInteger nextId = new java.util.concurrent.atomic.AtomicInteger();
 
-    GeminiAgent(String key, String model, String baseUrl, List<Map<String, Object>> declarations, JsonMapper json) {
+    GeminiAgent(String key, String model, String baseUrl, Duration idle, List<Map<String, Object>> declarations, JsonMapper json) {
         this.key = key;
+        this.idle = idle;
         // Google AI Studio keys (AIza…) use the Gemini API; Vertex AI express keys (AQ.…) use Vertex. Both take the same
         // request; try the likely one first. The model alias may not exist on both, so fall back to a pinned model.
         List<String> endpoints = baseUrl != null && !baseUrl.isBlank() ? List.of(baseUrl.replaceAll("/+$", "") + "/v1beta/models/")
@@ -116,44 +116,85 @@ final class GeminiAgent {
         boolean blocked, wroteText;
     }
 
+    /** Gemini 3 models take a thinking level, 2.5 models a budget; older ones neither. The first one accepted is kept. */
+    private static final List<Map<String, Object>> THINKING = List.of(Map.of("thinkingLevel", "low"), Map.of("thinkingBudget", 0), Map.of());
+    private volatile int thinking;
+    /** No new data from Google for this long: give up instead of leaving the traveller waiting. */
+    private final Duration idle;
+
     @SuppressWarnings("unchecked")
     private Reply stream(List<Map<String, Object>> contents, String context, Consumer<Map<String, Object>> emit) throws IOException, InterruptedException {
-        var body = new LinkedHashMap<String, Object>();
-        body.put("systemInstruction", Map.of("parts", List.of(Map.of("text", system()), Map.of("text", context))));
-        body.put("contents", contents);
-        body.put("tools", List.of(Map.of("functionDeclarations", declarations)));
-        body.put("generationConfig", Map.of("maxOutputTokens", 8192));
-        String payload = json.writeValueAsString(body);
-        HttpResponse<java.util.stream.Stream<String>> res;
-        for (int r = route; ; r++) {
+        long started = System.nanoTime();
+        HttpResponse<java.io.InputStream> res;
+        for (int r = route; ; ) {
+            var config = new LinkedHashMap<String, Object>();
+            config.put("maxOutputTokens", 8192);
+            if (!THINKING.get(thinking).isEmpty()) config.put("thinkingConfig", THINKING.get(thinking));
+            var body = new LinkedHashMap<String, Object>();
+            body.put("systemInstruction", Map.of("parts", List.of(Map.of("text", system()), Map.of("text", context))));
+            body.put("contents", contents);
+            body.put("tools", List.of(Map.of("functionDeclarations", declarations)));
+            body.put("generationConfig", config);
             var req = HttpRequest.newBuilder(URI.create(routes.get(r)))
-                    .timeout(Duration.ofMinutes(3))
+                    .timeout(Duration.ofSeconds(90)) // until the first bytes; the stream itself is watched for idleness below
                     .header("Content-Type", "application/json")
                     .header("x-goog-api-key", key)
-                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)))
                     .build();
-            res = http.send(req, HttpResponse.BodyHandlers.ofLines());
+            res = http.send(req, HttpResponse.BodyHandlers.ofInputStream());
             if (res.statusCode() == 200) {
                 if (r != route) log.info("Velo on Gemini uses {}", routes.get(r).replaceAll(":stream.*", ""));
                 route = r;
                 break;
             }
             String err;
-            try (var lines = res.body()) {
-                err = lines.collect(Collectors.joining("\n"));
+            try (var in = res.body()) {
+                err = new String(in.readNBytes(4000), StandardCharsets.UTF_8);
+            }
+            int code = res.statusCode();
+            // This model doesn't take that kind of thinking setting: try the next kind on the same route.
+            if (code == 400 && err.toLowerCase(java.util.Locale.ROOT).contains("thinking") && thinking + 1 < THINKING.size()) {
+                log.info("Gemini refused thinking config {}, trying {}", THINKING.get(thinking), THINKING.get(thinking + 1));
+                thinking++;
+                continue;
             }
             // Wrong endpoint for this kind of key, or a model this endpoint doesn't have: try the next route.
-            boolean wrongRoute = res.statusCode() == 401 || res.statusCode() == 403 || res.statusCode() == 404
-                    || (res.statusCode() == 400 && err.contains("API key"));
-            if (!wrongRoute || r + 1 >= routes.size()) throw new Failure(res.statusCode(), err);
-            log.warn("Gemini route {} refused ({}), trying the next one", routes.get(r).replaceAll(":stream.*", ""), res.statusCode());
+            boolean wrongRoute = code == 401 || code == 403 || code == 404 || (code == 400 && err.contains("API key"));
+            if (!wrongRoute || r + 1 >= routes.size()) throw new Failure(code, err);
+            log.warn("Gemini route {} refused ({}), trying the next one", routes.get(r).replaceAll(":stream.*", ""), code);
+            r++;
         }
+        long headers = System.nanoTime();
+
         var reply = new Reply();
         StringBuilder text = new StringBuilder();
-        try (var lines = res.body()) {
-            for (String line : (Iterable<String>) lines::iterator) {
+        int chunks = 0;
+        String version = null;
+        var in = res.body();
+        var last = new java.util.concurrent.atomic.AtomicLong(System.nanoTime());
+        var finished = new java.util.concurrent.atomic.AtomicBoolean();
+        var stalled = new java.util.concurrent.atomic.AtomicBoolean();
+        Thread watchdog = Thread.ofVirtual().start(() -> {
+            try {
+                while (!finished.get()) {
+                    Thread.sleep(Math.min(1000, idle.toMillis()));
+                    if (System.nanoTime() - last.get() > idle.toNanos()) {
+                        stalled.set(true);
+                        in.close(); // unblocks the reader below
+                        return;
+                    }
+                }
+            } catch (InterruptedException | IOException ignored) {
+                // done
+            }
+        });
+        try (var lines = new java.io.BufferedReader(new java.io.InputStreamReader(in, StandardCharsets.UTF_8))) {
+            for (String line; (line = lines.readLine()) != null; ) {
+                last.set(System.nanoTime());
                 if (!line.startsWith("data:")) continue;
+                chunks++;
                 Map<String, Object> chunk = json.readValue(line.substring(5).trim(), Map.class);
+                if (chunk.get("modelVersion") instanceof String v) version = v;
                 if (chunk.get("promptFeedback") instanceof Map<?, ?> fb && fb.get("blockReason") != null) reply.blocked = true;
                 if (!(chunk.get("candidates") instanceof List<?> cands) || cands.isEmpty()) continue;
                 var cand = (Map<String, Object>) cands.get(0);
@@ -185,9 +226,16 @@ final class GeminiAgent {
                     }
                 }
             }
+        } catch (IOException e) {
+            if (stalled.get()) throw new Failure(504, "no data from Gemini for " + idle.toSeconds() + " s after " + chunks + " chunks");
+            throw e;
+        } finally {
+            finished.set(true);
+            watchdog.interrupt();
         }
         flush(text, reply);
-        if (reply.finish == null) log.warn("gemini stream ended without a finish reason");
+        log.info("gemini turn: model={} first_byte={}ms total={}ms chunks={} finish={} calls={} text={}", version,
+                (headers - started) / 1_000_000, (System.nanoTime() - started) / 1_000_000, chunks, reply.finish, reply.calls.size(), reply.wroteText);
         return reply;
     }
 

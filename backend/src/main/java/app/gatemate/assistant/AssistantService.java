@@ -81,7 +81,8 @@ public class AssistantService {
             @Value("${gatemate.assistant.effort:low}") String effort,
             @Value("${gatemate.assistant.gemini-key:}") String geminiKey,
             @Value("${gatemate.assistant.gemini-model:gemini-flash-latest}") String geminiModel,
-            @Value("${gatemate.assistant.gemini-base-url:}") String geminiBaseUrl) {
+            @Value("${gatemate.assistant.gemini-base-url:}") String geminiBaseUrl,
+            @Value("${gatemate.assistant.gemini-idle-seconds:60}") int geminiIdleSeconds) {
         this.tools = tools;
         this.users = users;
         this.airports = airports;
@@ -96,7 +97,7 @@ public class AssistantService {
             this.client = b.build();
         }
         this.gemini = client == null && geminiKey != null && !geminiKey.isBlank()
-                ? new GeminiAgent(geminiKey, geminiModel, geminiBaseUrl, tools.geminiDeclarations(), json) : null;
+                ? new GeminiAgent(geminiKey, geminiModel, geminiBaseUrl, Duration.ofSeconds(geminiIdleSeconds), tools.geminiDeclarations(), json) : null;
         if (gemini != null) log.info("Velo runs on Gemini ({})", geminiModel);
     }
 

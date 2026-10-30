@@ -54,19 +54,44 @@ class GeminiAssistantTest {
             paths.add(ex.getRequestURI().toString());
             keys.add(String.valueOf(ex.getRequestHeaders().getFirst("x-goog-api-key")));
             int n = calls.incrementAndGet();
-            byte[] out = (n == 1 ? toolTurn() : n == 2 ? answerTurn() : "{\"error\":{\"code\":429,\"status\":\"RESOURCE_EXHAUSTED\"}}").getBytes(StandardCharsets.UTF_8);
-            ex.getResponseHeaders().add("Content-Type", n <= 2 ? "text/event-stream" : "application/json");
-            ex.sendResponseHeaders(n <= 2 ? 200 : 429, out.length);
-            ex.getResponseBody().write(out);
-            ex.close();
+            if (n == 1) { // this model takes a thinking budget, not a level
+                reply(ex, 400, "{\"error\":{\"code\":400,\"message\":\"Unknown name \\\"thinkingLevel\\\" at 'generation_config.thinking_config'\"}}");
+            } else if (n == 2) {
+                reply(ex, 200, toolTurn());
+            } else if (n == 3) {
+                reply(ex, 200, answerTurn());
+            } else if (n == 4) {
+                reply(ex, 429, "{\"error\":{\"code\":429,\"status\":\"RESOURCE_EXHAUSTED\"}}");
+            } else { // starts answering, then goes silent
+                ex.getResponseHeaders().add("Content-Type", "text/event-stream");
+                ex.sendResponseHeaders(200, 0);
+                ex.getResponseBody().write(data("{\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"Stai \"}]}}]}").getBytes(StandardCharsets.UTF_8));
+                ex.getResponseBody().flush();
+                try {
+                    Thread.sleep(6000);
+                } catch (InterruptedException ignored) {
+                    // test over
+                }
+                ex.close();
+            }
         });
+        api.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
         api.start();
+    }
+
+    static void reply(com.sun.net.httpserver.HttpExchange ex, int status, String body) throws IOException {
+        byte[] out = body.getBytes(StandardCharsets.UTF_8);
+        ex.getResponseHeaders().add("Content-Type", status == 200 ? "text/event-stream" : "application/json");
+        ex.sendResponseHeaders(status, out.length);
+        ex.getResponseBody().write(out);
+        ex.close();
     }
 
     @DynamicPropertySource
     static void props(DynamicPropertyRegistry r) {
         r.add("gatemate.assistant.api-key", () -> "");
         r.add("gatemate.assistant.gemini-key", () -> "gemini-test-key");
+        r.add("gatemate.assistant.gemini-idle-seconds", () -> "2");
         r.add("gatemate.assistant.gemini-base-url", () -> "http://127.0.0.1:" + api.getAddress().getPort());
     }
 
@@ -101,25 +126,38 @@ class GeminiAssistantTest {
         var labels = checklist.findByTripIdOrderByPosition(UUID.fromString(tripId)).stream().map(c -> c.label).toList();
         assertThat(labels).contains("Adaptor priză tip F", "Euro cash");
 
+        // The first request asked for a low thinking level; refused, the same turn went out with a thinking budget.
+        assertThat(json.readTree(bodies.get(0)).path("generationConfig").path("thinkingConfig").path("thinkingLevel").asString()).isEqualTo("low");
+        assertThat(json.readTree(bodies.get(1)).path("generationConfig").path("thinkingConfig").path("thinkingBudget").asInt()).isZero();
+
         // First request: streaming endpoint, key in a header (never in the URL), Gemini-style tool schemas.
         assertThat(paths.get(0)).isEqualTo("/v1beta/models/gemini-flash-latest:streamGenerateContent?alt=sse");
         assertThat(keys.get(0)).isEqualTo("gemini-test-key");
-        JsonNode first = json.readTree(bodies.get(0));
+        JsonNode first = json.readTree(bodies.get(1));
         String decl = first.path("tools").get(0).path("functionDeclarations").toString();
         assertThat(decl).contains("\"add_checklist_items\"").contains("\"OBJECT\"").contains("\"ARRAY\"").doesNotContain("additionalProperties").doesNotContain("maxItems");
         String system = first.path("systemInstruction").toString();
         assertThat(system).contains("powered by Google Gemini").contains("can't search the web").contains("Context from Gatemate").doesNotContain("Use web search");
         assertThat(first.path("contents").get(0).path("role").asString()).isEqualTo("user"); // the app's greeting isn't sent
-        assertThat(bodies.get(0)).doesNotContain(u.email);
+        assertThat(bodies.get(1)).doesNotContain(u.email);
 
         // Second request: the model's call echoed back with its thought signature, then the tool's result.
-        String echoed = json.readTree(bodies.get(1)).path("contents").toString();
+        String echoed = json.readTree(bodies.get(2)).path("contents").toString();
+        assertThat(bodies.get(2)).contains("thinkingBudget"); // the accepted setting is kept
         assertThat(echoed).contains("\"functionCall\"").contains("sig-123").contains("\"functionResponse\"").contains("\"id\":\"call-1\"").contains("Euro cash");
 
         // Quota exhausted on Google's side: the app gets "busy", not a crash.
         List<Map<String, Object>> later = new ArrayList<>();
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Și vremea?")), later::add);
         assertThat(later).containsExactly(Map.of("type", "error", "message", "busy"));
+
+        // Google goes silent mid-answer: the traveller gets an error after the idle limit, not an endless spinner.
+        List<Map<String, Object>> stuck = new ArrayList<>();
+        long t0 = System.currentTimeMillis();
+        assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Ce fac?")), stuck::add);
+        assertThat(System.currentTimeMillis() - t0).isLessThan(4500);
+        assertThat(stuck.get(0)).containsEntry("type", "delta");
+        assertThat(stuck.get(stuck.size() - 1)).containsEntry("type", "error").containsEntry("message", "unavailable");
     }
 
     private UserEntity user() {
