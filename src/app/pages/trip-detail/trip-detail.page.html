@@ -45,6 +45,12 @@
             }
             @if (upcomingFlights()[0] ?? t.flights[0]; as jf) {
               @for (x of [jf]; track x.id) { <gm-flight-journey [flight]="x" /> }
+              @if (liveActivity.supported) {
+                <button class="lock-btn" (click)="showOnLockScreen(jf)" gmPressable>
+                  <ion-icon [name]="lockShown() ? 'checkmark-circle' : 'phone-portrait-outline'" />
+                  <span><b>{{ (lockShown() ? 'On your lock screen' : 'Show on lock screen') | t }}</b><small>{{ 'Countdown on the lock screen, Dynamic Island and Apple Watch' | t }}</small></span>
+                </button>
+              }
             }
             @if (upcomingFlights()[0]; as nf) {
               <gm-airport-day class="card day anim-fade-up" [flight]="nf" />

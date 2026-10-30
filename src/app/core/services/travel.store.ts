@@ -35,7 +35,8 @@ export class TravelStore {
   private serverAlerts = signal<FlightAlert[]>([]);
   private readIds = signal<Set<string>>(new Set());
   private dismissedIds = signal<Set<string>>(new Set());
-  private clock = signal(Date.now());
+  /** Ticks every minute so time-based views refresh. */
+  readonly clock = signal(Date.now());
 
   readonly trips = signal<Trip[]>([]);
   readonly tripsState = signal<LoadState>('idle');

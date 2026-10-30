@@ -1,3 +1,4 @@
+import { LiveActivityService } from './core/services/live-activity.service';
 import { ChangeDetectionStrategy, Component, effect, inject, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { App as CapApp } from '@capacitor/app';
@@ -33,6 +34,8 @@ export class App {
   protected lock = inject(AppLockService);
   protected net = inject(NetworkService);
   private prefs = inject(PrefsService);
+  /** Next flight on the lock screen, Dynamic Island and Apple Watch (iOS). */
+  private liveActivity = inject(LiveActivityService);
 
   constructor() {
     effect(() => {

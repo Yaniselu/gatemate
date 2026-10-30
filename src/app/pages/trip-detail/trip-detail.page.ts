@@ -6,7 +6,7 @@ import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonToolbar }
 import { TravelStore } from '../../core/services/travel.store';
 import { ToastService } from '../../core/services/toast.service';
 import { PlatformService } from '../../core/services/platform.service';
-import { BaggageAllowance, BagItem, Traveller, Trip, VerificationMethod } from '../../core/models';
+import { BaggageAllowance, BagItem, Traveller, Trip, VerificationMethod, Flight } from '../../core/models';
 import { CityImageComponent } from '../../shared/components/city-image.component';
 import { InvitePanelComponent } from '../../shared/components/invite-panel.component';
 import { DestinationGuideComponent } from '../../shared/components/destination-guide.component';
@@ -18,6 +18,7 @@ import { BoardingPassComponent } from '../../shared/components/boarding-pass.com
 import { FlightJourneyComponent } from '../../shared/components/flight-journey.component';
 import { SeatMapComponent } from '../../shared/components/seat-map.component';
 import { CabinAirComponent } from '../../shared/components/cabin-air.component';
+import { LiveActivityService } from '../../core/services/live-activity.service';
 import { AvatarStackComponent } from '../../shared/components/avatar-stack.component';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { ProService } from '../../core/services/pro.service';
@@ -74,6 +75,8 @@ export class TripDetailPage implements OnInit {
   readonly scrollY = signal(0);
 
   readonly passIndex = signal(0);
+  protected liveActivity = inject(LiveActivityService);
+  readonly lockShown = signal(false);
   private live = inject(LiveFlightService);
   private clockTick = signal(Date.now());
   /** The trip's flight that is in the air or about to be (tracked live). */
@@ -289,5 +292,9 @@ export class TripDetailPage implements OnInit {
     } finally {
       this.sharing.set(false);
     }
+  }
+
+  async showOnLockScreen(f: Flight) {
+    this.lockShown.set(await this.liveActivity.show(f));
   }
 }
