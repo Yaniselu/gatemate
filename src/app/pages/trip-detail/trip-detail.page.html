@@ -43,6 +43,9 @@
             @if (liveFlight(); as lf) {
               <gm-live-flight class="live anim-scale-in" [flight]="lf" />
             }
+            @if (upcomingFlights()[0] ?? t.flights[0]; as jf) {
+              @for (x of [jf]; track x.id) { <gm-flight-journey [flight]="x" /> }
+            }
             @if (upcomingFlights()[0]; as nf) {
               <gm-airport-day class="card day anim-fade-up" [flight]="nf" />
             }

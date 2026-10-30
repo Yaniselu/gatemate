@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 /** One airport end of the trip, as the scene needs it. */
 export interface JourneyEnd {
@@ -53,6 +54,14 @@ export class FlightJourneyScene {
     this.origin = new Airfield(from, { top: '#0b1330', horizon: '#f59e6b', ground: '#1a2a30' }, track);
     this.dest = new Airfield(to, { top: '#0a0f26', horizon: '#8b5cf6', ground: '#17223a' }, track);
     this.globe = new GlobeAct(from, to, track);
+    // Soft studio reflections so the paint and metal read as real materials.
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    const env = track(pmrem.fromScene(new RoomEnvironment(), 0.04).texture);
+    pmrem.dispose();
+    for (const sc of [this.origin.scene, this.dest.scene, this.globe.scene]) {
+      sc.environment = env;
+      sc.environmentIntensity = 0.55;
+    }
   }
 
   resize(w: number, h: number) {
@@ -494,94 +503,160 @@ class GlobeAct {
 
 // ---------------------------------------------------------------------------------------------------------------
 
-/** A twin-engine jet in Gatemate colours, ~5 units long, nose along +X, wheels at y = 0. */
+/**
+ * An A320-style twinjet in Gatemate livery, ~4.8 units long, nose along +X, wheels at y = 0. Lathe-turned fuselage
+ * with a painted texture (windows, doors, cheatline, windscreen), tapered swept wings with winglets, turbofans with
+ * fan faces and spinners, a swept fin and tailplane, and gear that retracts.
+ */
 function buildJet(track: Track) {
   const g = new THREE.Group();
-  const body = track(new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.35, metalness: 0.25 }));
-  const teal = track(new THREE.MeshStandardMaterial({ color: '#0fb5c3', roughness: 0.4, metalness: 0.3, emissive: '#0a5f68', emissiveIntensity: 0.25 }));
-  const grey = track(new THREE.MeshStandardMaterial({ color: '#94a3b8', roughness: 0.4, metalness: 0.6 }));
-  const dark = track(new THREE.MeshStandardMaterial({ color: '#0f172a', roughness: 0.3 }));
+  const Y = 0.72; // fuselage axis height
+  const paint = track(new THREE.MeshPhysicalMaterial({ map: fuselageTexture(track), roughness: 0.32, metalness: 0.15, clearcoat: 0.8, clearcoatRoughness: 0.18 }));
+  const white = track(new THREE.MeshPhysicalMaterial({ color: '#f4f7fb', roughness: 0.35, metalness: 0.15, clearcoat: 0.6, clearcoatRoughness: 0.2 }));
+  const wingMat = track(new THREE.MeshPhysicalMaterial({ color: '#dfe5ec', roughness: 0.42, metalness: 0.35, clearcoat: 0.3 }));
+  const teal = track(new THREE.MeshPhysicalMaterial({ color: '#0fb5c3', roughness: 0.3, metalness: 0.2, clearcoat: 0.9, clearcoatRoughness: 0.15 }));
+  const metal = track(new THREE.MeshStandardMaterial({ color: '#aab4c0', roughness: 0.28, metalness: 0.9 }));
+  const dark = track(new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.5, metalness: 0.4 }));
+  const tyre = track(new THREE.MeshStandardMaterial({ color: '#1f2328', roughness: 0.9 }));
 
-  const fus = new THREE.Mesh(track(new THREE.CapsuleGeometry(0.34, 3.6, 8, 20)), body);
-  fus.rotation.z = Math.PI / 2;
-  fus.position.y = 0.72;
+  // Fuselage: tail cone → constant section → rounded nose, turned on a lathe (axis Y, then laid along X).
+  const prof: [number, number][] = [
+    [0.0, -2.45], [0.06, -2.42], [0.13, -2.3], [0.2, -2.1], [0.27, -1.85], [0.33, -1.55], [0.36, -1.25],
+    [0.37, -0.8], [0.37, 1.35], [0.365, 1.55], [0.35, 1.75], [0.32, 1.95], [0.27, 2.12], [0.2, 2.25], [0.12, 2.33], [0.05, 2.37], [0.0, 2.38],
+  ];
+  const fusGeo = track(new THREE.LatheGeometry(prof.map(([r, y]) => new THREE.Vector2(r, y)), 64));
+  const fus = new THREE.Mesh(fusGeo, paint);
+  fus.rotation.z = -Math.PI / 2;
+  fus.position.y = Y;
+  // Real tails sweep up: lift the cone a touch.
+  fus.scale.set(1, 1, 1);
   g.add(fus);
-  const belly = new THREE.Mesh(track(new THREE.CapsuleGeometry(0.3, 3.2, 6, 16)), teal);
-  belly.rotation.z = Math.PI / 2;
-  belly.scale.set(1, 1, 0.98);
-  belly.position.set(-0.05, 0.6, 0);
-  g.add(belly);
-  const windows = new THREE.Mesh(track(new THREE.BoxGeometry(2.6, 0.07, 0.7)), dark);
-  windows.position.set(0.2, 0.86, 0);
-  g.add(windows);
-  const cockpit = new THREE.Mesh(track(new THREE.SphereGeometry(0.2, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2)), dark);
-  cockpit.position.set(2.05, 0.82, 0);
-  cockpit.rotation.z = -0.9;
-  cockpit.scale.set(1, 0.6, 1.3);
-  g.add(cockpit);
+  const fairing = new THREE.Mesh(track(new THREE.SphereGeometry(1, 24, 12)), white);
+  fairing.scale.set(1.05, 0.2, 0.42);
+  fairing.position.set(-0.05, Y - 0.27, 0);
+  g.add(fairing);
 
-  // Swept wings and tailplane from extruded shapes.
-  const wingShape = new THREE.Shape();
-  wingShape.moveTo(0.55, 0);
-  wingShape.lineTo(-0.35, 2.6);
-  wingShape.lineTo(-0.75, 2.6);
-  wingShape.lineTo(-0.6, 0);
-  wingShape.closePath();
-  const wingGeo = track(new THREE.ExtrudeGeometry(wingShape, { depth: 0.06, bevelEnabled: false }));
+  // Wings: tapered, swept 28°, slight dihedral, rounded edges, winglets.
+  const span = 2.95, rootLE = 0.78, rootTE = -0.78, sweep = Math.tan((28 * Math.PI) / 180) * span, tipChord = 0.42;
+  const ws = new THREE.Shape();
+  ws.moveTo(rootLE, 0);
+  ws.lineTo(rootLE - sweep, span);
+  ws.lineTo(rootLE - sweep - tipChord, span);
+  ws.lineTo(rootTE, 0.55);
+  ws.lineTo(rootTE, 0);
+  ws.closePath();
+  const wingGeo = track(new THREE.ExtrudeGeometry(ws, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.025, bevelSize: 0.03, bevelSegments: 3, curveSegments: 4 }));
+  const tipX = 0.15 + rootLE - sweep - tipChord / 2;
+  const wl = new THREE.Shape();
+  wl.moveTo(0.18, 0);
+  wl.lineTo(-0.12, 0.42);
+  wl.lineTo(-0.28, 0.42);
+  wl.lineTo(-0.26, 0);
+  wl.closePath();
+  const wingletGeo = track(new THREE.ExtrudeGeometry(wl, { depth: 0.03, bevelEnabled: false }));
   for (const side of [1, -1]) {
-    const w = new THREE.Mesh(wingGeo, body);
+    const wing = new THREE.Group();
+    const w = new THREE.Mesh(wingGeo, wingMat);
     w.rotation.x = side * Math.PI / 2;
-    w.position.set(0.1, 0.55, 0);
-    w.rotateX(side * -0.06);
-    g.add(w);
-    const eng = new THREE.Mesh(track(new THREE.CylinderGeometry(0.17, 0.15, 0.7, 16)), grey);
-    eng.rotation.z = Math.PI / 2;
-    eng.position.set(0.35, 0.36, side * 0.95);
-    g.add(eng);
-    const intake = new THREE.Mesh(track(new THREE.CircleGeometry(0.15, 16)), dark);
-    intake.rotation.y = Math.PI / 2;
-    intake.position.set(0.71, 0.36, side * 0.95);
-    g.add(intake);
+    w.position.y = side > 0 ? 0 : 0.05;
+    wing.add(w);
+    const winglet = new THREE.Mesh(wingletGeo, teal);
+    winglet.position.set(rootLE - sweep - tipChord / 2 + 0.05, 0.02, side * (span + 0.01));
+    wing.add(winglet);
+    wing.position.set(0.15, Y - 0.2, 0);
+    wing.rotation.x = side * -0.07; // dihedral
+    g.add(wing);
+
+    // Turbofan under each wing: nacelle on a lathe, dark fan face with a spinner, pylon.
+    const nac: [number, number][] = [[0.17, 0.48], [0.205, 0.42], [0.215, 0.25], [0.205, 0.0], [0.18, -0.25], [0.13, -0.42], [0.09, -0.46]];
+    const n = new THREE.Mesh(track(new THREE.LatheGeometry(nac.map(([r, y]) => new THREE.Vector2(r, y)), 32)), white);
+    n.material = white;
+    n.rotation.z = -Math.PI / 2;
+    const ez = side * 1.05, ex = 0.15 + rootLE - Math.tan((28 * Math.PI) / 180) * 1.05 + 0.22;
+    n.position.set(ex, Y - 0.42, ez);
+    g.add(n);
+    const lip = new THREE.Mesh(track(new THREE.TorusGeometry(0.175, 0.018, 8, 32)), metal);
+    lip.rotation.y = Math.PI / 2;
+    lip.position.set(ex + 0.48, Y - 0.42, ez);
+    g.add(lip);
+    const fan = new THREE.Mesh(track(new THREE.CircleGeometry(0.165, 32)), dark);
+    fan.rotation.y = Math.PI / 2;
+    fan.position.set(ex + 0.44, Y - 0.42, ez);
+    g.add(fan);
+    const spinner = new THREE.Mesh(track(new THREE.ConeGeometry(0.06, 0.12, 16)), metal);
+    spinner.rotation.z = -Math.PI / 2;
+    spinner.position.set(ex + 0.48, Y - 0.42, ez);
+    g.add(spinner);
+    const core = new THREE.Mesh(track(new THREE.ConeGeometry(0.08, 0.22, 16)), metal);
+    core.rotation.z = Math.PI / 2;
+    core.position.set(ex - 0.55, Y - 0.42, ez);
+    g.add(core);
+    const pylon = new THREE.Mesh(track(new THREE.BoxGeometry(0.55, 0.16, 0.05)), white);
+    pylon.position.set(ex - 0.02, Y - 0.26, ez);
+    g.add(pylon);
   }
-  const tailShape = new THREE.Shape();
-  tailShape.moveTo(0, 0);
-  tailShape.lineTo(0.75, 0);
-  tailShape.lineTo(0.15, 1.15);
-  tailShape.lineTo(-0.25, 1.15);
-  tailShape.closePath();
-  const fin = new THREE.Mesh(track(new THREE.ExtrudeGeometry(tailShape, { depth: 0.05, bevelEnabled: false })), teal);
-  fin.position.set(-2.15, 0.9, -0.025);
+
+  // Tail: swept fin in teal with a white swoosh, and a tapered tailplane.
+  const fs = new THREE.Shape();
+  fs.moveTo(0.0, 0.0);
+  fs.lineTo(0.95, 0.0);
+  fs.lineTo(0.2, 1.25);
+  fs.lineTo(-0.22, 1.25);
+  fs.closePath();
+  const finMat = track(new THREE.MeshPhysicalMaterial({ map: finTexture(track), roughness: 0.3, metalness: 0.2, clearcoat: 0.9, clearcoatRoughness: 0.15 }));
+  const finGeo = track(new THREE.ExtrudeGeometry(fs, { depth: 0.045, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.02, bevelSegments: 2 }));
+  // Map the fin texture across its outline.
+  const uv = finGeo.attributes['uv'] as THREE.BufferAttribute, pos = finGeo.attributes['position'] as THREE.BufferAttribute;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (pos.getX(i) + 0.25) / 1.25, pos.getY(i) / 1.3);
+  const fin = new THREE.Mesh(finGeo, finMat);
+  fin.position.set(-2.25, Y + 0.25, -0.0225);
   g.add(fin);
-  const stabShape = new THREE.Shape();
-  stabShape.moveTo(0.3, 0);
-  stabShape.lineTo(-0.15, 0.95);
-  stabShape.lineTo(-0.4, 0.95);
-  stabShape.lineTo(-0.35, 0);
-  stabShape.closePath();
-  const stabGeo = track(new THREE.ExtrudeGeometry(stabShape, { depth: 0.04, bevelEnabled: false }));
+  const ts = new THREE.Shape();
+  ts.moveTo(0.32, 0);
+  ts.lineTo(-0.2, 1.0);
+  ts.lineTo(-0.42, 1.0);
+  ts.lineTo(-0.38, 0);
+  ts.closePath();
+  const tsGeo = track(new THREE.ExtrudeGeometry(ts, { depth: 0.035, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.015, bevelSegments: 2 }));
   for (const side of [1, -1]) {
-    const st = new THREE.Mesh(stabGeo, body);
+    const st = new THREE.Mesh(tsGeo, wingMat);
     st.rotation.x = side * Math.PI / 2;
-    st.position.set(-1.95, 0.85, 0);
+    st.position.set(-1.95, Y + 0.1, 0);
+    st.rotateX(side * -0.05);
     g.add(st);
   }
 
-  // Landing gear.
+  // Landing gear: nose leg and two main bogies with struts.
   const gear = new THREE.Group();
-  const wheel = track(new THREE.CylinderGeometry(0.11, 0.11, 0.1, 12));
-  const strut = track(new THREE.CylinderGeometry(0.025, 0.025, 0.35, 6));
-  for (const [x, z] of [[1.6, 0], [0, 0.45], [0, -0.45]]) {
-    const w = new THREE.Mesh(wheel, dark);
+  const wheel = track(new THREE.CylinderGeometry(0.11, 0.11, 0.09, 18));
+  const hub = track(new THREE.CylinderGeometry(0.055, 0.055, 0.095, 12));
+  const addWheel = (x: number, z: number, r = 1) => {
+    const w = new THREE.Mesh(wheel, tyre);
     w.rotation.x = Math.PI / 2;
-    w.position.set(x, 0.11, z);
+    w.scale.setScalar(r);
+    w.position.set(x, 0.11 * r, z);
     gear.add(w);
-    const s = new THREE.Mesh(strut, grey);
-    s.position.set(x, 0.32, z);
+    const h = new THREE.Mesh(hub, metal);
+    h.rotation.x = Math.PI / 2;
+    h.scale.setScalar(r);
+    h.position.set(x, 0.11 * r, z);
+    gear.add(h);
+  };
+  for (const side of [1, -1]) {
+    addWheel(-0.12, side * 0.62);
+    addWheel(-0.12, side * 0.5);
+    const s = new THREE.Mesh(track(new THREE.CylinderGeometry(0.03, 0.03, 0.42, 8)), metal);
+    s.position.set(-0.12, 0.3, side * 0.56);
     gear.add(s);
   }
+  addWheel(1.72, 0.05, 0.75);
+  addWheel(1.72, -0.05, 0.75);
+  const ns = new THREE.Mesh(track(new THREE.CylinderGeometry(0.025, 0.025, 0.38, 8)), metal);
+  ns.position.set(1.72, 0.3, 0);
+  gear.add(ns);
   g.add(gear);
 
-  // Navigation lights: steady red/green tips, flashing white strobes and a red beacon.
+  // Lights: steady red/green wingtips, white strobes, red beacon on top and belly, landing lights.
   const glow = glowTexture(track);
   const light = (color: string, x: number, y: number, z: number, size: number) => {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
@@ -590,14 +665,104 @@ function buildJet(track: Track) {
     g.add(s);
     return s;
   };
-  light('#ff3b3b', -0.7, 0.57, -2.62, 0.35);
-  light('#3bff7a', -0.7, 0.57, 2.62, 0.35);
+  const tipY = Y - 0.2 + Math.sin(0.07) * span;
+  light('#ff3b3b', tipX, tipY, -span - 0.05, 0.35);
+  light('#3bff7a', tipX, tipY, span + 0.05, 0.35);
+  light('#fff6d6', 1.0, Y - 0.25, 0.42, 0.45);
+  light('#fff6d6', 1.0, Y - 0.25, -0.42, 0.45);
   const blinkers = [
-    { sprite: light('#ffffff', -0.72, 0.58, -2.64, 0.9), period: 1.1, phase: 0 },
-    { sprite: light('#ffffff', -0.72, 0.58, 2.64, 0.9), period: 1.1, phase: 0 },
-    { sprite: light('#ff2a2a', 0.2, 1.08, 0, 0.6), period: 1.4, phase: 0.5 },
+    { sprite: light('#ffffff', tipX - 0.15, tipY, -span - 0.06, 0.95), period: 1.1, phase: 0 },
+    { sprite: light('#ffffff', tipX - 0.15, tipY, span + 0.06, 0.95), period: 1.1, phase: 0 },
+    { sprite: light('#ff2a2a', 0.1, Y + 0.4, 0, 0.6), period: 1.4, phase: 0.5 },
+    { sprite: light('#ff2a2a', -0.3, Y - 0.4, 0, 0.5), period: 1.4, phase: 1.2 },
   ];
   return { group: g, gear, blinkers };
+}
+
+/**
+ * Paint for the lathe fuselage. u runs around the body (0 = +Z side, 0.25 = belly, 0.5 = -Z side, 0.75 = crown),
+ * v along it (0 = tail, 1 = nose).
+ */
+function fuselageTexture(track: Track) {
+  const W = 2048, H = 1024;
+  return canvasTex(W, H, (c) => {
+    c.fillStyle = '#f5f8fc';
+    c.fillRect(0, 0, W, H);
+    const yAt = (v: number) => H * (1 - v);
+    // Teal belly and a two-tone cheatline under the windows on both sides.
+    c.fillStyle = '#0fb5c3';
+    c.fillRect(W * 0.12, 0, W * 0.26, H);
+    for (const u of [0.0, 0.5]) {
+      const dir = u === 0 ? 1 : -1; // toward the belly
+      c.fillStyle = '#0fb5c3';
+      c.fillRect(W * (u + dir * 0.035) - (dir < 0 ? W * 0.014 : 0), yAt(0.92), W * 0.014, H * 0.86);
+      c.fillStyle = '#8b5cf6';
+      c.fillRect(W * (u + dir * 0.055) - (dir < 0 ? W * 0.008 : 0), yAt(0.88), W * 0.008, H * 0.8);
+    }
+    // Wrap the cheatline at u = 0 / 1.
+    c.fillStyle = '#0fb5c3';
+    c.fillRect(W - W * 0.002, yAt(0.92), W * 0.002, H * 0.86);
+    // Window rows just above the cheatline, with doors.
+    const rows = [0.965, 0.535];
+    for (const u of rows) {
+      for (let v = 0.24; v < 0.84; v += 0.0175) {
+        if (Math.abs(v - 0.5) < 0.012) continue; // over-wing exit gap
+        c.fillStyle = '#1e293b';
+        c.beginPath();
+        c.roundRect(W * u - 7, yAt(v) - 9, 14, 18, 6);
+        c.fill();
+      }
+      c.strokeStyle = '#94a3b8';
+      c.lineWidth = 3;
+      for (const v of [0.86, 0.2]) c.strokeRect(W * u - 16, yAt(v) - 34, 32, 68);
+    }
+    // Cockpit windscreen across the crown near the nose.
+    c.fillStyle = '#0b1220';
+    c.beginPath();
+    c.moveTo(W * 0.53, yAt(0.915));
+    c.lineTo(W * 0.97, yAt(0.915));
+    c.lineTo(W * 0.92, yAt(0.945));
+    c.lineTo(W * 0.58, yAt(0.945));
+    c.closePath();
+    c.fill();
+    c.strokeStyle = '#f5f8fc';
+    c.lineWidth = 6;
+    for (const u of [0.66, 0.75, 0.84]) {
+      c.beginPath();
+      c.moveTo(W * u, yAt(0.915));
+      c.lineTo(W * u, yAt(0.945));
+      c.stroke();
+    }
+    // Small registration on the rear fuselage.
+    c.fillStyle = '#334155';
+    c.font = '700 26px Inter, system-ui, sans-serif';
+    c.save();
+    c.translate(W * 0.585, yAt(0.13));
+    c.rotate(-Math.PI / 2);
+    c.fillText('YR-GTM', 0, 0);
+    c.restore();
+  }, track);
+}
+
+function finTexture(track: Track) {
+  return canvasTex(512, 512, (c) => {
+    const g = c.createLinearGradient(0, 512, 512, 0);
+    g.addColorStop(0, '#0a93a6');
+    g.addColorStop(0.6, '#0fb5c3');
+    g.addColorStop(1, '#8b5cf6');
+    c.fillStyle = g;
+    c.fillRect(0, 0, 512, 512);
+    c.strokeStyle = 'rgba(255,255,255,0.95)';
+    c.lineWidth = 34;
+    c.lineCap = 'round';
+    c.beginPath();
+    c.moveTo(60, 430);
+    c.quadraticCurveTo(260, 330, 420, 110);
+    c.stroke();
+    c.fillStyle = '#ffffff';
+    c.font = '900 120px Inter, system-ui, sans-serif';
+    c.fillText('G', 250, 420);
+  }, track);
 }
 
 function toVec(lat: number, lon: number) {
