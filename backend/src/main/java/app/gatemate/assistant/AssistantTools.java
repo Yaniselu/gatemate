@@ -56,7 +56,43 @@ public class AssistantTools {
         this.explore = explore;
     }
 
+    /** A tool as plain JSON Schema, so it can be handed to either model provider. */
+    record Spec(String name, String description, Map<String, Object> props, List<String> required) {}
+
     public List<BetaTool> definitions() {
+        return specs().stream().map(AssistantTools::beta).toList();
+    }
+
+    /**
+     * The same tools as Gemini function declarations. Gemini takes an OpenAPI subset: upper-case types and no
+     * additionalProperties or maxItems (run() enforces the limits itself).
+     */
+    public List<Map<String, Object>> geminiDeclarations() {
+        return specs().stream().map(s -> Map.<String, Object>of("name", s.name(), "description", s.description(),
+                "parameters", gemini(Map.of("type", "object", "properties", s.props(), "required", s.required())))).toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> gemini(Map<String, Object> schema) {
+        var out = new LinkedHashMap<String, Object>();
+        schema.forEach((k, v) -> {
+            switch (k) {
+                case "type" -> out.put(k, String.valueOf(v).toUpperCase(Locale.ROOT));
+                case "items" -> out.put(k, gemini((Map<String, Object>) v));
+                case "properties" -> {
+                    var props = new LinkedHashMap<String, Object>();
+                    ((Map<String, Object>) v).forEach((n, p) -> props.put(n, gemini((Map<String, Object>) p)));
+                    if (!props.isEmpty()) out.put(k, props);
+                }
+                case "required" -> { if (!((List<?>) v).isEmpty()) out.put(k, v); }
+                case "description", "enum" -> out.put(k, v);
+                default -> { } // maxItems, additionalProperties: not part of Gemini's schema subset
+            }
+        });
+        return out;
+    }
+
+    private List<Spec> specs() {
         return List.of(
             tool("get_my_trips", "List the traveller's trips with their flights (times in each airport's local time, gate, terminal, seat, live status), "
                     + "checklist and fellow travellers. Use it for anything about their own travel; never guess flight details.", Map.of(), List.of()),
@@ -273,8 +309,13 @@ public class AssistantTools {
 
     // ---------- helpers ----------
 
-    private static BetaTool tool(String name, String description, Map<String, Object> props, List<String> required) {
-        var schema = BetaTool.InputSchema.builder().properties(JsonValue.from(props)).required(required)
+    private static Spec tool(String name, String description, Map<String, Object> props, List<String> required) {
+        return new Spec(name, description, props, required);
+    }
+
+    private static BetaTool beta(Spec s) {
+        String name = s.name(), description = s.description();
+        var schema = BetaTool.InputSchema.builder().properties(JsonValue.from(s.props())).required(s.required())
                 .putAdditionalProperty("additionalProperties", JsonValue.from(false)).build();
         // Streams arguments as they're written; run() validates them, since the SDK doesn't when this is on.
         return BetaTool.builder().name(name).description(description).inputSchema(schema).eagerInputStreaming(true).build();

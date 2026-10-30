@@ -59,7 +59,12 @@ public class AssistantService {
 
     public record Status(boolean enabled, int used, int limit) {}
 
+    /** A tool's result for the model: the value, or the error message it should recover from. */
+    record Outcome(Object value, boolean error) {}
+
     private final AnthropicClient client;
+    /** Used when the server has a Gemini key and no Anthropic key. */
+    private final GeminiAgent gemini;
     private final String model;
     private final BetaOutputConfig.Effort effort;
     private final AssistantTools tools;
@@ -73,7 +78,10 @@ public class AssistantService {
             @Value("${gatemate.assistant.api-key:}") String apiKey,
             @Value("${gatemate.assistant.base-url:}") String baseUrl,
             @Value("${gatemate.assistant.model:claude-opus-5-5}") String model,
-            @Value("${gatemate.assistant.effort:low}") String effort) {
+            @Value("${gatemate.assistant.effort:low}") String effort,
+            @Value("${gatemate.assistant.gemini-key:}") String geminiKey,
+            @Value("${gatemate.assistant.gemini-model:gemini-flash-latest}") String geminiModel,
+            @Value("${gatemate.assistant.gemini-base-url:}") String geminiBaseUrl) {
         this.tools = tools;
         this.users = users;
         this.airports = airports;
@@ -87,10 +95,13 @@ public class AssistantService {
             if (baseUrl != null && !baseUrl.isBlank()) b.baseUrl(baseUrl);
             this.client = b.build();
         }
+        this.gemini = client == null && geminiKey != null && !geminiKey.isBlank()
+                ? new GeminiAgent(geminiKey, geminiModel, geminiBaseUrl, tools.geminiDeclarations(), json) : null;
+        if (gemini != null) log.info("Velo runs on Gemini ({})", geminiModel);
     }
 
     public boolean enabled() {
-        return client != null;
+        return client != null || gemini != null;
     }
 
     public Status status(UUID me) {
@@ -123,8 +134,7 @@ public class AssistantService {
      */
     public void chat(UUID me, List<Turn> history, Consumer<Map<String, Object>> emit) {
         var u = users.findById(me).orElseThrow(() -> ApiException.notFound("Account"));
-        List<BetaMessageParam> messages = new ArrayList<>(toParams(history));
-        messages.add(BetaMessageParam.ofSystem(context(u)));
+        List<Turn> turns = clean(history);
         var ctx = new AssistantTools.Ctx(me, emit);
 
         boolean slot = false;
@@ -134,6 +144,12 @@ public class AssistantService {
                 emit.accept(Map.of("type", "error", "message", "busy"));
                 return;
             }
+            if (client == null) {
+                gemini.run(turns, context(u), MAX_STEPS, (id, name, input) -> call(id, name, input, ctx, emit), emit);
+                return;
+            }
+            List<BetaMessageParam> messages = new ArrayList<>(toParams(turns));
+            messages.add(BetaMessageParam.ofSystem(context(u)));
             for (int step = 0; step < MAX_STEPS; step++) {
                 BetaMessage reply = stream(messages, emit);
                 List<BetaContentBlock> kept = afterFallback(reply.content());
@@ -162,7 +178,10 @@ public class AssistantService {
         } catch (AnthropicServiceException e) {
             log.warn("assistant API error {}: {}", e.statusCode(), e.getMessage());
             emit.accept(Map.of("type", "error", "message", "unavailable"));
-        } catch (RuntimeException e) {
+        } catch (GeminiAgent.Failure e) {
+            log.warn("assistant {}", e.getMessage());
+            emit.accept(Map.of("type", "error", "message", e.status == 429 ? "busy" : "unavailable"));
+        } catch (java.io.IOException | RuntimeException e) {
             log.warn("assistant failed: {}", e.toString());
             emit.accept(Map.of("type", "error", "message", "unavailable"));
         } finally {
@@ -216,25 +235,29 @@ public class AssistantService {
         List<BetaContentBlockParam> results = new ArrayList<>();
         for (BetaContentBlock block : blocks) {
             block.toolUse().ifPresent(call -> {
-                String out;
-                boolean error = false;
-                try {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> input = call._input().convert(Map.class);
-                    out = json.writeValueAsString(tools.run(call.name(), input == null ? Map.of() : input, ctx));
-                } catch (AssistantTools.ToolError e) {
-                    out = e.getMessage();
-                    error = true;
-                } catch (RuntimeException e) {
-                    log.warn("assistant tool {} failed: {}", call.name(), e.toString());
-                    out = "This lookup failed. Tell the traveller you couldn't check it right now.";
-                    error = true;
-                }
-                emit.accept(Map.of("type", "tool_done", "id", call.id(), "ok", !error));
-                results.add(BetaContentBlockParam.ofToolResult(BetaToolResultBlockParam.builder().toolUseId(call.id()).content(out).isError(error).build()));
+                @SuppressWarnings("unchecked")
+                Map<String, Object> input = call._input().convert(Map.class);
+                Outcome out = call(call.id(), call.name(), input, ctx, emit);
+                String text = out.error() ? (String) out.value() : json.writeValueAsString(out.value());
+                results.add(BetaContentBlockParam.ofToolResult(BetaToolResultBlockParam.builder().toolUseId(call.id()).content(text).isError(out.error()).build()));
             });
         }
         return results;
+    }
+
+    /** Runs one tool for either model and reports it to the app. */
+    Outcome call(String id, String name, Map<String, Object> input, AssistantTools.Ctx ctx, Consumer<Map<String, Object>> emit) {
+        Outcome out;
+        try {
+            out = new Outcome(tools.run(name, input == null ? Map.of() : input, ctx), false);
+        } catch (AssistantTools.ToolError e) {
+            out = new Outcome(e.getMessage(), true);
+        } catch (RuntimeException e) {
+            log.warn("assistant tool {} failed: {}", name, e.toString());
+            out = new Outcome("This lookup failed. Tell the traveller you couldn't check it right now.", true);
+        }
+        emit.accept(Map.of("type", "tool_done", "id", id, "ok", !out.error()));
+        return out;
     }
 
     /**
@@ -268,17 +291,22 @@ public class AssistantService {
         if (!found.isEmpty()) emit.accept(Map.of("type", "sources", "items", found));
     }
 
-    private List<BetaMessageParam> toParams(List<Turn> history) {
+    /** The conversation as the app sent it, trimmed and checked: starts and ends with the traveller. */
+    static List<Turn> clean(List<Turn> history) {
         if (history == null || history.isEmpty() || history.size() > MAX_TURNS) throw ApiException.badRequest("bad_conversation", "Start a new conversation.");
-        List<BetaMessageParam> out = new ArrayList<>();
+        List<Turn> out = new ArrayList<>();
         for (Turn t : history) {
             if (t == null || t.text() == null || t.text().isBlank()) continue;
             String text = t.text().length() > MAX_CHARS ? t.text().substring(0, MAX_CHARS) : t.text();
-            if ("user".equals(t.role())) out.add(BetaMessageParam.ofUser(text));
-            else if ("assistant".equals(t.role()) && !out.isEmpty()) out.add(BetaMessageParam.ofAssistant(text)); // the app's greeting isn't sent
+            if ("user".equals(t.role())) out.add(new Turn("user", text));
+            else if ("assistant".equals(t.role()) && !out.isEmpty()) out.add(new Turn("assistant", text)); // the app's greeting isn't sent
         }
         if (out.isEmpty() || !"user".equals(history.get(history.size() - 1).role())) throw ApiException.badRequest("bad_conversation", "Ask Velo something.");
         return out;
+    }
+
+    private static List<BetaMessageParam> toParams(List<Turn> turns) {
+        return turns.stream().map(t -> "user".equals(t.role()) ? BetaMessageParam.ofUser(t.text()) : BetaMessageParam.ofAssistant(t.text())).toList();
     }
 
     /** Facts about this traveller and moment, after the cached prefix so the cache stays warm across users. */

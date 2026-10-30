@@ -102,6 +102,9 @@ gatemate:
     api-key: ${ANTHROPIC_API_KEY:}
     model: ${ASSISTANT_MODEL:claude-opus-5-5}
     effort: ${ASSISTANT_EFFORT:low}
+    # Alternative with a free tier: with GEMINI_API_KEY set (and no Anthropic key), Velo runs on Google Gemini.
+    gemini-key: ${GEMINI_API_KEY:}
+    gemini-model: ${GEMINI_MODEL:gemini-flash-latest}
   integrations:
     unsplash-access-key: ${UNSPLASH_ACCESS_KEY:}
     aero-data-box-key: ${AERODATABOX_KEY:}

@@ -36,6 +36,9 @@ services:
       # Velo, the AI travel agent: an Anthropic API key (console.anthropic.com). Empty = Velo stays off. See docs/VELO.md.
       - key: ANTHROPIC_API_KEY
         sync: false
+      # Or, with a free tier: Velo runs on Google Gemini when only this key is set.
+      - key: GEMINI_API_KEY
+        sync: false
       # E-mail (verification and password-reset codes): Brevo API key and a verified sender address. See docs/MAIL.md.
       - key: MAIL_API_KEY
         sync: false
