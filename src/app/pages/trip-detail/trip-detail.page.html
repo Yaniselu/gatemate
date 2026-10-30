@@ -48,6 +48,7 @@
             }
             @if (upcomingFlights()[0]; as nf) {
               <gm-airport-day class="card day anim-fade-up" [flight]="nf" />
+              <gm-cabin-air [flight]="nf" />
             }
             @for (f of t.flights; track f.id; let i = $index) {
               <div class="flight card" [gmReveal]="i">

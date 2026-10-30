@@ -6,7 +6,7 @@ import { LiveFlightService, LiveState } from '../../core/services/live-flight.se
 import { AirportDbService } from '../../core/services/airport-db.service';
 import { RouteLine } from '../../core/utils/travel-summary';
 import { RouteMapComponent } from './route-map.component';
-import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
+import { locale, t, TranslatePipe } from '../../core/i18n/i18n.service';
 
 const LABEL: Record<LiveState['phase'], string> = {
   scheduled: 'Not departed yet',
@@ -46,7 +46,7 @@ const LABEL: Record<LiveState['phase'], string> = {
       }
       <small class="foot">
         @if (s.aircraft || s.registration) { {{ s.aircraft }} {{ s.registration }} · }
-        {{ s.callsign ? s.callsign + ' · ' : '' }}ADS-B, updated {{ ago() }}
+        {{ s.callsign ? s.callsign + ' · ' : '' }}{{ 'ADS-B, updated {ago}' | t: { ago: ago() | t } }}
       </small>
     }
   `,
@@ -97,7 +97,7 @@ export class LiveFlightComponent {
     const s = this.state();
     if (!s) return '';
     const sec = Math.max(0, Math.round((this.now() - s.updatedAt) / 1000));
-    return sec < 10 ? 'just now' : sec < 60 ? `${sec}s ago` : `${Math.round(sec / 60)} min ago`;
+    return sec < 10 ? t('just now') : sec < 60 ? t('{n} s ago', { n: sec }) : t('{n} min ago', { n: Math.round(sec / 60) });
   });
 
   constructor() {
