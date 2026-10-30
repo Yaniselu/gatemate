@@ -82,7 +82,7 @@ public class AssistantService {
             @Value("${gatemate.assistant.gemini-key:}") String geminiKey,
             @Value("${gatemate.assistant.gemini-model:gemini-flash-latest}") String geminiModel,
             @Value("${gatemate.assistant.gemini-base-url:}") String geminiBaseUrl,
-            @Value("${gatemate.assistant.gemini-idle-seconds:60}") int geminiIdleSeconds) {
+            @Value("${gatemate.assistant.gemini-timeout-seconds:75}") int geminiTimeoutSeconds) {
         this.tools = tools;
         this.users = users;
         this.airports = airports;
@@ -97,7 +97,7 @@ public class AssistantService {
             this.client = b.build();
         }
         this.gemini = client == null && geminiKey != null && !geminiKey.isBlank()
-                ? new GeminiAgent(geminiKey, geminiModel, geminiBaseUrl, Duration.ofSeconds(geminiIdleSeconds), tools.geminiDeclarations(), json) : null;
+                ? new GeminiAgent(geminiKey, geminiModel, geminiBaseUrl, Duration.ofSeconds(geminiTimeoutSeconds), tools.geminiDeclarations(), json) : null;
         if (gemini != null) log.info("Velo runs on Gemini ({})", geminiModel);
     }
 
@@ -136,6 +136,7 @@ public class AssistantService {
     public void chat(UUID me, List<Turn> history, Consumer<Map<String, Object>> emit) {
         var u = users.findById(me).orElseThrow(() -> ApiException.notFound("Account"));
         List<Turn> turns = clean(history);
+        log.info("assistant chat: {} turns on {}", turns.size(), client != null ? "Claude" : "Gemini");
         var ctx = new AssistantTools.Ctx(me, emit);
 
         boolean slot = false;

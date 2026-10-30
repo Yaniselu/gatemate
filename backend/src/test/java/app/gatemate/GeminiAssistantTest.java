@@ -62,17 +62,13 @@ class GeminiAssistantTest {
                 reply(ex, 200, answerTurn());
             } else if (n == 4) {
                 reply(ex, 429, "{\"error\":{\"code\":429,\"status\":\"RESOURCE_EXHAUSTED\"}}");
-            } else { // starts answering, then goes silent
-                ex.getResponseHeaders().add("Content-Type", "text/event-stream");
-                ex.sendResponseHeaders(200, 0);
-                ex.getResponseBody().write(data("{\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"Stai \"}]}}]}").getBytes(StandardCharsets.UTF_8));
-                ex.getResponseBody().flush();
+            } else { // never answers within the timeout
                 try {
                     Thread.sleep(6000);
                 } catch (InterruptedException ignored) {
                     // test over
                 }
-                ex.close();
+                reply(ex, 200, "{}");
             }
         });
         api.setExecutor(java.util.concurrent.Executors.newCachedThreadPool());
@@ -81,7 +77,7 @@ class GeminiAssistantTest {
 
     static void reply(com.sun.net.httpserver.HttpExchange ex, int status, String body) throws IOException {
         byte[] out = body.getBytes(StandardCharsets.UTF_8);
-        ex.getResponseHeaders().add("Content-Type", status == 200 ? "text/event-stream" : "application/json");
+        ex.getResponseHeaders().add("Content-Type", "application/json");
         ex.sendResponseHeaders(status, out.length);
         ex.getResponseBody().write(out);
         ex.close();
@@ -91,7 +87,7 @@ class GeminiAssistantTest {
     static void props(DynamicPropertyRegistry r) {
         r.add("gatemate.assistant.api-key", () -> "");
         r.add("gatemate.assistant.gemini-key", () -> "gemini-test-key");
-        r.add("gatemate.assistant.gemini-idle-seconds", () -> "2");
+        r.add("gatemate.assistant.gemini-timeout-seconds", () -> "2");
         r.add("gatemate.assistant.gemini-base-url", () -> "http://127.0.0.1:" + api.getAddress().getPort());
     }
 
@@ -131,7 +127,7 @@ class GeminiAssistantTest {
         assertThat(json.readTree(bodies.get(1)).path("generationConfig").path("thinkingConfig").path("thinkingBudget").asInt()).isZero();
 
         // First request: streaming endpoint, key in a header (never in the URL), Gemini-style tool schemas.
-        assertThat(paths.get(0)).isEqualTo("/v1beta/models/gemini-flash-latest:streamGenerateContent?alt=sse");
+        assertThat(paths.get(0)).isEqualTo("/v1beta/models/gemini-flash-latest:generateContent");
         assertThat(keys.get(0)).isEqualTo("gemini-test-key");
         JsonNode first = json.readTree(bodies.get(1));
         String decl = first.path("tools").get(0).path("functionDeclarations").toString();
@@ -151,12 +147,11 @@ class GeminiAssistantTest {
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Și vremea?")), later::add);
         assertThat(later).containsExactly(Map.of("type", "error", "message", "busy"));
 
-        // Google goes silent mid-answer: the traveller gets an error after the idle limit, not an endless spinner.
+        // Google doesn't answer in time: the traveller gets an error, not an endless spinner.
         List<Map<String, Object>> stuck = new ArrayList<>();
         long t0 = System.currentTimeMillis();
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Ce fac?")), stuck::add);
         assertThat(System.currentTimeMillis() - t0).isLessThan(4500);
-        assertThat(stuck.get(0)).containsEntry("type", "delta");
         assertThat(stuck.get(stuck.size() - 1)).containsEntry("type", "error").containsEntry("message", "unavailable");
     }
 
@@ -176,16 +171,11 @@ class GeminiAssistantTest {
 
     private static String toolTurn() {
         String args = "{\"trip_id\":\"" + tripId + "\",\"items\":[{\"label\":\"Adaptor priză tip F\",\"category\":\"packing\"},{\"label\":\"Euro cash\",\"category\":\"tasks\"}]}";
-        return data("{\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"functionCall\":{\"id\":\"call-1\",\"name\":\"add_checklist_items\",\"args\":" + args
-                + "},\"thoughtSignature\":\"sig-123\"}]},\"finishReason\":\"STOP\"}]}");
+        return "{\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"functionCall\":{\"id\":\"call-1\",\"name\":\"add_checklist_items\",\"args\":" + args
+                + "},\"thoughtSignature\":\"sig-123\"}]},\"finishReason\":\"STOP\"}],\"modelVersion\":\"gemini-test\"}";
     }
 
     private static String answerTurn() {
-        return data("{\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"Am adăugat \"}]}}]}")
-                + data("{\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"**2 lucruri** în listă.\"}]},\"finishReason\":\"STOP\"}]}");
-    }
-
-    private static String data(String json) {
-        return "data: " + json + "\r\n\r\n";
+        return "{\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"Am adăugat **2 lucruri** în listă.\"}]},\"finishReason\":\"STOP\"}]}";
     }
 }

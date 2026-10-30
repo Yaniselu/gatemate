@@ -51,15 +51,15 @@ final class GeminiAgent {
     private final JsonMapper json;
     private final java.util.concurrent.atomic.AtomicInteger nextId = new java.util.concurrent.atomic.AtomicInteger();
 
-    GeminiAgent(String key, String model, String baseUrl, Duration idle, List<Map<String, Object>> declarations, JsonMapper json) {
+    GeminiAgent(String key, String model, String baseUrl, Duration timeout, List<Map<String, Object>> declarations, JsonMapper json) {
         this.key = key;
-        this.idle = idle;
-        // Google AI Studio keys (AIza…) use the Gemini API; Vertex AI express keys (AQ.…) use Vertex. Both take the same
-        // request; try the likely one first. The model alias may not exist on both, so fall back to a pinned model.
+        this.timeout = timeout;
+        // Google AI Studio keys (AIza… and the newer AQ.…) use the Gemini API; Vertex AI express keys use Vertex. Both take
+        // the same request. The model alias may not exist on both, so fall back to a pinned model.
         List<String> endpoints = baseUrl != null && !baseUrl.isBlank() ? List.of(baseUrl.replaceAll("/+$", "") + "/v1beta/models/")
-                : key.startsWith("AQ.") ? List.of(VERTEX, STUDIO) : List.of(STUDIO, VERTEX);
+                : List.of(STUDIO, VERTEX);
         var models = new java.util.LinkedHashSet<>(List.of(model, "gemini-flash-latest", "gemini-2.5-flash"));
-        for (String e : endpoints) for (String m : models) routes.add(e + URLEncoder.encode(m, StandardCharsets.UTF_8) + ":streamGenerateContent?alt=sse");
+        for (String e : endpoints) for (String m : models) routes.add(e + URLEncoder.encode(m, StandardCharsets.UTF_8) + ":generateContent");
         this.declarations = declarations;
         this.json = json;
     }
@@ -83,7 +83,7 @@ final class GeminiAgent {
         List<Map<String, Object>> contents = new ArrayList<>();
         for (var t : history) contents.add(Map.of("role", "user".equals(t.role()) ? "user" : "model", "parts", List.of(Map.of("text", t.text()))));
         for (int step = 0; step < maxSteps; step++) {
-            Reply reply = stream(contents, context, emit);
+            Reply reply = generate(contents, context, emit);
             if (!reply.parts.isEmpty()) contents.add(Map.of("role", "model", "parts", reply.parts));
             if (reply.calls.isEmpty()) {
                 if (reply.blocked && !reply.wroteText) emit.accept(Map.of("type", "error", "message", "refused"));
@@ -119,13 +119,17 @@ final class GeminiAgent {
     /** Gemini 3 models take a thinking level, 2.5 models a budget; older ones neither. The first one accepted is kept. */
     private static final List<Map<String, Object>> THINKING = List.of(Map.of("thinkingLevel", "low"), Map.of("thinkingBudget", 0), Map.of());
     private volatile int thinking;
-    /** No new data from Google for this long: give up instead of leaving the traveller waiting. */
-    private final Duration idle;
+    /** Longest wait for one model reply before the traveller gets an error instead of an endless spinner. */
+    private final Duration timeout;
 
+    /**
+     * One model reply, as a whole (Gemini's streaming proved unreliable from our host: replies stalled mid-stream). Text
+     * still reaches the app as a delta event and tool calls as tool events, so the screen looks the same.
+     */
     @SuppressWarnings("unchecked")
-    private Reply stream(List<Map<String, Object>> contents, String context, Consumer<Map<String, Object>> emit) throws IOException, InterruptedException {
+    private Reply generate(List<Map<String, Object>> contents, String context, Consumer<Map<String, Object>> emit) throws IOException, InterruptedException {
         long started = System.nanoTime();
-        HttpResponse<java.io.InputStream> res;
+        HttpResponse<String> res;
         for (int r = route; ; ) {
             var config = new LinkedHashMap<String, Object>();
             config.put("maxOutputTokens", 8192);
@@ -136,21 +140,22 @@ final class GeminiAgent {
             body.put("tools", List.of(Map.of("functionDeclarations", declarations)));
             body.put("generationConfig", config);
             var req = HttpRequest.newBuilder(URI.create(routes.get(r)))
-                    .timeout(Duration.ofSeconds(90)) // until the first bytes; the stream itself is watched for idleness below
+                    .timeout(timeout)
                     .header("Content-Type", "application/json")
                     .header("x-goog-api-key", key)
                     .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)))
                     .build();
-            res = http.send(req, HttpResponse.BodyHandlers.ofInputStream());
+            try {
+                res = http.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            } catch (java.net.http.HttpTimeoutException e) {
+                throw new Failure(504, "no reply from Gemini within " + timeout.toSeconds() + " s");
+            }
             if (res.statusCode() == 200) {
-                if (r != route) log.info("Velo on Gemini uses {}", routes.get(r).replaceAll(":stream.*", ""));
+                if (r != route) log.info("Velo on Gemini uses {}", routes.get(r).replaceAll(":generate.*", ""));
                 route = r;
                 break;
             }
-            String err;
-            try (var in = res.body()) {
-                err = new String(in.readNBytes(4000), StandardCharsets.UTF_8);
-            }
+            String err = res.body();
             int code = res.statusCode();
             // This model doesn't take that kind of thinking setting: try the next kind on the same route.
             if (code == 400 && err.toLowerCase(java.util.Locale.ROOT).contains("thinking") && thinking + 1 < THINKING.size()) {
@@ -161,56 +166,30 @@ final class GeminiAgent {
             // Wrong endpoint for this kind of key, or a model this endpoint doesn't have: try the next route.
             boolean wrongRoute = code == 401 || code == 403 || code == 404 || (code == 400 && err.contains("API key"));
             if (!wrongRoute || r + 1 >= routes.size()) throw new Failure(code, err);
-            log.warn("Gemini route {} refused ({}), trying the next one", routes.get(r).replaceAll(":stream.*", ""), code);
+            log.warn("Gemini route {} refused ({}), trying the next one", routes.get(r).replaceAll(":generate.*", ""), code);
             r++;
         }
-        long headers = System.nanoTime();
 
         var reply = new Reply();
         StringBuilder text = new StringBuilder();
-        int chunks = 0;
-        String version = null;
-        var in = res.body();
-        var last = new java.util.concurrent.atomic.AtomicLong(System.nanoTime());
-        var finished = new java.util.concurrent.atomic.AtomicBoolean();
-        var stalled = new java.util.concurrent.atomic.AtomicBoolean();
-        Thread watchdog = Thread.ofVirtual().start(() -> {
-            try {
-                while (!finished.get()) {
-                    Thread.sleep(Math.min(1000, idle.toMillis()));
-                    if (System.nanoTime() - last.get() > idle.toNanos()) {
-                        stalled.set(true);
-                        in.close(); // unblocks the reader below
-                        return;
-                    }
-                }
-            } catch (InterruptedException | IOException ignored) {
-                // done
+        Map<String, Object> answer = json.readValue(res.body(), Map.class);
+        if (answer.get("promptFeedback") instanceof Map<?, ?> fb && fb.get("blockReason") != null) reply.blocked = true;
+        if (answer.get("candidates") instanceof List<?> cands && !cands.isEmpty()) {
+            var cand = (Map<String, Object>) cands.get(0);
+            if (cand.get("finishReason") instanceof String f) {
+                reply.finish = f;
+                if (BLOCKED.contains(f)) reply.blocked = true;
             }
-        });
-        try (var lines = new java.io.BufferedReader(new java.io.InputStreamReader(in, StandardCharsets.UTF_8))) {
-            for (String line; (line = lines.readLine()) != null; ) {
-                last.set(System.nanoTime());
-                if (!line.startsWith("data:")) continue;
-                chunks++;
-                Map<String, Object> chunk = json.readValue(line.substring(5).trim(), Map.class);
-                if (chunk.get("modelVersion") instanceof String v) version = v;
-                if (chunk.get("promptFeedback") instanceof Map<?, ?> fb && fb.get("blockReason") != null) reply.blocked = true;
-                if (!(chunk.get("candidates") instanceof List<?> cands) || cands.isEmpty()) continue;
-                var cand = (Map<String, Object>) cands.get(0);
-                if (cand.get("finishReason") instanceof String f) {
-                    reply.finish = f;
-                    if (BLOCKED.contains(f)) reply.blocked = true;
-                }
-                if (!(cand.get("content") instanceof Map<?, ?> content) || !(content.get("parts") instanceof List<?> parts)) continue;
+            if (cand.get("content") instanceof Map<?, ?> content && content.get("parts") instanceof List<?> parts) {
                 for (Object o : parts) {
                     var part = (Map<String, Object>) o;
-                    if (part.get("text") instanceof String t && !Boolean.TRUE.equals(part.get("thought"))) {
+                    if (Boolean.TRUE.equals(part.get("thought"))) continue;
+                    if (part.get("text") instanceof String t) {
                         if (!t.isEmpty()) {
                             emit.accept(Map.of("type", "delta", "text", t));
                             reply.wroteText = true;
                         }
-                        // Plain text chunks are joined; a part carrying a thought signature goes back exactly as sent.
+                        // Plain text parts are joined; a part carrying a thought signature goes back exactly as sent.
                         if (part.size() == 1) {
                             text.append(t);
                             continue;
@@ -226,16 +205,10 @@ final class GeminiAgent {
                     }
                 }
             }
-        } catch (IOException e) {
-            if (stalled.get()) throw new Failure(504, "no data from Gemini for " + idle.toSeconds() + " s after " + chunks + " chunks");
-            throw e;
-        } finally {
-            finished.set(true);
-            watchdog.interrupt();
         }
         flush(text, reply);
-        log.info("gemini turn: model={} first_byte={}ms total={}ms chunks={} finish={} calls={} text={}", version,
-                (headers - started) / 1_000_000, (System.nanoTime() - started) / 1_000_000, chunks, reply.finish, reply.calls.size(), reply.wroteText);
+        log.info("gemini turn: model={} took={}ms finish={} calls={} text={}", answer.get("modelVersion"),
+                (System.nanoTime() - started) / 1_000_000, reply.finish, reply.calls.size(), reply.wroteText);
         return reply;
     }
 
