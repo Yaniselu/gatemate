@@ -734,3 +734,29 @@
     background: rgba(255, 255, 255, 0.16);
   }
 }
+
+.search-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 16px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gm-ink-3);
+  background: var(--gm-card-bg);
+  border: 1px solid var(--gm-card-border);
+  box-shadow: var(--gm-frost-rim, none), 0 6px 18px rgba(16, 24, 40, 0.05);
+  ion-icon {
+    font-size: 19px;
+    color: var(--gm-accent-strong);
+  }
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

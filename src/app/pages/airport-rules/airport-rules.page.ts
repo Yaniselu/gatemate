@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { input, effect, ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
@@ -162,7 +162,12 @@ export class AirportRulesPage {
   readonly total = AIRPORT_RULES.length;
   readonly veloPrompt = 'Which airport and security rules apply to my next flight? Check my route, my cabin bag and any connection.';
 
+  readonly q = input<string | undefined>();
   readonly query = signal('');
+  private fromSearch = effect(() => {
+    const q = this.q();
+    if (q) this.query.set(q);
+  });
   readonly cat = signal<string | null>(null);
   readonly mustOnly = signal(false);
 

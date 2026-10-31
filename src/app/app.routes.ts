@@ -49,6 +49,8 @@ export const routes: Routes = [
     ],
   },
   { path: 'alerts', canActivate: [authGuard], loadComponent: () => import('./pages/alerts/alerts.page').then((m) => m.AlertsPage) },
+  { path: 'search', canActivate: [authGuard], loadComponent: () => import('./pages/search/search.page').then((m) => m.SearchPage) },
+  { path: 'lost-found', canActivate: [authGuard], loadComponent: () => import('./pages/lost-found/lost-found.page').then((m) => m.LostFoundPage) },
   { path: 'identity', canActivate: [authGuard], loadComponent: () => import('./pages/identity/identity.page').then((m) => m.IdentityPage) },
   { path: 'family', canActivate: [authGuard], loadComponent: () => import('./pages/family/family.page').then((m) => m.FamilyPage) },
   { path: 'world', canActivate: [authGuard], loadComponent: () => import('./pages/world-map/world-map.page').then((m) => m.WorldMapPage) },

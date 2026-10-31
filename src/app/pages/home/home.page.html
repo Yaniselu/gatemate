@@ -17,6 +17,7 @@
           <h1 class="gm-page-title">{{ greeting() | t }},<br />{{ auth.firstName() }}</h1>
         </div>
         <div class="top-actions">
+          <a class="gm-icon-btn" routerLink="/search" [aria-label]="'Search' | t"><ion-icon name="search-outline" /></a>
           <a class="gm-icon-btn" routerLink="/alerts" [aria-label]="'Alerts' | t">
             <ion-icon name="notifications-outline" />
             @if (store.unreadAlerts() > 0) {
@@ -36,6 +37,9 @@
   </ion-header>
 
   <div class="page">
+    <a class="search-pill anim-fade-up" routerLink="/search" gmPressable>
+      <ion-icon name="search-outline" /><span>{{ 'Search flights, rules, airports, tools…' | t }}</span>
+    </a>
     @if (verifyReminder()) {
       <a class="verify card anim-fade-up" routerLink="/verify-email" gmPressable>
         <span class="gm-well tint" style="--c: #f59e0b"><ion-icon name="mail-unread-outline" /></span>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
+import { input, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
@@ -45,7 +45,12 @@ export class ToolsPage {
   private store = inject(TravelStore);
   private platform = inject(PlatformService);
 
+  readonly open = input<string | undefined>();
   readonly tool = signal<Tool>('money');
+  private pickOpen = effect(() => {
+    const o = this.open();
+    if (o && this.tools.some((t) => t.id === o)) this.tool.set(o as Tool);
+  });
   readonly tools: { id: Tool; label: string; icon: string }[] = [
     { id: 'money', label: 'Currency', icon: 'cash-outline' },
     { id: 'time', label: 'Time & jet lag', icon: 'time-outline' },

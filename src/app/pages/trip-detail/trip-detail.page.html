@@ -136,6 +136,11 @@
 
         @case ('bags') {
           <div class="section">
+            <a class="lost card" routerLink="/lost-found" [queryParams]="{ kind: 'delayed' }" gmPressable>
+              <span class="ic"><ion-icon name="search-outline" /></span>
+              <span class="txt"><b>{{ 'Bag didn’t arrive or got damaged?' | t }}</b><small>{{ 'Steps, deadlines and a claim letter' | t }}</small></span>
+              <ion-icon name="chevron-forward" class="chev" />
+            </a>
             @for (f of t.flights; track f.id) {
               @if (f.baggage; as b) {
                 <div class="fare card">
