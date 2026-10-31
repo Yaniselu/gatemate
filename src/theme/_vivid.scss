@@ -18,6 +18,10 @@
 
   --gm-title-gradient: linear-gradient(100deg, var(--gm-ink) 0%, #0f5f7a 55%, #0a93a6 100%);
   --gm-veil: rgba(255, 255, 255, 0.92);
+  --gm-input-bg: #eef2f7;
+  --gm-input-border: rgba(11, 27, 43, 0.14);
+  --gm-input-focus: #ffffff;
+  --gm-placeholder: #7b8a9d;
   --gm-veil-soft: rgba(255, 255, 255, 0.72);
   --gm-on-accent-bg: #0a8796;
   --gm-badge: #e5484d;
@@ -42,6 +46,10 @@ html.gm-dark {
 
   --gm-title-gradient: linear-gradient(100deg, #f1f5fb 0%, #9fe7ee 60%, #5fd8e3 100%);
   --gm-veil: rgba(15, 22, 38, 0.9);
+  --gm-input-bg: #172033;
+  --gm-input-border: rgba(255, 255, 255, 0.14);
+  --gm-input-focus: #0f1726;
+  --gm-placeholder: #8593a8;
   --gm-veil-soft: rgba(15, 22, 38, 0.72);
 }
 
@@ -236,4 +244,43 @@ html.gm-kb-open ion-tab-bar.gm-tabbar {
 
 :is(.avatar-btn, .av, .avatar, .gm-avatar) {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+html.gm-lite {
+  *,
+  *::before,
+  *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  ion-header.gm-glass-header ion-toolbar {
+    --background: var(--gm-veil);
+  }
+  ion-tab-bar.gm-tabbar {
+    background: var(--gm-veil) !important;
+  }
+  .glass,
+  .glass.strong {
+    background: var(--gm-veil) !important;
+  }
+  ion-content .card {
+    box-shadow: var(--gm-frost-rim);
+  }
+  :where(ion-content .page, ion-content .section) > * {
+    animation: none !important;
+  }
+  .gm-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  [class*='anim-'] {
+    animation-duration: 0.01s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+:is(.rule, .hit, .member, .case, .day, .thread, .alert) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 88px;
 }

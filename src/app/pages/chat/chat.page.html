@@ -45,9 +45,12 @@
       }
     } @else {
       @for (t of threads(); track t.id; let i = $index) {
-        <a class="thread" [routerLink]="['/chat', t.id]" [gmReveal]="i" gmPressable>
+        <div class="swipe" [gmReveal]="i">
+        <button class="del" (click)="remove(t)" [attr.aria-label]="'Delete chat' | t" [tabindex]="opened() === t.id ? 0 : -1"><ion-icon name="trash-outline" /><span>{{ 'Delete' | t }}</span></button>
+        <a class="thread" [attr.href]="'/chat/' + t.id" role="link" gmPressable draggable="false" [style.transform]="'translateX(' + offset(t.id) + 'px)'" [class.dragging]="dragging() === t.id"
+           (pointerdown)="down($event, t.id)" (pointermove)="move($event, t.id)" (click)="tap($event, t.id)" (contextmenu)="$event.preventDefault(); menu(t)">
           <div class="avatar" [style.background]="t.gradient">
-            <span>{{ t.emoji }}</span>
+            <ion-icon [name]="icon(t.emoji, t.isPublic)" class="ico" />
             @if (t.isPublic) {
               <i class="pub"><ion-icon name="people" /></i>
             }
@@ -75,6 +78,7 @@
             </div>
           </div>
         </a>
+        </div>
       } @empty {
         <div class="gm-empty">
           <ion-icon name="chatbubbles-outline" />

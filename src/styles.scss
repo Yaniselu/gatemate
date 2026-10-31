@@ -216,12 +216,12 @@ h3 {
     align-items: center;
     height: 54px;
     border-radius: 16px;
-    background: var(--gm-surface);
-    border: 1.5px solid transparent;
+    background: var(--gm-input-bg);
+    border: 1.5px solid var(--gm-input-border);
     transition: border-color var(--gm-dur-fast), box-shadow var(--gm-dur) var(--gm-ease-out), background var(--gm-dur-fast);
 
     &:focus-within {
-      background: #fff;
+      background: var(--gm-input-focus);
       border-color: var(--gm-accent);
       box-shadow: 0 0 0 5px rgba(var(--gm-accent-rgb), 0.12);
     }
@@ -250,7 +250,8 @@ h3 {
       color: var(--gm-ink);
 
       &::placeholder {
-        color: #a5b2c1;
+        color: var(--gm-placeholder);
+        opacity: 1;
       }
     }
 

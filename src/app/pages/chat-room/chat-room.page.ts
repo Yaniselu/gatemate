@@ -1,3 +1,4 @@
+import { chatIcon } from '../../shared/utils/chat-icon';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnInit, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActionSheetController, AlertController, IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar, NavController } from '@ionic/angular/standalone';
@@ -31,6 +32,7 @@ const REPORT_REASONS = ['Spam or scam', 'Harassment or hate', 'Sexual content', 
   styleUrl: './chat-room.page.scss',
 })
 export class ChatRoomPage implements OnInit {
+  protected icon = chatIcon;
   readonly id = input.required<string>();
 
   protected chat = inject(ChatService);
@@ -159,7 +161,7 @@ export class ChatRoomPage implements OnInit {
         ...(!t.isPublic ? [{ text: tr('Invite via WhatsApp'), icon: 'logo-whatsapp', handler: () => void this.inviteWhatsapp() }] : []),
         { text: t.muted ? tr('Unmute notifications') : tr('Mute notifications'), icon: t.muted ? 'volume-high-outline' : 'volume-mute-outline', handler: () => this.chat.toggleMute(t.id) },
         { text: tr('Community Guidelines'), icon: 'shield-checkmark-outline', handler: () => void this.nav.navigateForward('/legal/guidelines') },
-        { text: t.isPublic ? tr('Leave lounge') : tr('Leave group'), icon: 'exit-outline', role: 'destructive', handler: () => void this.leave() },
+        { text: t.isPublic ? tr('Leave lounge') : tr('Delete chat'), icon: t.isPublic ? 'exit-outline' : 'trash-outline', role: 'destructive', handler: () => void this.leave() },
         { text: tr('Cancel'), role: 'cancel' },
       ],
     });

@@ -126,16 +126,26 @@ public class AirportMapService {
         });
     }
 
-    @Scheduled(initialDelayString = "PT3M", fixedDelayString = "${gatemate.integrations.map-warm-interval:PT2M}")
+    private final AtomicInteger warmFailures = new AtomicInteger();
+    private volatile Instant warmPausedUntil = Instant.EPOCH;
+
+    @Scheduled(initialDelayString = "PT5M", fixedDelayString = "${gatemate.integrations.map-warm-interval:PT10M}")
     public void warm() {
-        if (!enabled || !inFlight.isEmpty()) return;
+        if (!enabled || !inFlight.isEmpty() || Instant.now().isBefore(warmPausedUntil)) return;
         var large = catalog.large();
         if (large.isEmpty()) return;
         for (int tries = 0; tries < large.size(); tries++) {
             var a = large.get(Math.floorMod(warmCursor.getAndIncrement(), large.size()));
             var s = stored(a.iata());
             if (s.isEmpty() || s.get().at().isBefore(Instant.now().minus(FRESH))) {
-                refresh(a);
+                refresh(a).whenComplete((ok, err) -> {
+                    if (err == null) warmFailures.set(0);
+                    else if (warmFailures.incrementAndGet() >= 3) {
+                        warmPausedUntil = Instant.now().plus(Duration.ofHours(1));
+                        warmFailures.set(0);
+                        log.info("map warm-up paused for an hour: OpenStreetMap servers are refusing requests");
+                    }
+                });
                 return;
             }
         }
@@ -203,7 +213,8 @@ public class AirportMapService {
                 try {
                     if (delay > 0) Thread.sleep(delay);
                     if (result.isDone()) return;
-                    String text = http.post().uri(mirror).contentType(MediaType.APPLICATION_FORM_URLENCODED).accept(MediaType.ALL).body(body).retrieve().body(String.class);
+                    byte[] raw = http.post().uri(mirror).contentType(MediaType.APPLICATION_FORM_URLENCODED).accept(MediaType.ALL).body(body).retrieve().body(byte[].class);
+                    String text = raw == null ? null : new String(raw, StandardCharsets.UTF_8);
                     JsonNode res = text == null ? null : json.readTree(text);
                     if (res != null && res.has("elements")) {
                         result.complete(res.path("elements"));

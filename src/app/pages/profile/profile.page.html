@@ -152,7 +152,16 @@
     <button class="gm-btn ghost" (click)="signOut()"><ion-icon name="log-out-outline" /> {{ 'Sign out' | t }}</button>
     <button class="danger" (click)="deleteAccount()"><ion-icon name="trash-outline" /> {{ 'Delete account' | t }}</button>
 
-    <p class="version">Gatemate {{ version }} · {{ 'Made with ✈️ for travellers' | t }}</p>
+    <footer class="about">
+      <img src="logo.png" alt="" width="40" height="40" />
+      <b>{{ 'Every gate, every pass, every person you travel with. One app.' | t }}</b>
+      <span class="stats">
+        <span><ion-icon name="globe-outline" />{{ '5,300+ airports' | t }}</span>
+        <span><ion-icon name="language-outline" />{{ '6 languages' | t }}</span>
+        <span><ion-icon name="cloud-offline-outline" />{{ 'Works offline' | t }}</span>
+      </span>
+      <small>Gatemate {{ version }} · Velosyntech · {{ 'Built in Craiova, Romania' | t }}</small>
+    </footer>
     <div class="gm-bottom-spacer"></div>
   </div>
 </ion-content>

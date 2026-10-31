@@ -109,7 +109,7 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
   private scrollTimer?: ReturnType<typeof setTimeout>;
   private unlisten?: () => void;
   private resizer?: ResizeObserver;
-  private readonly reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private readonly reduced = (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) || document.documentElement.classList.contains('gm-lite');
 
   async ngAfterViewInit() {
     await new Promise<void>((done) => {

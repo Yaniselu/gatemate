@@ -2,6 +2,11 @@ import { addIcons } from 'ionicons';
 import {
   accessibilityOutline,
   qrCode,
+  trailSign,
+  business,
+  football,
+  restaurant,
+  briefcase,
   statsChartOutline,
   keypadOutline,
   personAddOutline,
@@ -205,6 +210,11 @@ export function registerIcons(): void {
   addIcons({
     accessibilityOutline,
     qrCode,
+    trailSign,
+    business,
+    football,
+    restaurant,
+    briefcase,
     statsChartOutline,
     keypadOutline,
     personAddOutline,

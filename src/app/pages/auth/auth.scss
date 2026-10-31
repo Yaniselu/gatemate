@@ -112,6 +112,7 @@ h1 {
 .apple {
   background: #000;
   color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   ion-icon {
     font-size: 21px;
     margin-top: -3px;
@@ -119,7 +120,7 @@ h1 {
 }
 
 .google {
-  background: var(--gm-card-bg);
+  background: #ffffff;
   color: #1f1f1f;
   border: 1px solid #dadce0;
   svg {

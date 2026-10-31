@@ -12,7 +12,7 @@ import { ConfettiService } from '../../shared/components/confetti.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
-const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', '🌴', '💼', '🎓', '❤️', '✈️'];
+import { CHAT_ICONS, chatIcon } from '../../shared/utils/chat-icon';
 
 @Component({
   selector: 'gm-chat-new',
@@ -29,7 +29,7 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
       <div class="page">
         @if (!created()) {
           <div class="preview anim-scale-in">
-            <span class="avatar" [class.bump]="bump()">{{ emoji() }}</span>
+            <span class="avatar" [class.bump]="bump()"><ion-icon [name]="icon(emoji())" /></span>
             <b>{{ title().trim() || ('Your group' | t) }}</b>
             <small>{{ tripTitle() }}</small>
           </div>
@@ -41,8 +41,8 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
 
           <span class="gm-label lbl">{{ 'Pick an icon' | t }}</span>
           <div class="emojis">
-            @for (e of emojis; track e; let i = $index) {
-              <button [class.on]="emoji() === e" (click)="pickEmoji(e)" [style.--i]="i" [attr.aria-label]="'Icon {e}' | t: { e }">{{ e }}</button>
+            @for (e of emojis; track e.emoji; let i = $index) {
+              <button [class.on]="emoji() === e.emoji" (click)="pickEmoji(e.emoji)" [style.--i]="i" [attr.aria-label]="e.icon"><ion-icon [name]="e.icon" /></button>
             }
           </div>
 
@@ -63,7 +63,7 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
         } @else {
           @if (created(); as c) {
             <div class="created anim-scale-in">
-              <span class="avatar big">{{ c.emoji }}</span>
+              <span class="avatar big"><ion-icon [name]="icon(c.emoji)" /></span>
               <h2>{{ c.title | t }} is ready</h2>
               <p>{{ 'Invite your travel buddies — they’ll join the chat and see the shared trip.' | t }}</p>
             </div>
@@ -77,7 +77,7 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
   styles: `
     .page { padding: 10px 16px 40px; max-width: 540px; margin: 0 auto; }
     .preview, .created { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 6px 0 20px; text-align: center; }
-    .avatar { width: 84px; height: 84px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 42px; background: linear-gradient(135deg, var(--gm-accent-soft), var(--gm-card-bg)); border: 1px solid var(--gm-card-border); box-shadow: var(--gm-card-shadow); margin-bottom: 8px; }
+    .avatar { color: var(--gm-accent-strong); width: 84px; height: 84px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 42px; background: linear-gradient(135deg, var(--gm-accent-soft), var(--gm-card-bg)); border: 1px solid var(--gm-card-border); box-shadow: var(--gm-card-shadow); margin-bottom: 8px; }
     .avatar.bump { animation: gm-bounce-icon .5s var(--gm-ease-spring); }
     .avatar.big { width: 104px; height: 104px; font-size: 52px; animation: gm-pop .6s var(--gm-ease-spring); }
     .preview b { font-size: 18px; }
@@ -86,7 +86,7 @@ const EMOJIS = ['🏖️', '🏔️', '🏙️', '🎉', '⚽', '🎿', '🍝', 
     .created p { color: var(--gm-ink-3); margin: 0 0 8px; line-height: 1.45; }
     .lbl { margin: 6px 4px 8px; }
     .emojis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }
-    .emojis button { aspect-ratio: 1; border-radius: 14px; font-size: 24px; background: var(--gm-card-bg); border: 1px solid var(--gm-card-border); transition: transform .3s var(--gm-ease-spring), border-color .2s; animation: gm-scale-in .35s var(--gm-ease-spring) both; animation-delay: calc(var(--i) * 25ms); }
+    .emojis button { aspect-ratio: 1; display: grid; place-items: center; border-radius: 14px; font-size: 24px; color: var(--gm-accent-strong); background: var(--gm-card-bg); border: 1px solid var(--gm-card-border); transition: transform .3s var(--gm-ease-spring), border-color .2s; animation: gm-scale-in .35s var(--gm-ease-spring) both; animation-delay: calc(var(--i) * 25ms); }
     .emojis button.on { border-color: var(--gm-accent); transform: scale(1.1); box-shadow: 0 0 0 4px rgba(var(--gm-accent-rgb), .12); }
     .trips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
     .trips button { padding: 9px 14px; border-radius: 999px; background: var(--gm-surface); font-weight: 650; font-size: 14px; color: var(--gm-ink-2); transition: all .3s var(--gm-ease-spring); }
@@ -105,9 +105,10 @@ export class ChatNewPage implements OnInit {
   private achievements = inject(AchievementsService);
   private nav = inject(NavController);
 
-  readonly emojis = EMOJIS;
+  readonly emojis = CHAT_ICONS;
+  protected icon = chatIcon;
   readonly title = signal('');
-  readonly emoji = signal(EMOJIS[0]);
+  readonly emoji = signal(CHAT_ICONS[1].emoji);
   readonly tripId = signal<string | null>(null);
   readonly busy = signal(false);
   readonly bump = signal(false);

@@ -3,7 +3,7 @@
     <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/chat" text="" icon="chevron-back" /></ion-buttons>
     @if (thread(); as t) {
       <div class="who">
-        <span class="avatar" [style.background]="t.gradient">{{ t.emoji }}</span>
+        <span class="avatar" [style.background]="t.gradient"><ion-icon [name]="icon(t.emoji, t.isPublic)" /></span>
         <div>
           <b>{{ t.title | t }}</b>
           <small>

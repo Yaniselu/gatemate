@@ -244,3 +244,46 @@
   ion-icon { font-size: 18px; }
   &:active { transform: scale(0.94); }
 }
+
+.avatar .ico {
+  font-size: 26px;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18));
+}
+
+.swipe {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--gm-line);
+  .thread {
+    position: relative;
+    z-index: 1;
+    border-bottom: 0;
+    background: var(--gm-canvas, var(--gm-bg));
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    transition: transform 0.28s var(--gm-ease-out);
+    &.dragging {
+      transition: none;
+    }
+  }
+  .del {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 750;
+    background: var(--gm-badge, #e5484d);
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+}

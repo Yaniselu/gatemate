@@ -2,6 +2,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { LiveActivityService } from './core/services/live-activity.service';
 import { NotificationsService } from './core/services/notifications.service';
 import { KeyboardService } from './core/services/keyboard.service';
+import { PerformanceService } from './core/services/performance.service';
 import { TravelStore } from './core/services/travel.store';
 import { ChangeDetectionStrategy, Component, effect, inject, NgZone, signal } from '@angular/core';
 import { Router } from '@angular/router';
@@ -43,6 +44,7 @@ export class App {
   private notifications = inject(NotificationsService);
 
   constructor() {
+    inject(PerformanceService).start();
     inject(KeyboardService).start();
     document.addEventListener('touchstart', () => {}, { passive: true });
     let scheduled = '';
