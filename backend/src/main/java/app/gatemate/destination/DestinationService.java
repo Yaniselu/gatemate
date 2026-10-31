@@ -127,8 +127,61 @@ public class DestinationService {
                     Math.round(c.path("wind_speed_10m").asDouble()), "days", days);
         } catch (Exception e) {
             log.debug("weather {}: {}", a.iata(), e.getMessage());
+            return metNo(a);
+        }
+    }
+
+    private Map<String, Object> metNo(AirportCatalog.Airport a) {
+        try {
+            JsonNode j = http.get().uri("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={lat}&lon={lon}",
+                    Math.round(a.lat() * 1e4) / 1e4, Math.round(a.lon() * 1e4) / 1e4).retrieve().body(JsonNode.class);
+            JsonNode series = j.path("properties").path("timeseries");
+            if (series.isEmpty()) return null;
+            java.time.ZoneId zone = java.time.ZoneId.of(a.tz());
+            var max = new java.util.TreeMap<String, Double>();
+            var min = new java.util.TreeMap<String, Double>();
+            var code = new java.util.HashMap<String, Integer>();
+            for (JsonNode t : series) {
+                String day = java.time.Instant.parse(t.path("time").asString()).atZone(zone).toLocalDate().toString();
+                double temp = t.path("data").path("instant").path("details").path("air_temperature").asDouble();
+                max.merge(day, temp, Math::max);
+                min.merge(day, temp, Math::min);
+                String sym = t.path("data").path("next_6_hours").path("summary").path("symbol_code").asString("");
+                if (!sym.isEmpty()) code.merge(day, wmo(sym), Math::max);
+            }
+            var days = new ArrayList<Map<String, Object>>();
+            for (String day : max.keySet()) {
+                if (days.size() == 5) break;
+                days.add(Map.of("date", day, "code", code.getOrDefault(day, 2), "max", Math.round(max.get(day)), "min", Math.round(min.get(day))));
+            }
+            JsonNode now = series.get(0).path("data");
+            String sym = now.path("next_1_hours").path("summary").path("symbol_code").asString(now.path("next_6_hours").path("summary").path("symbol_code").asString(""));
+            JsonNode d = now.path("instant").path("details");
+            return Map.of("temp", Math.round(d.path("air_temperature").asDouble()), "code", wmo(sym), "wind", Math.round(d.path("wind_speed").asDouble() * 3.6), "days", days);
+        } catch (Exception e) {
+            log.debug("met.no {}: {}", a.iata(), e.getMessage());
             return null;
         }
+    }
+
+    static int wmo(String symbol) {
+        String s = symbol.replaceAll("_(day|night|polartwilight)$", "");
+        if (s.contains("thunder")) return 95;
+        if (s.startsWith("heavysnow")) return 75;
+        if (s.contains("snowshowers")) return 85;
+        if (s.contains("snow")) return 71;
+        if (s.contains("sleet")) return 66;
+        if (s.startsWith("heavyrain")) return 65;
+        if (s.contains("rainshowers")) return 80;
+        if (s.startsWith("lightrain")) return 51;
+        if (s.contains("rain")) return 61;
+        return switch (s) {
+            case "clearsky" -> 0;
+            case "fair" -> 1;
+            case "partlycloudy" -> 2;
+            case "fog" -> 45;
+            default -> 3;
+        };
     }
 
     private Map<String, Object> fx(String base, String currency) {
