@@ -57,6 +57,10 @@ export class AirportDbService {
     return this.byCode.get(iata.toUpperCase());
   }
 
+  countryCodes(): string[] {
+    return Object.keys(this.countries).filter((c) => /^[A-Z]{2}$/.test(c));
+  }
+
   country(code: string): CountryFacts | undefined {
     return this.countries[code];
   }

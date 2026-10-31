@@ -1915,3 +1915,19 @@
 @This boarding pass is already in Gatemate.	Questa carta è già in Gatemate.
 @Gatemate adds tickets in your name ({name}) or in the name of someone in your Family. Add them in Profile → Family with the name exactly as on the ticket, then scan it again.	Gatemate aggiunge biglietti a tuo nome ({name}) o a nome di qualcuno della tua Famiglia. Aggiungilo in Profilo → Famiglia con il nome esatto del biglietto, poi scansiona di nuovo.
 @your legal name	il tuo nome legale
+@Your country	Il tuo paese
+@Choose your country	Scegli il paese
+@The app is now in {lang}.	L’app ora è in {lang}.
+@Alex	Alex
+@Morgan	Rossi
+@Travelling with family or friends?	Viaggi con famiglia o amici?
+@Add them once, even kids without the app. Then scan their tickets and every pass is on your phone.	Aggiungili una volta, anche i bambini senza app. Poi scansiona i loro biglietti e tutte le carte sono sul tuo telefono.
+@Write the name exactly as on their ticket or passport.	Scrivi il nome esattamente come sul biglietto o passaporto.
+@Add a family member or friend	Aggiungi un familiare o un amico
+@Whose ticket is this?	Di chi è questo biglietto?
+@{name} · {flight} · {from} → {to}	{name} · {flight} · {from} → {to}
+@It’s mine	È mio
+@Someone travelling with me	Qualcuno che viaggia con me
+@Save {name} and the ticket	Salva {name} e il biglietto
+@Import a booking from any airline. We check each ticket is in your name or in the name of someone you travel with, so nobody can add a stranger’s flight.	Importa una prenotazione da qualsiasi compagnia. Controlliamo che ogni biglietto sia a nome tuo o di chi viaggia con te, così nessuno può aggiungere il volo di uno sconosciuto.
+@{name} added. Now scan their boarding pass or add them to a flight.	{name} aggiunto. Ora scansiona la sua carta o aggiungilo a un volo.

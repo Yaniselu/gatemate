@@ -16,7 +16,9 @@ import { AIRLINES, AirlineOption } from '../../core/data/airlines';
 import { BcbpError, BoardingPassData, parseBcbp } from '../../core/utils/bcbp';
 import { matchPassengerName } from '../../core/utils/name-match';
 import { cleanText } from '../../core/security/sanitize';
-import { Companion, Trip } from '../../core/models';
+import { Companion, Relation, Trip } from '../../core/models';
+import { RELATIONS } from '../family/family.page';
+import { firstOnTicket, nameQuality } from '../../core/utils/name-match';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ReviewService } from '../../core/services/review.service';
 import { AchievementsService } from '../../core/services/achievements.service';
@@ -25,7 +27,7 @@ import { PressableDirective } from '../../shared/directives/pressable.directive'
 import { SheenDirective } from '../../shared/directives/sheen.directive';
 import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
-type Step = 'choose' | 'airline' | 'email' | 'manual' | 'verifying' | 'done' | 'failed';
+type Step = 'choose' | 'airline' | 'email' | 'manual' | 'verifying' | 'done' | 'failed' | 'whose';
 interface Check {
   label: string;
   state: 'wait' | 'run' | 'ok' | 'bad';
@@ -50,6 +52,27 @@ export class AddFlightPage {
   readonly companions = signal<Companion[]>([]);
   readonly flyingWith = signal<Set<string>>(new Set());
   private loadFamily = this.api.getCompanions().then((c) => this.companions.set(c)).catch(() => {});
+  readonly addingPerson = signal(false);
+  readonly person = signal<{ first: string; last: string; relation: Relation }>({ first: '', last: '', relation: 'child' });
+
+  setPerson(patch: Partial<{ first: string; last: string; relation: Relation }>) {
+    this.person.update((w) => ({ ...w, ...patch }));
+  }
+
+  async addPerson() {
+    const w = this.person();
+    if (!w.first.trim() || !w.last.trim()) return;
+    try {
+      const c = await this.api.addCompanion({ firstName: w.first.trim(), lastName: w.last.trim(), relation: w.relation });
+      this.companions.update((l) => [...l, c]);
+      this.person.set({ first: '', last: w.last.trim(), relation: w.relation });
+      this.addingPerson.set(false);
+      this.platform.impact();
+      await this.toast.show(tr('{name} added. Now scan their boarding pass or add them to a flight.', { name: c.firstName }), 'success');
+    } catch (e) {
+      await this.toast.show(e instanceof Error ? e.message : 'Couldn’t add them.', 'error');
+    }
+  }
 
   toggleCompanion(id: string) {
     this.platform.selection();
@@ -287,19 +310,58 @@ export class AddFlightPage {
     }
     const user = this.auth.user();
     await this.loadFamily;
-    const self = matchPassengerName(pass.firstName, pass.lastName, user?.legalFirstName ?? '', user?.legalLastName ?? '').ok;
-    const relative = self ? undefined : this.companions().find((c) => matchPassengerName(pass.firstName, pass.lastName, c.firstName, c.lastName).ok);
-    const ok = self || !!relative;
+    const selfQ = nameQuality(pass.firstName, pass.lastName, user?.legalFirstName, user?.legalLastName);
+    let best: Companion | undefined;
+    let bestQ = 0;
+    for (const c of this.companions()) {
+      const q = nameQuality(pass.firstName, pass.lastName, c.firstName, c.lastName);
+      if (q > bestQ) {
+        bestQ = q;
+        best = c;
+      }
+    }
+    if (best && bestQ > selfQ) return this.claimPass(pass, best);
+    if (selfQ >= 3) return this.claimPass(pass);
+    const words = (s: string) => s.toLowerCase().replace(/(^|[\s-])\p{L}/gu, (m) => m.toUpperCase());
+    this.pending.set({ pass, selfPossible: selfQ > 0 });
+    this.who.set({ first: words(firstOnTicket(pass.firstName).toLowerCase()), last: words(pass.lastName.toLowerCase()), relation: 'child' });
+    this.step.set('whose');
+  }
+
+  readonly pending = signal<{ pass: BoardingPassData; selfPossible: boolean } | null>(null);
+  readonly who = signal<{ first: string; last: string; relation: Relation }>({ first: '', last: '', relation: 'child' });
+  readonly relations = RELATIONS;
+
+  setWho(patch: Partial<{ first: string; last: string; relation: Relation }>) {
+    this.who.update((w) => ({ ...w, ...patch }));
+  }
+
+  async mine() {
+    const p = this.pending();
+    if (p) await this.claimPass(p.pass);
+  }
+
+  async saveAndClaim() {
+    const p = this.pending(), w = this.who();
+    if (!p || !w.first.trim() || !w.last.trim()) return;
+    try {
+      const c = await this.api.addCompanion({ firstName: w.first.trim(), lastName: w.last.trim(), relation: w.relation });
+      this.companions.update((l) => [...l, c]);
+      await this.claimPass(p.pass, c);
+    } catch (e) {
+      await this.toast.show(e instanceof Error ? e.message : 'Couldn’t add them.', 'error');
+    }
+  }
+
+  private async claimPass(pass: BoardingPassData, relative?: Companion) {
+    this.pending.set(null);
     this.passFor.set(relative ? relative.firstName : null);
     await this.runChecks(
       ['Reading IATA boarding pass', relative ? tr('Matching “{name}” to {who} from your family', { name: pass.passengerName, who: relative.firstName }) : tr('Matching “{name}” to you or your family', { name: pass.passengerName }), 'Checking it isn’t linked to another account', 'Securing it on this device'],
       async (advance) => {
         await advance(true);
-        await advance(ok);
-        if (!ok) {
-          throw new ApiError('This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.', 403, 'name_mismatch');
-        }
-        const trip = await this.api.claimFlight({ method: 'pass', barcode: pass.raw });
+        await advance(true);
+        const trip = await this.api.claimFlight({ method: 'pass', barcode: pass.raw, companionId: relative?.id });
         await advance(true);
         await advance(true);
         return trip;

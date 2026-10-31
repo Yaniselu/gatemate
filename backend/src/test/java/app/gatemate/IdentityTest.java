@@ -160,4 +160,26 @@ class IdentityTest {
         String stranger = register("str2+" + UUID.randomUUID() + "@example.com", "Dan Ionescu").get("accessToken").asString();
         post("/api/v1/flights/claim", stranger, String.format(claim, kid2Pass), 403);
     }
+
+    @Test
+    void sameLastNameAndPrefixFirstNamesGoToTheRightPerson() throws Exception {
+        String access = register("ion+" + UUID.randomUUID() + "@example.com", "Ion Popescu").get("accessToken").asString();
+        var son = post("/api/v1/me/companions", access, "{\"firstName\":\"Ionut\",\"lastName\":\"Popescu\",\"relation\":\"child\"}", 200);
+        int julian = LocalDate.now().plusDays(15).getDayOfYear();
+        String pnr = "ION" + (100 + (int) (Math.random() * 899));
+        String claim = "{\"method\":\"pass\",\"barcode\":\"%s\"}";
+        var mine = post("/api/v1/flights/claim", access, String.format(claim, BcbpAndNameTest.pass("POPESCU/IONMR", pnr, "OTP", "LTN", "W6", "3301", julian, "021A")), 200);
+        var trip = post("/api/v1/flights/claim", access, String.format(claim, BcbpAndNameTest.pass("POPESCU/IONUTMSTR", pnr, "OTP", "LTN", "W6", "3301", julian, "021B")), 200);
+        var f = trip.path("flights").get(0);
+        assertThat(f.path("id").asString()).isEqualTo(mine.path("flights").get(0).path("id").asString());
+        assertThat(f.path("seat").asString()).isEqualTo("21A");
+        assertThat(f.path("passengers").get(0).path("companionId").asString()).isEqualTo(son.path("id").asString());
+        assertThat(f.path("passengers").get(0).path("seat").asString()).isEqualTo("21B");
+
+        var friend = post("/api/v1/me/companions", access, "{\"firstName\":\"Ioana\",\"lastName\":\"Popescu\",\"relation\":\"friend\"}", 200);
+        String body = json.writeValueAsString(java.util.Map.of("method", "pass", "companionId", friend.path("id").asString(),
+                "barcode", BcbpAndNameTest.pass("POPESCU/IOANA", pnr, "OTP", "LTN", "W6", "3301", julian, "021C")));
+        var withFriend = post("/api/v1/flights/claim", access, body, 200);
+        assertThat(withFriend.path("flights").get(0).path("passengers").size()).isEqualTo(2);
+    }
 }

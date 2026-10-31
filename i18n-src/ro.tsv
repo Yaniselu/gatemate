@@ -1915,3 +1915,19 @@
 @This boarding pass is already in Gatemate.	Acest bilet e deja în Gatemate.
 @Gatemate adds tickets in your name ({name}) or in the name of someone in your Family. Add them in Profile → Family with the name exactly as on the ticket, then scan it again.	Gatemate adaugă bilete pe numele tău ({name}) sau al cuiva din Familie. Adaugă persoana în Profil → Familie cu numele exact ca pe bilet, apoi scanează din nou.
 @your legal name	numele tău legal
+@Your country	Țara ta
+@Choose your country	Alege țara
+@The app is now in {lang}.	Aplicația e acum în {lang}.
+@Alex	Alex
+@Morgan	Popescu
+@Travelling with family or friends?	Călătorești cu familia sau prietenii?
+@Add them once, even kids without the app. Then scan their tickets and every pass is on your phone.	Adaugă-i o singură dată, chiar și copiii fără aplicație. Apoi le scanezi biletele și toate sunt în telefonul tău.
+@Write the name exactly as on their ticket or passport.	Scrie numele exact ca pe bilet sau în pașaport.
+@Add a family member or friend	Adaugă un membru al familiei sau un prieten
+@Whose ticket is this?	Al cui e biletul?
+@{name} · {flight} · {from} → {to}	{name} · {flight} · {from} → {to}
+@It’s mine	E al meu
+@Someone travelling with me	Cineva care călătorește cu mine
+@Save {name} and the ticket	Salvează pe {name} și biletul
+@Import a booking from any airline. We check each ticket is in your name or in the name of someone you travel with, so nobody can add a stranger’s flight.	Importă o rezervare de la orice companie. Verificăm că fiecare bilet e pe numele tău sau al cuiva cu care călătorești, ca nimeni să nu poată adăuga zborul unui străin.
+@{name} added. Now scan their boarding pass or add them to a flight.	{name} a fost adăugat. Acum scanează-i biletul sau pune-l pe un zbor.

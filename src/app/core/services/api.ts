@@ -8,6 +8,12 @@ export interface SocialCredential {
   authorizationCode?: string;
 }
 
+export interface RegisterExtra {
+  firstName?: string;
+  lastName?: string;
+  country?: string;
+}
+
 export interface NewFlightInput {
   carrier: string;
   airlineName?: string;
@@ -34,7 +40,7 @@ export interface BookingLookupResult {
 }
 
 export type ClaimRequest =
-  | { method: 'pass'; barcode: string }
+  | { method: 'pass'; barcode: string; companionId?: string }
   | { method: 'booking'; airline: string; bookingRef: string; lastName: string; flightIds: string[] };
 
 export interface FeedbackInput {
@@ -73,7 +79,7 @@ export type AssistantEvent =
 
 export abstract class GatemateApi {
   abstract loginWithPassword(email: string, password: string): Promise<Session>;
-  abstract register(name: string, email: string, password: string): Promise<Session>;
+  abstract register(name: string, email: string, password: string, extra?: RegisterExtra): Promise<Session>;
   abstract loginWithSocial(credential: SocialCredential): Promise<Session>;
   abstract refresh(refreshToken: string): Promise<Session>;
   abstract logout(refreshToken: string): Promise<void>;

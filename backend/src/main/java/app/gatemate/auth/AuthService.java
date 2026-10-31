@@ -57,9 +57,15 @@ public class AuthService {
         }
         var u = newUser(r.name().trim(), email, "password");
         u.passwordHash = encoder.encode(r.password());
-        String[] parts = u.displayName.split("\\s+", 2);
-        u.legalFirstName = parts[0];
-        u.legalLastName = parts.length > 1 ? parts[1] : null;
+        if (r.firstName() != null && !r.firstName().isBlank() && r.lastName() != null && !r.lastName().isBlank()) {
+            u.legalFirstName = r.firstName().trim().replaceAll("\\s+", " ");
+            u.legalLastName = r.lastName().trim().replaceAll("\\s+", " ");
+        } else {
+            String[] parts = u.displayName.split("\\s+");
+            u.legalFirstName = parts.length > 1 ? String.join(" ", java.util.Arrays.copyOf(parts, parts.length - 1)) : parts[0];
+            u.legalLastName = parts.length > 1 ? parts[parts.length - 1] : null;
+        }
+        u.country = r.country() == null || r.country().isBlank() ? null : r.country();
         u.lang = app.gatemate.common.Messages.lang(r.lang());
         users.save(u);
         return tokens.issue(u);

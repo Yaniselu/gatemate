@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { ProfilePatch, Session, User } from '../models';
 import { createNonce } from '../security/crypto.util';
 import { SecureStorageService } from '../security/secure-storage.service';
-import { ApiError, GatemateApi, SocialCredential } from './api';
+import { ApiError, GatemateApi, RegisterExtra, SocialCredential } from './api';
 import { PlatformService } from './platform.service';
 import { currentLang } from '../i18n/i18n.service';
 
@@ -67,8 +67,8 @@ export class AuthService {
     }
   }
 
-  async register(name: string, email: string, password: string): Promise<void> {
-    await this.accept(await this.api.register(name.trim(), email.trim().toLowerCase(), password));
+  async register(name: string, email: string, password: string, extra?: RegisterExtra): Promise<void> {
+    await this.accept(await this.api.register(name.trim(), email.trim().toLowerCase(), password, extra));
   }
 
   async loginWithApple(): Promise<void> {

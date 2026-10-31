@@ -16,6 +16,7 @@ public class UserEntity {
     public String legalLastName;
     public String phone;
     public String homeAirport;
+    public String country;
     public String lang = "en";
     public java.time.LocalDate aiDay;
     public int aiCount;

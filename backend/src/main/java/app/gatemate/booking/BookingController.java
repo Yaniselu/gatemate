@@ -23,7 +23,7 @@ public class BookingController {
             @NotBlank @Size(max = 40) String lastName) {}
 
     public record ClaimRequest(@NotBlank @Pattern(regexp = "pass|booking") String method, @Size(max = 2000) String barcode, String airline, String bookingRef,
-            @Size(max = 40) String lastName, List<String> flightIds) {}
+            @Size(max = 40) String lastName, List<String> flightIds, String companionId) {}
 
     @PostMapping("/bookings/lookup")
     public ClaimService.LookupResult lookup(@Valid @RequestBody LookupRequest r) {
@@ -34,7 +34,7 @@ public class BookingController {
     public TripDtos.TripDto claim(@Valid @RequestBody ClaimRequest r) {
         if ("pass".equals(r.method())) {
             if (r.barcode() == null) throw ApiException.badRequest("barcode_required", "Missing boarding pass.");
-            return claims.claimPass(CurrentUser.id(), r.barcode());
+            return claims.claimPass(CurrentUser.id(), r.barcode(), r.companionId());
         }
         if (r.airline() == null || r.bookingRef() == null || r.lastName() == null) throw ApiException.badRequest("booking_required", "Missing booking details.");
         return claims.claimBooking(CurrentUser.id(), r.airline(), r.bookingRef(), r.lastName());

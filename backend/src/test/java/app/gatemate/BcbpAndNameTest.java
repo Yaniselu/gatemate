@@ -51,5 +51,10 @@ class BcbpAndNameTest {
         assertTrue(NameMatcher.match("A", "CONSTANTINESC", "Alexandra", "Constantinescu").ok());
         assertFalse(NameMatcher.match("JOHN", "DOE", "Ana", "Popescu").ok());
         assertFalse(NameMatcher.match("ANA", "POP", "Ana", "Popescu").ok());
+        assertTrue(NameMatcher.match("YANIS", "SERBAN", "Yanis", "Mihai Serban").ok());
+        assertTrue(NameMatcher.match("YANISMIHAI", "SERBAN", "Serban", "Yanis Mihai").ok());
+        assertTrue(NameMatcher.match("ANAMARIAMRS", "POPESCU", "Ana Maria", "Popescu").ok());
+        assertTrue(NameMatcher.quality("IONUT", "POPESCU", "Ionut", "Popescu") > NameMatcher.quality("IONUT", "POPESCU", "Ion", "Popescu"));
+        assertTrue(NameMatcher.quality("ANAMARIA", "POPESCU", "Ana-Maria", "Popescu") > NameMatcher.quality("ANAMARIA", "POPESCU", "Ana", "Popescu"));
     }
 }

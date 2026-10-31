@@ -23,6 +23,7 @@ export interface User {
   identityVerified?: boolean;
   identityCountry?: string;
   identityExpiry?: string;
+  country?: string;
 }
 
 export type Relation = 'partner' | 'child' | 'parent' | 'sibling' | 'relative' | 'friend';

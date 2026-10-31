@@ -14,7 +14,7 @@
       @case ('choose') {
         <div class="intro anim-fade-up">
           <h1>{{ 'Bring your trip in' | t }}</h1>
-          <p>{{ 'Import a booking from any airline. We check the ticket is' | t }} <b>{{ 'in your name' | t }}</b> {{ 'before adding it, so nobody can add someone else’s flight.' | t }}</p>
+          <p>{{ 'Import a booking from any airline. We check each ticket is in your name or in the name of someone you travel with, so nobody can add a stranger’s flight.' | t }}</p>
         </div>
 
         @if (!hasLegalName()) {
@@ -26,6 +26,40 @@
         } @else {
           <div class="who anim-fade-up"><ion-icon name="shield-checkmark" /> {{ 'Verifying tickets for' | t }} <b>{{ legalName() }}</b> <a routerLink="/profile/edit">{{ 'Edit' | t }}</a></div>
         }
+
+        <section class="crew card anim-fade-up">
+          <div class="crew-head">
+            <span class="gm-well tint" style="--c: #EC4899"><ion-icon name="people-outline" /></span>
+            <div><b>{{ 'Travelling with family or friends?' | t }}</b><small>{{ 'Add them once, even kids without the app. Then scan their tickets and every pass is on your phone.' | t }}</small></div>
+          </div>
+          @if (companions().length) {
+            <div class="crew-list">
+              @for (c of companions(); track c.id) {
+                <span class="mate"><i>{{ (c.firstName[0] || '') + (c.lastName[0] || '') }}</i>{{ c.firstName }}</span>
+              }
+            </div>
+          }
+          @if (addingPerson()) {
+            <div class="person-form">
+              <div class="two">
+                <input [value]="person().first" (input)="setPerson({ first: $any($event.target).value })" [placeholder]="'First name(s)' | t" autocomplete="off" maxlength="40" />
+                <input [value]="person().last" (input)="setPerson({ last: $any($event.target).value })" [placeholder]="'Last name' | t" autocomplete="off" maxlength="40" />
+              </div>
+              <div class="rel">
+                @for (r of relations; track r.id) {
+                  <button type="button" [class.on]="person().relation === r.id" (click)="setPerson({ relation: r.id })"><ion-icon [name]="r.icon" />{{ r.label | t }}</button>
+                }
+              </div>
+              <small class="tip">{{ 'Write the name exactly as on their ticket or passport.' | t }}</small>
+              <div class="row">
+                <button class="gm-btn ghost small" type="button" (click)="addingPerson.set(false)">{{ 'Cancel' | t }}</button>
+                <button class="gm-btn small" type="button" (click)="addPerson()" [disabled]="!person().first.trim() || !person().last.trim()"><ion-icon name="checkmark" />{{ 'Save' | t }}</button>
+              </div>
+            </div>
+          } @else {
+            <button class="add-person" type="button" (click)="addingPerson.set(true)"><ion-icon name="person-add-outline" />{{ 'Add a family member or friend' | t }}</button>
+          }
+        </section>
 
         <div class="methods">
           @for (m of methods; track m.id; let i = $index) {
@@ -183,6 +217,33 @@
           </div>
           <button class="gm-btn" type="submit" [disabled]="busy()">{{ flyingWith().size ? ('Save flight for {n} people' | t: { n: flyingWith().size + 1 }) : ('Save flight' | t) }}</button>
         </form>
+      }
+
+      @case ('whose') {
+        @if (pending(); as p) {
+          <div class="whose anim-fade-up">
+            <div class="badge-q"><ion-icon name="people-outline" /></div>
+            <h2 class="h center">{{ 'Whose ticket is this?' | t }}</h2>
+            <p class="center muted">{{ '{name} · {flight} · {from} → {to}' | t: { name: p.pass.passengerName, flight: p.pass.carrier + ' ' + p.pass.flightNumber, from: p.pass.from, to: p.pass.to } }}</p>
+            @if (p.selfPossible) {
+              <button class="gm-btn ghost" (click)="mine()"><ion-icon name="person-outline" />{{ 'It’s mine' | t }}</button>
+            }
+            <div class="card who-card">
+              <b>{{ 'Someone travelling with me' | t }}</b>
+              <div class="two">
+                <input [value]="who().first" (input)="setWho({ first: $any($event.target).value })" [placeholder]="'First name(s)' | t" maxlength="40" />
+                <input [value]="who().last" (input)="setWho({ last: $any($event.target).value })" [placeholder]="'Last name' | t" maxlength="40" />
+              </div>
+              <div class="rel">
+                @for (r of relations; track r.id) {
+                  <button type="button" [class.on]="who().relation === r.id" (click)="setWho({ relation: r.id })"><ion-icon [name]="r.icon" />{{ r.label | t }}</button>
+                }
+              </div>
+              <button class="gm-btn" (click)="saveAndClaim()" [disabled]="!who().first.trim() || !who().last.trim()"><ion-icon name="checkmark-circle" />{{ 'Save {name} and the ticket' | t: { name: who().first || '…' } }}</button>
+            </div>
+            <button class="manual-link" (click)="pending.set(null); step.set('choose')">{{ 'Cancel' | t }}</button>
+          </div>
+        }
       }
 
       @case ('verifying') {

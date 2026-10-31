@@ -133,3 +133,44 @@
     color: var(--gm-accent-strong);
   }
 }
+
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  .gm-field {
+    min-width: 0;
+  }
+}
+.select {
+  position: relative;
+  .flag {
+    font-size: 20px;
+    line-height: 1;
+  }
+  select {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: none;
+    background: none;
+    color: var(--gm-ink);
+    font-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .chev {
+    pointer-events: none;
+    color: var(--gm-ink-3);
+  }
+}
+.hint-ok {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gm-accent-strong);
+}

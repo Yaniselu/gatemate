@@ -16,7 +16,7 @@ import { matchPassengerName } from '../utils/name-match';
 import { randomId } from '../security/crypto.util';
 import { findMrz } from '../utils/mrz';
 import { locale, t } from '../i18n/i18n.service';
-import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, RegisterExtra, SocialCredential } from './api';
 
 const ACCESS_TTL_MS = 15 * 60_000;
 
@@ -72,12 +72,16 @@ export class MockApi extends GatemateApi {
     return this.session({ ...this.makeUser(name, email, 'password'), emailVerified: false });
   }
 
-  async register(name: string, email: string, _password: string): Promise<Session> {
+  async register(name: string, email: string, _password: string, extra?: RegisterExtra): Promise<Session> {
     await this.delay(null, 900, 1400);
     if (email.toLowerCase().startsWith('taken@')) {
       throw new ApiError('An account with this email already exists.', 409, 'email_taken');
     }
-    return this.session(this.makeUser(name, email, 'password'));
+    const u = this.makeUser(name, email, 'password');
+    if (extra?.firstName && extra.lastName) Object.assign(u, { legalFirstName: extra.firstName, legalLastName: extra.lastName });
+    if (extra?.country) Object.assign(u, { country: extra.country });
+    this.user = u;
+    return this.session(u);
   }
 
   async loginWithSocial(c: SocialCredential): Promise<Session> {
@@ -228,8 +232,9 @@ export class MockApi extends GatemateApi {
         { label: 'Passenger name matches your legal name', ok: m.ok },
         { label: 'Not added by another Gatemate account', ok: !this.claimed.has(key) },
       ];
-      if (!m.ok) {
-        const c = this.companions.find((x) => matchPassengerName(p.firstName, p.lastName, x.firstName, x.lastName).ok);
+      const forced = req.companionId ? this.companions.find((x) => x.id === req.companionId) : undefined;
+      if (!m.ok || forced) {
+        const c = forced ?? this.companions.find((x) => matchPassengerName(p.firstName, p.lastName, x.firstName, x.lastName).ok);
         if (!c) throw new ApiError('This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.', 403, 'name_mismatch');
         const ckey = `${key}/${p.firstName}`;
         if (this.claimed.has(ckey)) throw new ApiError('This boarding pass is already in Gatemate.', 409, 'already_claimed');

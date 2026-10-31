@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ChatMessage, ChecklistItem, ChatThread, Companion, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
-import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
+import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, RegisterExtra, SocialCredential } from './api';
 import { currentLang, t } from '../i18n/i18n.service';
 import { AuthService } from './auth.service';
 
@@ -26,8 +26,8 @@ export class HttpApi extends GatemateApi {
   loginWithPassword(email: string, password: string) {
     return this.call(this.http.post<Session>(`${this.base}/auth/login`, { email, password }));
   }
-  register(name: string, email: string, password: string) {
-    return this.call(this.http.post<Session>(`${this.base}/auth/register`, { name, email, password, lang: currentLang() }));
+  register(name: string, email: string, password: string, extra?: RegisterExtra) {
+    return this.call(this.http.post<Session>(`${this.base}/auth/register`, { name, email, password, lang: currentLang(), ...extra }));
   }
   loginWithSocial(c: SocialCredential) {
     return this.call(this.http.post<Session>(`${this.base}/auth/oauth/${c.provider}`, c));

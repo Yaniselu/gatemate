@@ -79,20 +79,42 @@ public class ClaimService {
 
     @Transactional
     public TripDtos.TripDto claimPass(UUID me, String barcode) {
+        return claimPass(me, barcode, null);
+    }
+
+    public TripDtos.TripDto claimPass(UUID me, String barcode, String companionId) {
         var user = users.findById(me).orElseThrow();
         var p = Bcbp.parse(barcode, LocalDate.now());
-        boolean mine = user.legalFirstName != null && user.legalLastName != null
-                && NameMatcher.match(p.firstName(), p.lastName(), user.legalFirstName, user.legalLastName).ok();
-        if (!mine) {
-            var family = companions.findByOwnerIdOrderByCreatedAt(me).stream()
-                    .filter(c -> NameMatcher.match(p.firstName(), p.lastName(), c.firstName, c.lastName).ok()).findFirst();
-            if (family.isPresent()) return claimFor(me, user, family.get(), p, barcode);
+        if (companionId != null && !companionId.isBlank()) {
+            UUID cid;
+            try {
+                cid = UUID.fromString(companionId);
+            } catch (Exception e) {
+                throw ApiException.notFound("Family member");
+            }
+            var c = companions.findById(cid).filter(x -> x.ownerId.equals(me)).orElseThrow(() -> ApiException.notFound("Family member"));
+            if (NameMatcher.quality(p.firstName(), p.lastName(), c.firstName, c.lastName) == 0) throw nameMismatch();
+            return claimFor(me, user, c, p, barcode);
+        }
+        int self = NameMatcher.quality(p.firstName(), p.lastName(), user.legalFirstName, user.legalLastName);
+        CompanionEntity best = null;
+        int bestScore = 0;
+        for (var c : companions.findByOwnerIdOrderByCreatedAt(me)) {
+            int q = NameMatcher.quality(p.firstName(), p.lastName(), c.firstName, c.lastName);
+            if (q > bestScore) {
+                bestScore = q;
+                best = c;
+            }
+        }
+        if (best != null && bestScore > self) return claimFor(me, user, best, p, barcode);
+        if (self == 0) {
             legalUser(me);
             throw nameMismatch();
         }
         var from = airports.get(p.from()).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + p.from() + "."));
         var to = airports.get(p.to()).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + p.to() + "."));
-        String claimKey = key(p.bookingRef(), p.carrier() + p.flightNumber(), p.flightDate().toString(), p.lastName());
+        String claimKey = key(p.bookingRef(), p.carrier() + p.flightNumber(), p.flightDate().toString(), p.lastName() + "/" + p.firstName());
+        assertUnclaimed(key(p.bookingRef(), p.carrier() + p.flightNumber(), p.flightDate().toString(), p.lastName()), me);
         assertUnclaimed(claimKey, me);
         String verified = verification("boarding-pass", List.of(check("Valid IATA boarding pass barcode", true),
                 check("Passenger name matches your legal name", true), check("Not added by another Gatemate account", true)));
@@ -104,7 +126,7 @@ public class ClaimService {
             f.ownerFlying = true;
             if (!p.seat().isBlank()) f.seat = p.seat();
             f.bookingRef = p.bookingRef();
-            f.passengerName = titleCase(p.firstName() + " " + p.lastName());
+            f.passengerName = titleCase(NameMatcher.displayFirst(p.firstName()) + " " + p.lastName());
             f.claimKey = claimKey;
             f.barcodeEnc = trips.seal(barcode);
             f.verificationJson = verified;
@@ -114,7 +136,7 @@ public class ClaimService {
 
         var f = baseFlight(p, from, to);
         f.seat = p.seat().isBlank() ? null : p.seat();
-        f.passengerName = titleCase(p.firstName() + " " + p.lastName());
+        f.passengerName = titleCase(NameMatcher.displayFirst(p.firstName()) + " " + p.lastName());
         f.claimKey = claimKey;
         f.barcodeEnc = trips.seal(barcode);
         f.verificationJson = verified;

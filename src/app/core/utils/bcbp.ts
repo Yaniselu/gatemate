@@ -32,7 +32,7 @@ export function parseBcbp(raw: string, today = new Date()): BoardingPassData {
   const [last = '', first = ''] = field(2, 20).split('/');
   const seatRaw = field(48, 4);
   return {
-    passengerName: titleCase(`${first} ${last}`.trim()),
+    passengerName: titleCase(`${first.trim().replace(/\s*(MRS|MSTR|MISS|MR|MS|DR|CHD|INF)$/, '') || first} ${last}`.trim()),
     firstName: first.trim(),
     lastName: last.trim(),
     raw: data,

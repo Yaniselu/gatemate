@@ -17,23 +17,39 @@
           <div class="form-error" role="alert"><ion-icon name="alert-circle" /> {{ error() }}</div>
         }
 
-        <div class="gm-field" [class.invalid]="invalid('name')">
-          <label for="name">{{ 'Full name (as in your passport)' | t }}</label>
-          <div class="gm-input-wrap">
-            <ion-icon name="person-outline" />
-            <input id="name" formControlName="name" autocomplete="name" [placeholder]="'Alex Morgan' | t" maxlength="60" />
+        <div class="gm-field">
+          <label for="country">{{ 'Your country' | t }}</label>
+          <div class="gm-input-wrap select">
+            <span class="flag" aria-hidden="true">{{ flag(form.controls.country.value) }}</span>
+            <select id="country" formControlName="country" (change)="countryChanged()">
+              <option value="">{{ 'Choose your country' | t }}</option>
+              @for (c of countries(); track c.code) { <option [value]="c.code">{{ c.name }}</option> }
+            </select>
+            <ion-icon name="chevron-down" class="chev" />
           </div>
-          @if (invalid('name')) {
-            <span class="gm-error">{{ 'Use letters only (2–60 characters).' | t }}</span>
-          }
-          <p class="real-name"><ion-icon name="id-card-outline" />{{ 'Use your real name, exactly as in your passport or ID. Your tickets are checked against it, and changing it later needs a passport scan.' | t }}</p>
+          @if (langNote()) { <span class="hint-ok"><ion-icon name="language-outline" />{{ langNote() }}</span> }
         </div>
+
+        <div class="two">
+          <div class="gm-field" [class.invalid]="invalid('firstName')">
+            <label for="firstName">{{ 'First name(s)' | t }}</label>
+            <div class="gm-input-wrap"><input id="firstName" formControlName="firstName" autocomplete="given-name" [placeholder]="'Alex' | t" maxlength="40" (blur)="persist()" /></div>
+          </div>
+          <div class="gm-field" [class.invalid]="invalid('lastName')">
+            <label for="lastName">{{ 'Last name' | t }}</label>
+            <div class="gm-input-wrap"><input id="lastName" formControlName="lastName" autocomplete="family-name" [placeholder]="'Morgan' | t" maxlength="40" (blur)="persist()" /></div>
+          </div>
+        </div>
+        @if (invalid('firstName') || invalid('lastName')) {
+          <span class="gm-error">{{ 'Enter your names exactly as in your passport (letters only).' | t }}</span>
+        }
+        <p class="real-name"><ion-icon name="id-card-outline" />{{ 'Use your real name, exactly as in your passport or ID. Your tickets are checked against it, and changing it later needs a passport scan.' | t }}</p>
 
         <div class="gm-field" [class.invalid]="invalid('email')">
           <label for="email">{{ 'Email' | t }}</label>
           <div class="gm-input-wrap">
             <ion-icon name="mail-outline" />
-            <input id="email" type="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" [placeholder]="'you@example.com' | t" />
+            <input id="email" type="email" formControlName="email" (blur)="persist()" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" [placeholder]="'you@example.com' | t" />
           </div>
           @if (invalid('email')) {
             <span class="gm-error">{{ 'Enter a valid email address.' | t }}</span>

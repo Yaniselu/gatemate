@@ -17,7 +17,10 @@ public final class AuthDtos {
             @NotBlank @Size(min = 2, max = 60) @Pattern(regexp = "^[\\p{L}][\\p{L}\\p{M}' .-]{1,59}$") String name,
             @NotBlank @Email @Size(max = 254) String email,
             @NotBlank @Size(min = 10, max = 128) String password,
-            @Size(max = 5) String lang) {}
+            @Size(max = 5) String lang,
+            @Size(max = 40) @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\p{M}' -]{0,39}$") String firstName,
+            @Size(max = 40) @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\p{M}' -]{0,39}$") String lastName,
+            @Pattern(regexp = "^$|^[A-Z]{2}$") String country) {}
 
     public record SocialRequest(
             @NotBlank @Size(max = 8192) String idToken,
