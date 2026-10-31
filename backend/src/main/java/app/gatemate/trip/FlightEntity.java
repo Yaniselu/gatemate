@@ -29,6 +29,7 @@ public class FlightEntity {
     public String baggageJson;
     public String verificationJson;
     public String claimKey;
+    public String passengersJson;
     public int delayMinutes;
     public int arrivalDelayMinutes;
     public Instant createdAt = Instant.now();

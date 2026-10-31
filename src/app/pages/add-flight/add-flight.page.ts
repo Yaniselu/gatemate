@@ -16,7 +16,7 @@ import { AIRLINES, AirlineOption } from '../../core/data/airlines';
 import { BcbpError, BoardingPassData, parseBcbp } from '../../core/utils/bcbp';
 import { matchPassengerName } from '../../core/utils/name-match';
 import { cleanText } from '../../core/security/sanitize';
-import { Trip } from '../../core/models';
+import { Companion, Trip } from '../../core/models';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ReviewService } from '../../core/services/review.service';
 import { AchievementsService } from '../../core/services/achievements.service';
@@ -47,6 +47,19 @@ const PNR = /^[A-Z0-9]{6}$/;
 export class AddFlightPage {
   private fb = inject(FormBuilder);
   private api = inject(GatemateApi);
+  readonly companions = signal<Companion[]>([]);
+  readonly flyingWith = signal<Set<string>>(new Set());
+  private loadFamily = this.api.getCompanions().then((c) => this.companions.set(c)).catch(() => {});
+
+  toggleCompanion(id: string) {
+    this.platform.selection();
+    this.flyingWith.update((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }
   private store = inject(TravelStore);
   protected auth = inject(AuthService);
   private toast = inject(ToastService);
@@ -363,6 +376,7 @@ export class AddFlightPage {
         to: v.to,
         seat: v.seat || undefined,
         passengerName: cleanText(this.legalName() || this.auth.user()?.name || 'Traveller', 60),
+        passengers: [...this.flyingWith()].map((companionId) => ({ companionId })),
       });
       await this.toast.show('Flight added as unverified — import the booking later to verify it', 'success', 'airplane');
       await this.openTrip(trip);

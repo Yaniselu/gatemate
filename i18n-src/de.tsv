@@ -1674,3 +1674,82 @@
 @{n} min walk	{n} Min. zu Fuß
 @Free day	Freier Tag
 @Wander a neighbourhood, a local market or take a day trip	Bummel durch ein Viertel, einen Markt oder mach einen Tagesausflug
+@Passengers	Passagiere
+@Remove from this flight	Von diesem Flug entfernen
+@Add to this ticket	Zu diesem Ticket hinzufügen
+@Everyone in your family is already on this ticket.	Deine ganze Familie ist schon auf diesem Ticket.
+@Add your family once, then put them on any ticket.	Füge deine Familie einmal hinzu und setze sie auf jedes Ticket.
+@Manage family	Familie verwalten
+@Scan the photo page	Scanne die Seite mit dem Foto
+@Lay the passport or ID card flat in good light. The two or three lines of letters and «<<<» at the bottom must be sharp.	Leg Reisepass oder Ausweis flach und gut beleuchtet hin. Die zwei oder drei Zeilen mit Buchstaben und «<<<» unten müssen scharf sein.
+@Take a photo	Foto aufnehmen
+@Choose from photos	Aus Fotos wählen
+@Type the code lines instead	Codezeilen eintippen
+@The photo is read on this phone and never uploaded. Only the code lines are checked, and the document number is not stored.	Das Foto wird auf diesem Handy gelesen und nie hochgeladen. Nur die Codezeilen werden geprüft, die Dokumentnummer wird nicht gespeichert.
+@Reading the document…	Dokument wird gelesen…
+@Type the code lines	Codezeilen eintippen
+@Copy the lines at the bottom of the photo page exactly, one per line. Use < for each arrow.	Übertrage die Zeilen unten auf der Fotoseite genau, eine pro Zeile. Nutze < für jedes Winkelzeichen.
+@Check	Prüfen
+@Document read	Dokument gelesen
+@Name	Name
+@Issued by	Ausgestellt von
+@Document	Dokument
+@Passport	Reisepass
+@ID card	Personalausweis
+@Valid until	Gültig bis
+@This document has expired.	Dieses Dokument ist abgelaufen.
+@Scan another document	Anderes Dokument scannen
+@Checking…	Wird geprüft…
+@Use this name	Diesen Namen verwenden
+@Scan again	Erneut scannen
+@Identity	Identität
+@Identity verified	Identität bestätigt
+@Not verified yet	Noch nicht bestätigt
+@Document valid until {date}	Dokument gültig bis {date}
+@Why verify?	Warum bestätigen?
+@Tickets are added to your account only when the name on them matches yours.	Tickets landen nur in deinem Konto, wenn der Name darauf zu deinem passt.
+@Nobody can change your name to take over someone else’s ticket: a new name needs a passport scan.	Niemand kann seinen Namen ändern, um das Ticket eines anderen zu übernehmen: Ein neuer Name braucht einen Pass-Scan.
+@The photo stays on your phone. We keep your name, the issuing country and the expiry date, not the document number.	Das Foto bleibt auf deinem Handy. Wir speichern Name, Ausstellungsland und Ablaufdatum, nicht die Dokumentnummer.
+@Optional: everything else in Gatemate works without it.	Optional: Alles andere in Gatemate funktioniert auch ohne.
+@Scan a new document	Neues Dokument scannen
+@Scan passport or ID card	Pass oder Ausweis scannen
+@Family members	Familienmitglieder
+@Add the people you travel with once. Then put them on any ticket in one tap: one booking, everyone’s pass in your phone.	Füge deine Mitreisenden einmal hinzu. Dann setzt du sie mit einem Tipp auf jedes Ticket: eine Buchung, alle Bordkarten auf deinem Handy.
+@Verifying {name}	Bestätigung: {name}
+@Not verified	Nicht bestätigt
+@Verify with passport	Mit Pass bestätigen
+@No family members yet.	Noch keine Familienmitglieder.
+@Add someone	Jemanden hinzufügen
+@Write names exactly as in their passport, so they match the ticket.	Schreib die Namen genau wie im Pass, damit sie zum Ticket passen.
+@Add to family	Zur Familie hinzufügen
+@Partner	Partner
+@Child	Kind
+@Parent	Elternteil
+@Sibling	Geschwister
+@Relative	Verwandte(r)
+@Friend	Freund(in)
+@Who else is flying on this booking?	Wer fliegt noch mit dieser Buchung?
+@Manage	Verwalten
+@Add family members	Familienmitglieder hinzufügen
+@Save flight for {n} people	Flug für {n} Personen speichern
+@Full name (as in your passport)	Vollständiger Name (wie im Pass)
+@Use your real name, exactly as in your passport or ID. Your tickets are checked against it, and changing it later needs a passport scan.	Nutze deinen echten Namen, genau wie im Pass oder Ausweis. Deine Tickets werden damit abgeglichen, und eine spätere Änderung braucht einen Pass-Scan.
+@Verified with your document · scan a new one to change it	Mit deinem Dokument bestätigt · scanne ein neues, um ihn zu ändern
+@To change it, scan your passport or ID card	Zum Ändern scanne deinen Pass oder Ausweis
+@Remove {name}?	{name} entfernen?
+@They will stay on tickets they’re already on.	Auf bestehenden Tickets bleibt die Person drauf.
+@We couldn’t find the code lines. Try again closer, without glare, or type them instead.	Codezeilen nicht gefunden. Versuch es näher und ohne Spiegelung oder tippe sie ein.
+@Those lines don’t add up. Check every character, especially 0 and O.	Die Zeilen passen nicht. Prüfe jedes Zeichen, vor allem 0 und O.
+@Identity verified. Your tickets now match this name.	Identität bestätigt. Deine Tickets passen jetzt zu diesem Namen.
+@Verified with their document.	Mit dem Dokument bestätigt.
+@Could not verify this document.	Dokument konnte nicht bestätigt werden.
+@Couldn’t load your family. Check your connection.	Familie konnte nicht geladen werden. Prüfe die Verbindung.
+@Couldn’t add them.	Konnte nicht hinzugefügt werden.
+@Couldn’t remove them. Try again.	Konnte nicht entfernt werden. Versuch es erneut.
+@Couldn’t add them to this flight.	Konnte nicht zu diesem Flug hinzugefügt werden.
+@Couldn’t update this flight. Try again.	Flug konnte nicht aktualisiert werden. Versuch es erneut.
+@We couldn't read the document. Try again with the whole photo page in view.	Dokument nicht lesbar. Versuch es erneut mit der ganzen Fotoseite im Bild.
+@We couldn’t read the document. Try again with the whole photo page in view.	Dokument nicht lesbar. Versuch es erneut mit der ganzen Fotoseite im Bild.
+@This document already verifies another Gatemate account.	Dieses Dokument bestätigt bereits ein anderes Gatemate-Konto.
+@To change the name on your tickets, scan your passport or ID card.	Um den Namen auf deinen Tickets zu ändern, scanne Pass oder Ausweis.
+@Scan their passport again to change a verified name.	Scanne den Pass erneut, um einen bestätigten Namen zu ändern.

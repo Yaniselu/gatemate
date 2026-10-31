@@ -1675,3 +1675,82 @@
 @{n} min walk	{n} min pe jos
 @Free day	Zi liberă
 @Wander a neighbourhood, a local market or take a day trip	Plimbă-te printr-un cartier, o piață locală sau fă o excursie de o zi
+@Passengers	Pasageri
+@Remove from this flight	Scoate de pe acest zbor
+@Add to this ticket	Adaugă pe acest bilet
+@Everyone in your family is already on this ticket.	Toată familia e deja pe acest bilet.
+@Add your family once, then put them on any ticket.	Adaugă-ți familia o singură dată, apoi pune-i pe orice bilet.
+@Manage family	Gestionează familia
+@Scan the photo page	Scanează pagina cu poza
+@Lay the passport or ID card flat in good light. The two or three lines of letters and «<<<» at the bottom must be sharp.	Pune pașaportul sau buletinul drept, în lumină bună. Cele două-trei rânduri cu litere și «<<<» de jos trebuie să fie clare.
+@Take a photo	Fă o poză
+@Choose from photos	Alege din poze
+@Type the code lines instead	Sau scrie rândurile de cod
+@The photo is read on this phone and never uploaded. Only the code lines are checked, and the document number is not stored.	Poza e citită pe telefon și nu se încarcă nicăieri. Se verifică doar rândurile de cod, iar numărul documentului nu se salvează.
+@Reading the document…	Citesc documentul…
+@Type the code lines	Scrie rândurile de cod
+@Copy the lines at the bottom of the photo page exactly, one per line. Use < for each arrow.	Copiază exact rândurile de jos de pe pagina cu poza, câte unul pe rând. Folosește < pentru fiecare săgeată.
+@Check	Verifică
+@Document read	Document citit
+@Name	Nume
+@Issued by	Emis de
+@Document	Document
+@Passport	Pașaport
+@ID card	Carte de identitate
+@Valid until	Valabil până la
+@This document has expired.	Documentul a expirat.
+@Scan another document	Scanează alt document
+@Checking…	Verific…
+@Use this name	Folosește acest nume
+@Scan again	Scanează din nou
+@Identity	Identitate
+@Identity verified	Identitate verificată
+@Not verified yet	Neverificat încă
+@Document valid until {date}	Document valabil până la {date}
+@Why verify?	De ce să verifici?
+@Tickets are added to your account only when the name on them matches yours.	Biletele se adaugă în cont doar dacă numele de pe ele se potrivește cu al tău.
+@Nobody can change your name to take over someone else’s ticket: a new name needs a passport scan.	Nimeni nu-și poate schimba numele ca să ia biletul altcuiva: un nume nou cere scanarea pașaportului.
+@The photo stays on your phone. We keep your name, the issuing country and the expiry date, not the document number.	Poza rămâne pe telefon. Păstrăm numele, țara emitentă și data expirării, nu numărul documentului.
+@Optional: everything else in Gatemate works without it.	Opțional: restul aplicației funcționează și fără.
+@Scan a new document	Scanează un document nou
+@Scan passport or ID card	Scanează pașaportul sau buletinul
+@Family members	Membrii familiei
+@Add the people you travel with once. Then put them on any ticket in one tap: one booking, everyone’s pass in your phone.	Adaugă o singură dată oamenii cu care călătorești. Apoi îi pui pe orice bilet dintr-o atingere: o rezervare, biletele tuturor în telefonul tău.
+@Verifying {name}	Verific: {name}
+@Not verified	Neverificat
+@Verify with passport	Verifică cu pașaportul
+@No family members yet.	Niciun membru al familiei încă.
+@Add someone	Adaugă pe cineva
+@Write names exactly as in their passport, so they match the ticket.	Scrie numele exact ca în pașaport, ca să se potrivească cu biletul.
+@Add to family	Adaugă în familie
+@Partner	Partener
+@Child	Copil
+@Parent	Părinte
+@Sibling	Frate/soră
+@Relative	Rudă
+@Friend	Prieten
+@Who else is flying on this booking?	Cine mai zboară pe această rezervare?
+@Manage	Gestionează
+@Add family members	Adaugă membri ai familiei
+@Save flight for {n} people	Salvează zborul pentru {n} persoane
+@Full name (as in your passport)	Nume complet (ca în pașaport)
+@Use your real name, exactly as in your passport or ID. Your tickets are checked against it, and changing it later needs a passport scan.	Folosește numele real, exact ca în pașaport sau buletin. Biletele se verifică după el, iar ca să-l schimbi mai târziu trebuie să scanezi pașaportul.
+@Verified with your document · scan a new one to change it	Verificat cu documentul tău · scanează unul nou ca să-l schimbi
+@To change it, scan your passport or ID card	Ca să-l schimbi, scanează pașaportul sau buletinul
+@Remove {name}?	Ștergi pe {name}?
+@They will stay on tickets they’re already on.	Rămâne pe biletele pe care e deja.
+@We couldn’t find the code lines. Try again closer, without glare, or type them instead.	N-am găsit rândurile de cod. Încearcă mai aproape, fără reflexii, sau scrie-le de mână.
+@Those lines don’t add up. Check every character, especially 0 and O.	Rândurile nu se potrivesc. Verifică fiecare caracter, mai ales 0 și O.
+@Identity verified. Your tickets now match this name.	Identitate verificată. Biletele tale se potrivesc acum cu acest nume.
+@Verified with their document.	Verificat cu documentul lui/ei.
+@Could not verify this document.	Nu am putut verifica documentul.
+@Couldn’t load your family. Check your connection.	Nu am putut încărca familia. Verifică conexiunea.
+@Couldn’t add them.	Nu am putut adăuga persoana.
+@Couldn’t remove them. Try again.	Nu am putut șterge. Încearcă din nou.
+@Couldn’t add them to this flight.	Nu am putut adăuga pe acest zbor.
+@Couldn’t update this flight. Try again.	Nu am putut actualiza zborul. Încearcă din nou.
+@We couldn't read the document. Try again with the whole photo page in view.	Nu am putut citi documentul. Încearcă din nou cu toată pagina cu poza în cadru.
+@We couldn’t read the document. Try again with the whole photo page in view.	Nu am putut citi documentul. Încearcă din nou cu toată pagina cu poza în cadru.
+@This document already verifies another Gatemate account.	Acest document verifică deja alt cont Gatemate.
+@To change the name on your tickets, scan your passport or ID card.	Ca să schimbi numele de pe bilete, scanează pașaportul sau buletinul.
+@Scan their passport again to change a verified name.	Scanează din nou pașaportul ca să schimbi un nume verificat.

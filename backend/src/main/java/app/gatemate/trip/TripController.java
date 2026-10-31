@@ -30,6 +30,16 @@ public class TripController {
         return trips.addManualFlight(CurrentUser.id(), in);
     }
 
+    @PostMapping("/flights/{id}/passengers")
+    public TripDtos.FlightDto addPassenger(@PathVariable UUID id, @Valid @RequestBody TripDtos.PassengerIn in) {
+        return trips.addPassenger(CurrentUser.id(), id, in);
+    }
+
+    @DeleteMapping("/flights/{id}/passengers/{companionId}")
+    public TripDtos.FlightDto removePassenger(@PathVariable UUID id, @PathVariable String companionId) {
+        return trips.removePassenger(CurrentUser.id(), id, companionId);
+    }
+
     @GetMapping("/flights/{id}/status")
     public TripDtos.FlightDto status(@PathVariable UUID id) {
         var f = flights.findById(id).orElseThrow(() -> app.gatemate.common.ApiException.notFound("Flight"));

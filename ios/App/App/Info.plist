@@ -67,7 +67,7 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Gatemate uses the camera to scan the barcode on your boarding pass.</string>
+	<string>Gatemate uses the camera to scan the barcode on your boarding pass and, if you choose, the code lines of your passport to confirm the name on your tickets.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Gatemate uses your location only while the app is open, to show where you are in the airport and route you to your gate.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

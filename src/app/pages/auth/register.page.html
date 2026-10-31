@@ -18,7 +18,7 @@
         }
 
         <div class="gm-field" [class.invalid]="invalid('name')">
-          <label for="name">{{ 'Full name' | t }}</label>
+          <label for="name">{{ 'Full name (as in your passport)' | t }}</label>
           <div class="gm-input-wrap">
             <ion-icon name="person-outline" />
             <input id="name" formControlName="name" autocomplete="name" [placeholder]="'Alex Morgan' | t" maxlength="60" />
@@ -26,6 +26,7 @@
           @if (invalid('name')) {
             <span class="gm-error">{{ 'Use letters only (2–60 characters).' | t }}</span>
           }
+          <p class="real-name"><ion-icon name="id-card-outline" />{{ 'Use your real name, exactly as in your passport or ID. Your tickets are checked against it, and changing it later needs a passport scan.' | t }}</p>
         </div>
 
         <div class="gm-field" [class.invalid]="invalid('email')">

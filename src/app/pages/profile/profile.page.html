@@ -105,6 +105,14 @@
       <a class="item" routerLink="/achievements" gmPressable>
         <span class="ic"><ion-icon name="trophy-outline" /></span>{{ 'Achievements' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>
+      <a class="item" routerLink="/identity" gmPressable>
+        <span class="ic" style="--c: #16A34A"><ion-icon name="shield-checkmark-outline" /></span>{{ 'Identity' | t }}
+        @if (auth.user()?.identityVerified) { <span class="tag ok">{{ 'Verified' | t }}</span> }
+        <ion-icon name="chevron-forward" class="chev" />
+      </a>
+      <a class="item" routerLink="/family" gmPressable>
+        <span class="ic" style="--c: #EC4899"><ion-icon name="people-outline" /></span>{{ 'Family' | t }}<ion-icon name="chevron-forward" class="chev" />
+      </a>
       <a class="item" routerLink="/world" gmPressable>
         <span class="ic" style="--c: #8B5CF6"><ion-icon name="globe-outline" /></span>{{ 'My world map' | t }}<ion-icon name="chevron-forward" class="chev" />
       </a>

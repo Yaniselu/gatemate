@@ -661,3 +661,34 @@
   border-top: 1px solid var(--gm-line);
   .muted { margin: 6px 0 10px; }
 }
+
+.family .fam {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 14px;
+    background: var(--gm-surface);
+    color: var(--gm-ink-2);
+    &.on {
+      background: var(--gm-on-accent-bg);
+      color: #fff;
+    }
+  }
+  .manage {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 6px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--gm-accent-strong);
+    text-decoration: none;
+  }
+}

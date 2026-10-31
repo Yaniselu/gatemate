@@ -17,6 +17,7 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		A1F1E5A12F00000100A1B2C3 /* LiveActivityPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F1E5A22F00000100A1B2C3 /* LiveActivityPlugin.swift */; };
+		B2E2F6B12F00000100B2C3D4 /* TextScanPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2E2F6B22F00000100B2C3D4 /* TextScanPlugin.swift */; };
 		A1F1E5A32F00000100A1B2C3 /* FlightActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F1E5A42F00000100A1B2C3 /* FlightActivityAttributes.swift */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +34,7 @@
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A1F1E5A22F00000100A1B2C3 /* LiveActivityPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityPlugin.swift; sourceTree = "<group>"; };
+		B2E2F6B22F00000100B2C3D4 /* TextScanPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextScanPlugin.swift; sourceTree = "<group>"; };
 		A1F1E5A42F00000100A1B2C3 /* FlightActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightActivityAttributes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -71,6 +73,7 @@
 				9582B6822FE993A50072D4E8 /* SceneDelegate.swift */,
 				A1F1E5A42F00000100A1B2C3 /* FlightActivityAttributes.swift */,
 				A1F1E5A22F00000100A1B2C3 /* LiveActivityPlugin.swift */,
+				B2E2F6B22F00000100B2C3D4 /* TextScanPlugin.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -168,6 +171,7 @@
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 				A1F1E5A32F00000100A1B2C3 /* FlightActivityAttributes.swift in Sources */,
 				A1F1E5A12F00000100A1B2C3 /* LiveActivityPlugin.swift in Sources */,
+				B2E2F6B12F00000100B2C3D4 /* TextScanPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -280,3 +280,45 @@
     }
   }
 }
+
+.locked {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px 40px 12px 12px;
+  border-radius: 14px;
+  background: var(--gm-surface);
+  div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  small {
+    font-size: 12px;
+    color: var(--gm-ink-3);
+  }
+  b {
+    font-size: 15.5px;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+  }
+  .lock {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    translate: 0 -50%;
+    font-size: 20px;
+    color: var(--gm-accent-strong);
+  }
+}
+.change {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--gm-accent-strong);
+  text-decoration: none;
+}

@@ -90,7 +90,7 @@ class ApiFlowTest {
 
     @Test
     void boardingPassMustBelongToTheAccount() throws Exception {
-        String access = register("pass+" + UUID.randomUUID() + "@example.com", "Ana").get("accessToken").asString();
+        String access = register("pass+" + UUID.randomUUID() + "@example.com", "Ion").get("accessToken").asString();
         int julian = LocalDate.now().plusDays(10).getDayOfYear();
         String barcode = BcbpAndNameTest.pass("POPESCU/ANA", "QWE" + (int) (Math.random() * 900 + 100), "OTP", "LTN", "W6", "3301", julian, "012A");
         String claim = "{\"method\":\"pass\",\"barcode\":\"" + barcode + "\"}";
@@ -102,7 +102,10 @@ class ApiFlowTest {
         post("/api/v1/flights/claim", access, claim, 403);
 
         mvc.perform(patch("/api/v1/me").header("Authorization", "Bearer " + access).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"legalFirstName\":\"Ana\",\"legalLastName\":\"Popescu\"}")).andExpect(status().isOk());
+                .content("{\"legalFirstName\":\"Ana\",\"legalLastName\":\"Popescu\"}")).andExpect(status().isConflict());
+        post("/api/v1/flights/claim", access, claim, 403);
+        String mrz = IdentityTest.passport("POPESCU", "ANA", "PX" + (100000 + (int) (Math.random() * 899999)), LocalDate.of(1991, 7, 9), LocalDate.now().plusYears(3));
+        post("/api/v1/me/identity", access, json.writeValueAsString(java.util.Map.of("lines", java.util.List.of(mrz.split("\n")))), 200);
         var trip = post("/api/v1/flights/claim", access, claim, 200);
         org.junit.jupiter.api.Assertions.assertEquals("verified", trip.path("flights").get(0).path("verification").path("status").asString());
 

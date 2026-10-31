@@ -13,7 +13,18 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import tools.jackson.core.type.TypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -63,36 +74,156 @@ public class AirportMapService {
 
     private static final List<String> MIRRORS = List.of("https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
             "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass-api.de/api/interpreter");
-    private final RestClient http = app.gatemate.common.Http.builder(Duration.ofSeconds(60)).build();
+    private static final Duration FRESH = Duration.ofDays(21);
+    private static final int MEMORY = 400;
+    private final RestClient http = app.gatemate.common.Http.builder(Duration.ofSeconds(70)).build();
     private final JsonMapper json;
     private final boolean enabled;
+    private final JdbcTemplate db;
+    private final AirportCatalog catalog;
+    private final ExecutorService pool = Executors.newVirtualThreadPerTaskExecutor();
+    private final Map<String, List<MapFeature>> memory = java.util.Collections.synchronizedMap(new LinkedHashMap<>(64, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, List<MapFeature>> e) {
+            return size() > MEMORY;
+        }
+    });
+    private final Map<String, CompletableFuture<List<MapFeature>>> inFlight = new ConcurrentHashMap<>();
+    private final AtomicInteger warmCursor = new AtomicInteger();
 
-    public AirportMapService(GatemateProperties props, JsonMapper json) {
+    public AirportMapService(GatemateProperties props, JsonMapper json, JdbcTemplate db, AirportCatalog catalog) {
         this.enabled = props.integrations().publicDataEnabled();
         this.json = json;
+        this.db = db;
+        this.catalog = catalog;
     }
 
-    @Cacheable(cacheNames = "airportMaps", key = "#a.iata()")
     public List<MapFeature> features(AirportCatalog.Airport a) {
         if (!enabled) return List.of();
-        var inside = parse(query(areaQuery(a), a.iata()));
+        var hot = memory.get(a.iata());
+        if (hot != null) return hot;
+        var stored = stored(a.iata());
+        if (stored.isPresent()) {
+            var s = stored.get();
+            memory.put(a.iata(), s.features());
+            if (s.at().isBefore(Instant.now().minus(FRESH))) refresh(a);
+            return s.features();
+        }
+        try {
+            return refresh(a).get(150, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.ExecutionException e) {
+            if (e.getCause() instanceof ApiException api) throw api;
+            throw new ApiException(HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Airport map data is temporarily unavailable.");
+        } catch (Exception e) {
+            throw new ApiException(HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Airport map data is temporarily unavailable.");
+        }
+    }
+
+    public void prefetch(String... codes) {
+        if (!enabled) return;
+        for (String c : codes) catalog.get(c).ifPresent(a -> {
+            if (!memory.containsKey(a.iata()) && stored(a.iata()).isEmpty()) refresh(a);
+        });
+    }
+
+    @Scheduled(initialDelayString = "PT3M", fixedDelayString = "${gatemate.integrations.map-warm-interval:PT2M}")
+    public void warm() {
+        if (!enabled || !inFlight.isEmpty()) return;
+        var large = catalog.large();
+        if (large.isEmpty()) return;
+        for (int tries = 0; tries < large.size(); tries++) {
+            var a = large.get(Math.floorMod(warmCursor.getAndIncrement(), large.size()));
+            var s = stored(a.iata());
+            if (s.isEmpty() || s.get().at().isBefore(Instant.now().minus(FRESH))) {
+                refresh(a);
+                return;
+            }
+        }
+    }
+
+    private CompletableFuture<List<MapFeature>> refresh(AirportCatalog.Airport a) {
+        return inFlight.computeIfAbsent(a.iata(), k -> CompletableFuture.supplyAsync(() -> {
+            try {
+                var f = download(a);
+                save(a.iata(), f);
+                memory.put(a.iata(), f);
+                return f;
+            } finally {
+                inFlight.remove(a.iata());
+            }
+        }, pool));
+    }
+
+    private List<MapFeature> download(AirportCatalog.Airport a) {
+        List<MapFeature> inside;
+        try {
+            inside = parse(query(areaQuery(a, true), a.iata()));
+        } catch (ApiException e) {
+            inside = parse(query(areaQuery(a, false), a.iata()));
+        }
         if (!inside.isEmpty()) return inside;
         return parse(query(aroundQuery(a), a.iata()));
     }
 
+    private record Stored(List<MapFeature> features, Instant at) {}
+
+    private Optional<Stored> stored(String iata) {
+        try {
+            return db.query("SELECT features, fetched_at FROM airport_maps WHERE iata = ?", rs -> {
+                if (!rs.next()) return Optional.<Stored>empty();
+                List<MapFeature> f = json.readValue(rs.getString(1), new TypeReference<List<MapFeature>>() {});
+                return Optional.of(new Stored(f, rs.getTimestamp(2).toInstant()));
+            }, iata);
+        } catch (Exception e) {
+            log.warn("stored map {} unreadable: {}", iata, e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private void save(String iata, List<MapFeature> f) {
+        if (f.isEmpty()) return;
+        try {
+            String text = json.writeValueAsString(f);
+            Timestamp now = Timestamp.from(Instant.now());
+            int n = db.update("UPDATE airport_maps SET features = ?, feature_count = ?, fetched_at = ? WHERE iata = ?", text, f.size(), now, iata);
+            if (n == 0) db.update("INSERT INTO airport_maps (iata, features, feature_count, fetched_at) VALUES (?, ?, ?, ?)", iata, text, f.size(), now);
+        } catch (Exception e) {
+            log.warn("could not store map {}: {}", iata, e.getMessage());
+        }
+    }
+
     private JsonNode query(String q, String iata) {
         String body = "data=" + URLEncoder.encode(q, StandardCharsets.UTF_8);
-        for (String mirror : MIRRORS) {
-            try {
-                String text = http.post().uri(mirror).contentType(MediaType.APPLICATION_FORM_URLENCODED).accept(MediaType.ALL).body(body).retrieve().body(String.class);
-                JsonNode res = text == null ? null : json.readTree(text);
-                if (res != null && res.has("elements")) return res.path("elements");
-                log.warn("Overpass {} returned no elements for {}", mirror, iata);
-            } catch (Exception e) {
-                log.warn("Overpass {} failed for {}: {}", mirror, iata, e.getMessage());
-            }
+        var result = new CompletableFuture<JsonNode>();
+        var failures = new AtomicInteger();
+        for (int i = 0; i < MIRRORS.size(); i++) {
+            String mirror = MIRRORS.get(i);
+            long delay = i * 1500L;
+            pool.submit(() -> {
+                try {
+                    if (delay > 0) Thread.sleep(delay);
+                    if (result.isDone()) return;
+                    String text = http.post().uri(mirror).contentType(MediaType.APPLICATION_FORM_URLENCODED).accept(MediaType.ALL).body(body).retrieve().body(String.class);
+                    JsonNode res = text == null ? null : json.readTree(text);
+                    if (res != null && res.has("elements")) {
+                        result.complete(res.path("elements"));
+                        return;
+                    }
+                    log.warn("Overpass {} returned no elements for {}", mirror, iata);
+                } catch (Exception e) {
+                    log.warn("Overpass {} failed for {}: {}", mirror, iata, e.getMessage());
+                }
+                if (failures.incrementAndGet() == MIRRORS.size())
+                    result.completeExceptionally(new ApiException(HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Airport map data is temporarily unavailable."));
+            });
         }
-        throw new ApiException(HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Airport map data is temporarily unavailable.");
+        try {
+            return result.get(140, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.ExecutionException e) {
+            throw e.getCause() instanceof ApiException api ? api : new ApiException(HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Airport map data is temporarily unavailable.");
+        } catch (Exception e) {
+            throw new ApiException(HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Airport map data is temporarily unavailable.");
+        }
     }
 
     private static String selectors(String scope) {
@@ -103,12 +234,18 @@ public class AirportMapService {
     }
 
     static String areaQuery(AirportCatalog.Airport a) {
+        return areaQuery(a, true);
+    }
+
+    static String areaQuery(AirportCatalog.Airport a, boolean containing) {
         var ids = new ArrayList<String>();
         ids.add("[\"iata\"=\"" + a.iata() + "\"]");
         if (a.icao() != null && !a.icao().isBlank()) ids.add("[\"icao\"=\"" + a.icao() + "\"]");
         var sb = new StringBuilder();
         for (String t : ids) sb.append("way[\"aeroway\"=\"aerodrome\"]").append(t).append(";relation[\"aeroway\"=\"aerodrome\"]").append(t).append(";");
-        return "[out:json][timeout:60];(" + sb + ")->.ap;.ap out geom tags;.ap map_to_area->.a;(" + selectors("(area.a)") + ")->.p;" + OUTPUTS + shapes("(area.a)");
+        if (containing) sb.append("way(pivot.in)[\"aeroway\"=\"aerodrome\"];relation(pivot.in)[\"aeroway\"=\"aerodrome\"];");
+        String in = containing ? "is_in(" + a.lat() + "," + a.lon() + ")->.in;" : "";
+        return "[out:json][timeout:60];" + in + "(" + sb + ")->.ap;.ap out geom tags;.ap map_to_area->.a;(" + selectors("(area.a)") + ")->.p;" + OUTPUTS + shapes("(area.a)");
     }
 
     static String aroundQuery(AirportCatalog.Airport a) {

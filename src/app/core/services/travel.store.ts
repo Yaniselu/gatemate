@@ -1,4 +1,5 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
+import { PrefsService } from './prefs.service';
 import { ChecklistItem, Expense, Flight, FlightAlert, TravelStats, Trip } from '../models';
 import { GatemateApi, NewFlightInput } from './api';
 import { Preferences } from '@capacitor/preferences';
@@ -28,6 +29,7 @@ export class TravelStore {
   private network = inject(NetworkService);
   private gates = inject(GatesService);
   private prefetched = new Set<string>();
+  private prefs = inject(PrefsService);
   private inflight: Promise<void> | null = null;
   private persistTimer?: ReturnType<typeof setTimeout>;
   private serverAlerts = signal<FlightAlert[]>([]);
@@ -183,8 +185,9 @@ export class TravelStore {
       .flatMap((t) => t.flights)
       .filter((f) => +new Date(f.departure) - Date.now() < 30 * 86_400_000)
       .flatMap((f) => [f.from.code, f.to.code])
-      .filter((c, i, a) => a.indexOf(c) === i && !this.prefetched.has(c))
-      .slice(0, 4);
+      .concat(this.prefs.homeAirport())
+      .filter((c, i, a) => !!c && a.indexOf(c) === i && !this.prefetched.has(c))
+      .slice(0, 5);
     if (!codes.length || !this.network.online()) return;
     await this.db.load().catch(() => {});
     for (const c of codes) {
@@ -233,6 +236,10 @@ export class TravelStore {
     const trip = await this.api.addFlight(input);
     this.trips.update((list) => [...list.filter((t) => t.id !== trip.id), trip]);
     return trip;
+  }
+
+  replaceFlight(flight: Flight): void {
+    this.trips.update((list) => list.map((t) => (t.flights.some((f) => f.id === flight.id) ? { ...t, flights: t.flights.map((f) => (f.id === flight.id ? flight : f)) } : t)));
   }
 
   async toggleChecklist(tripId: string, itemId: string): Promise<void> {

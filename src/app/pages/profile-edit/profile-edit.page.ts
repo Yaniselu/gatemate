@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AlertController, IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar, NavController } from '@ionic/angular/standalone';
 import { AuthService } from '../../core/services/auth.service';
@@ -22,7 +23,7 @@ const LEGAL = /^[\p{L}][\p{L}\p{M}' -]{0,39}$/u;
 @Component({
   selector: 'gm-profile-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, ReactiveFormsModule, AirportPickerComponent],
+  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, ReactiveFormsModule, AirportPickerComponent, RouterLink],
   templateUrl: './profile-edit.page.html',
   styleUrl: './profile-edit.page.scss',
 })
@@ -36,6 +37,7 @@ export class ProfileEditPage implements HasUnsavedChanges {
   private achievements = inject(AchievementsService);
 
   private user = this.auth.user()!;
+  readonly nameLocked = !!(this.user.identityVerified || (this.user.legalFirstName && this.user.legalLastName));
   private db = inject(AirportDbService);
   readonly pickingHome = signal(false);
   private dbReady = signal(false);

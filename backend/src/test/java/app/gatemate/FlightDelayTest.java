@@ -36,7 +36,7 @@ class FlightDelayTest {
         u.lang = "ro";
         u.importToken = UUID.randomUUID().toString().replace("-", "");
         users.save(u);
-        var trip = trips.addManualFlight(u.id, new TripDtos.NewFlight("W6", "Wizz Air", "3201", LocalDate.now().plusDays(1) + "T09:00:00", "CRA", "BCN", null, null, null));
+        var trip = trips.addManualFlight(u.id, new TripDtos.NewFlight("W6", "Wizz Air", "3201", LocalDate.now().plusDays(1) + "T09:00:00", "CRA", "BCN", null, null, null, null));
         var f = flights.findById(UUID.fromString(trip.flights().get(0).id())).orElseThrow();
         Instant dep = f.departureAt, arr = f.arrivalAt, board = f.boardingAt;
 

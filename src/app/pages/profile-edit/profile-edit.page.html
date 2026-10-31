@@ -45,6 +45,14 @@
       <span class="gm-label">{{ 'Name on your passport' | t }}</span>
       <div class="card fields">
         <p class="explain"><ion-icon name="shield-checkmark-outline" /><span>{{ 'We compare this with the name on tickets you import, so only' | t }} <b>{{ 'your' | t }}</b> {{ 'tickets can be added to your account. Never shown to others.' | t }}</span></p>
+        @if (nameLocked) {
+          <div class="locked">
+            <div><small>{{ 'First name(s)' | t }}</small><b>{{ form.controls.legalFirstName.value }}</b></div>
+            <div><small>{{ 'Last name' | t }}</small><b>{{ form.controls.legalLastName.value }}</b></div>
+            <ion-icon [name]="auth.user()?.identityVerified ? 'shield-checkmark' : 'lock-closed'" class="lock" />
+          </div>
+          <a class="change" routerLink="/identity"><ion-icon name="id-card-outline" />{{ auth.user()?.identityVerified ? ('Verified with your document · scan a new one to change it' | t) : ('To change it, scan your passport or ID card' | t) }}</a>
+        } @else {
         <div class="two">
           <div class="gm-field" [class.invalid]="bad('legalFirstName')">
             <label for="lfn">{{ 'First name(s)' | t }}</label>
@@ -55,6 +63,7 @@
             <div class="gm-input-wrap"><input id="lln" formControlName="legalLastName" maxlength="40" autocomplete="family-name" /></div>
           </div>
         </div>
+        }
         @if (bad('legalFirstName') || bad('legalLastName')) { <span class="gm-error">{{ 'Enter your names exactly as in your passport (letters only).' | t }}</span> }
       </div>
     </section>

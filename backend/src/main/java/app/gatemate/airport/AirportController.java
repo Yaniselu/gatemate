@@ -1,7 +1,10 @@
 package app.gatemate.airport;
 
 import app.gatemate.common.ApiException;
+import java.time.Duration;
 import java.util.List;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,7 +29,8 @@ public class AirportController {
     }
 
     @GetMapping("/{iata}/map")
-    public List<AirportMapService.MapFeature> map(@PathVariable String iata) {
-        return maps.features(catalog.get(iata).orElseThrow(() -> ApiException.notFound("Airport")));
+    public ResponseEntity<List<AirportMapService.MapFeature>> map(@PathVariable String iata) {
+        var f = maps.features(catalog.get(iata).orElseThrow(() -> ApiException.notFound("Airport")));
+        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofHours(12)).cachePrivate()).body(f);
     }
 }

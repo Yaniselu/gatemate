@@ -42,7 +42,7 @@ const OVERPASS = [
   'https://overpass.kumi.systems/api/interpreter',
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
-const STAGGER_MS = 5000;
+const STAGGER_MS = 2000;
 export const CURATED_MAPS = new Set(['CRA']);
 export const PLAN_VIEW: Record<string, { lat: number; lon: number; zoom: number; preview: number }> = {
   CRA: { lat: 44.3157, lon: 23.8830, zoom: 17.25, preview: 16.5 },
@@ -115,25 +115,51 @@ export class GatesService {
   }
 
   private async network(a: AirportRecord): Promise<MapFeature[]> {
+    const stop = new AbortController();
+    const device = this.fromDevice(a, stop.signal);
+    if (environment.useMocks) return device;
+    const server = firstValueFrom(this.http.get<MapFeature[]>(`${environment.apiUrl}/airports/${a.iata}/map`)).then((f) => {
+      if (!Array.isArray(f) || !f.length) throw new Error('no map on server');
+      return f;
+    });
     try {
-      const inside = await this.overpass(areaQuery(a));
-      const features = parse(inside);
-      if (features.length) return features;
-      return parse(await this.overpass(aroundQuery(a)));
+      const won = await Promise.any([server.then((f) => ({ f, from: 'server' })), device.then((f) => ({ f, from: 'device' }))]);
+      if (won.from === 'server') stop.abort();
+      return won.f;
     } catch (e) {
-      this.lastError = e instanceof Error ? e.message : String(e);
-      if (environment.useMocks) throw e;
-      return firstValueFrom(this.http.get<MapFeature[]>(`${environment.apiUrl}/airports/${a.iata}/map`));
+      const errs = (e as AggregateError).errors ?? [e];
+      this.lastError = errs.map((x: unknown) => (x instanceof Error ? x.message : String(x))).join(' · ');
+      throw errs[errs.length - 1];
     }
   }
 
-  private overpass(query: string): Promise<OsmElement[]> {
+  private async fromDevice(a: AirportRecord, signal: AbortSignal): Promise<MapFeature[]> {
+    let inside: OsmElement[];
+    try {
+      inside = await this.overpass(areaQuery(a, true), signal);
+    } catch (e) {
+      if (signal.aborted) throw e;
+      inside = await this.overpass(areaQuery(a, false), signal);
+    }
+    const features = parse(inside);
+    if (features.length) return features;
+    return parse(await this.overpass(aroundQuery(a), signal));
+  }
+
+  private overpass(query: string, outer?: AbortSignal): Promise<OsmElement[]> {
     return new Promise((resolve, reject) => {
       const ctl = new AbortController();
       const started = new Set<number>();
       const timers: ReturnType<typeof setTimeout>[] = [];
       let failed = 0;
       let done = false;
+      outer?.addEventListener('abort', () => {
+        if (done) return;
+        done = true;
+        timers.forEach(clearTimeout);
+        ctl.abort();
+        reject(new Error('cancelled'));
+      });
       const start = async (i: number): Promise<void> => {
         if (done || started.has(i) || i >= OVERPASS.length) return;
         started.add(i);
@@ -201,10 +227,12 @@ function selectors(scope: string): string {
   ].join('');
 }
 
-function areaQuery(a: AirportRecord): string {
+function areaQuery(a: AirportRecord, containing: boolean): string {
   const ids = [`["iata"="${a.iata}"]`, a.icao ? `["icao"="${a.icao}"]` : ''].filter(Boolean);
-  const airport = ids.map((t) => `way["aeroway"="aerodrome"]${t};relation["aeroway"="aerodrome"]${t};`).join('');
-  return `[out:json][timeout:60];(${airport})->.ap;.ap out geom tags;.ap map_to_area->.a;(${selectors('(area.a)')})->.p;${outputs}${shapes('(area.a)')}`;
+  const tagged = ids.map((t) => `way["aeroway"="aerodrome"]${t};relation["aeroway"="aerodrome"]${t};`).join('');
+  const airport = containing ? `${tagged}way(pivot.in)["aeroway"="aerodrome"];relation(pivot.in)["aeroway"="aerodrome"];` : tagged;
+  const inside = containing ? `is_in(${a.lat},${a.lon})->.in;` : '';
+  return `[out:json][timeout:60];${inside}(${airport})->.ap;.ap out geom tags;.ap map_to_area->.a;(${selectors('(area.a)')})->.p;${outputs}${shapes('(area.a)')}`;
 }
 
 function aroundQuery(a: AirportRecord): string {

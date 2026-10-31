@@ -34,6 +34,11 @@ public class UserEntity {
     public Instant lockedUntil;
     public Instant proUntil;
     public String proProduct;
+    public Instant identityVerifiedAt;
+    public String identityDocType;
+    public String identityCountry;
+    public java.time.LocalDate identityExpiry;
+    public String identityDocHash;
     public Instant createdAt = Instant.now();
 
     public boolean isPro() {

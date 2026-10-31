@@ -170,7 +170,18 @@
             <label for="seat">{{ 'Seat (optional)' | t }}</label>
             <div class="gm-input-wrap"><input id="seat" formControlName="seat" placeholder="12A" maxlength="4" (input)="normalize('manual', 'seat', $event)" /></div>
           </div>
-          <button class="gm-btn" type="submit" [disabled]="busy()">{{ 'Save flight' | t }}</button>
+          <div class="gm-field family">
+            <label>{{ 'Who else is flying on this booking?' | t }}</label>
+            <div class="fam">
+              @for (c of companions(); track c.id) {
+                <button type="button" [class.on]="flyingWith().has(c.id)" (click)="toggleCompanion(c.id)">
+                  <ion-icon [name]="flyingWith().has(c.id) ? 'checkmark-circle' : 'add'" />{{ c.firstName }}
+                </button>
+              }
+              <a class="manage" routerLink="/family"><ion-icon name="person-add-outline" />{{ companions().length ? ('Manage' | t) : ('Add family members' | t) }}</a>
+            </div>
+          </div>
+          <button class="gm-btn" type="submit" [disabled]="busy()">{{ flyingWith().size ? ('Save flight for {n} people' | t: { n: flyingWith().size + 1 }) : ('Save flight' | t) }}</button>
         </form>
       }
 

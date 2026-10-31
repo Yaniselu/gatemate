@@ -20,6 +20,29 @@ export interface User {
   proUntil?: string;
   emailVerified?: boolean;
   lang?: string;
+  identityVerified?: boolean;
+  identityCountry?: string;
+  identityExpiry?: string;
+}
+
+export type Relation = 'partner' | 'child' | 'parent' | 'sibling' | 'relative' | 'friend';
+
+export interface Companion {
+  id: string;
+  firstName: string;
+  lastName: string;
+  relation: Relation;
+  verified: boolean;
+  docCountry?: string;
+  docExpiry?: string;
+}
+
+export interface Passenger {
+  companionId: string;
+  name: string;
+  seat?: string;
+  relation?: Relation;
+  verified: boolean;
 }
 
 export type ProfilePatch = Partial<Pick<User, 'name' | 'homeAirport' | 'legalFirstName' | 'legalLastName' | 'phone' | 'seatPreference' | 'bio' | 'avatarUrl' | 'lang'>>;
@@ -62,6 +85,7 @@ export interface Flight {
   delayMinutes?: number;
   scheduledDeparture?: string;
   scheduledArrival?: string;
+  passengers?: Passenger[];
   baggageBelt?: string;
   durationMinutes: number;
   distanceKm: number;

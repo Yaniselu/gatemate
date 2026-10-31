@@ -1675,3 +1675,82 @@
 @{n} min walk	{n} min a pie
 @Free day	Día libre
 @Wander a neighbourhood, a local market or take a day trip	Pasea por un barrio, un mercado local o haz una excursión de un día
+@Passengers	Pasajeros
+@Remove from this flight	Quitar de este vuelo
+@Add to this ticket	Añadir a este billete
+@Everyone in your family is already on this ticket.	Toda tu familia ya está en este billete.
+@Add your family once, then put them on any ticket.	Añade a tu familia una vez y ponla en cualquier billete.
+@Manage family	Gestionar familia
+@Scan the photo page	Escanea la página de la foto
+@Lay the passport or ID card flat in good light. The two or three lines of letters and «<<<» at the bottom must be sharp.	Coloca el pasaporte o DNI plano y con buena luz. Las dos o tres líneas de letras y «<<<» de abajo deben verse nítidas.
+@Take a photo	Hacer una foto
+@Choose from photos	Elegir de las fotos
+@Type the code lines instead	Escribir las líneas del código
+@The photo is read on this phone and never uploaded. Only the code lines are checked, and the document number is not stored.	La foto se lee en este teléfono y nunca se sube. Solo se comprueban las líneas del código y no guardamos el número del documento.
+@Reading the document…	Leyendo el documento…
+@Type the code lines	Escribe las líneas del código
+@Copy the lines at the bottom of the photo page exactly, one per line. Use < for each arrow.	Copia exactamente las líneas de abajo de la página de la foto, una por línea. Usa < para cada flecha.
+@Check	Comprobar
+@Document read	Documento leído
+@Name	Nombre
+@Issued by	Emitido por
+@Document	Documento
+@Passport	Pasaporte
+@ID card	DNI
+@Valid until	Válido hasta
+@This document has expired.	Este documento ha caducado.
+@Scan another document	Escanear otro documento
+@Checking…	Comprobando…
+@Use this name	Usar este nombre
+@Scan again	Escanear de nuevo
+@Identity	Identidad
+@Identity verified	Identidad verificada
+@Not verified yet	Aún sin verificar
+@Document valid until {date}	Documento válido hasta el {date}
+@Why verify?	¿Por qué verificar?
+@Tickets are added to your account only when the name on them matches yours.	Los billetes solo se añaden a tu cuenta si el nombre coincide con el tuyo.
+@Nobody can change your name to take over someone else’s ticket: a new name needs a passport scan.	Nadie puede cambiarse el nombre para quedarse con el billete de otro: un nombre nuevo requiere escanear el pasaporte.
+@The photo stays on your phone. We keep your name, the issuing country and the expiry date, not the document number.	La foto se queda en tu teléfono. Guardamos tu nombre, el país emisor y la caducidad, no el número del documento.
+@Optional: everything else in Gatemate works without it.	Opcional: el resto de Gatemate funciona sin ello.
+@Scan a new document	Escanear un documento nuevo
+@Scan passport or ID card	Escanear pasaporte o DNI
+@Family members	Miembros de la familia
+@Add the people you travel with once. Then put them on any ticket in one tap: one booking, everyone’s pass in your phone.	Añade una vez a quienes viajan contigo. Luego ponlos en cualquier billete con un toque: una reserva, las tarjetas de todos en tu teléfono.
+@Verifying {name}	Verificando a {name}
+@Not verified	Sin verificar
+@Verify with passport	Verificar con pasaporte
+@No family members yet.	Aún no hay familiares.
+@Add someone	Añadir a alguien
+@Write names exactly as in their passport, so they match the ticket.	Escribe los nombres tal como en su pasaporte, para que coincidan con el billete.
+@Add to family	Añadir a la familia
+@Partner	Pareja
+@Child	Hijo/a
+@Parent	Padre/madre
+@Sibling	Hermano/a
+@Relative	Familiar
+@Friend	Amigo/a
+@Who else is flying on this booking?	¿Quién más vuela con esta reserva?
+@Manage	Gestionar
+@Add family members	Añadir familiares
+@Save flight for {n} people	Guardar vuelo para {n} personas
+@Full name (as in your passport)	Nombre completo (como en el pasaporte)
+@Use your real name, exactly as in your passport or ID. Your tickets are checked against it, and changing it later needs a passport scan.	Usa tu nombre real, tal como en tu pasaporte o DNI. Tus billetes se comprueban con él y cambiarlo después requiere escanear el pasaporte.
+@Verified with your document · scan a new one to change it	Verificado con tu documento · escanea uno nuevo para cambiarlo
+@To change it, scan your passport or ID card	Para cambiarlo, escanea tu pasaporte o DNI
+@Remove {name}?	¿Quitar a {name}?
+@They will stay on tickets they’re already on.	Seguirá en los billetes en los que ya está.
+@We couldn’t find the code lines. Try again closer, without glare, or type them instead.	No encontramos las líneas del código. Prueba más cerca, sin reflejos, o escríbelas.
+@Those lines don’t add up. Check every character, especially 0 and O.	Esas líneas no cuadran. Revisa cada carácter, sobre todo 0 y O.
+@Identity verified. Your tickets now match this name.	Identidad verificada. Tus billetes coinciden ahora con este nombre.
+@Verified with their document.	Verificado con su documento.
+@Could not verify this document.	No se pudo verificar este documento.
+@Couldn’t load your family. Check your connection.	No se pudo cargar tu familia. Revisa la conexión.
+@Couldn’t add them.	No se pudo añadir.
+@Couldn’t remove them. Try again.	No se pudo quitar. Inténtalo de nuevo.
+@Couldn’t add them to this flight.	No se pudo añadir a este vuelo.
+@Couldn’t update this flight. Try again.	No se pudo actualizar el vuelo. Inténtalo de nuevo.
+@We couldn't read the document. Try again with the whole photo page in view.	No pudimos leer el documento. Inténtalo de nuevo con toda la página de la foto a la vista.
+@We couldn’t read the document. Try again with the whole photo page in view.	No pudimos leer el documento. Inténtalo de nuevo con toda la página de la foto a la vista.
+@This document already verifies another Gatemate account.	Este documento ya verifica otra cuenta de Gatemate.
+@To change the name on your tickets, scan your passport or ID card.	Para cambiar el nombre de tus billetes, escanea tu pasaporte o DNI.
+@Scan their passport again to change a verified name.	Escanea de nuevo su pasaporte para cambiar un nombre verificado.

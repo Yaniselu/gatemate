@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable, Injector } from '@angular/core';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { ChatMessage, ChecklistItem, ChatThread, Companion, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 import { currentLang, t } from '../i18n/i18n.service';
 import { AuthService } from './auth.service';
@@ -113,6 +113,30 @@ export class HttpApi extends GatemateApi {
   }
   getFlightStatus(flightId: string) {
     return this.call(this.http.get<Flight>(`${this.base}/flights/${enc(flightId)}/status`));
+  }
+  addPassenger(flightId: string, companionId: string, seat?: string) {
+    return this.call(this.http.post<Flight>(`${this.base}/flights/${enc(flightId)}/passengers`, { companionId, seat: seat || null }));
+  }
+  removePassenger(flightId: string, companionId: string) {
+    return this.call(this.http.delete<Flight>(`${this.base}/flights/${enc(flightId)}/passengers/${enc(companionId)}`));
+  }
+  verifyIdentity(lines: string[]) {
+    return this.call(this.http.post<User>(`${this.base}/me/identity`, { lines }));
+  }
+  getCompanions() {
+    return this.call(this.http.get<Companion[]>(`${this.base}/me/companions`));
+  }
+  addCompanion(c: Pick<Companion, 'firstName' | 'lastName' | 'relation'>) {
+    return this.call(this.http.post<Companion>(`${this.base}/me/companions`, c));
+  }
+  updateCompanion(id: string, c: Partial<Pick<Companion, 'firstName' | 'lastName' | 'relation'>>) {
+    return this.call(this.http.patch<Companion>(`${this.base}/me/companions/${enc(id)}`, c));
+  }
+  verifyCompanion(id: string, lines: string[]) {
+    return this.call(this.http.post<Companion>(`${this.base}/me/companions/${enc(id)}/identity`, { lines }));
+  }
+  async removeCompanion(id: string) {
+    await this.call(this.http.delete<void>(`${this.base}/me/companions/${enc(id)}`));
   }
 
   assistantStatus() {

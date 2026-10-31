@@ -38,9 +38,12 @@ public class MeService {
     private final AppleClient apple;
     private final TokenCipher cipher;
     private final GatemateProperties props;
+    private final app.gatemate.identity.IdentityService identity;
 
     public MeService(UserRepository users, RefreshTokenRepository refreshTokens, Repos.Trips trips, Repos.Members members, Repos.Flights flights,
-            TripService tripService, AirportCatalog airports, AppleClient apple, TokenCipher cipher, GatemateProperties props) {
+            TripService tripService, AirportCatalog airports, AppleClient apple, TokenCipher cipher, GatemateProperties props,
+            app.gatemate.identity.IdentityService identity) {
+        this.identity = identity;
         this.users = users;
         this.refreshTokens = refreshTokens;
         this.trips = trips;
@@ -75,8 +78,11 @@ public class MeService {
             if (!code.isEmpty() && airports.get(code).isEmpty()) throw ApiException.badRequest("unknown_airport", "Unknown airport.");
             u.homeAirport = code.isEmpty() ? null : code;
         }
-        if (p.legalFirstName() != null) u.legalFirstName = legal(p.legalFirstName());
-        if (p.legalLastName() != null) u.legalLastName = legal(p.legalLastName());
+        String first = p.legalFirstName() == null ? null : legal(p.legalFirstName());
+        String last = p.legalLastName() == null ? null : legal(p.legalLastName());
+        app.gatemate.identity.IdentityService.guardNameChange(u, first, last);
+        if (first != null) u.legalFirstName = first;
+        if (last != null) u.legalLastName = last;
         if (p.phone() != null) {
             String ph = p.phone().trim();
             if (!ph.isEmpty() && !PHONE.matcher(ph).matches()) throw ApiException.badRequest("bad_phone", "Enter a valid phone number.");
@@ -154,6 +160,7 @@ public class MeService {
         out.put("exportedAt", Instant.now().toString());
         out.put("account", UserDto.of(u));
         out.put("trips", tripService.list(me));
+        out.put("family", identity.list(me));
         return out;
     }
 

@@ -34,9 +34,17 @@ public class TripService {
     private final JsonMapper json;
     private final app.gatemate.config.GatemateProperties props;
 
+    private final org.springframework.beans.factory.ObjectProvider<app.gatemate.airport.AirportMapService> maps;
+
+    private final app.gatemate.identity.CompanionEntity.Repo companions;
+
     public TripService(Repos.Trips trips, Repos.Members members, Repos.Flights flights, Repos.Checklist checklist, Repos.Expenses expenses,
-            UserRepository users, AirportCatalog airports, ChatService chat, JsonMapper json, app.gatemate.config.GatemateProperties props) {
+            UserRepository users, AirportCatalog airports, ChatService chat, JsonMapper json, app.gatemate.config.GatemateProperties props,
+            org.springframework.beans.factory.ObjectProvider<app.gatemate.airport.AirportMapService> maps,
+            app.gatemate.identity.CompanionEntity.Repo companions) {
         this.props = props;
+        this.companions = companions;
+        this.maps = maps;
         this.trips = trips;
         this.members = members;
         this.flights = flights;
@@ -108,6 +116,7 @@ public class TripService {
         var from = airports.get(in.from()).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + in.from() + "."));
         var to = airports.get(in.to()).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + in.to() + "."));
         if (from.iata().equals(to.iata())) throw ApiException.badRequest("same_airport", "Departure and arrival airports must differ.");
+        maps.ifAvailable(m -> m.prefetch(from.iata(), to.iata()));
         Instant dep;
         try {
             dep = in.date().endsWith("Z") ? Instant.parse(in.date()) : LocalDateTime.parse(in.date()).atZone(ZoneId.of(from.tz())).toInstant();
@@ -130,7 +139,72 @@ public class TripService {
         var u = users.findById(me).orElseThrow();
         f.passengerName = Text.clean(in.passengerName() != null ? in.passengerName() : u.displayName, 60);
         f.verificationJson = "{\"status\":\"unverified\",\"method\":\"manual\",\"checkedAt\":\"" + Instant.now() + "\",\"checks\":[]}";
+        if (in.passengers() != null) for (var p : in.passengers()) addPassengerTo(f, me, p);
         return dto(createWithFlight(me, f), me);
+    }
+
+    record Seat(String c, String n, String s) {}
+
+    private List<Seat> passengers(FlightEntity f) {
+        if (f.passengersJson == null || f.passengersJson.isBlank()) return new ArrayList<>();
+        try {
+            return new ArrayList<>(json.readValue(f.passengersJson, new tools.jackson.core.type.TypeReference<List<Seat>>() {}));
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    private void addPassengerTo(FlightEntity f, UUID me, TripDtos.PassengerIn in) {
+        UUID cid;
+        try {
+            cid = UUID.fromString(in.companionId());
+        } catch (Exception e) {
+            throw ApiException.notFound("Family member");
+        }
+        var c = companions.findById(cid).filter(x -> x.ownerId.equals(me)).orElseThrow(() -> ApiException.notFound("Family member"));
+        var list = passengers(f);
+        list.removeIf(x -> x.c().equals(c.id.toString()));
+        if (list.size() >= 12) throw ApiException.badRequest("too_many", "Up to 12 extra passengers per flight.");
+        list.add(new Seat(c.id.toString(), c.fullName(), in.seat()));
+        f.passengersJson = json.writeValueAsString(list);
+    }
+
+    @Transactional
+    public TripDtos.FlightDto addPassenger(UUID me, UUID flightId, TripDtos.PassengerIn in) {
+        var f = flights.findById(flightId).orElseThrow(() -> ApiException.notFound("Flight"));
+        requireMember(f.tripId, me);
+        addPassengerTo(f, me, in);
+        flights.save(f);
+        return flightDto(f);
+    }
+
+    @Transactional
+    public TripDtos.FlightDto removePassenger(UUID me, UUID flightId, String companionId) {
+        var f = flights.findById(flightId).orElseThrow(() -> ApiException.notFound("Flight"));
+        requireMember(f.tripId, me);
+        var list = passengers(f);
+        list.removeIf(x -> x.c().equals(companionId));
+        f.passengersJson = list.isEmpty() ? null : json.writeValueAsString(list);
+        flights.save(f);
+        return flightDto(f);
+    }
+
+    private List<TripDtos.PassengerDto> passengerDtos(FlightEntity f) {
+        var list = passengers(f);
+        if (list.isEmpty()) return List.of();
+        var ids = list.stream().map(x -> {
+            try {
+                return UUID.fromString(x.c());
+            } catch (Exception e) {
+                return null;
+            }
+        }).filter(Objects::nonNull).toList();
+        var known = new java.util.HashMap<String, app.gatemate.identity.CompanionEntity>();
+        companions.findAllById(ids).forEach(c -> known.put(c.id.toString(), c));
+        return list.stream().map(x -> {
+            var c = known.get(x.c());
+            return new TripDtos.PassengerDto(x.c(), c != null ? c.fullName() : x.n(), x.s(), c != null ? c.relation : null, c != null && c.verifiedAt != null);
+        }).toList();
     }
 
     static int estimateMinutes(double km) {
@@ -208,7 +282,7 @@ public class TripService {
         return new TripDtos.FlightDto(f.id.toString(), f.airlineName, f.airlineCode, f.flightNumber, airportDto(f.fromIata), airportDto(f.toIata),
                 f.departs().toString(), f.arrives().toString(), f.boards().toString(), f.gate, f.terminal, f.seat, f.cabin, f.bookingRef == null ? "" : f.bookingRef,
                 f.passengerName, f.status, (int) Duration.between(f.departs(), f.arrives()).toMinutes(), km, f.fareName, node(f.baggageJson), node(f.verificationJson),
-                f.departureAt.toString(), f.arrivalAt.toString(), f.delayMinutes);
+                f.departureAt.toString(), f.arrivalAt.toString(), f.delayMinutes, passengerDtos(f));
     }
 
     public TripDtos.AirportDto airportDto(String iata) {

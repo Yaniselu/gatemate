@@ -1,4 +1,4 @@
-import { AuthProvider, ChecklistItem, ChatMessage, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { AuthProvider, ChecklistItem, ChatMessage, ChatThread, Companion, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 
 export interface SocialCredential {
   provider: Exclude<AuthProvider, 'password'>;
@@ -18,6 +18,7 @@ export interface NewFlightInput {
   seat?: string;
   bookingRef?: string;
   passengerName: string;
+  passengers?: { companionId: string; seat?: string }[];
 }
 
 export interface BookingLookup {
@@ -101,6 +102,14 @@ export abstract class GatemateApi {
   abstract toggleChecklistItem(tripId: string, itemId: string, done: boolean): Promise<void>;
   abstract addExpense(tripId: string, expense: Omit<Expense, 'id' | 'createdAt'>): Promise<Expense>;
   abstract getFlightStatus(flightId: string): Promise<Flight>;
+  abstract addPassenger(flightId: string, companionId: string, seat?: string): Promise<Flight>;
+  abstract removePassenger(flightId: string, companionId: string): Promise<Flight>;
+  abstract verifyIdentity(lines: string[]): Promise<User>;
+  abstract getCompanions(): Promise<Companion[]>;
+  abstract addCompanion(c: Pick<Companion, 'firstName' | 'lastName' | 'relation'>): Promise<Companion>;
+  abstract updateCompanion(id: string, c: Partial<Pick<Companion, 'firstName' | 'lastName' | 'relation'>>): Promise<Companion>;
+  abstract verifyCompanion(id: string, lines: string[]): Promise<Companion>;
+  abstract removeCompanion(id: string): Promise<void>;
 
   abstract assistantStatus(): Promise<AssistantStatus>;
   abstract assistantChat(messages: AssistantTurn[], onEvent: (e: AssistantEvent) => void, signal: AbortSignal): Promise<void>;

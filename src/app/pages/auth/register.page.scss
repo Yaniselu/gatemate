@@ -114,3 +114,22 @@
     font-weight: 650;
   }
 }
+
+.real-name {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--gm-ink-2);
+  background: color-mix(in srgb, var(--gm-accent) 10%, transparent);
+  ion-icon {
+    flex: none;
+    font-size: 17px;
+    margin-top: 1px;
+    color: var(--gm-accent-strong);
+  }
+}

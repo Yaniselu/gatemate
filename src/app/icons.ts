@@ -1,6 +1,8 @@
 import { addIcons } from 'ionicons';
 import {
   accessibilityOutline,
+  keypadOutline,
+  personAddOutline,
   add,
   addCircleOutline,
   airplane,
@@ -200,6 +202,8 @@ import {
 export function registerIcons(): void {
   addIcons({
     accessibilityOutline,
+    keypadOutline,
+    personAddOutline,
     add,
     addCircleOutline,
     airplane,

@@ -105,7 +105,7 @@ class GeminiAssistantTest {
     void geminiRunsTheSameAgentLoop() {
         assertThat(assistant.enabled()).isTrue();
         var u = user();
-        var trip = trips.addManualFlight(u.id, new TripDtos.NewFlight("RO", "TAROM", "301", LocalDate.now().plusDays(5) + "T08:00:00", "CRA", "BCN", null, null, null));
+        var trip = trips.addManualFlight(u.id, new TripDtos.NewFlight("RO", "TAROM", "301", LocalDate.now().plusDays(5) + "T08:00:00", "CRA", "BCN", null, null, null, null));
         tripId = trip.id();
 
         List<Map<String, Object>> events = new ArrayList<>();

@@ -104,5 +104,6 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 class GatemateBridgeViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(LiveActivityPlugin())
+        bridge?.registerPluginInstance(TextScanPlugin())
     }
 }

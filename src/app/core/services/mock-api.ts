@@ -9,11 +9,12 @@ import {
   createMockTrips,
   AIRPORTS,
 } from '../data/mock-data';
-import { ChatMessage, ChecklistItem, ChatThread, Expense, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
+import { ChatMessage, ChecklistItem, ChatThread, Companion, Expense, Passenger, Flight, FlightAlert, ProfilePatch, Session, TravelStats, Trip, User } from '../models';
 import { AIRLINES, sampleBaggage } from '../data/airlines';
 import { parseBcbp } from '../utils/bcbp';
 import { matchPassengerName } from '../utils/name-match';
 import { randomId } from '../security/crypto.util';
+import { findMrz } from '../utils/mrz';
 import { locale, t } from '../i18n/i18n.service';
 import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, SocialCredential } from './api';
 
@@ -139,6 +140,10 @@ export class MockApi extends GatemateApi {
 
   async updateProfile(patch: ProfilePatch): Promise<User> {
     if (!this.user) throw new ApiError('Not signed in.', 401);
+    const fold = (v?: string) => (v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const changes = (cur?: string, next?: string) => next !== undefined && !!fold(next) && fold(cur) !== fold(next);
+    if ((changes(this.user.legalFirstName, patch.legalFirstName) && (this.user.identityVerified || this.user.legalFirstName)) || (changes(this.user.legalLastName, patch.legalLastName) && (this.user.identityVerified || this.user.legalLastName)))
+      throw new ApiError('To change the name on your tickets, scan your passport or ID card.', 409, 'identity_required');
     this.user = { ...this.user, ...patch };
     return this.delay(this.user, 400, 800);
   }
@@ -383,6 +388,7 @@ export class MockApi extends GatemateApi {
       durationMinutes: minutes,
       distanceKm: km,
       verification: { status: 'unverified', method: 'manual', checkedAt: new Date().toISOString(), checks: [] },
+      passengers: (input.passengers ?? []).map((p) => this.passenger(p.companionId, p.seat)),
     };
     const trip: Trip = {
       id: randomId('trip_'),
@@ -420,6 +426,97 @@ export class MockApi extends GatemateApi {
     const created: Expense = { ...expense, id: randomId('exp_'), createdAt: new Date().toISOString() };
     this.ensureTrips().find((t) => t.id === tripId)?.expenses.push(created);
     return this.delay(created, 300, 600);
+  }
+
+  private companionsStore: Companion[] | null = null;
+  private get companions(): Companion[] {
+    if (!this.companionsStore) {
+      try {
+        this.companionsStore = JSON.parse(localStorage.getItem('gm_demo_family') || '[]') as Companion[];
+      } catch {
+        this.companionsStore = [];
+      }
+    }
+    return this.companionsStore;
+  }
+  private set companions(list: Companion[]) {
+    this.companionsStore = list;
+    try {
+      localStorage.setItem('gm_demo_family', JSON.stringify(list));
+    } catch {
+      return;
+    }
+  }
+
+  private passenger(companionId: string, seat?: string): Passenger {
+    const c = this.companions.find((x) => x.id === companionId);
+    if (!c) throw new ApiError('Family member not found.', 404, 'not_found');
+    return { companionId, name: `${c.firstName} ${c.lastName}`, seat, relation: c.relation, verified: c.verified };
+  }
+
+  private flight(id: string): Flight {
+    const f = this.ensureTrips().flatMap((t) => t.flights).find((x) => x.id === id);
+    if (!f) throw new ApiError('Flight not found.', 404, 'not_found');
+    return f;
+  }
+
+  async addPassenger(flightId: string, companionId: string, seat?: string): Promise<Flight> {
+    const f = this.flight(flightId);
+    f.passengers = [...(f.passengers ?? []).filter((p) => p.companionId !== companionId), this.passenger(companionId, seat)];
+    return this.delay({ ...f }, 250, 500);
+  }
+
+  async removePassenger(flightId: string, companionId: string): Promise<Flight> {
+    const f = this.flight(flightId);
+    f.passengers = (f.passengers ?? []).filter((p) => p.companionId !== companionId);
+    return this.delay({ ...f }, 250, 500);
+  }
+
+  private readDoc(lines: string[]) {
+    const doc = findMrz(lines);
+    if (!doc) throw new ApiError('We couldn’t read the document. Try again with the whole photo page in view.', 400, 'mrz_unreadable');
+    if (new Date(doc.expiry) < new Date()) throw new ApiError('This document has expired.', 400, 'document_expired');
+    return doc;
+  }
+
+  async verifyIdentity(lines: string[]): Promise<User> {
+    if (!this.user) throw new ApiError('Not signed in.', 401);
+    const doc = this.readDoc(lines);
+    this.user = { ...this.user, legalFirstName: doc.firstName, legalLastName: doc.lastName, identityVerified: true, identityCountry: doc.country, identityExpiry: doc.expiry };
+    return this.delay(this.user, 500, 900);
+  }
+
+  async getCompanions(): Promise<Companion[]> {
+    return this.delay([...this.companions], 150, 300);
+  }
+
+  async addCompanion(c: Pick<Companion, 'firstName' | 'lastName' | 'relation'>): Promise<Companion> {
+    const out: Companion = { id: randomId('cmp_'), firstName: c.firstName.trim(), lastName: c.lastName.trim(), relation: c.relation, verified: false };
+    this.companions = [...this.companions, out];
+    return this.delay(out, 250, 500);
+  }
+
+  async updateCompanion(id: string, c: Partial<Pick<Companion, 'firstName' | 'lastName' | 'relation'>>): Promise<Companion> {
+    const cur = this.companions.find((x) => x.id === id);
+    if (!cur) throw new ApiError('Family member not found.', 404, 'not_found');
+    if (cur.verified && (c.firstName || c.lastName)) throw new ApiError('Scan their passport again to change a verified name.', 409, 'identity_required');
+    Object.assign(cur, c);
+    this.companions = [...this.companions];
+    return this.delay({ ...cur }, 250, 500);
+  }
+
+  async verifyCompanion(id: string, lines: string[]): Promise<Companion> {
+    const cur = this.companions.find((x) => x.id === id);
+    if (!cur) throw new ApiError('Family member not found.', 404, 'not_found');
+    const doc = this.readDoc(lines);
+    Object.assign(cur, { firstName: doc.firstName || cur.firstName, lastName: doc.lastName, verified: true, docCountry: doc.country, docExpiry: doc.expiry });
+    this.companions = [...this.companions];
+    return this.delay({ ...cur }, 500, 900);
+  }
+
+  async removeCompanion(id: string): Promise<void> {
+    this.companions = this.companions.filter((x) => x.id !== id);
+    await this.delay(null, 150, 300);
   }
 
   async getFlightStatus(flightId: string): Promise<Flight> {

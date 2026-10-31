@@ -61,6 +61,7 @@
               <div class="flight card" [gmReveal]="i">
                 <div class="f-head">
                   <span class="gm-chip neutral">{{ f.number }}</span>
+                  @if (f.passengers?.length) { <span class="gm-chip neutral"><ion-icon name="people-outline" /> {{ f.passengers!.length + 1 }}</span> }
                   <span class="gm-chip" [class.success]="f.status === 'on-time' || f.status === 'landed'" [class.warning]="f.status === 'delayed'">{{ f.status | flightStatus }}@if (f.status === 'delayed' && f.delayMinutes) { · +{{ f.delayMinutes }} min}</span>
                 </div>
                 <div class="timeline">
@@ -114,14 +115,17 @@
               @if (upcomingFlights().length > 1) {
                 <div class="pass-picker">
                   @for (f of upcomingFlights(); track f.id; let i = $index) {
-                    <button [class.on]="passIndex() === i" (click)="passIndex.set(i)">{{ f.from.code }} → {{ f.to.code }}</button>
+                    <button [class.on]="passIndex() === i" (click)="passIndex.set(i); passenger.set(0)">{{ f.from.code }} → {{ f.to.code }}</button>
                   }
                 </div>
               }
               @for (f of [upcomingFlights()[passIndex()]]; track f.id) {
                 <gm-flight-journey [flight]="f" />
-                <gm-boarding-pass class="anim-scale-in" [flight]="f" />
-                <gm-seat-map [flight]="f" />
+                <gm-flight-passengers [flight]="f" [(selected)]="passenger" />
+                @for (pf of [passFlight()]; track pf.passengerName + pf.seat) {
+                  <gm-boarding-pass class="anim-scale-in" [flight]="pf" />
+                  <gm-seat-map [flight]="pf" />
+                }
               }
               <p class="hint"><ion-icon name="lock-closed-outline" /> {{ 'Stored encrypted on this device and available offline.' | t }}</p>
             } @else {

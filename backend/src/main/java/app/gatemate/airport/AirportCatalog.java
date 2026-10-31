@@ -46,6 +46,10 @@ public class AirportCatalog {
         return iata == null ? Optional.empty() : Optional.ofNullable(byCode.get(iata.toUpperCase(Locale.ROOT)));
     }
 
+    public List<Airport> large() {
+        return all.stream().filter(a -> "L".equals(a.size())).toList();
+    }
+
     public Optional<CountryFacts> country(String code) {
         return Optional.ofNullable(countries.get(code));
     }
