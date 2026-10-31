@@ -1899,3 +1899,18 @@
 @Case saved. We’ll remind you before the deadline.	Fall gespeichert. Wir erinnern dich vor der Frist.
 @21 days to claim delay costs	21 Tage für Verspätungskosten
 @7 days for a written complaint	7 Tage für eine schriftliche Beschwerde
+@Matching “{name}” to {who} from your family	Abgleich von „{name}“ mit {who} aus deiner Familie
+@Matching “{name}” to you or your family	Abgleich von „{name}“ mit dir oder deiner Familie
+@This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.	Dieses Ticket lautet auf einen anderen Namen. Wenn die Person mitfliegt, füge sie zuerst unter Familie hinzu und scanne erneut.
+@This ticket isn’t in your name or your family’s	Dieses Ticket lautet weder auf dich noch auf deine Familie
+@On this flight: you and {n} from your family. All passes are in one place.	Auf diesem Flug: du und {n} aus deiner Familie. Alle Bordkarten an einem Ort.
+@{n} from your family on this flight. All passes are in one place.	{n} aus deiner Familie auf diesem Flug. Alle Bordkarten an einem Ort.
+@Scan a family member’s boarding pass	Bordkarte eines Familienmitglieds scannen
+@Upload their boarding pass	Bordkarte hochladen
+@{name}’s ticket is saved with yours, ready to show at the gate.	{name}s Ticket ist bei deinem gespeichert und bereit fürs Gate.
+@Have their boarding passes? Scan them and the real barcodes are saved here too.	Hast du ihre Bordkarten? Scanne sie, dann sind die echten Codes auch hier.
+@This is the airline’s barcode from the scanned pass. Turn up the brightness at security and the gate.	Das ist der Airline-Code der gescannten Bordkarte. Dreh an Sicherheitskontrolle und Gate die Helligkeit hoch.
+@Airline barcode	Airline-Code
+@This boarding pass is already in Gatemate.	Diese Bordkarte ist schon in Gatemate.
+@Gatemate adds tickets in your name ({name}) or in the name of someone in your Family. Add them in Profile → Family with the name exactly as on the ticket, then scan it again.	Gatemate fügt Tickets auf deinen Namen ({name}) oder den eines Familienmitglieds hinzu. Füge die Person unter Profil → Familie genau wie auf dem Ticket hinzu und scanne erneut.
+@your legal name	dein amtlicher Name

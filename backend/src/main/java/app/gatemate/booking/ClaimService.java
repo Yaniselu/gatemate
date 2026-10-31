@@ -2,6 +2,7 @@ package app.gatemate.booking;
 
 import app.gatemate.airport.AirportCatalog;
 import app.gatemate.common.ApiException;
+import app.gatemate.identity.CompanionEntity;
 import app.gatemate.trip.FlightEntity;
 import app.gatemate.trip.Repos;
 import app.gatemate.trip.TripDtos;
@@ -32,7 +33,11 @@ public class ClaimService {
     private final List<BookingProvider> providers;
     private final JsonMapper json;
 
-    public ClaimService(UserRepository users, Repos.Flights flights, TripService trips, AirportCatalog airports, List<BookingProvider> providers, JsonMapper json) {
+    private final CompanionEntity.Repo companions;
+
+    public ClaimService(UserRepository users, Repos.Flights flights, TripService trips, AirportCatalog airports, List<BookingProvider> providers, JsonMapper json,
+            CompanionEntity.Repo companions) {
+        this.companions = companions;
         this.users = users;
         this.flights = flights;
         this.trips = trips;
@@ -74,15 +79,71 @@ public class ClaimService {
 
     @Transactional
     public TripDtos.TripDto claimPass(UUID me, String barcode) {
-        var user = legalUser(me);
+        var user = users.findById(me).orElseThrow();
         var p = Bcbp.parse(barcode, LocalDate.now());
-        var m = NameMatcher.match(p.firstName(), p.lastName(), user.legalFirstName, user.legalLastName);
-        if (!m.ok()) throw nameMismatch();
+        boolean mine = user.legalFirstName != null && user.legalLastName != null
+                && NameMatcher.match(p.firstName(), p.lastName(), user.legalFirstName, user.legalLastName).ok();
+        if (!mine) {
+            var family = companions.findByOwnerIdOrderByCreatedAt(me).stream()
+                    .filter(c -> NameMatcher.match(p.firstName(), p.lastName(), c.firstName, c.lastName).ok()).findFirst();
+            if (family.isPresent()) return claimFor(me, user, family.get(), p, barcode);
+            legalUser(me);
+            throw nameMismatch();
+        }
         var from = airports.get(p.from()).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + p.from() + "."));
         var to = airports.get(p.to()).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + p.to() + "."));
         String claimKey = key(p.bookingRef(), p.carrier() + p.flightNumber(), p.flightDate().toString(), p.lastName());
         assertUnclaimed(claimKey, me);
+        String verified = verification("boarding-pass", List.of(check("Valid IATA boarding pass barcode", true),
+                check("Passenger name matches your legal name", true), check("Not added by another Gatemate account", true)));
 
+        var existing = trips.findMyFlight(me, p.carrier() + p.flightNumber(), p.flightDate())
+                .filter(f -> f.claimKey == null && me.equals(f.claimedBy));
+        if (existing.isPresent()) {
+            var f = existing.get();
+            f.ownerFlying = true;
+            if (!p.seat().isBlank()) f.seat = p.seat();
+            f.bookingRef = p.bookingRef();
+            f.passengerName = titleCase(p.firstName() + " " + p.lastName());
+            f.claimKey = claimKey;
+            f.barcodeEnc = trips.seal(barcode);
+            f.verificationJson = verified;
+            flights.save(f);
+            return trips.tripOf(f, me);
+        }
+
+        var f = baseFlight(p, from, to);
+        f.seat = p.seat().isBlank() ? null : p.seat();
+        f.passengerName = titleCase(p.firstName() + " " + p.lastName());
+        f.claimKey = claimKey;
+        f.barcodeEnc = trips.seal(barcode);
+        f.verificationJson = verified;
+        return trips.dto(trips.createWithFlight(me, f), me);
+    }
+
+    private TripDtos.TripDto claimFor(UUID me, UserEntity user, CompanionEntity c, Bcbp p, String barcode) {
+        String claimKey = key(p.bookingRef(), p.carrier() + p.flightNumber(), p.flightDate().toString(), p.lastName() + "/" + p.firstName());
+        if (trips.claimKeyUsed(claimKey)) throw new ApiException(HttpStatus.CONFLICT, "already_claimed", "This boarding pass is already in Gatemate.");
+        String seat = p.seat().isBlank() ? null : p.seat();
+        var existing = trips.findMyFlight(me, p.carrier() + p.flightNumber(), p.flightDate());
+        if (existing.isPresent()) {
+            trips.putPassengerPass(existing.get(), c, seat, barcode, claimKey);
+            return trips.tripOf(existing.get(), me);
+        }
+        var from = airports.get(p.from()).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + p.from() + "."));
+        var to = airports.get(p.to()).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + p.to() + "."));
+        var f = baseFlight(p, from, to);
+        f.ownerFlying = false;
+        f.bookingRef = p.bookingRef();
+        f.passengerName = user.legalFirstName != null ? (user.legalFirstName + " " + (user.legalLastName == null ? "" : user.legalLastName)).trim() : user.displayName;
+        f.verificationJson = verification("boarding-pass", List.of(check("Valid IATA boarding pass barcode", true),
+                check("Passenger name matches a family member", true), check("Not added by another Gatemate account", true)));
+        var trip = trips.createWithFlight(me, f);
+        trips.putPassengerPass(f, c, seat, barcode, claimKey);
+        return trips.dto(trip, me);
+    }
+
+    private FlightEntity baseFlight(Bcbp p, AirportCatalog.Airport from, AirportCatalog.Airport to) {
         Instant dep = p.flightDate().atTime(LocalTime.NOON).atZone(ZoneId.of(from.tz())).toInstant();
         var f = new FlightEntity();
         f.airlineCode = p.carrier();
@@ -93,13 +154,8 @@ public class ClaimService {
         f.departureAt = dep;
         f.arrivalAt = dep.plus(Duration.ofMinutes(Math.round(30 + AirportCatalog.distanceKm(from, to) / 800 * 60)));
         f.boardingAt = dep.minus(Duration.ofMinutes(40));
-        f.seat = p.seat().isBlank() ? null : p.seat();
         f.bookingRef = p.bookingRef();
-        f.passengerName = titleCase(p.firstName() + " " + p.lastName());
-        f.claimKey = claimKey;
-        f.verificationJson = verification("boarding-pass", List.of(check("Valid IATA boarding pass barcode", true),
-                check("Passenger name matches your legal name", true), check("Not added by another Gatemate account", true)));
-        return trips.dto(trips.createWithFlight(me, f), me);
+        return f;
     }
 
     private BookingProvider.Booking find(String airline, String ref, String lastName) {
@@ -120,6 +176,8 @@ public class ClaimService {
     }
 
     private void assertUnclaimed(String claimKey, UUID me) {
+        if (flights.findByClaimKey(claimKey).isEmpty() && trips.claimKeyUsed(claimKey))
+            throw new ApiException(HttpStatus.CONFLICT, "already_claimed", "This boarding pass is already in Gatemate.");
         flights.findByClaimKey(claimKey).ifPresent(f -> {
             throw new ApiException(HttpStatus.CONFLICT, "already_claimed",
                     f.claimedBy.equals(me) ? "You already added this flight." : "This flight is already linked to another account.");
@@ -161,7 +219,7 @@ public class ClaimService {
     }
 
     private static ApiException nameMismatch() {
-        return new ApiException(HttpStatus.FORBIDDEN, "name_mismatch", "This ticket is in another passenger’s name. Ask them to add it and invite you to the trip.");
+        return new ApiException(HttpStatus.FORBIDDEN, "name_mismatch", "This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.");
     }
 
     private static String titleCase(String s) {

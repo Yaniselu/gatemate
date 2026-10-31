@@ -250,3 +250,36 @@
   color: var(--gm-ink-3);
   max-width: 260px;
 }
+
+.code-box.real {
+  padding: 8px;
+  svg {
+    display: block;
+    width: 172px;
+    height: 172px;
+  }
+}
+.back:has(.real) {
+  gap: 8px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  .note {
+    margin: 0;
+    font-size: 12px;
+  }
+}
+.who {
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--gm-ink);
+}
+.note.ok {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: #15803d;
+  ion-icon {
+    flex: none;
+    margin-top: 2px;
+  }
+}

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, signal } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { Flight } from '../../core/models';
 import { ClockPipe, ShortDatePipe } from '../pipes/time.pipes';
@@ -42,17 +42,31 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
         <div class="hint"><ion-icon name="sync-outline" /> {{ 'Tap to show code' | t }}</div>
       </div>
       <div class="face back">
-        <div class="code-box">
-          @for (row of matrix(); track $index) {
-            <div class="row">
-              @for (cell of row; track $index) {
-                <i [class.on]="cell"></i>
-              }
-            </div>
-          }
-        </div>
+        @if (real(); as q) {
+          <div class="code-box real">
+            <svg [attr.viewBox]="'0 0 ' + q.size + ' ' + q.size" shape-rendering="crispEdges" role="img" [attr.aria-label]="'Airline barcode' | t">
+              <rect [attr.width]="q.size" [attr.height]="q.size" fill="#fff" />
+              <path [attr.d]="q.path" fill="#000" />
+            </svg>
+          </div>
+          <div class="who">{{ flight().passengerName }}@if (flight().seat) { · {{ 'Seat' | t }} {{ flight().seat }} }</div>
+        } @else {
+          <div class="code-box">
+            @for (row of matrix(); track $index) {
+              <div class="row">
+                @for (cell of row; track $index) {
+                  <i [class.on]="cell"></i>
+                }
+              </div>
+            }
+          </div>
+        }
         <div class="ref">{{ 'Booking ref' | t }} <b class="selectable">{{ flight().bookingRef || '—' }}</b></div>
-        <p class="note">{{ 'Show the airline’s original boarding pass at security and the gate. Increase screen brightness for scanning.' | t }}</p>
+        @if (real()) {
+          <p class="note ok"><ion-icon name="shield-checkmark" /> {{ 'This is the airline’s barcode from the scanned pass. Turn up the brightness at security and the gate.' | t }}</p>
+        } @else {
+          <p class="note">{{ 'Show the airline’s original boarding pass at security and the gate. Increase screen brightness for scanning.' | t }}</p>
+        }
       </div>
     </button>
   `,
@@ -61,6 +75,15 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
 export class BoardingPassComponent {
   readonly flight = input.required<Flight>();
   readonly flipped = signal(false);
+  readonly real = signal<{ size: number; path: string } | null>(null);
+
+  constructor() {
+    effect(() => {
+      const code = this.flight().barcode;
+      this.real.set(null);
+      if (code) void qr(code).then((q) => this.flight().barcode === code && this.real.set(q)).catch(() => {});
+    });
+  }
 
   readonly matrix = computed(() => {
     const seed = `${this.flight().bookingRef}${this.flight().number}${this.flight().seat}`;
@@ -83,4 +106,24 @@ export class BoardingPassComponent {
   flip() {
     this.flipped.update((v) => !v);
   }
+}
+
+async function qr(text: string): Promise<{ size: number; path: string }> {
+  const { QRCodeWriter, BarcodeFormat, EncodeHintType } = await import('@zxing/library');
+  const hints = new Map();
+  hints.set(EncodeHintType.MARGIN, 2);
+  const m = new QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, 0, 0, hints);
+  const size = m.getWidth();
+  let path = '';
+  for (let y = 0; y < m.getHeight(); y++) {
+    for (let x = 0; x < size; x++) {
+      if (m.get(x, y)) {
+        let run = 1;
+        while (x + run < size && m.get(x + run, y)) run++;
+        path += `M${x} ${y}h${run}v1h-${run}z`;
+        x += run - 1;
+      }
+    }
+  }
+  return { size, path };
 }

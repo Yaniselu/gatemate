@@ -23,6 +23,7 @@ public final class Repos {
         List<FlightEntity> findByTripIdOrderByDepartureAt(UUID tripId);
         Optional<FlightEntity> findByClaimKey(String key);
         List<FlightEntity> findByDepartureAtBetween(java.time.Instant from, java.time.Instant to);
+        List<FlightEntity> findByPassengersJsonContaining(String fragment);
     }
 
     public interface Checklist extends JpaRepository<ChecklistItemEntity, UUID> {

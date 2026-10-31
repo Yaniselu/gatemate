@@ -1900,3 +1900,18 @@
 @Case saved. We’ll remind you before the deadline.	Dosar salvat. Îți amintim înainte de termen.
 @21 days to claim delay costs	21 de zile ca să ceri costurile întârzierii
 @7 days for a written complaint	7 zile pentru reclamația scrisă
+@Matching “{name}” to {who} from your family	Potrivesc „{name}” cu {who} din familia ta
+@Matching “{name}” to you or your family	Potrivesc „{name}” cu tine sau cu familia ta
+@This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.	Biletul e pe numele altui pasager. Dacă zboară cu tine, adaugă-l întâi în Familie, apoi scanează-l din nou.
+@This ticket isn’t in your name or your family’s	Biletul nu e pe numele tău sau al familiei tale
+@On this flight: you and {n} from your family. All passes are in one place.	Pe acest zbor: tu și {n} din familie. Toate biletele sunt într-un singur loc.
+@{n} from your family on this flight. All passes are in one place.	{n} din familie pe acest zbor. Toate biletele sunt într-un singur loc.
+@Scan a family member’s boarding pass	Scanează biletul unui membru al familiei
+@Upload their boarding pass	Încarcă biletul lui/ei
+@{name}’s ticket is saved with yours, ready to show at the gate.	Biletul lui/ei {name} e salvat lângă al tău, gata de arătat la poartă.
+@Have their boarding passes? Scan them and the real barcodes are saved here too.	Ai biletele lor? Scanează-le și codurile reale se salvează și aici.
+@This is the airline’s barcode from the scanned pass. Turn up the brightness at security and the gate.	Acesta e codul companiei de pe biletul scanat. Mărește luminozitatea la securitate și la poartă.
+@Airline barcode	Codul companiei
+@This boarding pass is already in Gatemate.	Acest bilet e deja în Gatemate.
+@Gatemate adds tickets in your name ({name}) or in the name of someone in your Family. Add them in Profile → Family with the name exactly as on the ticket, then scan it again.	Gatemate adaugă bilete pe numele tău ({name}) sau al cuiva din Familie. Adaugă persoana în Profil → Familie cu numele exact ca pe bilet, apoi scanează din nou.
+@your legal name	numele tău legal

@@ -76,12 +76,16 @@ export class TripDetailPage implements OnInit {
   readonly scrollY = signal(0);
 
   readonly passIndex = signal(0);
-  readonly passenger = signal(0);
+  readonly passenger = signal('me');
   readonly passFlight = computed(() => {
     const f = this.upcomingFlights()[this.passIndex()];
-    const p = this.passenger() > 0 ? f?.passengers?.[this.passenger() - 1] : undefined;
-    return p ? { ...f, passengerName: p.name, seat: p.seat } : f;
+    if (!f) return f;
+    const people = f.passengers ?? [];
+    const key = this.passenger();
+    const p = key !== 'me' || f.ownerFlying === false ? people.find((x) => x.companionId === key) ?? (f.ownerFlying === false ? people[0] : undefined) : undefined;
+    return p ? { ...f, passengerName: p.name, seat: p.seat, barcode: p.barcode } : f;
   });
+
   protected liveActivity = inject(LiveActivityService);
   readonly lockShown = signal(false);
   private live = inject(LiveFlightService);

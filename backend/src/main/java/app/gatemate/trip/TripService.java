@@ -38,10 +38,12 @@ public class TripService {
 
     private final app.gatemate.identity.CompanionEntity.Repo companions;
 
+    private final app.gatemate.common.TokenCipher cipher;
     public TripService(Repos.Trips trips, Repos.Members members, Repos.Flights flights, Repos.Checklist checklist, Repos.Expenses expenses,
             UserRepository users, AirportCatalog airports, ChatService chat, JsonMapper json, app.gatemate.config.GatemateProperties props,
             org.springframework.beans.factory.ObjectProvider<app.gatemate.airport.AirportMapService> maps,
-            app.gatemate.identity.CompanionEntity.Repo companions) {
+            app.gatemate.identity.CompanionEntity.Repo companions, app.gatemate.common.TokenCipher cipher) {
+        this.cipher = cipher;
         this.props = props;
         this.companions = companions;
         this.maps = maps;
@@ -143,7 +145,7 @@ public class TripService {
         return dto(createWithFlight(me, f), me);
     }
 
-    record Seat(String c, String n, String s) {}
+    record Seat(String c, String n, String s, String b, String k) {}
 
     private List<Seat> passengers(FlightEntity f) {
         if (f.passengersJson == null || f.passengersJson.isBlank()) return new ArrayList<>();
@@ -163,9 +165,10 @@ public class TripService {
         }
         var c = companions.findById(cid).filter(x -> x.ownerId.equals(me)).orElseThrow(() -> ApiException.notFound("Family member"));
         var list = passengers(f);
+        var old = list.stream().filter(x -> x.c().equals(c.id.toString())).findFirst().orElse(null);
         list.removeIf(x -> x.c().equals(c.id.toString()));
         if (list.size() >= 12) throw ApiException.badRequest("too_many", "Up to 12 extra passengers per flight.");
-        list.add(new Seat(c.id.toString(), c.fullName(), in.seat()));
+        list.add(new Seat(c.id.toString(), c.fullName(), in.seat() != null ? in.seat() : old != null ? old.s() : null, old != null ? old.b() : null, old != null ? old.k() : null));
         f.passengersJson = json.writeValueAsString(list);
     }
 
@@ -175,7 +178,7 @@ public class TripService {
         requireMember(f.tripId, me);
         addPassengerTo(f, me, in);
         flights.save(f);
-        return flightDto(f);
+        return flightDto(f, me);
     }
 
     @Transactional
@@ -186,10 +189,10 @@ public class TripService {
         list.removeIf(x -> x.c().equals(companionId));
         f.passengersJson = list.isEmpty() ? null : json.writeValueAsString(list);
         flights.save(f);
-        return flightDto(f);
+        return flightDto(f, me);
     }
 
-    private List<TripDtos.PassengerDto> passengerDtos(FlightEntity f) {
+    private List<TripDtos.PassengerDto> passengerDtos(FlightEntity f, UUID viewer) {
         var list = passengers(f);
         if (list.isEmpty()) return List.of();
         var ids = list.stream().map(x -> {
@@ -203,8 +206,54 @@ public class TripService {
         companions.findAllById(ids).forEach(c -> known.put(c.id.toString(), c));
         return list.stream().map(x -> {
             var c = known.get(x.c());
-            return new TripDtos.PassengerDto(x.c(), c != null ? c.fullName() : x.n(), x.s(), c != null ? c.relation : null, c != null && c.verifiedAt != null);
+            boolean mine = c != null && viewer != null && viewer.equals(c.ownerId);
+            return new TripDtos.PassengerDto(x.c(), c != null ? c.fullName() : x.n(), x.s(), c != null ? c.relation : null, c != null && c.verifiedAt != null,
+                    mine ? open(x.b()) : null);
         }).toList();
+    }
+
+    public String seal(String barcode) {
+        return barcode == null ? null : cipher.encrypt(barcode);
+    }
+
+    private String open(String sealed) {
+        if (sealed == null) return null;
+        try {
+            return cipher.decrypt(sealed);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public java.util.Optional<FlightEntity> findMyFlight(UUID me, String flightNumber, java.time.LocalDate day) {
+        String want = flightNumber.replace(" ", "").toUpperCase(java.util.Locale.ROOT);
+        for (var t : trips.findForMember(me)) {
+            for (var f : flights.findByTripIdOrderByDepartureAt(t.id)) {
+                if (!f.flightNumber.replace(" ", "").equalsIgnoreCase(want)) continue;
+                ZoneId zone = airports.get(f.fromIata).map(a -> ZoneId.of(a.tz())).orElse(java.time.ZoneOffset.UTC);
+                if (f.departureAt.atZone(zone).toLocalDate().equals(day)) return java.util.Optional.of(f);
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
+    public boolean claimKeyUsed(String key) {
+        if (flights.findByClaimKey(key).isPresent()) return true;
+        String needle = "\"k\":" + json.writeValueAsString(key);
+        return !flights.findByPassengersJsonContaining(needle).isEmpty();
+    }
+
+    public void putPassengerPass(FlightEntity f, app.gatemate.identity.CompanionEntity c, String seat, String barcode, String key) {
+        var list = passengers(f);
+        list.removeIf(x -> x.c().equals(c.id.toString()));
+        if (list.size() >= 12) throw ApiException.badRequest("too_many", "Up to 12 extra passengers per flight.");
+        list.add(new Seat(c.id.toString(), c.fullName(), seat, seal(barcode), key));
+        f.passengersJson = json.writeValueAsString(list);
+        flights.save(f);
+    }
+
+    public TripDtos.TripDto tripOf(FlightEntity f, UUID me) {
+        return dto(trips.findById(f.tripId).orElseThrow(() -> ApiException.notFound("Trip")), me);
     }
 
     static int estimateMinutes(double km) {
@@ -266,7 +315,7 @@ public class TripService {
 
     public TripDtos.TripDto dto(TripEntity t, UUID me) {
         var dest = airportDto(t.destinationIata);
-        var fl = flights.findByTripIdOrderByDepartureAt(t.id).stream().map(this::flightDto).toList();
+        var fl = flights.findByTripIdOrderByDepartureAt(t.id).stream().map(f -> flightDto(f, me)).toList();
         var people = members.findByTripId(t.id).stream()
                 .map(m -> users.findById(m.userId).map(u -> traveller(u, me)).orElse(null)).filter(Objects::nonNull).toList();
         var items = checklist.findByTripIdOrderByPosition(t.id).stream().map(c -> new TripDtos.ChecklistDto(c.id.toString(), c.label, c.done, c.category)).toList();
@@ -276,13 +325,18 @@ public class TripService {
     }
 
     public TripDtos.FlightDto flightDto(FlightEntity f) {
+        return flightDto(f, null);
+    }
+
+    public TripDtos.FlightDto flightDto(FlightEntity f, UUID viewer) {
         var from = airports.get(f.fromIata);
         var to = airports.get(f.toIata);
         int km = from.isPresent() && to.isPresent() ? (int) Math.round(AirportCatalog.distanceKm(from.get(), to.get())) : 0;
         return new TripDtos.FlightDto(f.id.toString(), f.airlineName, f.airlineCode, f.flightNumber, airportDto(f.fromIata), airportDto(f.toIata),
                 f.departs().toString(), f.arrives().toString(), f.boards().toString(), f.gate, f.terminal, f.seat, f.cabin, f.bookingRef == null ? "" : f.bookingRef,
                 f.passengerName, f.status, (int) Duration.between(f.departs(), f.arrives()).toMinutes(), km, f.fareName, node(f.baggageJson), node(f.verificationJson),
-                f.departureAt.toString(), f.arrivalAt.toString(), f.delayMinutes, passengerDtos(f));
+                f.departureAt.toString(), f.arrivalAt.toString(), f.delayMinutes, passengerDtos(f, viewer), f.ownerFlying,
+                viewer != null && viewer.equals(f.claimedBy) ? open(f.barcodeEnc) : null);
     }
 
     public TripDtos.AirportDto airportDto(String iata) {

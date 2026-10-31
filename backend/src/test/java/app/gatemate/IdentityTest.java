@@ -127,4 +127,37 @@ class IdentityTest {
         String stranger = register("str+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
         post("/api/v1/flights/" + flight.path("id").asString() + "/passengers", stranger, "{\"companionId\":\"" + kid.path("id").asString() + "\"}", 404);
     }
+
+    @Test
+    void everyoneInTheFamilyScansIntoTheSameFlight() throws Exception {
+        String access = register("pass-fam+" + UUID.randomUUID() + "@example.com", "Ana Popescu").get("accessToken").asString();
+        post("/api/v1/me/companions", access, "{\"firstName\":\"Matei\",\"lastName\":\"Popescu\",\"relation\":\"child\"}", 200);
+        post("/api/v1/me/companions", access, "{\"firstName\":\"Ioana\",\"lastName\":\"Popescu\",\"relation\":\"child\"}", 200);
+        int julian = LocalDate.now().plusDays(12).getDayOfYear();
+        String pnr = "FAM" + (100 + (int) (Math.random() * 899));
+        String kidPass = BcbpAndNameTest.pass("POPESCU/MATEI", pnr, "CRA", "BCN", "W6", "3105", julian, "014B");
+        String kid2Pass = BcbpAndNameTest.pass("POPESCU/IOANA", pnr, "CRA", "BCN", "W6", "3105", julian, "014C");
+        String myPass = BcbpAndNameTest.pass("POPESCU/ANA", pnr, "CRA", "BCN", "W6", "3105", julian, "014A");
+        String claim = "{\"method\":\"pass\",\"barcode\":\"%s\"}";
+
+        var t1 = post("/api/v1/flights/claim", access, String.format(claim, kidPass), 200);
+        var f1 = t1.path("flights").get(0);
+        assertThat(f1.path("ownerFlying").asBoolean()).isFalse();
+        assertThat(f1.path("passengers").get(0).path("name").asString()).isEqualTo("Matei Popescu");
+        assertThat(f1.path("passengers").get(0).path("barcode").asString()).isEqualTo(kidPass);
+
+        post("/api/v1/flights/claim", access, String.format(claim, kid2Pass), 200);
+        var t3 = post("/api/v1/flights/claim", access, String.format(claim, myPass), 200);
+        assertThat(t3.path("flights").size()).isEqualTo(1);
+        var f = t3.path("flights").get(0);
+        assertThat(f.path("id").asString()).isEqualTo(f1.path("id").asString());
+        assertThat(f.path("ownerFlying").asBoolean()).isTrue();
+        assertThat(f.path("seat").asString()).isEqualTo("14A");
+        assertThat(f.path("barcode").asString()).isEqualTo(myPass);
+        assertThat(f.path("passengers").size()).isEqualTo(2);
+
+        post("/api/v1/flights/claim", access, String.format(claim, kidPass), 409);
+        String stranger = register("str2+" + UUID.randomUUID() + "@example.com", "Dan Ionescu").get("accessToken").asString();
+        post("/api/v1/flights/claim", stranger, String.format(claim, kid2Pass), 403);
+    }
 }

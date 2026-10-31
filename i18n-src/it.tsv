@@ -1900,3 +1900,18 @@
 @Case saved. We’ll remind you before the deadline.	Pratica salvata. Ti avviseremo prima della scadenza.
 @21 days to claim delay costs	21 giorni per chiedere le spese
 @7 days for a written complaint	7 giorni per il reclamo scritto
+@Matching “{name}” to {who} from your family	Verifica di «{name}» con {who} della tua famiglia
+@Matching “{name}” to you or your family	Verifica di «{name}» con te o la tua famiglia
+@This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.	Il biglietto è intestato a un altro passeggero. Se viaggia con te, aggiungilo prima in Famiglia, poi scansionalo di nuovo.
+@This ticket isn’t in your name or your family’s	Il biglietto non è intestato a te né alla tua famiglia
+@On this flight: you and {n} from your family. All passes are in one place.	Su questo volo: tu e {n} della tua famiglia. Tutte le carte in un unico posto.
+@{n} from your family on this flight. All passes are in one place.	{n} della tua famiglia su questo volo. Tutte le carte in un unico posto.
+@Scan a family member’s boarding pass	Scansiona la carta d’imbarco di un familiare
+@Upload their boarding pass	Carica la sua carta d’imbarco
+@{name}’s ticket is saved with yours, ready to show at the gate.	Il biglietto di {name} è salvato con il tuo, pronto per il gate.
+@Have their boarding passes? Scan them and the real barcodes are saved here too.	Hai le loro carte d’imbarco? Scansionale e i codici veri vengono salvati anche qui.
+@This is the airline’s barcode from the scanned pass. Turn up the brightness at security and the gate.	È il codice della compagnia dalla carta scansionata. Alza la luminosità ai controlli e al gate.
+@Airline barcode	Codice della compagnia
+@This boarding pass is already in Gatemate.	Questa carta è già in Gatemate.
+@Gatemate adds tickets in your name ({name}) or in the name of someone in your Family. Add them in Profile → Family with the name exactly as on the ticket, then scan it again.	Gatemate aggiunge biglietti a tuo nome ({name}) o a nome di qualcuno della tua Famiglia. Aggiungilo in Profilo → Famiglia con il nome esatto del biglietto, poi scansiona di nuovo.
+@your legal name	il tuo nome legale

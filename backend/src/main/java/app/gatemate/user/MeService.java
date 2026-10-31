@@ -122,7 +122,7 @@ public class MeService {
         Set<String> countries = new HashSet<>();
         for (var t : trips.findForMember(me)) {
             for (var f : flights.findByTripIdOrderByDepartureAt(t.id)) {
-                if (!f.claimedBy.equals(me) || f.arrives().isAfter(now) || "cancelled".equals(f.status)) continue;
+                if (!f.claimedBy.equals(me) || !f.ownerFlying || f.arrives().isAfter(now) || "cancelled".equals(f.status)) continue;
                 count++;
                 minutes += (int) java.time.Duration.between(f.departureAt, f.arrivalAt).toMinutes();
                 var a = airports.get(f.fromIata);

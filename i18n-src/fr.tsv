@@ -1899,3 +1899,18 @@
 @Case saved. We’ll remind you before the deadline.	Dossier enregistré. Nous vous préviendrons avant l’échéance.
 @21 days to claim delay costs	21 jours pour réclamer les frais
 @7 days for a written complaint	7 jours pour une réclamation écrite
+@Matching “{name}” to {who} from your family	Correspondance de « {name} » avec {who} de votre famille
+@Matching “{name}” to you or your family	Correspondance de « {name} » avec vous ou votre famille
+@This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.	Ce billet est au nom d’un autre passager. S’il voyage avec vous, ajoutez-le d’abord dans Famille, puis scannez-le à nouveau.
+@This ticket isn’t in your name or your family’s	Ce billet n’est ni à votre nom ni à celui de votre famille
+@On this flight: you and {n} from your family. All passes are in one place.	Sur ce vol : vous et {n} de votre famille. Toutes les cartes au même endroit.
+@{n} from your family on this flight. All passes are in one place.	{n} de votre famille sur ce vol. Toutes les cartes au même endroit.
+@Scan a family member’s boarding pass	Scanner la carte d’un membre de la famille
+@Upload their boarding pass	Importer sa carte d’embarquement
+@{name}’s ticket is saved with yours, ready to show at the gate.	Le billet de {name} est enregistré avec le vôtre, prêt pour la porte.
+@Have their boarding passes? Scan them and the real barcodes are saved here too.	Vous avez leurs cartes ? Scannez-les et les vrais codes sont aussi enregistrés ici.
+@This is the airline’s barcode from the scanned pass. Turn up the brightness at security and the gate.	C’est le code de la compagnie, issu de la carte scannée. Augmentez la luminosité au contrôle et à la porte.
+@Airline barcode	Code de la compagnie
+@This boarding pass is already in Gatemate.	Cette carte est déjà dans Gatemate.
+@Gatemate adds tickets in your name ({name}) or in the name of someone in your Family. Add them in Profile → Family with the name exactly as on the ticket, then scan it again.	Gatemate ajoute les billets à votre nom ({name}) ou à celui d’un membre de votre Famille. Ajoutez la personne dans Profil → Famille avec le nom exact du billet, puis scannez à nouveau.
+@your legal name	votre nom légal

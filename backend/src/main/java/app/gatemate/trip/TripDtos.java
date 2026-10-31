@@ -13,9 +13,9 @@ public final class TripDtos {
     public record FlightDto(String id, String airline, String airlineCode, String number, AirportDto from, AirportDto to, String departure,
             String arrival, String boardingTime, String gate, String terminal, String seat, String cabin, String bookingRef, String passengerName,
             String status, int durationMinutes, int distanceKm, String fareName, JsonNode baggage, JsonNode verification,
-            String scheduledDeparture, String scheduledArrival, int delayMinutes, List<PassengerDto> passengers) {}
+            String scheduledDeparture, String scheduledArrival, int delayMinutes, List<PassengerDto> passengers, boolean ownerFlying, String barcode) {}
 
-    public record PassengerDto(String companionId, String name, String seat, String relation, boolean verified) {}
+    public record PassengerDto(String companionId, String name, String seat, String relation, boolean verified, String barcode) {}
 
     public record PassengerIn(@NotBlank String companionId, @Pattern(regexp = "\\d{1,3}[A-K]") String seat) {}
 

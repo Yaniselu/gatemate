@@ -213,7 +213,6 @@ export class MockApi extends GatemateApi {
   }
 
   async claimFlight(req: ClaimRequest): Promise<Trip> {
-    this.requireTripAllowance();
     await this.delay(null, 900, 1400);
     const user = this.user;
     if (!user?.legalFirstName || !user.legalLastName) throw new ApiError('Add your legal name in your profile first.', 422, 'legal_name_missing');
@@ -229,7 +228,34 @@ export class MockApi extends GatemateApi {
         { label: 'Passenger name matches your legal name', ok: m.ok },
         { label: 'Not added by another Gatemate account', ok: !this.claimed.has(key) },
       ];
-      if (!m.ok) throw new ApiError('This boarding pass is in another passenger’s name. Ask them to add it and invite you to the trip.', 403, 'name_mismatch');
+      if (!m.ok) {
+        const c = this.companions.find((x) => matchPassengerName(p.firstName, p.lastName, x.firstName, x.lastName).ok);
+        if (!c) throw new ApiError('This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.', 403, 'name_mismatch');
+        const ckey = `${key}/${p.firstName}`;
+        if (this.claimed.has(ckey)) throw new ApiError('This boarding pass is already in Gatemate.', 409, 'already_claimed');
+        this.claimed.add(ckey);
+        const passenger: Passenger = { companionId: c.id, name: `${c.firstName} ${c.lastName}`, seat: p.seat || undefined, relation: c.relation, verified: c.verified, barcode: req.barcode };
+        const same = this.ensureTrips().find((t) => t.flights.some((f) => f.number.replace(' ', '') === `${p.carrier}${p.flightNumber}` && f.departure.slice(0, 10) === p.flightDate.toISOString().slice(0, 10)));
+        if (same) {
+          const f = same.flights.find((x) => x.number.replace(' ', '') === `${p.carrier}${p.flightNumber}`)!;
+          f.passengers = [...(f.passengers ?? []).filter((x) => x.companionId !== c.id), passenger];
+          return this.delay({ ...same }, 0, 0);
+        }
+        this.requireTripAllowance();
+        const dep = new Date(p.flightDate);
+        dep.setUTCHours(9, 0);
+        const trip = this.tripFor({
+          id: randomId('fl_'), airline: AIRLINES.find((a) => a.code === p.carrier)?.name ?? p.carrier, airlineCode: p.carrier, number: `${p.carrier} ${p.flightNumber}`,
+          from: AIRPORTS[p.from] ?? { code: p.from, city: p.from, name: `${p.from} Airport`, country: '', timezone: 'UTC' },
+          to: AIRPORTS[p.to] ?? { code: p.to, city: p.to, name: `${p.to} Airport`, country: '', timezone: 'UTC' },
+          departure: dep.toISOString(), arrival: new Date(dep.getTime() + 150 * 60_000).toISOString(), boardingTime: new Date(dep.getTime() - 40 * 60_000).toISOString(),
+          cabin: 'Economy', bookingRef: p.bookingRef, passengerName: `${user.legalFirstName} ${user.legalLastName}`, status: 'scheduled', durationMinutes: 150, distanceKm: 1500,
+          ownerFlying: false, passengers: [passenger],
+          verification: { status: 'verified', method: 'boarding-pass', checkedAt: new Date().toISOString(), checks: [{ label: 'Passenger name matches a family member', ok: true }] },
+        });
+        this.ensureTrips().push(trip);
+        return this.delay(trip, 0, 0);
+      }
       if (this.claimed.has(key)) throw new ApiError('This flight is already linked to another account.', 409, 'already_claimed');
       this.claimed.add(key);
       const dep = new Date(p.flightDate);
@@ -254,7 +280,14 @@ export class MockApi extends GatemateApi {
         distanceKm: 1500,
         fareName,
         baggage: { ...baggage, source: 'boarding-pass' },
+        barcode: req.barcode,
       };
+      const same = this.ensureTrips().find((t) => t.flights.some((f) => f.ownerFlying === false && f.number === flight.number && f.departure.slice(0, 10) === flight.departure.slice(0, 10)));
+      if (same) {
+        const f = same.flights.find((x) => x.number === flight.number)!;
+        Object.assign(f, { ownerFlying: true, seat: p.seat, passengerName: p.passengerName, barcode: req.barcode, verification: { status: 'verified', method: 'boarding-pass', checkedAt: new Date().toISOString(), checks } });
+        return this.delay({ ...same }, 0, 0);
+      }
     } else {
       const res = await this.lookupBooking(req);
       flight = res.flights[0];
@@ -265,6 +298,7 @@ export class MockApi extends GatemateApi {
       ];
     }
     flight.verification = { status: 'verified', method: req.method === 'pass' ? 'boarding-pass' : 'airline', checkedAt: new Date().toISOString(), checks };
+    this.requireTripAllowance();
     const trip = this.tripFor(flight);
     this.ensureTrips().push(trip);
     return this.delay(trip, 0, 0);

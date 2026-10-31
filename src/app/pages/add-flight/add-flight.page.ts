@@ -23,7 +23,7 @@ import { AchievementsService } from '../../core/services/achievements.service';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { SheenDirective } from '../../shared/directives/sheen.directive';
-import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Step = 'choose' | 'airline' | 'email' | 'manual' | 'verifying' | 'done' | 'failed';
 interface Check {
@@ -89,6 +89,7 @@ export class AddFlightPage {
   readonly emailError = signal('');
   readonly checks = signal<Check[]>([]);
   readonly result = signal<Trip | null>(null);
+  readonly passFor = signal<string | null>(null);
   readonly failure = signal<{ title: string; body: string; code?: string } | null>(null);
   readonly hasLegalName = computed(() => !!(this.auth.user()?.legalFirstName && this.auth.user()?.legalLastName));
   readonly legalName = computed(() => `${this.auth.user()?.legalFirstName ?? ''} ${this.auth.user()?.legalLastName ?? ''}`.trim());
@@ -143,6 +144,18 @@ export class AddFlightPage {
     const group = form === 'booking' ? this.bookingForm : this.manualForm;
     const ctrl = (group.controls as Record<string, { setValue(v: string): void }>)[name];
     if (v !== input.value) ctrl.setValue(v);
+  }
+
+  shown(f: Trip['flights'][number]) {
+    const who = this.passFor();
+    const p = who ? f.passengers?.find((x) => x.name.split(' ')[0].toLowerCase() === who.toLowerCase()) : undefined;
+    return p ? { name: p.name, seat: p.seat } : { name: f.passengerName, seat: f.seat };
+  }
+
+  async scanNext() {
+    this.result.set(null);
+    this.step.set('choose');
+    await this.scan();
   }
 
   async scan() {
@@ -273,14 +286,18 @@ export class AddFlightPage {
       return;
     }
     const user = this.auth.user();
-    const match = matchPassengerName(pass.firstName, pass.lastName, user?.legalFirstName ?? '', user?.legalLastName ?? '');
+    await this.loadFamily;
+    const self = matchPassengerName(pass.firstName, pass.lastName, user?.legalFirstName ?? '', user?.legalLastName ?? '').ok;
+    const relative = self ? undefined : this.companions().find((c) => matchPassengerName(pass.firstName, pass.lastName, c.firstName, c.lastName).ok);
+    const ok = self || !!relative;
+    this.passFor.set(relative ? relative.firstName : null);
     await this.runChecks(
-      ['Reading IATA boarding pass', `Matching “${pass.passengerName}” to your legal name`, 'Checking it isn’t linked to another account', 'Securing it on this device'],
+      ['Reading IATA boarding pass', relative ? tr('Matching “{name}” to {who} from your family', { name: pass.passengerName, who: relative.firstName }) : tr('Matching “{name}” to you or your family', { name: pass.passengerName }), 'Checking it isn’t linked to another account', 'Securing it on this device'],
       async (advance) => {
         await advance(true);
-        await advance(match.ok);
-        if (!match.ok) {
-          throw new ApiError('This boarding pass is in another passenger’s name.', 403, 'name_mismatch');
+        await advance(ok);
+        if (!ok) {
+          throw new ApiError('This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.', 403, 'name_mismatch');
         }
         const trip = await this.api.claimFlight({ method: 'pass', barcode: pass.raw });
         await advance(true);
@@ -328,7 +345,7 @@ export class AddFlightPage {
     };
     try {
       const trip = await work(advance);
-      this.store.trips.update((list) => [...list, trip]);
+      this.store.trips.update((list) => [...list.filter((x) => x.id !== trip.id), trip]);
       this.result.set(trip);
       await wait(350);
       this.step.set('done');
@@ -342,7 +359,7 @@ export class AddFlightPage {
       const err = e instanceof ApiError ? e : null;
       this.failure.set(
         err?.code === 'name_mismatch'
-          ? { title: 'This ticket isn’t in your name', body: `Gatemate only adds tickets that belong to you (${this.legalName() || 'your legal name'}). If it’s a friend’s, ask them to add it and invite you to the trip.`, code: err.code }
+          ? { title: 'This ticket isn’t in your name or your family’s', body: tr('Gatemate adds tickets in your name ({name}) or in the name of someone in your Family. Add them in Profile → Family with the name exactly as on the ticket, then scan it again.', { name: this.legalName() || tr('your legal name') }), code: err.code }
           : err?.code === 'legal_name_missing'
             ? { title: 'Add your legal name first', body: 'We compare it with the name on the ticket to make sure it’s yours.', code: err.code }
             : err?.code === 'pro_required'

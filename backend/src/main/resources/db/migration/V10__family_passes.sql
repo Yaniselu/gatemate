@@ -1,0 +1,2 @@
+ALTER TABLE flights ADD COLUMN barcode_enc TEXT;
+ALTER TABLE flights ADD COLUMN owner_flying BOOLEAN NOT NULL DEFAULT TRUE;

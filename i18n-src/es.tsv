@@ -1900,3 +1900,18 @@
 @Case saved. We’ll remind you before the deadline.	Caso guardado. Te avisaremos antes del plazo.
 @21 days to claim delay costs	21 días para reclamar los gastos
 @7 days for a written complaint	7 días para la reclamación escrita
+@Matching “{name}” to {who} from your family	Comprobando «{name}» con {who} de tu familia
+@Matching “{name}” to you or your family	Comprobando «{name}» contigo o tu familia
+@This ticket is in another passenger’s name. If they fly with you, add them in Family first, then scan it again.	Este billete está a nombre de otro pasajero. Si viaja contigo, añádelo primero en Familia y vuelve a escanearlo.
+@This ticket isn’t in your name or your family’s	El billete no está a tu nombre ni al de tu familia
+@On this flight: you and {n} from your family. All passes are in one place.	En este vuelo: tú y {n} de tu familia. Todas las tarjetas en un solo lugar.
+@{n} from your family on this flight. All passes are in one place.	{n} de tu familia en este vuelo. Todas las tarjetas en un solo lugar.
+@Scan a family member’s boarding pass	Escanea la tarjeta de un familiar
+@Upload their boarding pass	Subir su tarjeta de embarque
+@{name}’s ticket is saved with yours, ready to show at the gate.	La tarjeta de {name} está guardada con la tuya, lista para la puerta.
+@Have their boarding passes? Scan them and the real barcodes are saved here too.	¿Tienes sus tarjetas? Escanéalas y los códigos reales también se guardan aquí.
+@This is the airline’s barcode from the scanned pass. Turn up the brightness at security and the gate.	Es el código de la aerolínea de la tarjeta escaneada. Sube el brillo en el control y en la puerta.
+@Airline barcode	Código de la aerolínea
+@This boarding pass is already in Gatemate.	Esta tarjeta ya está en Gatemate.
+@Gatemate adds tickets in your name ({name}) or in the name of someone in your Family. Add them in Profile → Family with the name exactly as on the ticket, then scan it again.	Gatemate añade billetes a tu nombre ({name}) o al de alguien de tu Familia. Añádelo en Perfil → Familia con el nombre exacto del billete y vuelve a escanear.
+@your legal name	tu nombre legal

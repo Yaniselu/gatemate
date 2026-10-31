@@ -18,15 +18,17 @@ const SEAT = /^\d{1,3}[A-K]$/;
   imports: [TranslatePipe, IonIcon, FormsModule, RouterLink],
   template: `
     <div class="who" role="tablist" [attr.aria-label]="'Passengers' | t">
-      <button role="tab" [class.on]="selected() === 0" (click)="pick(0)">
-        <span class="av me">{{ initials(flight().passengerName) }}</span>
-        <span class="nm">{{ 'You' | t }}@if (flight().seat) { <i>{{ flight().seat }}</i> }</span>
-      </button>
-      @for (p of flight().passengers ?? []; track p.companionId; let i = $index) {
-        <button role="tab" [class.on]="selected() === i + 1" (click)="pick(i + 1)">
-          <span class="av">{{ initials(p.name) }}@if (p.verified) { <ion-icon name="shield-checkmark" class="ok" /> }</span>
+      @if (flight().ownerFlying !== false) {
+        <button role="tab" [class.on]="current() === 'me'" (click)="pick('me')">
+          <span class="av me">{{ initials(flight().passengerName) }}@if (flight().barcode) { <ion-icon name="qr-code" class="qr" /> }</span>
+          <span class="nm">{{ 'You' | t }}@if (flight().seat) { <i>{{ flight().seat }}</i> }</span>
+        </button>
+      }
+      @for (p of flight().passengers ?? []; track p.companionId) {
+        <button role="tab" [class.on]="current() === p.companionId" (click)="pick(p.companionId)">
+          <span class="av">{{ initials(p.name) }}@if (p.barcode) { <ion-icon name="qr-code" class="qr" /> } @else if (p.verified) { <ion-icon name="shield-checkmark" class="ok" /> }</span>
           <span class="nm">{{ p.name.split(' ')[0] }}@if (p.seat) { <i>{{ p.seat }}</i> }</span>
-          @if (selected() === i + 1 && editable()) {
+          @if (current() === p.companionId && editable()) {
             <span class="rm" role="button" tabindex="0" (click)="$event.stopPropagation(); remove(p.companionId)" [attr.aria-label]="'Remove from this flight' | t"><ion-icon name="close" /></span>
           }
         </button>
@@ -51,6 +53,8 @@ const SEAT = /^\d{1,3}[A-K]$/;
         } @else if (loaded()) {
           <p class="empty">{{ companions().length ? ('Everyone in your family is already on this ticket.' | t) : ('Add your family once, then put them on any ticket.' | t) }}</p>
         }
+        <p class="scan-hint">{{ 'Have their boarding passes? Scan them and the real barcodes are saved here too.' | t }}</p>
+        <a class="scan" routerLink="/add-flight"><ion-icon name="scan-outline" />{{ 'Scan a family member’s boarding pass' | t }}</a>
         <a class="manage" routerLink="/family"><ion-icon name="people-outline" />{{ 'Manage family' | t }}</a>
       </div>
     }
@@ -69,6 +73,9 @@ const SEAT = /^\d{1,3}[A-K]$/;
     .add .av { background: var(--gm-surface); color: var(--gm-accent-strong); font-size: 16px; }
     .av.sm { width: 28px; height: 28px; flex: none; }
     .av .ok { position: absolute; right: -4px; bottom: -3px; font-size: 14px; color: #16a34a; background: #fff; border-radius: 50%; }
+    .av .qr { position: absolute; right: -5px; bottom: -4px; font-size: 13px; padding: 1px; color: #0b1b2b; background: #fff; border-radius: 4px; }
+    .scan-hint { margin: 0; font-size: 13px; color: var(--gm-ink-3); }
+    .scan { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; color: var(--gm-accent-strong); text-decoration: none; }
     .nm { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; }
     .nm i { font-style: normal; font-weight: 800; font-size: 12px; opacity: .75; }
     .rm { display: grid; place-items: center; width: 22px; height: 22px; margin-left: 2px; border-radius: 50%; background: rgba(255,255,255,.22); font-size: 14px; }
@@ -91,7 +98,12 @@ export class FlightPassengersComponent {
   private auth = inject(AuthService);
   readonly flight = input.required<Flight>();
   readonly editable = input(true);
-  readonly selected = model(0);
+  readonly selected = model<string>('me');
+  readonly current = computed(() => {
+    const f = this.flight(), sel = this.selected();
+    const ids = [...(f.ownerFlying !== false ? ['me'] : []), ...(f.passengers ?? []).map((p) => p.companionId)];
+    return ids.includes(sel) ? sel : ids[0] ?? 'me';
+  });
 
   readonly open = signal(false);
   readonly busy = signal(false);
@@ -103,9 +115,9 @@ export class FlightPassengersComponent {
   });
   seats: Record<string, string> = {};
 
-  pick(i: number) {
+  pick(key: string) {
     this.platform.selection();
-    this.selected.set(i);
+    this.selected.set(key);
   }
 
   async toggle() {
@@ -139,7 +151,7 @@ export class FlightPassengersComponent {
       const f = await this.api.addPassenger(this.flight().id, c.id, seat || undefined);
       this.store.replaceFlight(f);
       this.platform.impact();
-      this.selected.set((f.passengers?.findIndex((p) => p.companionId === c.id) ?? -1) + 1);
+      this.selected.set(c.id);
       if (!this.available().length) this.open.set(false);
     } catch (e) {
       void this.toast.show(e instanceof Error ? e.message : 'Couldn’t add them to this flight.', 'error');
@@ -152,7 +164,7 @@ export class FlightPassengersComponent {
     try {
       const f = await this.api.removePassenger(this.flight().id, id);
       this.store.replaceFlight(f);
-      this.selected.set(0);
+      this.selected.set('me');
     } catch {
       void this.toast.show('Couldn’t update this flight. Try again.', 'error');
     }

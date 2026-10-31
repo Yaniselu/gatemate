@@ -115,14 +115,14 @@
               @if (upcomingFlights().length > 1) {
                 <div class="pass-picker">
                   @for (f of upcomingFlights(); track f.id; let i = $index) {
-                    <button [class.on]="passIndex() === i" (click)="passIndex.set(i); passenger.set(0)">{{ f.from.code }} → {{ f.to.code }}</button>
+                    <button [class.on]="passIndex() === i" (click)="passIndex.set(i); passenger.set('me')">{{ f.from.code }} → {{ f.to.code }}</button>
                   }
                 </div>
               }
               @for (f of [upcomingFlights()[passIndex()]]; track f.id) {
                 <gm-flight-journey [flight]="f" />
                 <gm-flight-passengers [flight]="f" [(selected)]="passenger" />
-                @for (pf of [passFlight()]; track pf.passengerName + pf.seat) {
+                @for (pf of [passFlight()]; track pf.passengerName + pf.seat + (pf.barcode ?? '')) {
                   <gm-boarding-pass class="anim-scale-in" [flight]="pf" />
                   <gm-seat-map [flight]="pf" />
                 }

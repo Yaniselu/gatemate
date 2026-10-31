@@ -43,6 +43,7 @@ export interface Passenger {
   seat?: string;
   relation?: Relation;
   verified: boolean;
+  barcode?: string;
 }
 
 export type ProfilePatch = Partial<Pick<User, 'name' | 'homeAirport' | 'legalFirstName' | 'legalLastName' | 'phone' | 'seatPreference' | 'bio' | 'avatarUrl' | 'lang'>>;
@@ -86,6 +87,8 @@ export interface Flight {
   scheduledDeparture?: string;
   scheduledArrival?: string;
   passengers?: Passenger[];
+  ownerFlying?: boolean;
+  barcode?: string;
   baggageBelt?: string;
   durationMinutes: number;
   distanceKm: number;

@@ -215,7 +215,7 @@
             @let st = t.flights[0].verification?.status;
             <div class="badge-ok"><ion-icon [name]="st === 'verified' ? 'shield-checkmark' : 'airplane'" /></div>
             <h2 class="h center">{{ st === 'verified' ? ('Ticket verified' | t) : t.flights.length > 1 ? ('{n} flights added' | t: { n: t.flights.length }) : ('Flight added' | t) }}</h2>
-            <p class="center muted">{{ st === 'verified' ? ('It’s in your name and now linked only to your account.' | t) : st === 'pending' ? ('Your name is on the booking. It’s linked only to your account.' | t) : ('We couldn’t confirm your name on it, so it’s marked unverified.' | t) }}</p>
+            <p class="center muted">{{ passFor() ? ('{name}’s ticket is saved with yours, ready to show at the gate.' | t: { name: passFor() }) : st === 'verified' ? ('It’s in your name and now linked only to your account.' | t) : st === 'pending' ? ('Your name is on the booking. It’s linked only to your account.' | t) : ('We couldn’t confirm your name on it, so it’s marked unverified.' | t) }}</p>
             @for (f of t.flights; track f.id) {
               <div class="ticket card" gmSheen="2">
                 <div class="t-row">
@@ -227,8 +227,9 @@
                   }
                 </div>
                 <div class="t-facts">
-                  <span><span class="gm-label">{{ 'Passenger' | t }}</span>{{ f.passengerName }}</span>
-                  <span><span class="gm-label">{{ 'Seat' | t }}</span>{{ f.seat || '—' }}</span>
+                  @let who = shown(f);
+                  <span><span class="gm-label">{{ 'Passenger' | t }}</span>{{ who.name }}</span>
+                  <span><span class="gm-label">{{ 'Seat' | t }}</span>{{ who.seat || '—' }}</span>
                   <span><span class="gm-label">{{ 'Departs' | t }}</span>{{ f.departure | shortDate: false : f.from.timezone }} {{ f.departure | clock: f.from.timezone }}</span>
                 </div>
                 @if (f.baggage; as b) {
@@ -240,7 +241,15 @@
                 }
               </div>
             }
+            @if (t.flights[0].passengers?.length; as n) {
+              <p class="center muted fam-note"><ion-icon name="people-outline" /> {{ (t.flights[0].ownerFlying === false ? '{n} from your family on this flight. All passes are in one place.' : 'On this flight: you and {n} from your family. All passes are in one place.') | t: { n: n } }}</p>
+            }
             <button class="gm-btn" (click)="openTrip()"><ion-icon name="arrow-forward" /> {{ 'Open trip' | t }}</button>
+            <button class="gm-btn ghost" (click)="scanNext()"><ion-icon name="scan-outline" /> {{ 'Scan a family member’s boarding pass' | t }}</button>
+            <label class="gm-btn ghost">
+              <ion-icon name="image-outline" /> {{ 'Upload their boarding pass' | t }}
+              <input type="file" accept="image/*,application/pdf" (change)="onFile($event)" hidden />
+            </label>
           </div>
         }
       }

@@ -1,6 +1,7 @@
 import { addIcons } from 'ionicons';
 import {
   accessibilityOutline,
+  qrCode,
   statsChartOutline,
   keypadOutline,
   personAddOutline,
@@ -203,6 +204,7 @@ import {
 export function registerIcons(): void {
   addIcons({
     accessibilityOutline,
+    qrCode,
     statsChartOutline,
     keypadOutline,
     personAddOutline,
