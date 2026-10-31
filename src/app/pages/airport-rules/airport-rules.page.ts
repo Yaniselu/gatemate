@@ -103,7 +103,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
     .search input { flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 16px; color: var(--gm-ink); }
     .search .clear { display: flex; background: none; padding: 4px; }
 
-    .chips { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 6px; scrollbar-width: none; }
+    .chips { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; margin: 0 -16px; padding: 2px 16px 6px; scrollbar-width: none; }
     .chips::-webkit-scrollbar { display: none; }
     .chips button { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px; border-radius: 999px; font-size: 13px; font-weight: 650;
       color: var(--gm-ink-2); background: var(--gm-surface); transition: background .25s, color .25s, transform .25s var(--gm-ease-spring); }
@@ -134,6 +134,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
       letter-spacing: .02em; text-transform: uppercase; color: #b91c1c; background: rgba(239, 68, 68, .1); }
     .kind ion-icon { font-size: 14px; }
     .rule.tip .kind { color: #b45309; background: rgba(245, 158, 11, .14); }
+    :host-context(html.gm-dark) .rule.tip .kind { color: #fbbf24; background: rgba(245, 158, 11, .16); }
     .rule h4 { margin: 9px 0 4px; font-size: 16px; font-weight: 750; line-height: 1.3; color: var(--gm-ink); }
     .rule p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--gm-ink-2); }
 

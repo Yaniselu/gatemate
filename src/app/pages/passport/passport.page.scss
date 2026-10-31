@@ -6,6 +6,9 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   margin: 4px -16px 14px;
   padding: 0 16px;
   scrollbar-width: none;
@@ -59,7 +62,7 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--gm-ink-2);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--gm-veil);
   pointer-events: none;
 
   span { display: flex; align-items: center; gap: 5px; }

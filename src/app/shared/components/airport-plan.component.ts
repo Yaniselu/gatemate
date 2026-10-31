@@ -5,6 +5,7 @@ import { POI_META, PoiKind } from '../../core/data/airport-poi';
 import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 type LL = { lat: number; lon: number };
+const HOVER = typeof matchMedia !== 'undefined' && matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 @Component({
   selector: 'gm-airport-plan',
@@ -47,6 +48,7 @@ export class AirportPlanComponent {
   private resize?: ResizeObserver;
   private init?: Promise<void>;
   private framedFor = '';
+  private focusedOn = '';
 
   constructor() {
     effect(() => {
@@ -188,12 +190,15 @@ export class AirportPlanComponent {
         interactive: this.interactive(),
       }).addTo(layer);
       if (this.interactive()) {
-        dot.bindTooltip(esc(tr(p.ref)), { direction: 'top', offset: [0, -6] });
+        if (HOVER) dot.bindTooltip(esc(tr(p.ref)), { direction: 'top', offset: [0, -6] });
         dot.on('click', () => p.id && this.placeTap.emit(p.id));
       }
     }
     for (const t of by('terminal')) {
-      L.marker([t.lat, t.lon], { icon: L.divIcon({ className: 'gm-plan-terminal', html: `<span>${esc(t.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
+      const ring = t.outline?.flat() ?? [];
+      const south = ring.length ? Math.min(...ring.map((q) => q[0])) : t.lat;
+      const at: [number, number] = ring.length ? [south - 0.00012, t.lon] : [t.lat, t.lon];
+      L.marker(at, { icon: L.divIcon({ className: 'gm-plan-terminal', html: `<span>${esc(t.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
     }
     for (const p of pois.filter((x) => x.outline)) {
       L.marker([p.lat, p.lon], { icon: L.divIcon({ className: 'gm-plan-shop', html: `<span>${esc(tr(p.ref))}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
@@ -251,15 +256,45 @@ export class AirportPlanComponent {
       }).addTo(layer);
     }
     const target = p ?? g;
+    const key = target ? `${target.kind}:${target.id ?? target.ref}:${me ? 'me' : ''}` : '';
+    const moved = key !== this.focusedOn;
+    this.focusedOn = key;
     if (me && this.interactive()) {
       L.marker([me.lat, me.lon], { icon: L.divIcon({ className: 'gm-pin-me', html: '<i></i>', iconSize: [22, 22] }), zIndexOffset: 2000 }).addTo(layer);
       if (target) {
         L.polyline([[me.lat, me.lon], [target.lat, target.lon]], { color: '#0b1b2b', weight: 3, dashArray: '2 8', lineCap: 'round' }).addTo(layer);
-        map.fitBounds(L.latLngBounds([[me.lat, me.lon], [target.lat, target.lon]]).pad(0.35), { maxZoom: 18, animate: true });
+        if (moved) map.fitBounds(L.latLngBounds([[me.lat, me.lon], [target.lat, target.lon]]).pad(0.35), { maxZoom: 18, animate: true });
       }
-    } else if (target && this.interactive()) {
-      map.setView([target.lat, target.lon], Math.max(map.getZoom(), 17.5), { animate: true });
+    } else if (target && this.interactive() && moved) {
+      requestAnimationFrame(() => requestAnimationFrame(() => this.reveal(target)));
     }
+  }
+
+  private reveal(target: LL) {
+    const map = this.map;
+    if (!map) return;
+    const host = this.host().nativeElement;
+    const box = host.getBoundingClientRect();
+    let top = box.top + 8, bottom = box.bottom - 8;
+    const scope = host.closest('ion-content') ?? document.body;
+    for (const el of Array.from(scope.querySelectorAll<HTMLElement>('[slot=fixed]'))) {
+      const r = el.getBoundingClientRect();
+      if (!r.height || r.width < box.width * 0.5) continue;
+      if (r.top < box.top + box.height / 2) top = Math.max(top, r.bottom + 12);
+      else bottom = Math.min(bottom, r.top - 12);
+    }
+    if (bottom - top < 80) {
+      top = box.top + box.height * 0.3;
+      bottom = box.top + box.height * 0.6;
+    }
+    const zoom = Math.max(map.getZoom(), 17.5);
+    const now = map.latLngToContainerPoint([target.lat, target.lon]);
+    const y = now.y + box.top, x = now.x + box.left;
+    if (map.getZoom() >= 17.25 && y > top + 24 && y < bottom - 24 && x > box.left + 40 && x < box.right - 60) return;
+    const wantY = (top + bottom) / 2 - box.top;
+    const dy = box.height / 2 - wantY;
+    const c = map.unproject(map.project([target.lat, target.lon], zoom).add([0, dy]), zoom);
+    map.setView(c, zoom, { animate: true });
   }
 
   private declutter() {

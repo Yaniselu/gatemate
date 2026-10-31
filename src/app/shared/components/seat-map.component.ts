@@ -102,7 +102,7 @@ function cabinFor(aircraft: string | undefined, seatRow: number): Cabin {
     header small { font-size: 12px; color: var(--gm-ink-3); }
     .ic { width: 34px; height: 34px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #0fb5c3; background: rgba(15,181,195,.12); }
     .mine { margin-left: auto; padding: 6px 12px; border-radius: 999px; font-weight: 850; font-size: 15px; color: #fff; background: linear-gradient(135deg, #0fb5c3, #6366f1); }
-    .scroll { overflow-x: auto; padding: 6px 12px; scrollbar-width: none; }
+    .scroll { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; padding: 6px 12px; scrollbar-width: none; }
     .scroll::-webkit-scrollbar { display: none; }
     svg { display: block; }
     .seat { fill: #cbd5e1; }

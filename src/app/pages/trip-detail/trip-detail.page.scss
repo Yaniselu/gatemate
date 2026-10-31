@@ -34,7 +34,7 @@
 
   &.solid {
     ion-toolbar {
-      --background: rgba(255, 255, 255, 0.78);
+      --background: var(--gm-veil);
       -webkit-backdrop-filter: var(--gm-glass-blur);
       backdrop-filter: var(--gm-glass-blur);
     }
@@ -119,6 +119,9 @@ gm-airport-day.day {
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   margin: 18px -18px 16px;
   padding: 2px 18px 4px;
   scrollbar-width: none;
@@ -137,7 +140,7 @@ gm-airport-day.day {
     transition: background 0.3s, color 0.3s, transform 0.25s var(--gm-ease-spring);
 
     &.on {
-      background: linear-gradient(135deg, #22c7d3, #0a93a6);
+      background: linear-gradient(135deg, #0fa8b6, #08808e);
       color: #fff;
       transform: scale(1.04);
       box-shadow: 0 8px 18px var(--gm-accent-glow);

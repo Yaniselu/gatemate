@@ -91,10 +91,10 @@ const GROUP: Record<string, Filter> = {
   styles: `
     .page { padding: 8px 16px 40px; }
     .mark { width: 40px; height: 40px; margin-right: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--gm-accent-strong); background: var(--gm-accent-soft); }
-    .filters { display: flex; gap: 8px; overflow-x: auto; margin: 4px -16px 14px; padding: 2px 16px; scrollbar-width: none; }
+    .filters { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; margin: 4px -16px 14px; padding: 2px 16px; scrollbar-width: none; }
     .filters button { flex: none; padding: 8px 14px; border-radius: 999px; background: var(--gm-surface); font-weight: 650; font-size: 13.5px; color: var(--gm-ink-2); transition: all .3s var(--gm-ease-spring); }
     .filters button.on { background: var(--gm-navy); color: #fff; }
-    .filters em { font-style: normal; margin-left: 4px; padding: 1px 6px; border-radius: 8px; background: var(--gm-coral); color: #fff; font-size: 11px; }
+    .filters em { font-style: normal; margin-left: 4px; padding: 1px 6px; border-radius: 8px; background: var(--gm-badge); color: #fff; font-size: 11px; }
     .grp { margin: 10px 4px 8px; }
     .list { padding: 0 14px; overflow: hidden; }
     .alert { position: relative; display: flex; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--gm-line); background: var(--gm-card-bg); touch-action: pan-y; transition: transform .25s var(--gm-ease-out), opacity .25s, max-height .3s; max-height: 220px; }

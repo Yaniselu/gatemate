@@ -104,7 +104,7 @@ const FEATURES = [
     .txt b { display: block; font-size: 16px; }
     .txt small { color: var(--gm-ink-3); font-size: 12.5px; }
     .price { font-weight: 700; font-size: 15px; }
-    .save { position: absolute; top: -9px; right: 14px; font-style: normal; font-size: 11px; font-weight: 700; color: #fff; background: var(--gm-accent-strong); padding: 2px 8px; border-radius: 999px; }
+    .save { position: absolute; top: -9px; right: 14px; font-style: normal; font-size: 11px; font-weight: 700; color: #fff; background: var(--gm-on-accent-bg); padding: 2px 8px; border-radius: 999px; }
     .buy { width: 100%; margin-top: 16px; }
     .terms { font-size: 12px; color: var(--gm-ink-3); text-align: center; line-height: 1.45; margin: 10px 4px 0; }
     .links { display: flex; justify-content: center; gap: 18px; margin-top: 14px; }

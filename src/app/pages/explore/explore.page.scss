@@ -34,7 +34,7 @@
 
   &.solid {
     ion-toolbar {
-      --background: rgba(255, 255, 255, 0.78);
+      --background: var(--gm-veil);
       -webkit-backdrop-filter: var(--gm-glass-blur);
       backdrop-filter: var(--gm-glass-blur);
     }
@@ -112,9 +112,12 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   margin: 0 -18px 6px;
   padding: 8px 18px;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--gm-veil);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   scrollbar-width: none;

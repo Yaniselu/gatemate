@@ -24,7 +24,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
   styles: `
     :host {
       position: fixed; inset: 0; z-index: 99999;
-      background: rgba(255, 255, 255, 0.72);
+      background: var(--gm-veil-soft);
       -webkit-backdrop-filter: blur(30px) saturate(180%);
       backdrop-filter: blur(30px) saturate(180%);
       display: flex; align-items: center; justify-content: center;
@@ -35,7 +35,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
       width: 88px; height: 88px; margin: 0 auto 20px; border-radius: 30px;
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 40px;
-      background: linear-gradient(135deg, #22c7d3, #0a93a6);
+      background: linear-gradient(135deg, #0fa8b6, #08808e);
       box-shadow: 0 16px 34px var(--gm-accent-glow);
       animation: gm-float 3s ease-in-out infinite;
     }

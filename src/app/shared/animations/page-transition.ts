@@ -5,7 +5,7 @@ const ctrl = new AnimationController();
 export function gatemateNavAnimation(_baseEl: HTMLElement, opts: { enteringEl: HTMLElement; leavingEl?: HTMLElement; direction?: string }): Animation {
   const back = opts.direction === 'back';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const duration = reduce ? 1 : 460;
+  const duration = reduce ? 1 : 320;
   const easing = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
   const entering = ctrl

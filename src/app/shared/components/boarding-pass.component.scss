@@ -23,10 +23,14 @@
   text-align: left;
   color: var(--gm-ink);
   transform-style: preserve-3d;
-  transition: transform 0.8s var(--gm-ease-spring);
+  -webkit-transform-style: preserve-3d;
+  transition: transform 0.75s cubic-bezier(0.3, 1.2, 0.4, 1);
 
   &.flipped {
     transform: rotateY(180deg);
+  }
+  &:active {
+    scale: 1;
   }
 }
 
@@ -37,6 +41,8 @@
   padding: 20px;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  transform: translateZ(1px);
+  transition: visibility 0s linear 0.1s;
   background: linear-gradient(160deg, #ffffff 0%, #f3fafb 100%);
   box-shadow: 0 20px 40px rgba(10, 60, 80, 0.14), inset 0 1px 0 #fff;
   border: 1px solid rgba(11, 27, 43, 0.05);
@@ -48,7 +54,7 @@
   position: absolute;
   inset: 0 0 auto 0;
   height: 128px;
-  background: linear-gradient(135deg, #22c7d3, #0a93a6);
+  background: linear-gradient(135deg, #0fa8b6, #08808e);
   z-index: 0;
 }
 
@@ -194,8 +200,13 @@
   color: var(--gm-ink-3);
 }
 
+.card.flipped .front,
+.card:not(.flipped) .back {
+  visibility: hidden;
+}
+
 .back {
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) translateZ(1px);
   display: flex;
   flex-direction: column;
   align-items: center;

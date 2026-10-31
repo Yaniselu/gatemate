@@ -127,6 +127,9 @@
   .err {
     color: #c2303a;
   }
+  :host-context(html.gm-dark) & .err {
+    color: #ff8a8a;
+  }
 }
 .fine {
   margin: 10px 4px 0;

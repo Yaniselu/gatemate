@@ -17,6 +17,10 @@
   --gm-frost-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
 
   --gm-title-gradient: linear-gradient(100deg, var(--gm-ink) 0%, #0f5f7a 55%, #0a93a6 100%);
+  --gm-veil: rgba(255, 255, 255, 0.92);
+  --gm-veil-soft: rgba(255, 255, 255, 0.72);
+  --gm-on-accent-bg: #0a8796;
+  --gm-badge: #e5484d;
   --gm-brand-gradient: linear-gradient(120deg, #0fb5c3 0%, #2f86e6 55%, #5b5bd6 100%);
 }
 
@@ -37,6 +41,8 @@ html.gm-dark {
   --gm-frost-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 
   --gm-title-gradient: linear-gradient(100deg, #f1f5fb 0%, #9fe7ee 60%, #5fd8e3 100%);
+  --gm-veil: rgba(15, 22, 38, 0.9);
+  --gm-veil-soft: rgba(15, 22, 38, 0.72);
 }
 
 ion-content {
@@ -188,4 +194,46 @@ html.gm-high-contrast.gm-dark ion-content {
   :where(ion-content .page, ion-content .section) > * {
     animation: none !important;
   }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+a,
+[role='button'],
+[role='tab'],
+ion-tab-button,
+ion-item,
+label,
+summary,
+.gm-pressable {
+  touch-action: manipulation;
+}
+:where(button, a.card, a[role='button'], [role='tab'], .gm-btn, .gm-chip, summary, .gm-pressable):not(:disabled) {
+  transition-property: scale, opacity, background-color, color, box-shadow, border-color;
+  transition-duration: 0.18s;
+  transition-timing-function: var(--gm-ease-spring);
+}
+:where(button, a.card, a[role='button'], [role='tab'], .gm-btn, .gm-chip, summary):not(:disabled):active,
+.gm-pressable.is-pressed {
+  scale: 0.97;
+  transition-duration: 0.06s;
+}
+:where(button, a.card, a[role='button'], [role='tab'], .gm-btn, .gm-chip, summary):is(:disabled, [aria-disabled='true']) {
+  cursor: default;
+}
+
+html.gm-kb-open ion-footer {
+  transform: translate3d(0, calc(-1 * var(--gm-kb-overlap, 0px)), 0);
+}
+html.gm-kb-open ion-footer.composer-wrap {
+  padding-bottom: 8px;
+}
+html.gm-kb-open ion-tab-bar.gm-tabbar {
+  display: none;
+}
+
+:is(.avatar-btn, .av, .avatar, .gm-avatar) {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }

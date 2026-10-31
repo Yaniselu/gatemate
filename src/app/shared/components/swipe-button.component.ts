@@ -68,7 +68,7 @@ import { PlatformService } from '../../core/services/platform.service';
     }
     .thumb ion-icon { transform: rotate(calc(var(--p) * -20deg)); transition: transform .3s; }
     .dragging .thumb { transition: none; cursor: grabbing; scale: 1.06; }
-    .done .thumb { color: #fff; background: linear-gradient(135deg, #22c7d3, #0a93a6); }
+    .done .thumb { color: #fff; background: linear-gradient(135deg, #0fa8b6, #08808e); }
     .thumb:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
     @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
     @keyframes chev { 0%, 100% { opacity: .25; transform: translateX(0); } 50% { opacity: 1; transform: translateX(3px); } }

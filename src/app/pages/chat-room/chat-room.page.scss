@@ -206,7 +206,7 @@
 .msg.mine .bubble {
   color: #fff;
   border: 0;
-  background: linear-gradient(135deg, #22c7d3, #0a93a6);
+  background: linear-gradient(135deg, #0fa8b6, #08808e);
   box-shadow: 0 6px 16px rgba(10, 147, 166, 0.25);
 }
 
@@ -290,7 +290,7 @@
   transition: transform 0.35s var(--gm-ease-spring), background 0.25s;
 
   &.ready {
-    background: linear-gradient(135deg, #22c7d3, #0a93a6);
+    background: linear-gradient(135deg, #0fa8b6, #08808e);
     transform: none;
     box-shadow: 0 6px 16px var(--gm-accent-glow);
   }

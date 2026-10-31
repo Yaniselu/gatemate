@@ -28,7 +28,7 @@
     font-weight: 700;
     text-decoration: none;
     color: var(--gm-ink);
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--gm-veil-soft);
     border: 1px solid rgba(11, 27, 43, 0.08);
     transition: transform 0.25s var(--gm-ease-spring);
     &:active {
