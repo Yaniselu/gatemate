@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-/** Logs once at start-up whether the public data sources the server falls back to are reachable from here. */
 @Component
 public class UpstreamCheck {
     private static final Logger log = LoggerFactory.getLogger(UpstreamCheck.class);

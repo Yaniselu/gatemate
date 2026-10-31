@@ -20,10 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 
-/**
- * Refreshes gate, terminal, delay and cancellation for flights departing in the next 24 h from a licensed flight-data
- * provider (AeroDataBox). Without a key nothing is invented: flights keep the airline-provided data.
- */
 @Component
 public class FlightStatusJob {
     private static final Logger log = LoggerFactory.getLogger(FlightStatusJob.class);

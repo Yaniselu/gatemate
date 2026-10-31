@@ -1,6 +1,5 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
-// RFC 5322-lite: strict enough to reject garbage, loose enough for real addresses.
 const EMAIL_RE = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
 const NAME_RE = /^[\p{L}][\p{L}\p{M}' .-]{1,59}$/u;
 const COMMON_PASSWORDS = new Set([
@@ -48,7 +47,6 @@ export function passwordStrength(password: string): PasswordStrength {
   return { score, label: labels[score], checks };
 }
 
-/** Requires length, mixed case, a digit and a symbol, and rejects common passwords. */
 export const strongPasswordValidator: ValidatorFn = (c: AbstractControl): ValidationErrors | null => {
   const v = String(c.value ?? '');
   if (!v) return null;
@@ -59,7 +57,6 @@ export const strongPasswordValidator: ValidatorFn = (c: AbstractControl): Valida
   return null;
 };
 
-/** Group-level validator: password must not contain the e-mail's local part. */
 export function passwordNotContainingEmail(passwordKey: string, emailKey: string): ValidatorFn {
   return (group: AbstractControl): ValidationErrors | null => {
     const pw = String(group.get(passwordKey)?.value ?? '').toLowerCase();

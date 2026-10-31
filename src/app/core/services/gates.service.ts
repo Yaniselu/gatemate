@@ -15,25 +15,18 @@ export interface MapFeature {
   kind:
     | 'gate' | 'terminal' | 'poi' | 'aerodrome' | 'runway' | 'taxiway' | 'apron' | 'room' | 'corridor'
     | 'building' | 'road' | 'rail' | 'green' | 'water' | 'parking' | 'jetbridge' | 'escalator' | 'stand' | 'elevator' | 'entrance' | 'tower';
-  /** Road class (motorway, primary, service…) for line width. */
   cls?: string;
   ref: string;
   lat: number;
   lon: number;
   poi?: PoiKind;
-  /** Terminal the place is in (from the terminal outlines), e.g. "Terminal 2". */
   terminal?: string;
   level?: string;
-  /** OSM opening_hours. */
   hours?: string;
   brand?: string;
-  /** Cuisine, operator or shop type. */
   detail?: string;
-  /** Outline rings (terminals, aprons, airport boundary), [lat, lon]. */
   outline?: [number, number][][];
-  /** Centre line of a runway or taxiway, [lat, lon]. */
   line?: [number, number][];
-  /** Real width in metres (runways, taxiways), so the drawing scales with zoom. */
   width?: number;
 }
 
@@ -43,7 +36,6 @@ interface Cached {
   features: MapFeature[];
 }
 
-/** Public Overpass instances, raced with a short head start each so one slow mirror doesn't stall the page. */
 const OVERPASS = [
   'https://overpass-api.de/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
@@ -51,9 +43,7 @@ const OVERPASS = [
   'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
 const STAGGER_MS = 5000;
-/** Airports we've drawn ourselves, bundled with the app (instant and offline), used instead of OpenStreetMap. */
 export const CURATED_MAPS = new Set(['CRA']);
-/** Where a plan opens (on the terminal rather than the runway midpoint) for airports with a hand-drawn plan. */
 export const PLAN_VIEW: Record<string, { lat: number; lon: number; zoom: number; preview: number }> = {
   CRA: { lat: 44.3157, lon: 23.8830, zoom: 17.25, preview: 16.5 },
 };
@@ -71,16 +61,10 @@ type OsmElement = {
   members?: { role: string; geometry?: { lat: number; lon: number }[] }[];
 };
 
-/**
- * Everything inside an airport from OpenStreetMap: terminals (with outlines), gates and every mapped café,
- * restaurant, shop, toilet, ATM, lounge, pharmacy, transport link… Queried inside the airport's own boundary,
- * kept on the phone for offline use, refreshed every few days.
- */
 @Injectable({ providedIn: 'root' })
 export class GatesService {
   private http = inject(HttpClient);
   private memory = new Map<string, Promise<MapFeature[]>>();
-  /** Why the last network load failed, for the error message. */
   lastError = '';
 
   get(a: AirportRecord): Promise<MapFeature[]> {
@@ -94,7 +78,6 @@ export class GatesService {
     return this.memory.get(a.iata)!;
   }
 
-  /** Ignores the saved copy (pull to refresh). */
   refresh(a: AirportRecord): Promise<MapFeature[]> {
     if (CURATED_MAPS.has(a.iata)) return this.get(a);
     this.memory.delete(a.iata);
@@ -131,13 +114,11 @@ export class GatesService {
     }
   }
 
-  /** Straight from OpenStreetMap on the phone; our server (same query) is the fallback. */
   private async network(a: AirportRecord): Promise<MapFeature[]> {
     try {
       const inside = await this.overpass(areaQuery(a));
       const features = parse(inside);
       if (features.length) return features;
-      // The airport boundary isn't mapped (or has no IATA/ICAO tag): search around it instead.
       return parse(await this.overpass(aroundQuery(a)));
     } catch (e) {
       this.lastError = e instanceof Error ? e.message : String(e);
@@ -171,14 +152,12 @@ export class GatesService {
           if (++failed === OVERPASS.length) {
             done = true;
             reject(new Error(`OpenStreetMap is unreachable (${e instanceof Error ? e.message : e})`));
-          } else void start(i + 1); // a mirror failing early lets the next one go straight away
+          } else void start(i + 1);
         }
       };
       OVERPASS.forEach((_, i) => timers.push(setTimeout(() => void start(i), i * STAGGER_MS)));
     });
   }
-
-  // ---- device copy -------------------------------------------------------------------------------
 
   private async read(iata: string): Promise<Cached | null> {
     try {
@@ -205,12 +184,9 @@ export class GatesService {
         localStorage.setItem(`gm_osm_${iata}`, data);
       }
     } catch {
-      /* storage full or blocked: the data still shows, it just isn't kept */
     }
   }
 }
-
-// ---- Overpass ----------------------------------------------------------------------------------
 
 function selectors(scope: string): string {
   return [
@@ -236,15 +212,12 @@ function aroundQuery(a: AirportRecord): string {
   return `[out:json][timeout:60];(${selectors(near)})->.p;${outputs}${shapes(near)}`;
 }
 
-/** Points for nodes, outlines for shops and rooms mapped as areas, centres for big relations. */
 const outputs = 'node.p;out;way.p;out geom tags;rel.p;out center tags;';
 
-/** Shapes for the drawn plan: terminals, aprons, runways and taxiways, with geometry. */
 function shapes(scope: string): string {
   return `(way["aeroway"="terminal"]${scope};relation["aeroway"="terminal"]${scope};way["building"="terminal"]${scope};way["aeroway"~"^(runway|taxiway|apron)$"]${scope};relation["aeroway"="apron"]${scope};);out geom tags;way["indoor"~"^(room|area|corridor)$"]${scope};out geom tags;${context(scope.replace('around:3000', 'around:1500'))}`;
 }
 
-/** Everything around the terminals that makes the plan read like a real map. */
 function context(scope: string): string {
   const roads = 'motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|pedestrian';
   return (
@@ -256,7 +229,6 @@ function context(scope: string): string {
   );
 }
 
-/** Turns Overpass elements into map features, placing each facility in the terminal that contains it. */
 export function parse(elements: OsmElement[]): MapFeature[] {
   const terminals: MapFeature[] = [];
   const shapes: MapFeature[] = [];
@@ -294,7 +266,6 @@ export function parse(elements: OsmElement[]): MapFeature[] {
       if (linear) shapes.push({ id: key, kind, ref: t['name'] ?? '', lat: mid[0], lon: mid[1], line: pts, cls: t['highway'] ?? t['railway'], level: t['level'] || undefined });
       else if (pts.length > 2) shapes.push({ id: key, kind, ref: (t['name'] ?? '').trim(), lat: mid[0], lon: mid[1], outline: [pts], cls: t['aeroway'] ?? t['building'] });
     } else if (e.geometry && e.geometry.length > 2) {
-      // Shops, cafés, rooms and corridors mapped as areas: keep their outline.
       const ring = simplify(e.geometry.map((p) => [round(p.lat), round(p.lon)] as [number, number]));
       if (ring.length > 2) outlines.set(key, ring);
       rest.push(e);
@@ -313,7 +284,6 @@ export function parse(elements: OsmElement[]): MapFeature[] {
       continue;
     }
     if (t['aeroway'] === 'terminal' || t['building'] === 'terminal') {
-      // Terminal mapped only as a point: still shown and named on the plan.
       out.push({ id: `${e.type}${e.id}`, kind: 'terminal', ref: terminalName(t), lat, lon });
       continue;
     }
@@ -332,7 +302,6 @@ export function parse(elements: OsmElement[]): MapFeature[] {
       continue;
     }
     if (t['entrance'] && !classify(t) && t['aeroway'] !== 'gate') {
-      // Only doors into the terminals matter to travellers.
       if (terminal) out.push({ ...base, kind: 'entrance', ref: t['name'] ?? (t['entrance'] === 'main' ? 'Main entrance' : 'Entrance') });
       continue;
     }
@@ -343,14 +312,11 @@ export function parse(elements: OsmElement[]): MapFeature[] {
     }
     const poi = classify(t);
     if (!poi) {
-      // A room with no shop or amenity tag (gate lounges, offices…): drawn so the floor plan reads as a building.
       if (ring && (t['indoor'] === 'room' || t['indoor'] === 'area')) out.push({ ...base, kind: 'room', ref: (t['name'] || t['ref'] || '').trim(), outline: [ring] });
       continue;
     }
     const name = (t['name'] || t['brand'] || '').trim();
-    // Unnamed shops/parking spaces are noise; unnamed toilets or ATMs are exactly what people look for.
     if (!name && (poi === 'shop' || poi === 'parking' || poi === 'hotel')) {
-      // Still draw an unnamed car park's area on the plan.
       if (poi === 'parking' && ring) out.push({ ...base, kind: 'parking', ref: '', outline: [ring] });
       continue;
     }
@@ -378,16 +344,13 @@ function centroid(ring: [number, number][]): [number, number] {
   return [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
 }
 
-/** ~10 cm precision is plenty and keeps the saved copy small. */
 function round(x: number): number {
   return Math.round(x * 1e6) / 1e6;
 }
 
-/** Douglas–Peucker: drops points that change the shape by less than ~1 m. */
 function simplify(pts: [number, number][], eps = 0.00001): [number, number][] {
   if (pts.length < 4) return pts;
   const [f, l] = [pts[0], pts[pts.length - 1]];
-  // Closed ring: simplify it as an open path, then close it again.
   if (f[0] === l[0] && f[1] === l[1]) return [...simplify(pts.slice(0, -1), eps), f];
   const keep = new Uint8Array(pts.length);
   keep[0] = keep[pts.length - 1] = 1;
@@ -419,7 +382,6 @@ function terminalLabel(ref: string): string {
   return /^t?\d+[a-z]?$/i.test(ref.trim()) ? `Terminal ${ref.trim().replace(/^t/i, '')}` : ref.trim();
 }
 
-/** Ray casting, ring as [lat, lon]. */
 function inside(lat: number, lon: number, ring: [number, number][]): boolean {
   let hit = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {

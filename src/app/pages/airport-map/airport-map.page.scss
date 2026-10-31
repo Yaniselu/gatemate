@@ -1,4 +1,3 @@
-/* Leaflet's panes use z-indexes up to 1000: keep them inside the map so the header and back button stay on top. */
 .full {
   position: absolute;
   inset: 0;

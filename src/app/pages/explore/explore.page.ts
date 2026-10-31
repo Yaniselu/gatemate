@@ -43,7 +43,6 @@ export class ExplorePage {
   private achievements = inject(AchievementsService);
   protected pro = inject(ProService);
 
-  /** Route params: /explore/:iata?trip=<id> */
   readonly iata = input.required<string>();
   readonly trip = input<string | undefined>();
 
@@ -182,7 +181,6 @@ export class ExplorePage {
     }
   }
 
-  // ----- Money -----
   readonly homeCurrency = computed(() => {
     const home = this.db.get(this.prefs.homeAirport());
     return (home && this.db.country(home.country)?.currency?.[0]) || 'EUR';
@@ -196,7 +194,6 @@ export class ExplorePage {
   });
   readonly quick = [10, 50, 100, 500];
 
-  // ----- Packing -----
   readonly packList = computed<PackItem[]>(() => {
     const d = this.info();
     if (!d) return [];
@@ -315,7 +312,6 @@ export class ExplorePage {
       speechSynthesis.speak(u);
       this.platform.tap();
     } catch {
-      /* speech not supported */
     }
   }
 

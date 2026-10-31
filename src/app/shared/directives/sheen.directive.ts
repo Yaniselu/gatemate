@@ -1,13 +1,8 @@
 import { Directive, ElementRef, HostListener, inject, input } from '@angular/core';
 
-/**
- * Makes a glass surface react to the finger: the specular highlight follows the touch point
- * and the card tilts slightly in 3D. Uses CSS variables only, so it never triggers layout.
- */
 @Directive({ selector: '[gmSheen]', host: { style: 'transform-style: preserve-3d' } })
 export class SheenDirective {
   private el = inject<ElementRef<HTMLElement>>(ElementRef);
-  /** Max tilt in degrees (0 disables tilt). */
   readonly tilt = input(4, { alias: 'gmSheen', transform: (v: unknown) => (v === '' || v == null ? 4 : Number(v)) });
   private frame = 0;
 

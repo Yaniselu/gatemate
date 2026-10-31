@@ -3,7 +3,6 @@ package app.gatemate.auth;
 import app.gatemate.common.ApiException;
 import java.util.Set;
 
-/** Same rules as the app: length, mixed case, digit, symbol, not common, not containing the e-mail name. */
 public final class PasswordPolicy {
     private static final Set<String> COMMON = Set.of("password", "password1", "password123", "123456789", "1234567890", "qwertyuiop",
             "iloveyou1", "admin12345", "welcome123", "letmein123", "football1", "gatemate1", "gatemate123");

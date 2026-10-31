@@ -16,7 +16,6 @@ type PickTarget = 'home' | 'away' | 'from' | 'to';
 
 interface CabinRule { item: string; icon: string; cabin: 'yes' | 'no' | 'limited'; hold: 'yes' | 'no' | 'limited'; note: string }
 
-/** Rules that apply on almost every airline (ICAO/IATA dangerous-goods rules, EU/UK/US screening). */
 const CABIN_RULES: CabinRule[] = [
   { item: 'Liquids, gels, aerosols', icon: 'water-outline', cabin: 'limited', hold: 'yes', note: 'Containers up to 100 ml in one clear, resealable bag of about 1 litre. Some airports with new CT scanners allow more — check yours.' },
   { item: 'Power bank', icon: 'battery-charging-outline', cabin: 'limited', hold: 'no', note: 'Cabin only. Up to 100 Wh is fine; 100–160 Wh needs airline approval; over 160 Wh is forbidden.' },
@@ -62,7 +61,6 @@ export class ToolsPage {
     return q ? this.rules.filter((r) => (r.item + ' ' + r.note).toLowerCase().includes(q)) : this.rules;
   });
 
-  // ---- currency ----
   readonly from = signal('EUR');
   readonly to = signal('RON');
   readonly amount = signal(100);
@@ -70,7 +68,6 @@ export class ToolsPage {
   readonly fxState = signal<'loading' | 'ready' | 'error'>('loading');
   readonly result = computed(() => (this.fx() ? this.amount() * this.fx()!.rate : null));
 
-  // ---- time ----
   readonly picking = signal<PickTarget | null>(null);
   readonly home = signal<AirportRecord | undefined>(undefined);
   readonly away = signal<AirportRecord | undefined>(undefined);
@@ -99,11 +96,9 @@ export class ToolsPage {
     return { level: abs >= 6 ? ('strong' as const) : ('mild' as const), days, steps, east, recovery: Math.round(abs / (east ? 1 : 1.5)) };
   });
 
-  // ---- distance ----
   readonly a = signal<AirportRecord | undefined>(undefined);
   readonly b = signal<AirportRecord | undefined>(undefined);
   readonly km = computed(() => (this.a() && this.b() ? haversineKm(this.a()!.lat, this.a()!.lon, this.b()!.lat, this.b()!.lon) : null));
-  /** Block time estimate: 30 min taxi/climb + cruise ~800 km/h. */
   readonly minutes = computed(() => (this.km() === null ? null : Math.round(30 + (this.km()! / 800) * 60)));
   readonly eu261 = computed(() => {
     const k = this.km();

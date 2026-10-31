@@ -65,11 +65,9 @@ export class HomePage implements OnInit {
   readonly today = new Date().toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' });
   readonly next = this.store.nextFlight;
   readonly loading = computed(() => this.store.tripsState() !== 'ready');
-  /** Reminder to confirm the e-mail (only when this server can send codes). */
   private emailCodes = signal(false);
   readonly verifyReminder = computed(() => this.emailCodes() && this.auth.user()?.emailVerified === false);
   private live = inject(LiveFlightService);
-  /** Next flight while it can be tracked live (an hour before departure until after landing). */
   readonly liveFlight = computed(() => {
     const now = this.now();
     return this.store.trips().flatMap((t) => t.flights).find((f) => this.live.inWindow(f, now)) ?? null;

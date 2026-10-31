@@ -2,7 +2,6 @@ import { Animation, AnimationController } from '@ionic/angular/standalone';
 
 const ctrl = new AnimationController();
 
-/** Soft depth transition: the new page slides in and grows, the old one recedes. */
 export function gatemateNavAnimation(_baseEl: HTMLElement, opts: { enteringEl: HTMLElement; leavingEl?: HTMLElement; direction?: string }): Animation {
   const back = opts.direction === 'back';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;

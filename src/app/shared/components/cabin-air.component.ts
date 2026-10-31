@@ -4,18 +4,15 @@ import { IonIcon } from '@ionic/angular/standalone';
 import { Flight } from '../../core/models';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** Standard-atmosphere pressure (hPa) at an altitude in feet. */
 export function pressureAt(ft: number) {
   return 1013.25 * Math.pow(1 - 2.25577e-5 * ft * 0.3048, 5.25588);
 }
 
-/** Outside air temperature (°C) in the standard atmosphere, constant above the tropopause. */
 export function outsideTempAt(ft: number) {
   return Math.max(-56.5, 15 - 1.98 * (ft / 1000));
 }
 
 export interface CabinPoint {
-  /** Minutes after departure. */
   t: number;
   planeFt: number;
   cabinFt: number;
@@ -23,11 +20,6 @@ export interface CabinPoint {
   humidity: number;
 }
 
-/**
- * How the cabin air typically evolves over a flight: the plane climbs for ~20 min to cruise and descends over the
- * last ~25 min; the cabin is pressurised to an equivalent of up to 8,000 ft (6,000 ft on the 787 and A350) and the
- * air gets drier the longer you're up, settling around 10–15 % humidity.
- */
 export function cabinProfile(durationMin: number, aircraft?: string, step = 2): CabinPoint[] {
   const modern = /787|A35|A350/i.test(aircraft ?? '');
   const maxCabin = modern ? 6000 : 8000;
@@ -42,14 +34,12 @@ export function cabinProfile(durationMin: number, aircraft?: string, step = 2): 
     const up = Math.min(1, t / climb), down = Math.min(1, Math.max(0, (durationMin - t) / descent));
     const k = Math.min(up, down);
     const planeFt = cruise * Math.sin((k * Math.PI) / 2);
-    // Cabin altitude follows the plane at a gentle rate, capped by the pressurisation schedule.
     const cabinFt = Math.min(maxCabin, planeFt * (maxCabin / cruise) * 1.05);
     const humidity = 12 + 33 * Math.exp(-t / 55);
     return { t, planeFt, cabinFt, pressure: pressureAt(cabinFt), humidity };
   }
 }
 
-/** Estimated cabin pressure, equivalent altitude and humidity for this flight, with "now" when you're on board. */
 @Component({
   selector: 'gm-cabin-air',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -120,12 +110,10 @@ export function cabinProfile(durationMin: number, aircraft?: string, step = 2): 
 })
 export class CabinAirComponent {
   readonly flight = input.required<Flight>();
-  /** Live altitude from tracking, when there is one. */
   readonly liveAltitudeFt = input<number | null>(null);
   private tick = signal(Date.now());
 
   readonly profile = computed(() => cabinProfile(this.flight().durationMinutes, this.flight().aircraft));
-  /** Minutes since departure while airborne, else null. */
   readonly now = computed(() => {
     const f = this.flight(), dep = new Date(f.departure).getTime();
     const m = (this.tick() - dep) / 60_000;
@@ -137,7 +125,6 @@ export class CabinAirComponent {
     const at = p.reduce((a, b) => (Math.abs(b.t - n) < Math.abs(a.t - n) ? b : a));
     const live = this.liveAltitudeFt();
     if (live === null) return at;
-    // Real altitude from tracking: derive the cabin from it.
     const cabinFt = Math.min(/787|A35/i.test(this.flight().aircraft ?? '') ? 6000 : 8000, live * 0.22);
     return { ...at, planeFt: live, cabinFt, pressure: pressureAt(cabinFt) };
   });
@@ -156,7 +143,6 @@ export class CabinAirComponent {
     return (t / Math.max(1, this.flight().durationMinutes)) * 320;
   }
 
-  /** Low pressure is drawn high, so the curve looks like the flight profile. */
   pressureY(p: number) {
     return 8 + ((p - 740) / (1020 - 740)) * 84;
   }

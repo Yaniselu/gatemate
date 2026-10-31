@@ -104,7 +104,6 @@ export class ForgotPage {
     }
     this.loading.set(true);
     try {
-      // The answer is the same whether or not the account exists (no user enumeration).
       await this.auth.requestPasswordReset(this.form.getRawValue().email);
       this.sent.set(true);
       this.platform.success();

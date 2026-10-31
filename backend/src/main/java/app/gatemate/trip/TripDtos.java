@@ -4,7 +4,6 @@ import jakarta.validation.constraints.*;
 import java.util.List;
 import tools.jackson.databind.JsonNode;
 
-/** Shapes mirror the app's models (src/app/core/models). The signed-in user is always "me". */
 public final class TripDtos {
     private TripDtos() {}
 

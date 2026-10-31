@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Associations are plain UUID columns (no lazy proxies), so public field access is safe. */
 @Entity
 @Table(name = "users")
 public class UserEntity {
@@ -17,9 +16,7 @@ public class UserEntity {
     public String legalLastName;
     public String phone;
     public String homeAirport;
-    /** App language (en, ro, es, fr, de, it) for push alerts and e-mails. */
     public String lang = "en";
-    /** Velo messages used on {@code aiDay} (UTC), for the daily allowance. */
     public java.time.LocalDate aiDay;
     public int aiCount;
     public String seatPreference;
@@ -39,7 +36,6 @@ public class UserEntity {
     public String proProduct;
     public Instant createdAt = Instant.now();
 
-    /** Active Gatemate Pro subscription (kept in sync by the store webhooks). */
     public boolean isPro() {
         return proUntil != null && proUntil.isAfter(Instant.now());
     }

@@ -5,7 +5,6 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 type Theme = 'system' | 'light' | 'dark';
 
-/** Three tappable previews: like the phone, light, dark. */
 @Component({
   selector: 'gm-theme-picker',
   changeDetection: ChangeDetectionStrategy.OnPush,

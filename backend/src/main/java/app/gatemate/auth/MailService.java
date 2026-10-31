@@ -11,10 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-/**
- * Transactional e-mail through an HTTP API: Brevo (free, 300 e-mails a day, any verified sender address) or Resend.
- * Without a key nothing is sent and features that need e-mail say so. Codes and links are never logged.
- */
 @Service
 public class MailService {
     private static final Logger log = LoggerFactory.getLogger(MailService.class);
@@ -37,7 +33,6 @@ public class MailService {
         sendCode("mail.reset", to, name, code, lang);
     }
 
-    /** One of the code e-mails, in the user's app language. */
     private void sendCode(String kind, String to, String name, String code, String lang) {
         send(to, Messages.get(lang, kind + ".subject", "code", code),
                 page(Messages.get(lang, kind + ".title"), Messages.get(lang, kind + ".intro", "name", esc(first(name))), code, Messages.get(lang, kind + ".note")),

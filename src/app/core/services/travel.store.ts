@@ -18,7 +18,6 @@ interface TripsCache {
 
 export type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
-/** Signal-based cache for trips, alerts, stats and airport data shared across tabs. */
 @Injectable({ providedIn: 'root' })
 export class TravelStore {
   private api = inject(GatemateApi);
@@ -31,18 +30,14 @@ export class TravelStore {
   private prefetched = new Set<string>();
   private inflight: Promise<void> | null = null;
   private persistTimer?: ReturnType<typeof setTimeout>;
-  /** Server alerts (gate changes, delays, chat) — device reminders are derived from trips below. */
   private serverAlerts = signal<FlightAlert[]>([]);
   private readIds = signal<Set<string>>(new Set());
   private dismissedIds = signal<Set<string>>(new Set());
-  /** Ticks every minute so time-based views refresh. */
   readonly clock = signal(Date.now());
 
   readonly trips = signal<Trip[]>([]);
   readonly tripsState = signal<LoadState>('idle');
-  /** Set while the trips on screen are the copy saved on this phone (offline or server unreachable). */
   readonly savedAt = signal<number | null>(null);
-  /** Everything that is due (past or now), newest first. */
   readonly alerts = computed<FlightAlert[]>(() => {
     const now = this.clock();
     this.db.ready();
@@ -93,7 +88,6 @@ export class TravelStore {
   constructor() {
     setInterval(() => this.clock.set(Date.now()), 60_000);
 
-    // A different account signing in must never see the previous one's trips.
     let lastUser: string | undefined;
     effect(() => {
       const id = this.auth.user()?.id;
@@ -101,7 +95,6 @@ export class TravelStore {
       lastUser = id;
     });
 
-    // Keep an encrypted copy on the device so boarding passes and plans work in flight mode.
     effect(() => {
       const trips = this.trips();
       const userId = this.auth.user()?.id;
@@ -113,8 +106,6 @@ export class TravelStore {
       }, 800);
     });
 
-    // Live updates: while a flight is within a day and a half, re-check gates, delays and alerts every minute
-    // (only when the app is on screen and online), and straight away when the app comes back to the foreground.
     setInterval(() => {
       if (!this.liveWindow() || document.visibilityState !== 'visible') return;
       void this.refreshLive();
@@ -123,7 +114,6 @@ export class TravelStore {
       if (document.visibilityState === 'visible' && this.auth.status() === 'signed-in') void this.refreshLive();
     });
 
-    // Back online: replace the saved copy with fresh data.
     let wasOnline = true;
     effect(() => {
       const online = this.network.online();
@@ -163,7 +153,6 @@ export class TravelStore {
         this.tripsState.set('ready');
         setTimeout(() => void this.prefetchAirports(), 3000);
       } catch {
-        // Keep showing the saved copy rather than an error screen.
         if (!this.savedAt()) this.tripsState.set('error');
       } finally {
         this.inflight = null;
@@ -172,7 +161,6 @@ export class TravelStore {
     return this.inflight;
   }
 
-  /** Last time trips and alerts were refreshed from the server. */
   readonly syncedAt = signal<number | null>(null);
 
   private liveWindow(): boolean {
@@ -190,10 +178,6 @@ export class TravelStore {
     this.syncedAt.set(Date.now());
   }
 
-  /**
-   * Downloads the plans of the airports on upcoming trips in the background, so the airport map opens instantly
-   * (and works offline) on the day. One airport at a time, each at most once per session.
-   */
   private async prefetchAirports(): Promise<void> {
     const codes = this.upcomingTrips()
       .flatMap((t) => t.flights)
@@ -221,7 +205,6 @@ export class TravelStore {
       this.trips.set(c.trips);
       this.tripsState.set('ready');
     } catch {
-      /* unreadable cache: fetch from the server */
     }
   }
 
@@ -268,7 +251,6 @@ export class TravelStore {
     );
   }
 
-  /** Adds items that aren't on the list yet (case-insensitive); returns how many were added. */
   async addChecklistItems(tripId: string, items: { label: string; category: ChecklistItem['category'] }[]): Promise<number> {
     const trip = this.trip(tripId);
     if (!trip) return 0;

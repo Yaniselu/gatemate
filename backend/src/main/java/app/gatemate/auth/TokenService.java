@@ -20,11 +20,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Short-lived RS256 access tokens + opaque refresh tokens (only their SHA-256 is stored).
- * Every refresh rotates the token; presenting an already-used token revokes the whole family
- * (stolen-token detection, OAuth 2.0 Security BCP).
- */
 @Service
 public class TokenService {
     private static final Logger log = LoggerFactory.getLogger(TokenService.class);

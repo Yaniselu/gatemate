@@ -5,7 +5,6 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 const BASE = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
 
-/** World map of every route flown (solid, drawn in) and booked (dashed). */
 @Component({
   selector: 'gm-route-map',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,7 +25,6 @@ const BASE = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_
 })
 export class RouteMapComponent {
   readonly routes = input<RouteLine[]>([]);
-  /** Live aircraft position, drawn as a plane pointing along its track. */
   readonly plane = input<{ lat: number; lon: number; heading?: number } | null>(null);
   readonly offline = signal(false);
   private host = viewChild.required<ElementRef<HTMLElement>>('host');
@@ -90,7 +88,6 @@ export class RouteMapComponent {
         interactive: false,
         className: r.upcoming ? 'gm-arc upcoming' : 'gm-arc',
       }).addTo(layer);
-      // Draw-in animation: normalise the path length so CSS can sweep it from 0 to 1.
       const el = line.getElement() as SVGPathElement | undefined;
       if (el && !r.upcoming) {
         el.setAttribute('pathLength', '1');

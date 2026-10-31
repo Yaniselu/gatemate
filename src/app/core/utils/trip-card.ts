@@ -1,16 +1,11 @@
 import { Trip } from '../models';
 import { CARD_FONT, loadImage, roundRect } from './share-image';
 
-/**
- * A 1080×1920 story card: "12 days until Barcelona". Uses the city photo when the browser lets us draw it
- * (CORS); otherwise a turquoise gradient, so sharing always works. Booking codes and names are never drawn.
- */
 export async function renderTripCard(trip: Trip, photoUrl: string | undefined, now = Date.now()): Promise<HTMLCanvasElement> {
   const photo = photoUrl ? await loadCorsImage(photoUrl) : null;
   try {
     return await draw(trip, photo, now);
   } catch {
-    // A tainted canvas can't be exported: draw again without the photo.
     return draw(trip, null, now);
   }
 }
@@ -61,7 +56,6 @@ async function draw(trip: Trip, photo: HTMLImageElement | null, now: number): Pr
   ctx.fillText('Gatemate', 184, 166);
 
   const start = new Date(trip.startDate).getTime(), end = new Date(trip.endDate).getTime();
-  // Calendar days on the phone's clock: a flight this evening is "today", not "1 day".
   const midnight = (t: number) => new Date(new Date(t).toDateString()).getTime();
   const days = Math.round((midnight(start) - midnight(now)) / 86_400_000);
   const city = trip.destination.city;
@@ -98,7 +92,6 @@ async function draw(trip: Trip, photo: HTMLImageElement | null, now: number): Pr
   ctx.fillText('Plan your trip with Gatemate', W / 2, 1800);
   ctx.textAlign = 'left';
 
-  // Throws if the photo tainted the canvas, so the caller can retry without it.
   c.toDataURL('image/png').slice(0, 16);
   return c;
 }

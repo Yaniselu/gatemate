@@ -6,12 +6,6 @@ import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 type LL = { lat: number; lon: number };
 
-/**
- * The airport drawn from OpenStreetMap data, no imagery: boundary, aprons, runways, taxiways, terminal buildings
- * with their names, gates and every facility as a coloured dot. Nothing to download beyond the airport's data
- * (already on the phone after the first visit), so it opens instantly and works offline. Rendered on a canvas,
- * which stays smooth with hundreds of places.
- */
 @Component({
   selector: 'gm-airport-plan',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,9 +30,7 @@ export class AirportPlanComponent {
   readonly me = input<LL | null>(null);
   readonly selectedGate = input<string | null>(null);
   readonly selectedPlace = input<string | null>(null);
-  /** Show only this category's places (null = all). */
   readonly category = input<PoiKind | null>(null);
-  /** Floor to show; places on other floors are hidden (null = everything). */
   readonly level = input<string | null>(null);
   readonly interactive = input(true);
   readonly zoom = input(15);
@@ -106,7 +98,6 @@ export class AirportPlanComponent {
     setTimeout(() => this.map?.invalidateSize(), 250);
   }
 
-  /** Real-world widths (runways ~45 m) in pixels at the current zoom. */
   private px(metres: number, min: number): number {
     const m = this.map!;
     const mpp = (156543.03 * Math.cos((m.getCenter().lat * Math.PI) / 180)) / 2 ** m.getZoom();
@@ -140,7 +131,6 @@ export class AirportPlanComponent {
     for (const a of by('aerodrome')) L.polygon(a.outline!, { color: '#cfdcd3', weight: 1, fillColor: '#e3ece5', fillOpacity: 0.85, interactive: false }).addTo(layer);
     poly('parking', { color: '#c7ccd6', weight: 0.8, fillColor: '#e5e8ee', fillOpacity: 1 });
     for (const a of by('apron')) L.polygon(a.outline!, { color: '#cdd4dc', weight: 1, fillColor: '#dde3e9', fillOpacity: 1, interactive: false }).addTo(layer);
-    // Roads at their real width (casing + fill), railways as dashed dark lines.
     const ROAD: Record<string, [number, string]> = {
       motorway: [24, '#f6c66a'], trunk: [20, '#f6c66a'], primary: [16, '#fbe08a'], secondary: [13, '#fdf0b0'], tertiary: [11, '#ffffff'],
       motorway_link: [10, '#f6c66a'], trunk_link: [9, '#f6c66a'], primary_link: [9, '#fbe08a'], secondary_link: [8, '#fdf0b0'], tertiary_link: [7, '#ffffff'],
@@ -165,7 +155,6 @@ export class AirportPlanComponent {
       this.strips.push({ layer: line, width: r.width ?? 45, min: 3 });
       L.polyline(r.line!, { color: '#ffffff', weight: 1, dashArray: '8 10', opacity: 0.8, interactive: false }).addTo(layer);
     }
-    // Buildings: hangars, the control tower, hotels, car parks…
     for (const b of by('building')) {
       if (b.outline) L.polygon(b.outline, { color: '#bcc5cf', weight: 1, fillColor: b.cls === 'hangar' ? '#cfd6de' : '#d9dfe5', fillOpacity: 1, interactive: false }).addTo(layer);
     }
@@ -175,23 +164,19 @@ export class AirportPlanComponent {
       }
     }
     const here = (f: MapFeature) => onLevel(f.level, level);
-    // Jet bridges from the terminal to the aircraft, and the numbered aircraft stands.
     for (const j of by('jetbridge')) {
       const line = L.polyline(j.line!, { color: '#64748b', weight: 3, lineCap: 'butt', interactive: false }).addTo(layer);
       this.strips.push({ layer: line, width: 3.5, min: 2 });
     }
-    // Inside the terminals: corridors (walkways) and rooms, so the floor plan reads like a building.
     for (const c of by('corridor').filter(here)) L.polygon(c.outline!, { color: '#c9d4dd', weight: 1, fillColor: '#ffffff', fillOpacity: 0.95, interactive: false }).addTo(layer);
     for (const r of by('room').filter(here)) L.polygon(r.outline!, { color: '#b9c6d2', weight: 1, fillColor: '#eef2f6', fillOpacity: 1, interactive: false }).addTo(layer);
 
     const pois = features.filter((f) => f.kind === 'poi' && here(f) && (!category || f.poi === category));
-    // Shops, cafés, toilets… mapped as areas: their real footprint, in the category colour.
     for (const p of pois.filter((x) => x.outline)) {
       const meta = POI_META[p.poi ?? 'info'] ?? POI_META.info;
       const shape = L.polygon(p.outline!, { color: meta.color, weight: 1.5, fillColor: meta.color, fillOpacity: 0.3, interactive: this.interactive() }).addTo(layer);
       if (this.interactive()) shape.on('click', () => p.id && this.placeTap.emit(p.id));
     }
-    // Every place as a coloured dot (canvas: fast with hundreds of them).
     for (const p of pois) {
       const meta = POI_META[p.poi ?? 'info'] ?? POI_META.info;
       const dot = L.circleMarker([p.lat, p.lon], {
@@ -207,11 +192,9 @@ export class AirportPlanComponent {
         dot.on('click', () => p.id && this.placeTap.emit(p.id));
       }
     }
-    // Labels: terminal names always, gates when zoomed in.
     for (const t of by('terminal')) {
       L.marker([t.lat, t.lon], { icon: L.divIcon({ className: 'gm-plan-terminal', html: `<span>${esc(t.ref)}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
     }
-    // Names written inside the shops once zoomed in.
     for (const p of pois.filter((x) => x.outline)) {
       L.marker([p.lat, p.lon], { icon: L.divIcon({ className: 'gm-plan-shop', html: `<span>${esc(tr(p.ref))}</span>`, iconSize: undefined }), interactive: false }).addTo(layer);
     }
@@ -244,7 +227,6 @@ export class AirportPlanComponent {
       m.addTo(layer);
     }
 
-    // Frame the airport once per airport: terminals first, else the whole boundary.
     const key = features.length ? `${features[0].id}|${features.length}` : '';
     if (key && key !== this.framedFor) {
       this.framedFor = key;
@@ -280,7 +262,6 @@ export class AirportPlanComponent {
     }
   }
 
-  /** Hides labels that would overlap one already shown (terminal names first, then buildings and shops). */
   private declutter() {
     const el = this.host().nativeElement;
     const shown: DOMRect[] = [];
@@ -306,7 +287,6 @@ export class AirportPlanComponent {
   }
 }
 
-/** OSM "level" can be "1", "0;1" or "-1-2". Untagged things show on every floor. */
 export function onLevel(tag: string | undefined, level: string | null): boolean {
   if (!level || !tag) return true;
   return tag.split(';').some((part) => {
@@ -317,7 +297,6 @@ export function onLevel(tag: string | undefined, level: string | null): boolean 
   });
 }
 
-/** The floors the airport has, lowest first. */
 export function levelsOf(features: MapFeature[]): string[] {
   const set = new Set<string>();
   for (const f of features) {

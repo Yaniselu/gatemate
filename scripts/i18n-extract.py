@@ -1,5 +1,3 @@
-"""Lists every UI text that reaches the translator, and which of them are missing from a language file.
-Usage: python3 scripts/i18n-extract.py [lang]   (default ro)"""
 import re, glob, json, sys
 
 lang = sys.argv[1] if len(sys.argv) > 1 else 'ro'
@@ -13,17 +11,16 @@ files = [f for f in glob.glob('src/app/**/*.ts', recursive=True) + glob.glob('sr
          if not f.endswith('.spec.ts') and 'mock-api' not in f and 'legal-content' not in f]
 for f in files:
     s = open(f).read()
-    for m in re.finditer(LIT + r"\s*\)?\s*\|\s*t\b", s): add(m.group(1))                    # 'X' | t, ('X' | t)
-    for m in re.finditer(r"\(([^()]*\?[^()]*:[^()]*)\)\s*\|\s*t\b", s):                       # (c ? 'A' : 'B') | t
+    for m in re.finditer(LIT + r"\s*\)?\s*\|\s*t\b", s): add(m.group(1))
+    for m in re.finditer(r"\(([^()]*\?[^()]*:[^()]*)\)\s*\|\s*t\b", s):
         for l in re.finditer(LIT, m.group(1)): add(l.group(1))
-    for m in re.finditer(r"\b(?:tr|t)\(\s*(?:[^,()]*\?\s*)?" + LIT + r"(?:\s*:\s*" + LIT + r")?", s):  # tr('X'), tr(c ? 'A' : 'B')
+    for m in re.finditer(r"\b(?:tr|t)\(\s*(?:[^,()]*\?\s*)?" + LIT + r"(?:\s*:\s*" + LIT + r")?", s):
         add(m.group(1))
         if m.group(2): add(m.group(2))
     if f.endswith('.ts'):
         for m in re.finditer(r"\b(label|title|text|body|desc|description|note|hint|tip|subtitle|detail|why|bestLabel|name)\s*:\s*" + LIT, s):
             if m.group(1) == 'name' and 'levels' not in s: continue
             add(m.group(2))
-# String arrays rendered through the pipe.
 ARRAYS = {'src/app/pages/home/home.page.ts': 'steps', 'src/app/pages/feedback/feedback.page.ts': 'topics',
           'src/app/pages/inflight/inflight.page.ts': 'jetlag', 'src/app/core/data/phrasebook.ts': 'PHRASE_KEYS',
           'src/app/pages/chat-room/chat-room.page.ts': 'REPORT_REASONS'}

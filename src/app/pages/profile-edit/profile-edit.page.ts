@@ -70,7 +70,6 @@ export class ProfileEditPage implements HasUnsavedChanges {
   private value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
   readonly bioLength = computed(() => (this.value().bio ?? '').length);
 
-  /** Only the fields that actually changed are sent — a smaller, faster request. */
   readonly patch = computed<ProfilePatch>(() => {
     const v = { ...this.form.getRawValue(), ...this.value() };
     const out: Record<string, unknown> = {};
@@ -140,7 +139,7 @@ export class ProfileEditPage implements HasUnsavedChanges {
       this.user = await this.auth.updateProfile(patch);
       if (patch.homeAirport) await this.prefs.setHomeAirport(patch.homeAirport);
       this.form.markAsPristine();
-      this.form.setValue(this.form.getRawValue()); // re-evaluate the diff against the saved user
+      this.form.setValue(this.form.getRawValue());
       this.saved.set(true);
       if (this.user.legalFirstName && this.user.legalLastName && this.user.avatarUrl && this.user.homeAirport) void this.achievements.track('profile_complete');
       this.platform.success();

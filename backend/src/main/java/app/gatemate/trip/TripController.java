@@ -25,7 +25,6 @@ public class TripController {
         return trips.list(CurrentUser.id());
     }
 
-    /** Manually entered flights are stored as unverified. */
     @PostMapping("/flights")
     public TripDtos.TripDto add(@Valid @RequestBody TripDtos.NewFlight in) {
         return trips.addManualFlight(CurrentUser.id(), in);
@@ -38,7 +37,6 @@ public class TripController {
         return trips.flightDto(f);
     }
 
-    /** Live position (ADS-B) for a flight on one of your trips; 204 when no receiver hears it. */
     @GetMapping("/flights/{id}/live")
     public ResponseEntity<tools.jackson.databind.JsonNode> live(@PathVariable UUID id) {
         var f = flights.findById(id).orElseThrow(() -> app.gatemate.common.ApiException.notFound("Flight"));

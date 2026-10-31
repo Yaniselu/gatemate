@@ -1,6 +1,5 @@
 import { AppEnvironment } from './environment.model';
 
-/** Static web preview: mock data and hash routing so it works from any sub-path. */
 export const environment: AppEnvironment = {
   production: true,
   useMocks: true,

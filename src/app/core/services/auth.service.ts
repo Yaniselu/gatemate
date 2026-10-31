@@ -10,9 +10,7 @@ import { PlatformService } from './platform.service';
 import { currentLang } from '../i18n/i18n.service';
 
 const REFRESH_KEY = 'refresh_token';
-/** Last known profile, so the app opens instantly (and offline) while the token refreshes in the background. */
 const USER_KEY = 'session_user';
-/** Device copy of the user's trips (see TravelStore); erased with the session. */
 export const TRIPS_CACHE_KEY = 'trips_cache';
 const REFRESH_SKEW_MS = 30_000;
 
@@ -25,7 +23,6 @@ export class AuthService {
   private platform = inject(PlatformService);
   private router = inject(Router);
 
-  // Access token is kept in memory only — never written to disk.
   private session = signal<Session | null>(null);
   private refreshing: Promise<Session | null> | null = null;
   private socialReady: Promise<void> | null = null;
@@ -34,15 +31,9 @@ export class AuthService {
   readonly user = computed<User | null>(() => this.session()?.user ?? null);
   readonly firstName = computed(() => (this.user()?.name ?? '').split(' ')[0] || 'traveller');
 
-  // Client-side brute-force friction. The backend enforces the real rate limit.
   private failedAttempts = 0;
   readonly lockedUntil = signal(0);
 
-  /**
-   * Restore a session from the refresh token in the Keychain/Keystore. With a saved profile the app opens
-   * straight away and the token refreshes in the background, so a sleeping server or no signal doesn't
-   * block start-up. Only a rejected token signs the user out.
-   */
   async init(): Promise<void> {
     const refreshToken = await this.storage.get(REFRESH_KEY);
     if (!refreshToken) {
@@ -88,14 +79,12 @@ export class AuthService {
     await this.loginWithProvider('google');
   }
 
-  /** Saves only the changed fields and swaps the user in place (no reload of other data). */
   async updateProfile(patch: ProfilePatch): Promise<User> {
     const user = await this.api.updateProfile(patch);
     this.setUser(user);
     return user;
   }
 
-  /** Replaces the signed-in user (e.g. after the server confirms a subscription). */
   setUser(user: User): void {
     this.session.update((s) => (s ? { ...s, user } : s));
     void this.storage.set(USER_KEY, JSON.stringify(user)).catch(() => {});
@@ -110,7 +99,6 @@ export class AuthService {
   }
 
   private features: Promise<{ emailCodes: boolean }> | null = null;
-  /** Whether the server can e-mail codes (verification, password reset). */
   async emailCodes(): Promise<boolean> {
     this.features ??= this.api.getFeatures().catch(() => {
       this.features = null;
@@ -127,10 +115,6 @@ export class AuthService {
     this.setUser(await this.api.verifyEmail(code));
   }
 
-  /**
-   * Returns a valid access token, refreshing it shortly before expiry. Throws an ApiError when the server
-   * can't be reached, so callers show "no connection" instead of signing the user out.
-   */
   async getAccessToken(): Promise<string | null> {
     const s = this.session();
     if (!s) return null;
@@ -138,10 +122,6 @@ export class AuthService {
     return (await this.refresh())?.accessToken ?? null;
   }
 
-  /**
-   * Single-flight refresh: concurrent 401s share one refresh call. Tokens rotate on every refresh.
-   * Resolves null when the server rejects the token (signed out); rethrows when it simply can't be reached.
-   */
   refresh(): Promise<Session | null> {
     this.refreshing ??= (async () => {
       try {
@@ -176,7 +156,6 @@ export class AuthService {
     await this.router.navigateByUrl('/welcome', { replaceUrl: true });
   }
 
-  /** Called by the interceptor when the server rejects the token for good. */
   async forceSignOut(): Promise<void> {
     await this.clearLocal();
     await this.router.navigateByUrl('/auth/login', { replaceUrl: true });
@@ -185,8 +164,6 @@ export class AuthService {
   throttleSecondsLeft(): number {
     return Math.max(0, Math.ceil((this.lockedUntil() - Date.now()) / 1000));
   }
-
-  // ---------------------------------------------------------------------------
 
   private async loginWithProvider(provider: SocialCredential['provider']): Promise<void> {
     const nonce = createNonce();
@@ -215,10 +192,6 @@ export class AuthService {
     await this.accept(await this.api.loginWithSocial(credential));
   }
 
-  /**
-   * Whether this build can offer the provider. Apple on iOS needs the Sign in with Apple capability (paid Apple
-   * Developer account); elsewhere both need client IDs. Demo builds always show both.
-   */
   providerAvailable(provider: SocialCredential['provider']): boolean {
     if (environment.useMocks && !this.platform.isNative) return true;
     const a = environment.auth;
@@ -247,7 +220,6 @@ export class AuthService {
     this.syncLanguage(session.user);
   }
 
-  /** Push alerts and e-mails are written on the server in the account's language: keep it in step with the app. */
   private syncLanguage(user: User): void {
     const lang = currentLang();
     if (user.lang === lang) return;
@@ -288,7 +260,6 @@ export class AuthService {
   }
 }
 
-/** No connection, timeout or a server error: the token may still be fine, so keep the session. */
 function isTransient(e: unknown): boolean {
   if (!(e instanceof ApiError)) return true;
   return e.status === 0 || e.status === 408 || e.status === 429 || e.status >= 500;

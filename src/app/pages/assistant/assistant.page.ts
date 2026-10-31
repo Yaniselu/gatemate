@@ -9,7 +9,6 @@ import { TravelStore } from '../../core/services/travel.store';
 import { VELO_STEPS, VeloService } from '../../core/services/velo.service';
 import { RichTextPipe } from '../../shared/pipes/rich-text.pipe';
 
-/** One-tap jobs Velo does end to end with the traveller's real trips. */
 const AUTOMATIONS = [
   { icon: 'sparkles', color: '#8B5CF6', title: 'Prepare my next trip', prompt: 'Prepare my next trip: check my flights and the destination, then add what I need to my checklist.' },
   { icon: 'time-outline', color: '#0FB5C3', title: 'Plan my airport day', prompt: 'Plan my airport day for my next flight: when to leave, check-in, security and boarding, with times.' },
@@ -47,7 +46,6 @@ export class AssistantPage implements OnInit {
   readonly off = computed(() => this.status()?.enabled === false);
 
   constructor() {
-    // Follow the answer as it streams in.
     effect(() => {
       this.velo.messages();
       queueMicrotask(() => void this.content()?.scrollToBottom(200));
@@ -100,7 +98,6 @@ export class AssistantPage implements OnInit {
     return this.steps[name]?.icon ?? 'sparkles';
   }
 
-  /** Links in answers open in the browser, never inside the app. */
   openLink(ev: MouseEvent): void {
     const a = (ev.target as HTMLElement).closest('a');
     if (!a) return;

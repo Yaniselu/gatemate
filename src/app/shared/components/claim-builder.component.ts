@@ -8,7 +8,6 @@ import { TravelStore } from '../../core/services/travel.store';
 import { AirportDbService } from '../../core/services/airport-db.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** EU, EEA and Switzerland: departures from here are always covered by Regulation 261/2004. */
 const EU = new Set(['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT',
   'RO', 'SK', 'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'CH']);
 
@@ -18,10 +17,6 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-/**
- * Claim EU261 compensation yourself, for free: pick the flight, say what happened, and Gatemate checks the
- * entitlement and writes the claim to the airline, ready to copy, share or e-mail. Claim companies keep 25–35 %.
- */
 @Component({
   selector: 'gm-claim-builder',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -185,7 +180,6 @@ export class ClaimBuilderComponent implements OnInit {
   });
 
   constructor() {
-    // Fill in what Gatemate knows whenever the chosen flight changes (or the trips finish loading).
     effect(() => {
       const f = this.flight();
       untracked(() => {
@@ -212,7 +206,6 @@ export class ClaimBuilderComponent implements OnInit {
       this.copied.set(true);
       setTimeout(() => this.copied.set(false), 2000);
     } catch {
-      /* clipboard blocked: the text is selectable */
     }
   }
 
@@ -223,7 +216,6 @@ export class ClaimBuilderComponent implements OnInit {
       else if (navigator.share) await navigator.share({ title: 'EU261 claim', text });
       else await this.copy();
     } catch {
-      /* cancelled */
     }
   }
 }

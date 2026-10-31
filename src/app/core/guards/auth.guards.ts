@@ -13,19 +13,16 @@ function whenAuthKnown() {
   );
 }
 
-/** Signed-in area. */
 export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
   return whenAuthKnown().pipe(map((s) => (s === 'signed-in' ? true : router.parseUrl('/welcome'))));
 };
 
-/** Login / register screens: skip them when a session already exists. */
 export const guestGuard: CanActivateFn = () => {
   const router = inject(Router);
   return whenAuthKnown().pipe(map((s) => (s === 'signed-in' ? router.parseUrl('/tabs/home') : true)));
 };
 
-/** Welcome screen is shown until the user has taken off once. */
 export const welcomeGuard: CanActivateFn = async () => {
   const router = inject(Router);
   const prefs = inject(PrefsService);
@@ -35,7 +32,6 @@ export const welcomeGuard: CanActivateFn = async () => {
   return true;
 };
 
-/** Invite links: remember the token across sign-in, then come back to it. */
 export const PENDING_INVITE = 'gm_pending_invite';
 export const inviteGuard: CanActivateFn = (route) => {
   const router = inject(Router);
@@ -45,7 +41,6 @@ export const inviteGuard: CanActivateFn = (route) => {
       try {
         sessionStorage.setItem(PENDING_INVITE, route.paramMap.get('token') ?? '');
       } catch {
-        /* storage unavailable */
       }
       return router.parseUrl('/welcome');
     }),

@@ -1,4 +1,3 @@
-/** Cryptographically secure helpers built on the Web Crypto API (no Math.random for anything sensitive). */
 
 export function randomBytes(length: number): Uint8Array {
   const bytes = new Uint8Array(length);
@@ -12,7 +11,6 @@ export function base64Url(bytes: Uint8Array): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-/** Single-use nonce bound to a social sign-in; the backend checks it against the ID token claim. */
 export function createNonce(): string {
   return base64Url(randomBytes(32));
 }
@@ -28,7 +26,6 @@ export async function sha256Hex(input: string): Promise<string> {
     .join('');
 }
 
-/** Constant-time string comparison for client-side checks such as OTP confirmation. */
 export function safeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;

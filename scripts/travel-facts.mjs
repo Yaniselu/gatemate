@@ -1,6 +1,3 @@
-// Curated practical facts per country (ISO-3166 alpha-2).
-// plugs: IEC plug types · volts: mains voltage · left: drives on the left · sos: emergency numbers.
-// Sources: IEC World Plugs, EU 112, national emergency services. Review yearly.
 const EU112 = { general: '112' };
 export const FACTS = {
   AT: { plugs: 'C/F', volts: 230, sos: EU112 }, BE: { plugs: 'C/E', volts: 230, sos: EU112 }, BG: { plugs: 'C/F', volts: 230, sos: EU112 },

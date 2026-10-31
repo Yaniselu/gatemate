@@ -21,7 +21,6 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
 export class AirportMapPage implements OnInit, OnDestroy {
   readonly iata = input<string>();
   readonly gate = input<string>();
-  /** Facility id from the airport guide (?place=). */
   readonly place = input<string>();
 
   private db = inject(AirportDbService);
@@ -39,7 +38,6 @@ export class AirportMapPage implements OnInit, OnDestroy {
   protected readonly meta = POI_META;
   readonly category = signal<PoiKind | null>(null);
   readonly levels = computed(() => levelsOf(this.features() ?? []));
-  /** Floor on screen: the one you picked, else the one where most places are. */
   readonly pickedLevel = signal<string | null>(null);
   readonly level = computed(() => {
     const all = this.levels();
@@ -82,7 +80,6 @@ export class AirportMapPage implements OnInit, OnDestroy {
     this.airport.set(a);
     if (this.gate()) this.selected.set(this.gate()!);
     if (this.place()) this.placeId.set(this.place()!);
-    // Opening a place from the guide: show its floor.
     const lvl = () => (this.features() ?? []).find((f) => f.id === this.place())?.level?.split(';')[0]?.trim();
     await this.loadGates();
     const l = this.place() ? lvl() : undefined;
@@ -164,7 +161,6 @@ export class AirportMapPage implements OnInit, OnDestroy {
     return m < 1000 ? `${m} m` : `${(m / 1000).toFixed(m < 10_000 ? 1 : 0)} km`;
   }
 
-  /** Opening point of the plan: the terminal for hand-drawn airports, else the airport's reference point. */
   view(a: { iata: string; lat: number; lon: number }) {
     const v = PLAN_VIEW[a.iata];
     return v ? { lat: v.lat, lon: v.lon } : { lat: a.lat, lon: a.lon };

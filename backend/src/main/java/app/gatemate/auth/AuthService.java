@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
     private static final String[] COLORS = {"#0FB5C3", "#8B7CF6", "#FF8A5B", "#2FD18A", "#5EC8FF"};
-    // Checked on unknown e-mails so response timing doesn't reveal which accounts exist.
     private final String dummyHash;
 
     private final UserRepository users;
@@ -69,7 +68,6 @@ public class AuthService {
     @Transactional(noRollbackFor = ApiException.class)
     public AuthDtos.Session login(AuthDtos.LoginRequest r) {
         String email = r.email().trim().toLowerCase(Locale.ROOT);
-        // Per address, whatever IP the attempts come from (stops spread-out guessing; the account lockout below adds to it).
         limiter.check("login:" + email, 10, Duration.ofMinutes(15));
         var found = users.findByEmail(email);
         if (found.isEmpty() || found.get().passwordHash == null) {
@@ -101,7 +99,6 @@ public class AuthService {
         var id = social.verify(provider, r.idToken(), r.nonce());
         var existing = "apple".equals(provider) ? users.findByAppleSub(id.subject()) : users.findByGoogleSub(id.subject());
         UserEntity u = existing.orElseGet(() -> {
-            // Link to an existing account only when the provider vouches for the e-mail.
             var byEmail = id.email() != null && id.emailVerified() ? users.findByEmail(id.email().toLowerCase(Locale.ROOT)) : java.util.Optional.<UserEntity>empty();
             UserEntity n = byEmail.orElseGet(() -> {
                 String name = r.displayName() != null && !r.displayName().isBlank() ? r.displayName().trim() : ("apple".equals(provider) ? "Apple user" : "Google user");
@@ -120,14 +117,13 @@ public class AuthService {
         return tokens.issue(u);
     }
 
-    /** Always succeeds — never reveals whether the e-mail has an account. Sends a 6-digit code to type in the app. */
     @Transactional
     public void requestReset(String rawEmail) {
         String email = rawEmail.trim().toLowerCase(Locale.ROOT);
         if (!mail.enabled()) throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "mail_unavailable", "E-mail sending isn’t set up on this server yet.");
         limiter.check("reset-send:" + email, 3, Duration.ofHours(1));
         users.findByEmail(email).filter(u -> u.passwordHash != null).ifPresent(u -> {
-            resets.deleteByUserId(u.id); // only the newest code works
+            resets.deleteByUserId(u.id);
             String code = EmailVerificationService.code();
             var pr = new PasswordResetEntity();
             pr.tokenHash = EmailVerificationService.hash(u.id, code);
@@ -137,7 +133,6 @@ public class AuthService {
             try {
                 mail.sendPasswordResetCode(u.email, u.displayName, code, u.lang);
             } catch (ApiException e) {
-                // Same answer either way, so the response never reveals whether the account exists.
             }
         });
     }
@@ -145,7 +140,6 @@ public class AuthService {
     @Transactional
     public void confirmReset(AuthDtos.ResetConfirm r) {
         String email = r.email().trim().toLowerCase(Locale.ROOT);
-        // 5 guesses per address per 15 minutes against a 6-digit, 30-minute code.
         limiter.check("reset-try:" + email, 5, Duration.ofMinutes(15));
         var invalid = ApiException.badRequest("invalid_code", "This code is wrong or has expired.");
         var u = users.findByEmail(email).orElseThrow(() -> invalid);
@@ -155,11 +149,11 @@ public class AuthService {
         u.passwordHash = encoder.encode(r.password());
         u.failedLogins = 0;
         u.lockedUntil = null;
-        u.emailVerified = true; // they just proved they read this inbox
+        u.emailVerified = true;
         pr.usedAt = Instant.now();
         users.save(u);
         resets.save(pr);
-        tokens.revokeAll(u.id); // sign out every device
+        tokens.revokeAll(u.id);
     }
 
     private UserEntity newUser(String name, String email, String provider) {

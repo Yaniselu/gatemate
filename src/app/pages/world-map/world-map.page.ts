@@ -10,10 +10,8 @@ import { flagEmoji, summarize } from '../../core/utils/travel-summary';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 interface Country {
-  /** ISO 3166-1 alpha-2. */
   a: string;
   n: string;
-  /** Projected SVG path (Natural Earth), absent for small states drawn as a dot. */
   d?: string;
   c: [number, number];
   b?: [number, number, number, number];
@@ -33,15 +31,9 @@ interface Box {
   h: number;
 }
 
-/** UN member states plus the two observers: the "% of the world" denominator. */
 const WORLD_COUNT = 195;
 let worldCache: Promise<World> | null = null;
 
-/**
- * Your world map: every country you've flown to lights up in a colour gradient, upcoming destinations are hatched,
- * and you can mark any other country you've been to (by tapping it or searching). Pinch and drag to explore.
- * Geometry is pre-projected and bundled (133 KB), so it's instant and offline.
- */
 @Component({
   selector: 'gm-world-map',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -234,13 +226,11 @@ export class WorldMapPage implements OnInit {
   readonly vb = signal<Box>({ x: 0, y: 0, w: 1000, h: 520 });
 
   private flights = computed(() => this.store.trips().flatMap((t) => t.flights));
-  /** Countries flown to (arrived), from the trips. */
   readonly flown = computed(() => {
     this.db.ready();
     return new Set(summarize(this.flights(), (c) => this.db.get(c)).countries);
   });
   readonly visited = computed(() => new Set([...this.flown(), ...this.marked()]));
-  /** Countries of upcoming flights not visited yet. */
   readonly planned = computed(() => {
     this.db.ready();
     const now = Date.now(), out = new Set<string>();
@@ -256,7 +246,6 @@ export class WorldMapPage implements OnInit {
   readonly pct = computed(() => Math.min(100, (this.visited().size / WORLD_COUNT) * 100));
   readonly shapes = computed(() => this.world()?.countries.filter((c) => !c.dot) ?? []);
   readonly dots = computed(() => this.world()?.countries.filter((c) => c.dot) ?? []);
-  /** Visited countries light up one after another, west to east. */
   readonly order = computed(() => {
     const m = new Map<string, number>();
     [...this.shapes()].filter((c) => this.visited().has(c.a)).sort((a, b) => a.c[0] - b.c[0]).forEach((c, i) => m.set(c.a, i * 70));
@@ -286,21 +275,17 @@ export class WorldMapPage implements OnInit {
       try {
         this.marked.set(new Set(JSON.parse(saved) as string[]));
       } catch {
-        /* ignore */
       }
     }
-    // Open on your part of the world: frame every visited and planned country.
     await this.db.load().catch(() => {});
     setTimeout(() => this.frameMine(), 250);
   }
 
-  /** Fit the view to the visited and planned countries (the whole world when there are none). */
   frameMine() {
     const mine = (this.world()?.countries ?? []).filter((c) => this.visited().has(c.a) || this.planned().has(c.a));
     if (!mine.length) return;
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const c of mine) {
-      // Overseas parts (e.g. French Guiana) stretch some boxes across oceans: use the centroid ± a margin for those.
       const b = c.b && c.b[2] - c.b[0] < 260 ? c.b : [c.c[0] - 12, c.c[1] - 8, c.c[0] + 12, c.c[1] + 8];
       x0 = Math.min(x0, b[0]); y0 = Math.min(y0, b[1]); x1 = Math.max(x1, b[2]); y1 = Math.max(y1, b[3]);
     }
@@ -339,7 +324,6 @@ export class WorldMapPage implements OnInit {
     if (!this.visited().has(c.a)) void this.toggle(c.a);
   }
 
-  /** Select a country and fly the view to it. */
   focus(c: Country) {
     this.selected.set(c.a);
     const [x0, y0, x1, y1] = c.b ?? [c.c[0] - 20, c.c[1] - 12, c.c[0] + 20, c.c[1] + 12];
@@ -360,7 +344,6 @@ export class WorldMapPage implements OnInit {
     this.setView({ x: v.x + (v.w * (1 - f)) / 2, y: v.y + (v.h * (1 - f)) / 2, w: v.w * f, h: v.h * f });
   }
 
-  // ---------- pan & zoom ----------
   private pointers = new Map<number, { x: number; y: number }>();
   private moved = 0;
   private pinch = 0;

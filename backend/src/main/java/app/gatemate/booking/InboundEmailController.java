@@ -18,16 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.JsonNode;
 
-/**
- * Receives confirmation e-mails forwarded to the user's personal import address, from the mail provider's inbound
- * webhook (Postmark, CloudMailin, or our own normalised format). A booking is imported only if:
- *  - the webhook carries our shared secret (X-Gatemate-Secret header, or HTTP Basic password in the webhook URL);
- *  - the address token belongs to an account;
- *  - the message was sent from that account's e-mail address, and the sender's domain passed SPF or DKIM
- *    (so nobody can forge a forward "from" you).
- * The airline's own signature doesn't survive forwarding, so the passenger name is checked against the account's
- * legal name instead and shown on the flight.
- */
 @RestController
 @RequestMapping("/api/v1/inbound/email")
 public class InboundEmailController {
@@ -44,7 +34,6 @@ public class InboundEmailController {
         this.imports = imports;
     }
 
-    /** What we need from any provider's payload. */
     record Mail(List<String> recipients, String from, boolean senderAuthenticated, String html, String text) {}
 
     @PostMapping
@@ -55,7 +44,6 @@ public class InboundEmailController {
         if (expected == null || expected.isBlank() || given == null || !Crypto.constantTimeEquals(expected, given)) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "unauthorized", "Bad signature.");
         }
-        // Always 202 from here on, so senders can't probe which addresses exist.
         try {
             importMail(normalise(body));
         } catch (Exception e) {
@@ -84,7 +72,6 @@ public class InboundEmailController {
     static Mail normalise(JsonNode b) {
         var to = new ArrayList<String>();
         if (b.has("FromFull") || b.has("HtmlBody") || b.has("TextBody")) {
-            // Postmark inbound
             for (String f : List.of("ToFull", "CcFull", "BccFull")) for (JsonNode r : b.path(f)) to.add(r.path("Email").asString(""));
             to.add(b.path("OriginalRecipient").asString(""));
             String from = b.path("FromFull").path("Email").asString(b.path("From").asString(""));
@@ -97,7 +84,6 @@ public class InboundEmailController {
             return new Mail(to, from, auth, b.path("HtmlBody").asString(null), b.path("TextBody").asString(null));
         }
         if (b.has("envelope")) {
-            // CloudMailin (JSON normalised format)
             JsonNode env = b.path("envelope");
             to.add(env.path("to").asString(""));
             for (JsonNode r : env.path("recipients")) to.add(r.asString(""));
@@ -108,12 +94,10 @@ public class InboundEmailController {
             boolean dkim = authPass(b.path("headers").path("authentication_results").asString("").toLowerCase(Locale.ROOT), from);
             return new Mail(to, from, spf || dkim, b.path("html").asString(null), b.path("plain").asString(null));
         }
-        // Our own normalised format.
         to.add(b.path("to").asString(""));
         return new Mail(to, b.path("from").asString(""), b.path("dkimPass").asBoolean(false), b.path("html").asString(null), b.path("text").asString(null));
     }
 
-    /** "dkim=pass header.d=gmail.com" or "spf=pass smtp.mailfrom=…@gmail.com" for the sender's own domain. */
     static boolean authPass(String results, String from) {
         String a = address(from);
         String domain = a.contains("@") ? a.substring(a.indexOf('@') + 1) : "";

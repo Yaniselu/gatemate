@@ -4,10 +4,6 @@ import java.time.Duration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
-/**
- * Outbound HTTP for third-party APIs. Uses the plain HttpURLConnection stack: some public data services drop the JDK
- * HttpClient's connections mid-request ("I/O error … null"). Short timeouts so a slow provider never blocks the app.
- */
 public final class Http {
     public static final String USER_AGENT = "Gatemate/1.0 (support@gatemate.app)";
 

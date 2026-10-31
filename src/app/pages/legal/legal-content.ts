@@ -1,5 +1,3 @@
-// Starting templates for the legal documents. They must be reviewed by a lawyer and
-// published at public URLs (App Store Connect requires a Privacy Policy URL) before launch.
 
 export interface LegalDoc {
   title: string;

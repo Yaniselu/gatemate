@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 
-/** Lightweight canvas confetti for celebratory moments (flight verified, checklist complete). */
 @Injectable({ providedIn: 'root' })
 export class ConfettiService {
   burst(originX = 0.5, originY = 0.4, count = 90): void {

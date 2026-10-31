@@ -3,10 +3,6 @@ package app.gatemate.common;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Texts the server sends on its own (push alerts, e-mails), in each user's app language. "{name}" placeholders are
- * filled from the arguments; an unknown language or key falls back to English.
- */
 public final class Messages {
     private Messages() {}
 
@@ -16,7 +12,6 @@ public final class Messages {
         return lang != null && LANGUAGES.contains(lang) ? lang : "en";
     }
 
-    /** Text for key in lang; args are name/value pairs: get("ro", "gate.assigned", "gate", "B12"). */
     public static String get(String lang, String key, Object... args) {
         String s = TEXTS.getOrDefault(lang(lang), Map.of()).get(key);
         if (s == null) s = TEXTS.get("en").getOrDefault(key, key);
@@ -24,7 +19,6 @@ public final class Messages {
         return s;
     }
 
-    /** Keys defined for a language (for consistency checks). */
     public static Set<String> keys(String lang) {
         return TEXTS.getOrDefault(lang, Map.of()).keySet();
     }

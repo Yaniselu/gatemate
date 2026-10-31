@@ -4,7 +4,6 @@ import java.text.Normalizer;
 import java.util.List;
 import java.util.regex.Pattern;
 
-/** Server-side text hygiene for user content (the client does the same, but never trust the client). */
 public final class Text {
     private static final Pattern CONTROL = Pattern.compile("[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F\\u202A-\\u202E\\u2066-\\u2069]");
     private static final List<String> BLOCKED = List.of("fuck", "shit", "bitch", "cunt", "nigger", "faggot", "retard", "whore");

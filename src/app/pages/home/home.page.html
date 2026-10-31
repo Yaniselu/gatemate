@@ -43,7 +43,6 @@
         <ion-icon name="chevron-forward" class="chev" />
       </a>
     }
-    <!-- Next flight -->
     @if (loading()) {
       <div class="hero-skel card">
         <gm-skeleton height="100%" radius="22px" />
@@ -121,14 +120,12 @@
       <gm-live-flight class="live-card anim-scale-in" [flight]="lf" />
     }
 
-    <!-- Velo, the AI travel agent -->
     <a class="velo-card anim-fade-up" routerLink="/assistant" gmPressable>
       <i class="velo-orb" aria-hidden="true"></i>
       <span class="row-text"><b>{{ 'Ask Velo' | t }}</b><small>{{ 'Your AI travel agent, by Velosyntech' | t }}</small></span>
       <span class="velo-go"><ion-icon name="sparkles" /></span>
     </a>
 
-    <!-- Quick actions -->
     <div class="actions card">
       @for (a of actions; track a.label; let i = $index) {
         <button class="action" [gmReveal]="i" gmPressable (click)="open(a.link)">
@@ -138,7 +135,6 @@
       }
     </div>
 
-    <!-- Bags -->
     @if (next()?.flight?.baggage; as bags) {
       <div class="gm-section-title"><h2>{{ 'Your baggage' | t }}</h2><a (click)="open('bags')">{{ 'Details' | t }}</a></div>
       <button class="bags card" gmReveal gmPressable (click)="open('bags')">
@@ -160,7 +156,6 @@
       </button>
     }
 
-    <!-- In-flight -->
     <div class="rows card" gmReveal>
       @if (next(); as n) {
         <button class="row" gmPressable (click)="open('/explore/' + n.flight.to.code + '?trip=' + n.trip.id)">
@@ -186,7 +181,6 @@
       </button>
     </div>
 
-    <!-- Live updates -->
     <div class="gm-section-title">
       <h2>{{ 'Live updates' | t }} @if (store.syncedAt()) { <span class="sync" [title]="'Refreshing every minute' | t"><i></i>{{ 'live' | t }}</span> }</h2>
       <a routerLink="/alerts">{{ 'See all' | t }}</a>
@@ -213,7 +207,6 @@
       }
     </div>
 
-    <!-- Tips -->
     <div class="gm-section-title"><h2>{{ 'Before you fly' | t }}</h2></div>
     <div class="tips" role="list">
       @for (t of tips; track t.title; let i = $index) {

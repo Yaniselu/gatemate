@@ -16,7 +16,6 @@ const LABEL: Record<LiveState['phase'], string> = {
   'no-signal': 'No live signal right now',
 };
 
-/** Live tracking card: phase, progress, altitude, speed and estimated landing, refreshed every 30 s. */
 @Component({
   selector: 'gm-live-flight',
   changeDetection: ChangeDetectionStrategy.OnPush,

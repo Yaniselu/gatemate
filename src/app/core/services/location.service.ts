@@ -9,10 +9,6 @@ export interface Fix {
   at: number;
 }
 
-/**
- * "While using the app" location only. Never sent to the server, never stored.
- * Used for: distance to the gate, nearest airport, and "time to leave" alerts.
- */
 @Injectable({ providedIn: 'root' })
 export class LocationService {
   private platform = inject(PlatformService);
@@ -55,7 +51,6 @@ export class LocationService {
   }
 }
 
-/** Walking estimate: straight line × 1.3 detour factor at 80 m/min. */
 export function walkMinutes(meters: number): number {
   return Math.max(1, Math.round((meters * 1.3) / 80));
 }

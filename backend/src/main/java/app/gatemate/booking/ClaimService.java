@@ -23,12 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Adds a flight to an account only when the ticket provably belongs to that account:
- *  1. the passenger name matches the account's legal name;
- *  2. for bookings, the airline/aggregator confirmed reference + last name;
- *  3. the same (booking, flight, date, passenger) can be claimed by one account only.
- */
 @Service
 public class ClaimService {
     private final UserRepository users;
@@ -89,7 +83,6 @@ public class ClaimService {
         String claimKey = key(p.bookingRef(), p.carrier() + p.flightNumber(), p.flightDate().toString(), p.lastName());
         assertUnclaimed(claimKey, me);
 
-        // The barcode carries the date but not the time: keep a placeholder until the flight-status provider fills it in.
         Instant dep = p.flightDate().atTime(LocalTime.NOON).atZone(ZoneId.of(from.tz())).toInstant();
         var f = new FlightEntity();
         f.airlineCode = p.carrier();

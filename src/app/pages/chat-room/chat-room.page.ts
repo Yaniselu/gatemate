@@ -74,7 +74,6 @@ export class ChatRoomPage implements OnInit {
   });
 
   constructor() {
-    // Keep the latest message in view.
     effect(() => {
       this.rows();
       this.typing();
@@ -179,7 +178,6 @@ export class ChatRoomPage implements OnInit {
     await this.nav.navigateBack('/tabs/chat');
   }
 
-  // Long-press detection for message actions
   private pressTimer: ReturnType<typeof setTimeout> | null = null;
   pressStart(m: ChatMessage) {
     this.pressTimer = setTimeout(() => this.messageActions(m), 480);

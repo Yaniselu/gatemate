@@ -132,7 +132,6 @@ export class ChatNewPage implements OnInit {
 
   async create() {
     const trip = this.store.upcomingTrips().find((x) => x.id === this.tripId());
-    // No name typed: use the trip's name, or a friendly default, instead of a dead button.
     const title = cleanText(this.title(), 40) || trip?.title.slice(0, 40) || 'Travel group';
     this.error.set('');
     this.busy.set(true);

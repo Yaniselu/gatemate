@@ -1,8 +1,6 @@
-// Gatemate design tokens — light, airy, turquoise accent.
 :root {
   color-scheme: light;
 
-  // Brand
   --gm-accent: #0fb5c3;
   --gm-accent-rgb: 15, 181, 195;
   --gm-accent-strong: #0a93a6;
@@ -16,17 +14,14 @@
   --gm-amber: #ffb020;
   --gm-violet: #8b7cf6;
 
-  // Neutrals
   --gm-ink: #0b1b2b;
   --gm-ink-2: #3a4a5c;
   --gm-ink-3: #74859a;
   --gm-line: rgba(11, 27, 43, 0.08);
   --gm-bg: #ffffff;
   --gm-surface: #f5f8fb;
-  /** Solid fill for selected chips and badges with white text on top. */
   --gm-solid: #0b1b2b;
 
-  // Liquid Glass — translucent, heavily blurred and saturated, with a bright specular rim.
   --gm-glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.28) 100%);
   --gm-glass-bg-strong: linear-gradient(160deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.55) 100%);
   --gm-glass-border: rgba(255, 255, 255, 0.7);
@@ -35,14 +30,12 @@
     inset 0 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 -10px 24px rgba(255, 255, 255, 0.18),
     inset 0 0 0 0.5px rgba(255, 255, 255, 0.6);
 
-  // Professional surfaces
   --gm-card-bg: #ffffff;
   --gm-card-border: #e6eaef;
   --gm-card-shadow: 0 1px 2px rgba(11, 27, 43, 0.04);
   --gm-navy: #0b1b2b;
   --gm-navy-2: #12304a;
 
-  // Shape & motion
   --gm-radius-sm: 10px;
   --gm-radius: 16px;
   --gm-radius-lg: 20px;
@@ -53,7 +46,6 @@
   --gm-dur: 420ms;
   --gm-dur-slow: 800ms;
 
-  // Ionic mapping
   --ion-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --ion-background-color: var(--gm-bg);
   --ion-background-color-rgb: 255, 255, 255;
@@ -106,7 +98,6 @@
   --ion-color-medium-tint: #8291a4;
 }
 
-// Dark appearance: chosen in Accessibility → Appearance, or following the phone. Same tokens, night values.
 html.gm-dark {
   color-scheme: dark;
 
@@ -151,7 +142,6 @@ html.gm-dark {
     background: var(--gm-bg);
   }
 
-  // The floating tab bar and other frosted surfaces drawn with fixed white gradients.
   ion-tab-bar.gm-tabbar {
     background: linear-gradient(160deg, rgba(30, 41, 62, 0.82), rgba(15, 23, 38, 0.66)) !important;
     border-color: rgba(255, 255, 255, 0.08) !important;

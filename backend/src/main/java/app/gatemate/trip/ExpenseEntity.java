@@ -13,7 +13,6 @@ public class ExpenseEntity {
     public long amountCents;
     public String currency;
     public UUID paidBy;
-    /** Comma-separated user ids. */
     public String splitWith;
     public Instant createdAt = Instant.now();
 }

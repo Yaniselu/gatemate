@@ -1,8 +1,3 @@
-/**
- * Matches a passenger name from a ticket against the account holder's legal name.
- * Airline systems upper-case, strip diacritics, truncate (BCBP keeps 20 chars) and append
- * titles like MR/MRS, so we normalise before comparing.
- */
 const TITLES = /\b(MR|MRS|MS|MISS|MSTR|DR|PROF|CHD|INF)\b/g;
 
 export function normalizeName(s: string): string {
@@ -27,7 +22,6 @@ export function matchPassengerName(ticketFirst: string, ticketLast: string, lega
   const ll = normalizeName(legalLast).replace(/ /g, '');
   const tf = normalizeName(ticketFirst).replace(/ /g, '');
   const lf = normalizeName(legalFirst).replace(/ /g, '');
-  // Truncation: the ticket may hold only the first characters of a long name.
   const lastNameOk = !!tl && !!ll && (tl === ll || (tl.length >= 8 && ll.startsWith(tl)));
   const firstNameOk = !!tf && !!lf && (tf === lf || lf.startsWith(tf) || tf.startsWith(lf));
   return { ok: lastNameOk && firstNameOk, lastNameOk, firstNameOk };

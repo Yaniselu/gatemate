@@ -1,8 +1,3 @@
-// Builds the static datasets shipped with the app:
-//   public/data/airports.json  — every airport with an IATA code and scheduled service (OurAirports, public domain)
-//                                plus IANA time zones (mwgg/Airports, MIT).
-//   public/data/countries.json — country facts (countries-list, MIT) + curated travel facts.
-// Usage: node scripts/build-data.mjs [dir-with-downloads]
 import fs from 'node:fs';
 import path from 'node:path';
 import { countries, languages } from 'countries-list';

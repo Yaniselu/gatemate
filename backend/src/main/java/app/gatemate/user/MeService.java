@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class MeService {
     private static final Logger log = LoggerFactory.getLogger(MeService.class);
-    /** Avatars are re-encoded on the device (EXIF stripped) and capped at ~300 KB. */
     private static final Pattern AVATAR = Pattern.compile("^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$");
     private static final int AVATAR_MAX = 400_000;
     private static final Pattern LEGAL_NAME = Pattern.compile("^[\\p{L}][\\p{L} '\\-]{0,39}$");
@@ -109,7 +108,6 @@ public class MeService {
         return v;
     }
 
-    /** Computed from completed flights the user actually took. */
     @Transactional(readOnly = true)
     public Stats stats(UUID me) {
         var now = Instant.now();
@@ -133,7 +131,6 @@ public class MeService {
         return new Stats(count, (int) Math.round(km), countries.size(), Math.round(minutes / 60f), List.of());
     }
 
-    /** Personal forwarding address for airline confirmation e-mails. Rotates on request. */
     @Transactional
     public String importEmail(UUID me) {
         var u = get(me);
@@ -150,7 +147,6 @@ public class MeService {
         return "trips+" + u.importToken + "@" + domain;
     }
 
-    /** GDPR Art. 15/20 data export. */
     @Transactional(readOnly = true)
     public Map<String, Object> export(UUID me) {
         var u = get(me);
@@ -161,10 +157,6 @@ public class MeService {
         return out;
     }
 
-    /**
-     * In-app account deletion (App Store 5.1.1(v), Google Play account deletion policy).
-     * Revokes Sign in with Apple, hands owned group trips to another member, then deletes the user — the database cascades the rest.
-     */
     @Transactional
     public void delete(UUID me) {
         var u = get(me);
@@ -172,7 +164,6 @@ public class MeService {
             try {
                 apple.revoke(cipher.decrypt(u.appleRefreshToken));
             } catch (Exception e) {
-                // Deletion must never be blocked by Apple being unreachable; the token expires on its own.
                 log.warn("Apple revoke failed for a deleted account: {}", e.getMessage());
             }
         }

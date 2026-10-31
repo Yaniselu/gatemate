@@ -17,11 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 
-/**
- * Aggregates the destination guide server-side so the app makes a single request and third-party keys stay off the device:
- * Wikipedia summary, Unsplash photo (licensed, with photographer credit) or Wikimedia fallback, Open-Meteo weather and ECB rates.
- * Each part is optional: a failing source is simply left out.
- */
 @Service
 public class DestinationService {
     private static final Logger log = LoggerFactory.getLogger(DestinationService.class);
@@ -102,13 +97,11 @@ public class DestinationService {
             JsonNode p = j.path("results").path(0);
             if (p.isMissingNode()) return null;
             String utm = "?utm_source=gatemate&utm_medium=referral";
-            // Unsplash API guidelines: hotlink the image, credit the photographer and ping the download endpoint.
             String dl = p.path("links").path("download_location").asString("");
             if (!dl.isBlank()) CompletableFuture.runAsync(() -> {
                 try {
                     http.get().uri(dl).header("Authorization", "Client-ID " + cfg.unsplashAccessKey()).retrieve().toBodilessEntity();
                 } catch (Exception ignored) {
-                    // best effort
                 }
             });
             return Map.of("url", p.path("urls").path("regular").asString(), "credit", "Photo: " + p.path("user").path("name").asString("") + " on Unsplash",

@@ -6,7 +6,7 @@ import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-type Cell = 'P' | 'C' | null; // P = plane (you), C = cloud (autopilot)
+type Cell = 'P' | 'C' | null;
 const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
 
 function winner(b: Cell[]): { who: Cell; line: number[] } | null {

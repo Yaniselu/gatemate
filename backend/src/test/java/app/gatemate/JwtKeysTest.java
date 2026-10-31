@@ -24,7 +24,6 @@ class JwtKeysTest {
         var first = new JwtKeys(p, new TokenCipher(p), jdbc);
         var second = new JwtKeys(p, new TokenCipher(p), jdbc);
         assertEquals(first.publicKey, second.publicKey, "same key after a restart");
-        // The private key is never stored in clear text.
         String stored = jdbc.queryForObject("SELECT secret FROM server_keys", String.class);
         assertFalse(stored.contains(java.util.Base64.getEncoder().encodeToString(first.privateKey.getEncoded()).substring(0, 40)));
 

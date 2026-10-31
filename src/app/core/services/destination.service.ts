@@ -19,11 +19,9 @@ export interface DestinationInfo {
   photo?: { url: string; credit: string; link: string };
   weather?: { temp: number; code: number; wind: number; days: WeatherDay[] };
   fx?: { base: string; currency: string; rate: number; date: string };
-  /** Live parts (photo, summary, weather, rates) couldn't load; only the bundled country facts are shown. */
   offline?: boolean;
 }
 
-/** WMO weather codes → label + ionicon. */
 export function weatherLabel(code: number): { label: string; icon: string } {
   if (code === 0) return { label: 'Clear', icon: 'sunny' };
   if (code <= 2) return { label: 'Partly cloudy', icon: 'partly-sunny' };
@@ -37,11 +35,6 @@ export function weatherLabel(code: number): { label: string; icon: string } {
   return { label: 'Thunderstorm', icon: 'thunderstorm' };
 }
 
-/**
- * Destination guide: Wikipedia summary + lead photo, live weather (Open-Meteo), exchange rate (ECB via
- * Frankfurter) and practical country facts. With the real backend, `/destinations/{iata}` aggregates and
- * caches these server-side (and swaps the photo for a licensed Unsplash image with photographer credit).
- */
 @Injectable({ providedIn: 'root' })
 export class DestinationService {
   private http = inject(HttpClient);
@@ -49,12 +42,10 @@ export class DestinationService {
   private cache = new Map<string, Promise<DestinationInfo>>();
   private wikiCache = new Map<string, Promise<Awaited<ReturnType<DestinationService['wiki']>>>>();
 
-  /** Just the destination photo (used by trip covers). Resolves undefined when unavailable. */
   async photo(iata: string): Promise<DestinationInfo['photo']> {
     await this.db.load();
     const a = this.db.get(iata);
     if (!a) return undefined;
-    // City photos are kept on the phone for a month (only real photos are saved, never "none").
     return deviceCached(`photo_${iata}`, 30 * 86_400_000, async () => {
       const p = (await this.wikiFor(a))?.photo;
       if (!p) throw new Error('no photo');
@@ -67,7 +58,6 @@ export class DestinationService {
     return this.wikiCache.get(a.iata)!;
   }
 
-  /** Drops the in-memory copy so the next get() tries the network again. */
   forget(iata: string) {
     for (const k of [...this.cache.keys()]) if (k.startsWith(iata + '|')) this.cache.delete(k);
   }
@@ -88,9 +78,7 @@ export class DestinationService {
     await this.db.load();
     const airport = this.db.get(iata);
     if (!airport) throw new Error('Unknown airport');
-    // Shown instantly from the phone's copy (refreshed in the background every few hours).
     const country = this.db.country(airport.country);
-    // Nothing reachable and nothing saved: the country facts bundled with the app still show (plugs, money, emergency numbers).
     const info = await deviceCached(`dest_${iata}_${home}`, 3 * 3600_000, () => this.fetchInfo(iata, home)).catch(
       (): DestinationInfo => ({ airport, country, offline: true }),
     );
@@ -100,7 +88,6 @@ export class DestinationService {
   private async fetchInfo(iata: string, home: string): Promise<DestinationInfo> {
     const airport = this.db.get(iata);
     if (!airport) throw new Error('Unknown airport');
-    // Public sources are called straight from the phone; if every one of them fails, ask our server instead.
     const country = this.db.country(airport.country);
     const [wiki, weather, fx] = await Promise.all([
       this.wikiFor(airport),
@@ -113,7 +100,6 @@ export class DestinationService {
       ).catch(() => null);
       if (viaServer) return { ...viaServer, airport, country: viaServer.country ?? country };
     }
-    // Nothing reachable at all: fail so the saved copy (or the error state with Retry) is shown.
     if (!wiki && !weather && !fx) throw new Error('offline');
     return { airport, country, summary: wiki?.summary, photo: wiki?.photo, weather, fx };
   }
@@ -125,7 +111,6 @@ export class DestinationService {
       if (r.status !== 200) continue;
       const j = JSON.parse(r.text);
       if (j.type === 'disambiguation' || !j.extract) continue;
-      // Use the original when it is small enough, otherwise ask Wikimedia for a 1280 px rendition.
       const orig = j.originalimage as { source: string; width: number } | undefined;
       const img = orig && orig.width <= 1280 ? orig.source : (j.thumbnail?.source as string | undefined)?.replace(/\/\d+px-/, '/1280px-') ?? orig?.source;
       const pageUrl = j.content_urls?.mobile?.page ?? j.content_urls?.desktop?.page;

@@ -2,8 +2,6 @@ import ActivityKit
 import Capacitor
 import Foundation
 
-/// Starts, updates and ends the flight Live Activity (lock screen, Dynamic Island, Apple Watch Smart Stack).
-/// The countdowns tick on their own in the system UI, so the app only calls in when something changes.
 @objc(LiveActivityPlugin)
 public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "LiveActivityPlugin"
@@ -23,7 +21,6 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    /// Starts the activity for a flight, or updates it when one is already running for that flight.
     @objc func start(_ call: CAPPluginCall) {
         guard #available(iOS 16.2, *) else {
             call.reject("Live Activities need iOS 16.2 or later")
@@ -65,7 +62,6 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             labelSeat: labels["seat"] as? String ?? "Seat",
             labelLanded: labels["landed"] as? String ?? "Landed")
         do {
-            // One flight at a time on the lock screen.
             for other in Activity<FlightActivityAttributes>.activities {
                 Task { await other.end(nil, dismissalPolicy: .immediate) }
             }
@@ -105,7 +101,6 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 }
 
-/// Capacitor's view controller, plus the app's own native plugins.
 class GatemateBridgeViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(LiveActivityPlugin())

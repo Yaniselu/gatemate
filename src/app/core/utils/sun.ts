@@ -1,7 +1,3 @@
-/**
- * Sunrise / sunset (NOAA algorithm, accurate to about a minute below the polar circles).
- * Returns UTC Date objects, or null for polar day / polar night.
- */
 export function sunTimes(date: Date, lat: number, lon: number): { sunrise: Date | null; sunset: Date | null; polar?: 'day' | 'night' } {
   const rad = Math.PI / 180;
   const start = Date.UTC(date.getUTCFullYear(), 0, 0);

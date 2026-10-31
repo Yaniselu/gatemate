@@ -13,15 +13,9 @@ interface LiveActivityPlugin {
 
 const LiveActivity = registerPlugin<LiveActivityPlugin>('LiveActivity');
 
-/** Show the flight this many hours before departure; iOS keeps an activity up to 8 h (12 h on the lock screen). */
 const LEAD_MS = 6 * 3_600_000;
 const AFTER_LANDING_MS = 30 * 60_000;
 
-/**
- * Keeps the next flight on the iPhone lock screen, in the Dynamic Island and on Apple Watch (Smart Stack):
- * countdown to departure, then to landing, with gate, seat and status. Started a few hours before the flight,
- * updated when the gate or status changes, ended after landing. iOS only; nothing happens elsewhere.
- */
 @Injectable({ providedIn: 'root' })
 export class LiveActivityService {
   private store = inject(TravelStore);
@@ -38,7 +32,6 @@ export class LiveActivityService {
     });
   }
 
-  /** Puts a flight on the lock screen now (the "Show on lock screen" button). */
   async show(f: Flight): Promise<boolean> {
     if (!this.enabled) return false;
     try {
@@ -69,7 +62,6 @@ export class LiveActivityService {
       return;
     }
     if (dep - now > LEAD_MS) return;
-    // Only call into iOS when something the activity shows has changed.
     const key = [f.id, f.gate, f.terminal, f.seat, f.status, f.departure, f.arrival].join('|');
     if (key === this.last) return;
     try {
@@ -77,7 +69,6 @@ export class LiveActivityService {
       await LiveActivity.start(this.payload(f));
       this.last = key;
     } catch {
-      // Live Activities turned off in Settings, or the system said no: the app works the same without it.
     }
   }
 

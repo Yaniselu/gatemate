@@ -72,7 +72,6 @@ class VerificationTest {
         String email = "r+" + UUID.randomUUID() + "@example.com";
         String access = post("/api/v1/auth/register", null, "{\"name\":\"Ana\",\"email\":\"" + email + "\",\"password\":\"Correct-Horse-42!\"}", 200)
                 .get("accessToken").asString();
-        // The sign-up mail used this minute's allowance.
         post("/api/v1/me/email/code", access, "{}", 429);
     }
 
@@ -81,7 +80,6 @@ class VerificationTest {
         String email = "p+" + UUID.randomUUID() + "@example.com";
         post("/api/v1/auth/register", null, "{\"name\":\"Ana\",\"email\":\"" + email + "\",\"password\":\"Correct-Horse-42!\"}", 200);
         post("/api/v1/auth/password-reset", null, "{\"email\":\"" + email + "\"}", 204);
-        // Unknown addresses get the same answer.
         post("/api/v1/auth/password-reset", null, "{\"email\":\"nobody+" + UUID.randomUUID() + "@example.com\"}", 204);
         var code = ArgumentCaptor.forClass(String.class);
         verify(mail).sendPasswordResetCode(eq(email), anyString(), code.capture(), anyString());
@@ -92,7 +90,6 @@ class VerificationTest {
         post("/api/v1/auth/login", null, "{\"email\":\"" + email + "\",\"password\":\"Correct-Horse-42!\"}", 401);
         var s = post("/api/v1/auth/login", null, "{\"email\":\"" + email + "\",\"password\":\"Another-Horse-77!\"}", 200);
         org.junit.jupiter.api.Assertions.assertTrue(s.path("user").path("emailVerified").asBoolean());
-        // A code works once.
         post("/api/v1/auth/password-reset/confirm", null, "{\"email\":\"" + email + "\",\"code\":\"" + code.getValue() + "\",\"password\":\"Third-Horse-99!x\"}", 400);
     }
 
@@ -112,7 +109,6 @@ class VerificationTest {
             if (mvc.perform(req).andReturn().getResponse().getStatus() == 429) limited++;
         }
         org.junit.jupiter.api.Assertions.assertTrue(limited >= 4, "attempts after the 10th should be refused, got " + limited);
-        // Even the right password waits until the limit passes.
         post("/api/v1/auth/login", null, "{\"email\":\"" + email + "\",\"password\":\"Correct-Horse-42!\"}", 429);
     }
 }

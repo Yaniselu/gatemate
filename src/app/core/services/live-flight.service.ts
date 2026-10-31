@@ -12,14 +12,10 @@ export interface LiveState {
   phase: LivePhase;
   lat?: number;
   lon?: number;
-  /** Feet; 0 on the ground. */
   altitudeFt?: number;
   speedKmh?: number;
-  /** Degrees from north. */
   heading?: number;
-  /** 0–1 of the route flown. */
   progress?: number;
-  /** Estimated landing (epoch ms) from the remaining distance and ground speed. */
   eta?: number;
   aircraft?: string;
   registration?: string;
@@ -27,7 +23,6 @@ export interface LiveState {
   updatedAt: number;
 }
 
-/** ADS-B Exchange v2-compatible community networks (free, no key). */
 const ADSB = ['https://opendata.adsb.fi/api/v2/callsign/', 'https://api.adsb.lol/v2/callsign/'];
 
 interface Aircraft {
@@ -42,18 +37,12 @@ interface Aircraft {
   seen_pos?: number;
 }
 
-/**
- * Where the plane is right now, from community ADS-B receivers (the same data flight-tracking sites use).
- * The airline's radio callsign is its ICAO code + flight number (W6 3121 → WZZ3121). Coverage is excellent over
- * Europe and North America and patchy over oceans; with no signal we say so rather than guess.
- */
 @Injectable({ providedIn: 'root' })
 export class LiveFlightService {
   private http = inject(HttpClient);
   private db = inject(AirportDbService);
   private airlines: Promise<Map<string, string[]>> | null = null;
 
-  /** Whether it's worth asking: from an hour before departure until two hours after the scheduled landing. */
   inWindow(f: Flight, now = Date.now()): boolean {
     return now > +new Date(f.departure) - 3600_000 && now < +new Date(f.arrival) + 2 * 3600_000;
   }
@@ -77,7 +66,6 @@ export class LiveFlightService {
       const left = haversineKm(ac.lat, ac.lon, to.lat, to.lon);
       progress = Math.min(1, Math.max(0, 1 - left / Math.max(total, 1)));
       if (ground && left < 8) phase = 'landed';
-      // Remaining distance at current speed, plus ~12 min for descent and approach.
       if (!ground && kmh > 150) eta = now + (left / kmh) * 3600_000 + 12 * 60_000;
     }
     return {
@@ -96,7 +84,6 @@ export class LiveFlightService {
     };
   }
 
-  /** ICAO callsigns to try for a flight ("W6 3121" → ["WZZ3121"]). */
   async callsigns(f: Flight): Promise<string[]> {
     const map = await (this.airlines ??= fetch('data/airlines.json')
       .then((r) => r.json() as Promise<[string, string[], string][]>)
@@ -118,13 +105,11 @@ export class LiveFlightService {
           const list = (JSON.parse(r.text) as { ac?: Aircraft[] }).ac ?? [];
           const hit = list.filter((a) => a.lat !== undefined).sort((a, b) => (a.seen_pos ?? 99) - (b.seen_pos ?? 99))[0];
           if (hit) return hit;
-          break; // the network answered: this callsign just isn't flying
+          break;
         } catch {
-          /* try the next network */
         }
       }
     }
-    // Our server asks the same networks (it also turns take-off and landing into alerts for the whole group).
     if (environment.useMocks) return null;
     try {
       return await firstValueFrom(this.http.get<Aircraft | null>(`${environment.apiUrl}/flights/${encodeURIComponent(f.id)}/live`));

@@ -18,7 +18,6 @@ public class BillingController {
         this.billing = billing;
     }
 
-    /** RevenueCat webhook. Authenticated with the shared secret set as the webhook's Authorization header. */
     @PostMapping("/billing/revenuecat")
     public ResponseEntity<Void> webhook(@RequestHeader(name = "Authorization", required = false) String auth, @RequestBody JsonNode body) {
         if (!billing.webhookConfigured()) throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "billing_disabled", "Billing is not configured.");
@@ -29,7 +28,6 @@ public class BillingController {
         return ResponseEntity.ok().build();
     }
 
-    /** Called by the app right after a purchase or restore; the answer comes from RevenueCat, never from the app. */
     @PostMapping("/me/pro/sync")
     public UserDto sync() {
         return UserDto.of(billing.sync(CurrentUser.id()));

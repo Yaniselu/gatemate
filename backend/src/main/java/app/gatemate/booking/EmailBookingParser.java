@@ -19,11 +19,6 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Reads flights out of an airline confirmation e-mail. Uses the schema.org FlightReservation markup when the airline
- * includes it (Gmail and most big carriers), otherwise reads the text: flight numbers, airport codes, dates and times
- * near each other, the booking reference and the passenger name. English and Romanian wording.
- */
 @Component
 public class EmailBookingParser {
     public record Parsed(String carrier, String carrierName, String number, String from, String to, Instant departure, Instant arrival,
@@ -51,7 +46,6 @@ public class EmailBookingParser {
     private static final Pattern DATE_MDY = Pattern.compile("(?i)\\b" + MONTH_RE + "\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(\\d{4})");
     private static final Pattern SEAT = Pattern.compile("(?i)\\b(?:seat|loc)\\s*[:\\-]?\\s*(\\d{1,2}[A-K])\\b");
 
-    /** Two-letter words that look like airline codes in shouty e-mails ("DEPARTS ON 14 JUN"). */
     private static final java.util.Set<String> NOT_AIRLINES = java.util.Set.of("ON", "AT", "TO", "IN", "OF", "NO", "BY", "OR", "AN", "IS", "IT", "UP", "AM", "PM",
             "MR", "MS", "DR", "GB", "KG", "CM", "EU", "ID", "OK", "TV", "PC", "UK", "US", "RE", "FW", "DE", "LA", "LE", "EL", "IL", "LT", "ST", "ND", "RD", "TH");
     private static final Pattern FLIGHT_WORD = Pattern.compile("(?i)(flight|flug|vol|vuelo|volo|zbor(?:ul)?|cursa)\\s*(?:no\\.?|nr\\.?|number|#)?\\s*[:\\-]?\\s*$");
@@ -75,8 +69,6 @@ public class EmailBookingParser {
         return new Result(dedupe(out), ref, text);
     }
 
-    // ---- schema.org --------------------------------------------------------------------------------
-
     private List<Parsed> fromJsonLd(String html) {
         var out = new ArrayList<Parsed>();
         Matcher m = JSON_LD.matcher(html);
@@ -98,7 +90,6 @@ public class EmailBookingParser {
                             dep, arr, true, blank(r.path("reservationNumber").asString("")), blank(r.path("airplaneSeat").asString(""))));
                 }
             } catch (Exception ignored) {
-                // markup we don't understand: fall back to the text
             }
         }
         return out;
@@ -117,8 +108,6 @@ public class EmailBookingParser {
         }
     }
 
-    // ---- plain text --------------------------------------------------------------------------------
-
     private List<Parsed> fromText(String text, String ref, LocalDate today) {
         var out = new ArrayList<Parsed>();
         var flights = new ArrayList<int[]>();
@@ -127,7 +116,6 @@ public class EmailBookingParser {
             String before = text.substring(Math.max(0, f.start() - 12), f.start()).toLowerCase(Locale.ROOT);
             if (before.matches(".*(terminal|gate|poarta|seat|loc|row|rând|pas)\\s*[:#]?\\s*$")) continue;
             String code = f.group(1);
-            // A known airline, or an unknown one only right after the word "flight".
             boolean labelled = FLIGHT_WORD.matcher(text.substring(Math.max(0, f.start() - 24), f.start())).find();
             if (!airlines.known(code) && (NOT_AIRLINES.contains(code) || !labelled)) continue;
             flights.add(new int[] {f.start(), f.end()});
@@ -158,7 +146,6 @@ public class EmailBookingParser {
                 LocalDateTime a = date.atTime(times.get(1));
                 if (!times.get(1).isAfter(depT)) a = a.plusDays(1);
                 arr = a.atZone(zone(to.iata())).toInstant();
-                // Times that don't make sense as a flight (negative or > 20 h) are probably something else.
                 long h = Duration.between(dep, arr).toHours();
                 if (h < 0 || h > 20) arr = null;
             }
@@ -233,13 +220,11 @@ public class EmailBookingParser {
         Matcher m = PNR.matcher(text);
         while (m.find()) {
             Matcher v = PNR_VALUE.matcher(text.substring(m.end(), Math.min(text.length(), m.end() + 30)));
-            // A reference has at least one letter (plain 6-digit numbers are usually prices or order ids).
             if (v.find() && v.group(1).matches(".*[A-Z].*")) return v.group(1);
         }
         return null;
     }
 
-    /** True when the legal name appears in the e-mail (any order, accents and case ignored). */
     public static boolean mentionsName(String text, String legalFirst, String legalLast) {
         if (text == null || legalFirst == null || legalLast == null) return false;
         String t = " " + NameMatcher.normalize(text).replaceAll("[^A-Z]+", " ") + " ";

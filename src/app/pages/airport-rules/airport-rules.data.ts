@@ -1,4 +1,3 @@
-// Generated from scratch data by the rules generator; English texts are the i18n keys (translations in i18n-src).
 
 export type RuleKind = 'must' | 'tip';
 export interface RuleCategory { id: string; icon: string; color: string; label: string }
@@ -19,7 +18,6 @@ export const RULE_CATEGORIES: RuleCategory[] = [
   { id: 'conduct', icon: 'warning-outline', color: '#64748B', label: "Safety & behaviour" },
 ];
 
-/** General EU / ICAO rules, written for travellers. Airlines and airports can be stricter. */
 export const AIRPORT_RULES: AirportRule[] = [
   { cat: 'before', kind: 'tip', title: "Check in online", body: "Most airlines open online check-in 24–48 h before departure. Some low-cost airlines charge extra to check in at the airport." },
   { cat: 'before', kind: 'tip', title: "Arrive in good time", body: "Aim for 2 h before short-haul and 3 h before long-haul flights. Add time at big airports and in holiday periods." },

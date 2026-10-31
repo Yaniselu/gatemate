@@ -24,7 +24,6 @@ export class WelcomePage {
   readonly takingOff = signal(false);
   readonly title = 'Gatemate'.split('');
 
-  /** What the app does, one line at a time. */
   readonly pitches = [
     { icon: '✨', text: 'Velo, your AI travel agent by Velosyntech' },
     { icon: '🎫', text: 'Boarding passes that work offline' },
@@ -54,7 +53,6 @@ export class WelcomePage {
     const plane = this.plane().nativeElement;
     const reveal = this.reveal().nativeElement;
 
-    // 1. Roll + rotate nose up, 2. climb out of frame to the top-right.
     const flight = plane.animate(
       [
         { transform: 'translate3d(0,0,0) rotate(0deg) scale(1)', offset: 0 },
@@ -68,7 +66,6 @@ export class WelcomePage {
     setTimeout(() => this.platform.tap(), 450);
     setTimeout(() => this.platform.impact(), 900);
 
-    // 3. White sky "opens" from the top-right corner where the plane exits.
     const open = reveal.animate(
       [
         { clipPath: 'circle(0% at 92% 4%)', opacity: 1 },

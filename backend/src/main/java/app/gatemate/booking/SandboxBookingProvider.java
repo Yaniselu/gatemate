@@ -8,11 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
-/**
- * Development/test provider: returns a deterministic demo booking when enabled with
- * {@code gatemate.booking.sandbox=true}. In production with no airline partner configured, lookups
- * answer "not available yet" instead of inventing data.
- */
 @Component
 public class SandboxBookingProvider implements BookingProvider {
     private final boolean enabled;

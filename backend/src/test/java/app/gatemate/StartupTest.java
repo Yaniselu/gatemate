@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 
-/** Production starts with lazy beans; the scheduled jobs must still exist, or live alerts silently stop. */
 @SpringBootTest(properties = "spring.main.lazy-initialization=true")
 @ActiveProfiles("test")
 class StartupTest {

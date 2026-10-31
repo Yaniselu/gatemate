@@ -7,10 +7,8 @@ import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview,
 import { currentLang, t } from '../i18n/i18n.service';
 import { AuthService } from './auth.service';
 
-// Generous: a free-tier server can take ~50 s to wake up after being idle.
 const REQUEST_TIMEOUT_MS = 120_000;
 
-/** Real backend client. Endpoints are the contract the Spring Boot API will implement. */
 @Injectable()
 export class HttpApi extends GatemateApi {
   private http = inject(HttpClient);
@@ -121,10 +119,6 @@ export class HttpApi extends GatemateApi {
     return this.call(this.http.get<AssistantStatus>(`${this.base}/assistant`));
   }
 
-  /**
-   * Server-sent events over fetch (HttpClient buffers the whole response, which would hide the streaming). Same
-   * token rules as the interceptor: our own origin only, refreshed once on 401.
-   */
   async assistantChat(messages: AssistantTurn[], onEvent: (e: AssistantEvent) => void, signal: AbortSignal): Promise<void> {
     const auth = this.injector.get(AuthService);
     const send = async (token: string | null) =>
@@ -157,7 +151,6 @@ export class HttpApi extends GatemateApi {
         try {
           onEvent(JSON.parse(data) as AssistantEvent);
         } catch {
-          // A malformed event is skipped; the rest of the answer still arrives.
         }
       }
     };
@@ -172,7 +165,7 @@ export class HttpApi extends GatemateApi {
           flush(false);
         }
       } else {
-        buffer = await res.text(); // no streaming support: the whole answer at once
+        buffer = await res.text();
       }
       buffer += '\n\n';
       flush(true);
@@ -218,8 +211,6 @@ function toApiError(e: unknown): ApiError {
   if (e instanceof ApiError) return e;
   if (e instanceof HttpErrorResponse) {
     const retryAfter = Number(e.headers?.get('Retry-After')) || undefined;
-    // Our API returns {code, message} with messages written for users; anything else (proxies, HTML error
-    // pages) is never echoed.
     const api = typeof e.error?.code === 'string' && typeof e.error?.message === 'string' && e.status < 500;
     const msg =
       e.status === 0 ? 'No connection. Check your internet and try again.'

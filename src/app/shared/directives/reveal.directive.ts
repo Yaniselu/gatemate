@@ -1,6 +1,5 @@
 import { Directive, ElementRef, inject, input, OnDestroy, OnInit } from '@angular/core';
 
-/** Fades/slides an element in the first time it scrolls into view. `gmReveal="2"` sets the stagger index. */
 @Directive({
   selector: '[gmReveal]',
   host: { class: 'gm-reveal', '[style.--i]': 'index()' },

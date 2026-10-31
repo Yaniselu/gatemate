@@ -31,10 +31,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Velo against a stand-in for the Anthropic API that streams the same server-sent events: a turn that falls back to
- * another model and calls a tool, then a turn that writes the answer. Checks the whole agent loop and what we send.
- */
 @SpringBootTest
 @ActiveProfiles("test")
 class AssistantTest {
@@ -100,7 +96,6 @@ class AssistantTest {
         var labels = checklist.findByTripIdOrderByPosition(UUID.fromString(tripId)).stream().map(c -> c.label).toList();
         assertThat(labels).contains("Adaptor priză tip E", "Euro cash");
 
-        // First request: cached system prompt and tools, fallbacks on, eager tool streaming, traveller context last.
         JsonNode first = json.readTree(bodies.get(0));
         assertThat(first.path("model").asString()).isEqualTo("claude-opus-5-5");
         assertThat(first.path("fallbacks").asString()).isEqualTo("default");
@@ -109,12 +104,11 @@ class AssistantTest {
         assertThat(first.path("output_config").path("effort").asString()).isEqualTo("low");
         assertThat(first.path("tools").toString()).contains("web_search_20260209").contains("\"eager_input_streaming\":true");
         JsonNode msgs = first.path("messages");
-        assertThat(msgs.get(0).path("role").asString()).isEqualTo("user"); // the app's greeting isn't sent
+        assertThat(msgs.get(0).path("role").asString()).isEqualTo("user");
         assertThat(msgs.get(msgs.size() - 1).path("role").asString()).isEqualTo("system");
         assertThat(msgs.get(msgs.size() - 1).path("content").toString()).contains("Context from Gatemate").contains("Romanian");
         assertThat(bodies.get(0)).doesNotContain(u.email);
 
-        // Second request: the assistant turn echoed back with the tool call, then its result.
         JsonNode second = json.readTree(bodies.get(1));
         String echoed = second.path("messages").toString();
         assertThat(echoed).contains("\"tool_use\"").contains("toolu_1").contains("\"tool_result\"").contains("Euro cash");
@@ -147,7 +141,6 @@ class AssistantTest {
         String half = input.substring(0, 30), rest = input.substring(30);
         return event("message_start", "{\"type\":\"message_start\",\"message\":{\"id\":\"msg_1\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"claude-opus-5-5\","
                 + "\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"usage\":{\"input_tokens\":900,\"output_tokens\":1,\"cache_read_input_tokens\":0,\"cache_creation_input_tokens\":0}}}")
-                // A fallback switch point, as the API sends it when a classifier declines and another model continues.
                 + event("content_block_start", "{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"fallback\",\"from\":{\"model\":\"claude-opus-5-5\"},\"to\":{\"model\":\"claude-opus-5\"}}}")
                 + event("content_block_stop", "{\"type\":\"content_block_stop\",\"index\":0}")
                 + event("content_block_start", "{\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"tool_use\",\"id\":\"toolu_1\",\"name\":\"add_checklist_items\",\"input\":{}}}")

@@ -5,7 +5,6 @@ import { ApiError } from '../../core/services/api';
 import { ToastService } from '../../core/services/toast.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** Sign in with Apple (shown first, per App Store guideline 4.8) and Google. */
 @Component({
   selector: 'gm-social-buttons',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,7 +44,6 @@ export class SocialButtonsComponent {
   private auth = inject(AuthService);
   readonly apple = this.auth.providerAvailable('apple');
   readonly google = this.auth.providerAvailable('google');
-  /** False when this build offers no social sign-in (the page then hides the divider too). */
   readonly any = this.apple || this.google;
   private nav = inject(NavController);
   private toast = inject(ToastService);

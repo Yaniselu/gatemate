@@ -17,10 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Invite links shared over WhatsApp etc. The token is random (128-bit), single-use, valid 7 days and stored only as a hash;
- * opening it still requires signing in, and only members can create one.
- */
 @RestController
 @RequestMapping("/api/v1/invites")
 public class InviteController {

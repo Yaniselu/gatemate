@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
-/** One airport end of the trip, as the scene needs it. */
 export interface JourneyEnd {
   code: string;
   city: string;
@@ -13,15 +12,12 @@ export type JourneyPhase = 'taxi' | 'takeoff' | 'cruise' | 'landing' | 'arrived'
 
 export interface JourneyFrame {
   phase: JourneyPhase;
-  /** 0–1 across the whole trip, for the progress bar. */
   progress: number;
   altitudeFt: number;
   speedKmh: number;
-  /** 0–1 black overlay between the three acts. */
   fade: number;
 }
 
-/** Timeline in seconds: taxi and take-off at home, the route over the globe, approach and landing at the destination. */
 const T = { taxi: 2.6, roll: 5.2, climb: 7.0, cruise: 12.6, approach: 15.6, rollout: 18.2, end: 18.8 };
 export const JOURNEY_SECONDS = T.end;
 
@@ -29,10 +25,6 @@ const smooth = (x: number) => x * x * (3 - 2 * x);
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const span = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
 
-/**
- * The boarding-pass journey: a little jet taxis out, takes off, crosses a dotted globe along the real great-circle
- * route and lands at the destination. Everything is built from primitives and canvas textures: no downloads.
- */
 export class FlightJourneyScene {
   private renderer: THREE.WebGLRenderer;
   private camera = new THREE.PerspectiveCamera(42, 1, 0.1, 600);
@@ -45,7 +37,6 @@ export class FlightJourneyScene {
   private lastAct = '';
 
   constructor(private canvas: HTMLCanvasElement, from: JourneyEnd, to: JourneyEnd) {
-    // Retina phones get 1.5× with MSAA off-loaded to the higher density; it looks the same and costs far less.
     const dpr = window.devicePixelRatio || 1;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: dpr < 2, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(dpr, 1.5));
@@ -56,7 +47,6 @@ export class FlightJourneyScene {
     this.origin = new Airfield(from, { top: '#0b1330', horizon: '#f59e6b', ground: '#1a2a30' }, track);
     this.dest = new Airfield(to, { top: '#0a0f26', horizon: '#8b5cf6', ground: '#17223a' }, track);
     this.globe = new GlobeAct(from, to, track);
-    // Soft studio reflections so the paint and metal read as real materials.
     const pmrem = new THREE.PMREMGenerator(this.renderer);
     const env = track(pmrem.fromScene(new RoomEnvironment(), 0.04).texture);
     pmrem.dispose();
@@ -69,12 +59,10 @@ export class FlightJourneyScene {
   resize(w: number, h: number) {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
-    // Portrait phones see less sideways: widen the lens a little.
     this.camera.fov = w / h < 1.2 ? 52 : 42;
     this.camera.updateProjectionMatrix();
   }
 
-  /** Draws the trip at time t (seconds) and returns what the HUD should show. */
   render(t: number, now: number): JourneyFrame {
     let frame: JourneyFrame;
     let scene: THREE.Scene;
@@ -92,7 +80,6 @@ export class FlightJourneyScene {
       scene = this.dest.scene;
       frame = this.arrival(t);
     }
-    // Snap the camera when the act changes (it's hidden behind the fade).
     if (act !== this.lastAct) {
       this.lastAct = act;
       this.camPos.copy(this.targetPos);
@@ -134,7 +121,6 @@ export class FlightJourneyScene {
       plane.position.set(x, 0, 0);
       plane.rotation.set(0, 0, rot);
       speed = 20 + 270 * u;
-      // Low by the runway edge: the jet rushes past the lens.
       this.targetPos.set(-2 + u * 6, 1.1, -7.5);
       this.targetLook.set(x, 0.8, 0);
     } else {
@@ -159,10 +145,8 @@ export class FlightJourneyScene {
     const k = smooth(u);
     g.placePlane(k);
     const mid = g.midpoint;
-    // Behind and above the route, looking along it, so the planet's curve and horizon show; drifts sideways a little.
     const along = new THREE.Vector3().crossVectors(g.axis, mid).normalize();
     const lift = g.radius * (g.viewDistance - 1);
-    // From the side of the route, raised, so the route crosses the frame and the planet's rim curves behind it.
     this.targetPos.copy(mid).multiplyScalar(g.radius + lift * 0.62)
       .addScaledVector(g.axis, -lift * 1.0)
       .addScaledVector(along, (k - 0.5) * lift * 0.18);
@@ -180,7 +164,6 @@ export class FlightJourneyScene {
     if (t < T.approach) {
       const u = span(t, T.cruise, T.approach);
       const x = -72 + 52 * u;
-      // Glide slope with a flare over the last stretch.
       const y = Math.max(0, 13 * Math.pow(1 - u, 1.6));
       plane.position.set(x, y, 0);
       plane.rotation.set(0, 0, -0.04 + 0.12 * smooth(span(u, 0.75, 1)));
@@ -206,7 +189,6 @@ export class FlightJourneyScene {
     return { phase, progress: 0, altitudeFt: alt, speedKmh: phase === 'arrived' ? 0 : speed, fade: clamp01(fade) };
   }
 
-  /** Back to the start for a replay. */
   restart() {
     this.origin.reset();
     this.dest.reset();
@@ -221,11 +203,8 @@ export class FlightJourneyScene {
   }
 }
 
-// ---------------------------------------------------------------------------------------------------------------
-
 type Track = <X extends { dispose(): void }>(x: X) => X;
 
-/** A runway, taxiway, terminal and tower at dusk, plus the jet that uses them. */
 class Airfield {
   readonly scene = new THREE.Scene();
   readonly plane: THREE.Group;
@@ -251,7 +230,6 @@ class Airfield {
     ground.position.y = -0.02;
     s.add(ground);
 
-    // Runway with centre line, threshold bars and edge lights.
     const rw = new THREE.Mesh(track(new THREE.PlaneGeometry(64, 3.4)), mat('#2a2f38', { roughness: 0.95 }));
     rw.rotation.x = -Math.PI / 2;
     s.add(rw);
@@ -277,14 +255,12 @@ class Airfield {
       const c = new THREE.Color(Math.abs(x) > 29 ? (x < 0 ? '#3ef08a' : '#ff4d4d') : '#ffe9b0');
       colors.push(c.r, c.g, c.b);
     }
-    // Approach lights leading in from the west.
     for (let x = -34; x >= -60; x -= 2) { lights.push(x, 0.08, 0); colors.push(1, 0.95, 0.8); }
     const lg = track(new THREE.BufferGeometry());
     lg.setAttribute('position', new THREE.Float32BufferAttribute(lights, 3));
     lg.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     s.add(new THREE.Points(lg, track(new THREE.PointsMaterial({ size: 0.55, map: glowTexture(track), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }))));
 
-    // Taxiway with a yellow centre line from the apron to the runway's western end.
     this.taxiPath = new THREE.CatmullRomCurve3([
       new THREE.Vector3(-14, 0, 9.5), new THREE.Vector3(-22, 0, 9.5), new THREE.Vector3(-27.5, 0, 8), new THREE.Vector3(-29.5, 0, 4),
       new THREE.Vector3(-28.8, 0, 0.6), new THREE.Vector3(-27.6, 0, 0),
@@ -301,7 +277,6 @@ class Airfield {
     apron.position.set(-6, 0.004, 12);
     s.add(apron);
 
-    // Terminal with a lit glass façade, a control tower and hangars.
     const term = new THREE.Mesh(track(new THREE.BoxGeometry(22, 3.2, 5)), mat('#cdd6e2', { roughness: 0.5, metalness: 0.2 }));
     term.position.set(-5, 1.6, 19);
     s.add(term);
@@ -323,7 +298,6 @@ class Airfield {
       h.position.set(x, 1.5, z);
       s.add(h);
     }
-    // City glow on the horizon.
     const city = new THREE.Points(track(cityGeometry()), track(new THREE.PointsMaterial({ size: 0.9, map: glowTexture(track), color: '#ffd59a', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
     s.add(city);
 
@@ -377,7 +351,6 @@ class Airfield {
   }
 }
 
-/** A dotted night globe with the great-circle route glowing between the two airports. */
 class GlobeAct {
   readonly scene = new THREE.Scene();
   readonly radius = 10;
@@ -401,7 +374,6 @@ class GlobeAct {
     key.position.set(30, 20, 40);
     s.add(key);
 
-    // Stars.
     const star: number[] = [];
     for (let i = 0; i < 1400; i++) {
       const v = new THREE.Vector3().randomDirection().multiplyScalar(180 + Math.random() * 120);
@@ -411,7 +383,6 @@ class GlobeAct {
     sg.setAttribute('position', new THREE.Float32BufferAttribute(star, 3));
     s.add(new THREE.Points(sg, track(new THREE.PointsMaterial({ size: 0.9, color: '#c7d2fe', transparent: true, opacity: 0.8, depthWrite: false }))));
 
-    // Ocean sphere, dotted grid of the planet and an atmosphere rim.
     s.add(new THREE.Mesh(track(new THREE.SphereGeometry(R * 0.995, 64, 48)), track(new THREE.MeshStandardMaterial({ color: '#0a1636', roughness: 0.6, metalness: 0.1, emissive: '#061028', emissiveIntensity: 0.6 }))));
     const dots: number[] = [];
     const N = 9000;
@@ -434,10 +405,8 @@ class GlobeAct {
     this.axis = new THREE.Vector3().crossVectors(this.a, this.b).normalize();
     if (this.axis.lengthSq() < 1e-6) this.axis.set(0, 1, 0);
     this.midpoint = this.a.clone().add(this.b).normalize();
-    // Close for a short hop, further out for an ocean crossing.
     this.viewDistance = 1 + Math.max(0.3, this.angle * 1.25);
 
-    // The route: a raised arc, faint in full and bright behind the jet.
     const full: THREE.Vector3[] = [];
     for (let i = 0; i <= 96; i++) full.push(this.arcPoint(i / 96));
     const dashed = new THREE.Line(track(new THREE.BufferGeometry().setFromPoints(full)), track(new THREE.LineDashedMaterial({ color: '#94a3b8', dashSize: 0.08, gapSize: 0.06, transparent: true, opacity: 0.6 })));
@@ -503,16 +472,9 @@ class GlobeAct {
   }
 }
 
-// ---------------------------------------------------------------------------------------------------------------
-
-/**
- * An A320-style twinjet in Gatemate livery, ~4.8 units long, nose along +X, wheels at y = 0. Lathe-turned fuselage
- * with a painted texture (windows, doors, cheatline, windscreen), tapered swept wings with winglets, turbofans with
- * fan faces and spinners, a swept fin and tailplane, and gear that retracts.
- */
 function buildJet(track: Track) {
   const g = new THREE.Group();
-  const Y = 0.72; // fuselage axis height
+  const Y = 0.72;
   const paint = track(new THREE.MeshPhysicalMaterial({ map: fuselageTexture(track), roughness: 0.32, metalness: 0.15, clearcoat: 0.8, clearcoatRoughness: 0.18 }));
   const white = track(new THREE.MeshPhysicalMaterial({ color: '#f4f7fb', roughness: 0.35, metalness: 0.15, clearcoat: 0.6, clearcoatRoughness: 0.2 }));
   const wingMat = track(new THREE.MeshPhysicalMaterial({ color: '#dfe5ec', roughness: 0.42, metalness: 0.35, clearcoat: 0.3 }));
@@ -521,7 +483,6 @@ function buildJet(track: Track) {
   const dark = track(new THREE.MeshStandardMaterial({ color: '#111827', roughness: 0.5, metalness: 0.4 }));
   const tyre = track(new THREE.MeshStandardMaterial({ color: '#1f2328', roughness: 0.9 }));
 
-  // Fuselage: tail cone → constant section → rounded nose, turned on a lathe (axis Y, then laid along X).
   const prof: [number, number][] = [
     [0.0, -2.45], [0.06, -2.42], [0.13, -2.3], [0.2, -2.1], [0.27, -1.85], [0.33, -1.55], [0.36, -1.25],
     [0.37, -0.8], [0.37, 1.35], [0.365, 1.55], [0.35, 1.75], [0.32, 1.95], [0.27, 2.12], [0.2, 2.25], [0.12, 2.33], [0.05, 2.37], [0.0, 2.38],
@@ -530,7 +491,6 @@ function buildJet(track: Track) {
   const fus = new THREE.Mesh(fusGeo, paint);
   fus.rotation.z = -Math.PI / 2;
   fus.position.y = Y;
-  // Real tails sweep up: lift the cone a touch.
   fus.scale.set(1, 1, 1);
   g.add(fus);
   const fairing = new THREE.Mesh(track(new THREE.SphereGeometry(1, 24, 12)), white);
@@ -538,7 +498,6 @@ function buildJet(track: Track) {
   fairing.position.set(-0.05, Y - 0.27, 0);
   g.add(fairing);
 
-  // Wings: tapered, swept 28°, slight dihedral, rounded edges, winglets.
   const span = 2.95, rootLE = 0.78, rootTE = -0.78, sweep = Math.tan((28 * Math.PI) / 180) * span, tipChord = 0.42;
   const ws = new THREE.Shape();
   ws.moveTo(rootLE, 0);
@@ -566,10 +525,9 @@ function buildJet(track: Track) {
     winglet.position.set(rootLE - sweep - tipChord / 2 + 0.05, 0.02, side * (span + 0.01));
     wing.add(winglet);
     wing.position.set(0.15, Y - 0.2, 0);
-    wing.rotation.x = side * -0.07; // dihedral
+    wing.rotation.x = side * -0.07;
     g.add(wing);
 
-    // Turbofan under each wing: nacelle on a lathe, dark fan face with a spinner, pylon.
     const nac: [number, number][] = [[0.17, 0.48], [0.205, 0.42], [0.215, 0.25], [0.205, 0.0], [0.18, -0.25], [0.13, -0.42], [0.09, -0.46]];
     const n = new THREE.Mesh(track(new THREE.LatheGeometry(nac.map(([r, y]) => new THREE.Vector2(r, y)), 32)), white);
     n.material = white;
@@ -598,7 +556,6 @@ function buildJet(track: Track) {
     g.add(pylon);
   }
 
-  // Tail: swept fin in teal with a white swoosh, and a tapered tailplane.
   const fs = new THREE.Shape();
   fs.moveTo(0.0, 0.0);
   fs.lineTo(0.95, 0.0);
@@ -607,7 +564,6 @@ function buildJet(track: Track) {
   fs.closePath();
   const finMat = track(new THREE.MeshPhysicalMaterial({ map: finTexture(track), roughness: 0.3, metalness: 0.2, clearcoat: 0.9, clearcoatRoughness: 0.15 }));
   const finGeo = track(new THREE.ExtrudeGeometry(fs, { depth: 0.045, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.02, bevelSegments: 2 }));
-  // Map the fin texture across its outline.
   const uv = finGeo.attributes['uv'] as THREE.BufferAttribute, pos = finGeo.attributes['position'] as THREE.BufferAttribute;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, (pos.getX(i) + 0.25) / 1.25, pos.getY(i) / 1.3);
   const fin = new THREE.Mesh(finGeo, finMat);
@@ -628,7 +584,6 @@ function buildJet(track: Track) {
     g.add(st);
   }
 
-  // Landing gear: nose leg and two main bogies with struts.
   const gear = new THREE.Group();
   const wheel = track(new THREE.CylinderGeometry(0.11, 0.11, 0.09, 18));
   const hub = track(new THREE.CylinderGeometry(0.055, 0.055, 0.095, 12));
@@ -658,7 +613,6 @@ function buildJet(track: Track) {
   gear.add(ns);
   g.add(gear);
 
-  // Lights: steady red/green wingtips, white strobes, red beacon on top and belly, landing lights.
   const glow = glowTexture(track);
   const light = (color: string, x: number, y: number, z: number, size: number) => {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
@@ -681,34 +635,27 @@ function buildJet(track: Track) {
   return { group: g, gear, blinkers };
 }
 
-/**
- * Paint for the lathe fuselage. u runs around the body (0 = +Z side, 0.25 = belly, 0.5 = -Z side, 0.75 = crown),
- * v along it (0 = tail, 1 = nose).
- */
 function fuselageTexture(track: Track) {
   const W = 1024, H = 512;
   return canvasTex(W, H, (c) => {
     c.fillStyle = '#f5f8fc';
     c.fillRect(0, 0, W, H);
     const yAt = (v: number) => H * (1 - v);
-    // Teal belly and a two-tone cheatline under the windows on both sides.
     c.fillStyle = '#0fb5c3';
     c.fillRect(W * 0.12, 0, W * 0.26, H);
     for (const u of [0.0, 0.5]) {
-      const dir = u === 0 ? 1 : -1; // toward the belly
+      const dir = u === 0 ? 1 : -1;
       c.fillStyle = '#0fb5c3';
       c.fillRect(W * (u + dir * 0.035) - (dir < 0 ? W * 0.014 : 0), yAt(0.92), W * 0.014, H * 0.86);
       c.fillStyle = '#8b5cf6';
       c.fillRect(W * (u + dir * 0.055) - (dir < 0 ? W * 0.008 : 0), yAt(0.88), W * 0.008, H * 0.8);
     }
-    // Wrap the cheatline at u = 0 / 1.
     c.fillStyle = '#0fb5c3';
     c.fillRect(W - W * 0.002, yAt(0.92), W * 0.002, H * 0.86);
-    // Window rows just above the cheatline, with doors.
     const rows = [0.965, 0.535];
     for (const u of rows) {
       for (let v = 0.24; v < 0.84; v += 0.0175) {
-        if (Math.abs(v - 0.5) < 0.012) continue; // over-wing exit gap
+        if (Math.abs(v - 0.5) < 0.012) continue;
         c.fillStyle = '#1e293b';
         c.beginPath();
         c.roundRect(W * u - 3.5, yAt(v) - 4.5, 7, 9, 3);
@@ -718,7 +665,6 @@ function fuselageTexture(track: Track) {
       c.lineWidth = 1.5;
       for (const v of [0.86, 0.2]) c.strokeRect(W * u - 8, yAt(v) - 17, 16, 34);
     }
-    // Cockpit windscreen across the crown near the nose.
     c.fillStyle = '#0b1220';
     c.beginPath();
     c.moveTo(W * 0.53, yAt(0.915));
@@ -735,7 +681,6 @@ function fuselageTexture(track: Track) {
       c.lineTo(W * u, yAt(0.945));
       c.stroke();
     }
-    // Small registration on the rear fuselage.
     c.fillStyle = '#334155';
     c.font = '700 13px Inter, system-ui, sans-serif';
     c.save();

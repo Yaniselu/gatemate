@@ -4,7 +4,6 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { deviceCached, publicJson } from '../utils/public-fetch';
 
-/** Currencies with a daily ECB reference rate. */
 export const FX_CURRENCIES = ['EUR', 'USD', 'GBP', 'RON', 'CHF', 'PLN', 'CZK', 'HUF', 'BGN', 'DKK', 'SEK', 'NOK', 'ISK', 'TRY', 'JPY', 'CNY', 'KRW', 'HKD', 'SGD', 'THB', 'MYR', 'IDR', 'PHP', 'INR', 'ILS', 'AUD', 'NZD', 'CAD', 'MXN', 'BRL', 'ZAR'];
 
 export interface FxRate { base: string; currency: string; rate: number; date: string }

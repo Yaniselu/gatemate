@@ -19,14 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 
-/**
- * Gatemate Pro entitlement. Purchases happen in the App Store / Google Play (via RevenueCat); this service only mirrors
- * the result. The app never tells the server that a user is Pro — the store-signed events do.
- */
 @Service
 public class BillingService {
     private static final Logger log = LoggerFactory.getLogger(BillingService.class);
-    /** Events after which the user has access until {@code expiration_at_ms}. */
     private static final Set<String> GRANTS = Set.of("INITIAL_PURCHASE", "RENEWAL", "UNCANCELLATION", "PRODUCT_CHANGE", "NON_RENEWING_PURCHASE",
             "SUBSCRIPTION_EXTENDED", "TEMPORARY_ENTITLEMENT_GRANT", "CANCELLATION", "BILLING_ISSUE");
 
@@ -53,7 +48,6 @@ public class BillingService {
         return cfg == null || cfg.freeUpcomingTrips() <= 0 ? 3 : cfg.freeUpcomingTrips();
     }
 
-    /** Applies one RevenueCat webhook event. Idempotent on the event id. */
     @Transactional
     public void apply(JsonNode event) {
         String id = event.path("id").asString("");
@@ -63,7 +57,7 @@ public class BillingService {
         var user = findUser(event);
         int inserted = jdbc.update("INSERT INTO billing_events (id, type, user_id) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM billing_events WHERE id = ?)",
                 id, type, user == null ? null : user.id, id);
-        if (inserted == 0) return; // already processed
+        if (inserted == 0) return;
         if (user == null) {
             log.warn("billing: event {} for an unknown user", type);
             return;
@@ -78,12 +72,11 @@ public class BillingService {
             transfer(event);
             return;
         } else {
-            return; // TEST and informational events
+            return;
         }
         users.save(user);
     }
 
-    /** Re-reads the subscription from RevenueCat (used right after a purchase, before the webhook arrives). */
     @Transactional
     public UserEntity sync(UUID userId) {
         var user = users.findById(userId).orElseThrow(() -> ApiException.notFound("Account"));
@@ -115,7 +108,6 @@ public class BillingService {
                 var u = users.findById(UUID.fromString(s));
                 if (u.isPresent()) return u.get();
             } catch (IllegalArgumentException notOurId) {
-                // anonymous RevenueCat id
             }
         }
         return null;

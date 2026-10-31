@@ -15,7 +15,6 @@ interface Thing {
   wobble: number;
 }
 
-/** Arcade: drag to steer the plane, dodge storm clouds and birds, collect stars. */
 @Component({
   selector: 'gm-dodge',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -178,7 +177,6 @@ export class DodgePage implements AfterViewInit {
     const c = this.ctx;
     if (!c) return;
     c.clearRect(0, 0, this.w, this.h);
-    // parallax background clouds
     c.fillStyle = 'rgba(255,255,255,.5)';
     for (let i = 0; i < 6; i++) {
       const y = ((i * 170 + this.t * 40) % (this.h + 120)) - 60;

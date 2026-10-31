@@ -6,7 +6,6 @@ import { ChatService } from '../../core/services/chat.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** Opened from a shared invite link: joins the trip or group, then goes there. */
 @Component({
   selector: 'gm-invite',
   changeDetection: ChangeDetectionStrategy.OnPush,

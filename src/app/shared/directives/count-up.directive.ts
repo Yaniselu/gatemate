@@ -1,7 +1,6 @@
 import { Directive, ElementRef, inject, input, effect, OnDestroy } from '@angular/core';
 import { locale } from '../../core/i18n/i18n.service';
 
-/** Animates a number from 0 to the target with an ease-out curve. */
 @Directive({ selector: '[gmCountUp]' })
 export class CountUpDirective implements OnDestroy {
   private el = inject<ElementRef<HTMLElement>>(ElementRef);

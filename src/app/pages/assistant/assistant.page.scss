@@ -35,7 +35,6 @@
   }
 }
 
-/* ---------- Velo's orb ---------- */
 .orb {
   position: relative;
   display: inline-block;
@@ -118,7 +117,6 @@
   }
 }
 
-/* ---------- Welcome ---------- */
 .hero {
   text-align: center;
   padding: 10px 6px 6px;
@@ -227,7 +225,6 @@
   }
 }
 
-/* ---------- Conversation ---------- */
 .thread {
   display: flex;
   flex-direction: column;
@@ -480,7 +477,6 @@
   color: var(--gm-coral);
 }
 
-/* ---------- Composer ---------- */
 .composer-wrap {
   padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
   background: transparent;

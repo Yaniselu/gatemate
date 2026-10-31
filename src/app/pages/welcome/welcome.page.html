@@ -2,7 +2,6 @@
   <div class="sky">
     <div class="sun"></div>
 
-    <!-- Parallax cloud layers (each strip is 200% wide and loops) -->
     @for (layer of [1, 2, 3]; track layer) {
       <div class="clouds" [class]="'clouds l' + layer">
         @for (strip of [0, 1]; track strip) {

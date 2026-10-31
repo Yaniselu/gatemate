@@ -11,10 +11,8 @@ import { ToastService } from '../../core/services/toast.service';
 import { AirportPickerComponent } from '../../shared/components/airport-picker.component';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** Key stored per account once the first-run questions are answered (or skipped). */
 export const onboardedKey = (userId: string) => `gm_onboarded_${userId}`;
 
-/** First run after sign-in: home airport, then notifications. Both can be skipped and changed later. */
 @Component({
   selector: 'gm-onboarding',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -23,10 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Turns a booking confirmation e-mail (forwarded to the personal import address, or pasted in the app) into a trip.
- * All flights from one e-mail go into one trip. The same flight can be claimed by one account only.
- */
 @Service
 public class EmailImportService {
     public record Preview(List<TripDtos.FlightDto> flights, String bookingRef, boolean nameFound) {}
@@ -53,9 +49,6 @@ public class EmailImportService {
         return new Preview(dtos, r.bookingRef(), EmailBookingParser.mentionsName(r.text(), u.legalFirstName, u.legalLastName));
     }
 
-    /**
-     * @param channelCheck what proves the e-mail came from the user (e.g. "Forwarded from your account e-mail"), or null for a paste.
-     */
     @Transactional
     public TripDtos.TripDto importInto(UserEntity u, String html, String text, String channelCheck) {
         var r = read(html, text);
@@ -65,7 +58,6 @@ public class EmailImportService {
         if (channelCheck != null) checks.add(check(channelCheck, true));
         checks.add(check(nameOk ? "Your legal name appears on the booking" : "Your legal name wasn’t found in the e-mail", nameOk));
         checks.add(check("Not added by another Gatemate account", true));
-        // Verified needs both: proof it came from the account owner, and the owner's name on the booking.
         String status = channelCheck != null && nameOk ? "verified" : nameOk ? "pending" : "unverified";
 
         TripEntity trip = null;
@@ -77,7 +69,7 @@ public class EmailImportService {
                     .toUpperCase(Locale.ROOT);
             var existing = flights.findByClaimKey(f.claimKey);
             if (existing.isPresent()) {
-                if (existing.get().claimedBy.equals(u.id)) continue; // forwarded twice: nothing to do
+                if (existing.get().claimedBy.equals(u.id)) continue;
                 throw new ApiException(HttpStatus.CONFLICT, "already_claimed", "A flight in this e-mail is already linked to another account.");
             }
             if (trip == null) {

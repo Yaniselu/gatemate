@@ -9,10 +9,6 @@ import { PlatformService } from './platform.service';
 import { PrefsService } from './prefs.service';
 import { t as tr } from '../i18n/i18n.service';
 
-/**
- * Local reminders derived from the user's flights. Live gate/delay alerts arrive as push
- * notifications from the backend once it exists (APNs / FCM).
- */
 @Injectable({ providedIn: 'root' })
 export class NotificationsService {
   private platform = inject(PlatformService);
@@ -28,7 +24,6 @@ export class NotificationsService {
     return granted;
   }
 
-  /** Gate changes and delays come from the server as push notifications; the device token is sent only to our API. */
   private async registerPush(): Promise<void> {
     if (!environment.push || this.pushRegistered) return;
     this.pushRegistered = true;
@@ -44,7 +39,6 @@ export class NotificationsService {
     }
   }
 
-  /** Schedules device reminders (check-in, leave for the airport, boarding…) as local notifications. */
   async syncReminders(alerts: FlightAlert[]): Promise<void> {
     if (!this.platform.isNative) return;
     const perm = await LocalNotifications.checkPermissions().catch(() => null);

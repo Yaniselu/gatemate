@@ -29,10 +29,6 @@ export interface CountryFacts {
 
 const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-/**
- * Every airport with an IATA code and scheduled service (~5,300, OurAirports + IANA time zones),
- * shipped as a static file and loaded lazily the first time it is needed.
- */
 @Injectable({ providedIn: 'root' })
 export class AirportDbService {
   private airports: AirportRecord[] = [];
@@ -65,7 +61,6 @@ export class AirportDbService {
     return this.countries[code];
   }
 
-  /** Country name in the app's language (the bundled English name when the browser has no translation). */
   countryName(code: string): string {
     const en = this.countries[code]?.name ?? code;
     if (locale().startsWith('en') || !/^[A-Z]{2}$/.test(code)) return en;
@@ -78,7 +73,6 @@ export class AirportDbService {
   }
   private regionNames?: Intl.DisplayNames;
 
-  /** Code match first, then city, then airport name / country; larger airports rank higher. */
   search(query: string, limit = 25): AirportRecord[] {
     const q = fold(query.trim());
     if (!q) return this.airports.filter((a) => a.size === 'L').slice(0, limit);

@@ -15,15 +15,12 @@ export interface VeloMessage {
   text: string;
   steps: VeloStep[];
   sources: { title: string; url: string }[];
-  /** Things Velo did in the app, e.g. checklist items it added. */
   actions: { tripId: string; added: string[] }[];
   streaming?: boolean;
-  /** Nothing arrived for a while: most likely the server is waking up. */
   slow?: boolean;
   error?: string;
 }
 
-/** What each tool is doing, as shown on the step chips. */
 export const VELO_STEPS: Record<string, { icon: string; label: string }> = {
   get_my_trips: { icon: 'airplane-outline', label: 'Checking your trips' },
   get_flight: { icon: 'time-outline', label: 'Checking your flight' },
@@ -35,10 +32,6 @@ export const VELO_STEPS: Record<string, { icon: string; label: string }> = {
   web_search: { icon: 'globe-outline', label: 'Searching the web' },
 };
 
-/**
- * Velo, the AI travel agent by Velosyntech. The conversation lives only in memory on this device: it's gone when the
- * app closes, and the server keeps no transcript.
- */
 @Injectable({ providedIn: 'root' })
 export class VeloService {
   private api = inject(GatemateApi);
@@ -75,7 +68,6 @@ export class VeloService {
     if (!q || this.busy()) return;
     const user: VeloMessage = { id: this.nextId++, role: 'user', text: q, steps: [], sources: [], actions: [] };
     const reply: VeloMessage = { id: this.nextId++, role: 'assistant', text: '', steps: [], sources: [], actions: [], streaming: true };
-    // Only finished turns go to the server, newest 30, so long chats stay fast and cheap.
     const history = [...this.messages().filter((m) => !m.error && m.text), user].slice(-30).map((m) => ({ role: m.role, text: m.text }));
     this.messages.update((list) => [...list, user, reply]);
     this.busy.set(true);
@@ -129,7 +121,6 @@ export class VeloService {
         patch((m) => ({ ...m, error: ERRORS[e.message] ? t(ERRORS[e.message]) : t(e.message) }));
         break;
       case 'done':
-        // Web searches finish before the answer; mark any step still spinning as done.
         patch((m) => ({ ...m, steps: m.steps.map((s) => (s.state === 'running' ? { ...s, state: 'done' } : s)) }));
         break;
     }

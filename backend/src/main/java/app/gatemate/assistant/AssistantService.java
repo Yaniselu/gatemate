@@ -42,16 +42,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Velo, Gatemate's travel agent (built by Velosyntech): a Claude conversation that can read the traveller's trips,
- * look up airports and destinations, convert money, estimate EU261 compensation, search the web and add checklist
- * items. Answers stream to the app as server-sent events.
- */
 @Service
 public class AssistantService {
     private static final Logger log = LoggerFactory.getLogger(AssistantService.class);
 
-    /** Messages a day: enough for real trip planning, while keeping the API bill predictable. */
     static final int FREE_DAILY = 20, PRO_DAILY = 200;
     private static final int MAX_STEPS = 10, MAX_TURNS = 40, MAX_CHARS = 4000;
 
@@ -59,11 +53,9 @@ public class AssistantService {
 
     public record Status(boolean enabled, int used, int limit) {}
 
-    /** A tool's result for the model: the value, or the error message it should recover from. */
     record Outcome(Object value, boolean error) {}
 
     private final AnthropicClient client;
-    /** Used when the server has a Gemini key and no Anthropic key. */
     private final GeminiAgent gemini;
     private final String model;
     private final BetaOutputConfig.Effort effort;
@@ -71,7 +63,6 @@ public class AssistantService {
     private final UserRepository users;
     private final AirportCatalog airports;
     private final JsonMapper json;
-    /** Caps simultaneous conversations on this instance; the rest wait briefly or get a "busy" answer. */
     private final Semaphore slots = new Semaphore(24);
 
     public AssistantService(AssistantTools tools, UserRepository users, AirportCatalog airports, JsonMapper json,
@@ -110,7 +101,6 @@ public class AssistantService {
         return new Status(enabled(), today().equals(u.aiDay) ? u.aiCount : 0, limit(u));
     }
 
-    /** Counts one message against the traveller's daily allowance, or refuses with 429. */
     @Transactional
     public void reserve(UUID me) {
         if (!enabled()) throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "assistant_off", "Velo isn’t switched on on this server yet.");
@@ -129,10 +119,6 @@ public class AssistantService {
         users.save(u);
     }
 
-    /**
-     * Runs one turn of the conversation: Claude answers, calling tools as often as it needs (up to MAX_STEPS rounds),
-     * and every piece of progress goes to {@code emit} as an event map.
-     */
     public void chat(UUID me, List<Turn> history, Consumer<Map<String, Object>> emit) {
         var u = users.findById(me).orElseThrow(() -> ApiException.notFound("Account"));
         List<Turn> turns = clean(history);
@@ -163,7 +149,7 @@ public class AssistantService {
                     emit.accept(Map.of("type", "error", "message", "refused"));
                     return;
                 }
-                if (stop.equals(BetaStopReason.PAUSE_TURN)) continue; // a long web search: let Claude carry on
+                if (stop.equals(BetaStopReason.PAUSE_TURN)) continue;
                 if (!stop.equals(BetaStopReason.TOOL_USE)) {
                     if (stop.equals(BetaStopReason.MAX_TOKENS)) emit.accept(Map.of("type", "truncated"));
                     emit.accept(Map.of("type", "done"));
@@ -191,7 +177,6 @@ public class AssistantService {
         }
     }
 
-    /** One model response, streamed: text goes out as it's written, tool calls are announced as they start. */
     private BetaMessage stream(List<BetaMessageParam> messages, Consumer<Map<String, Object>> emit) {
         var params = request(messages);
         var acc = BetaMessageAccumulator.create();
@@ -222,10 +207,8 @@ public class AssistantService {
                 .outputConfig(BetaOutputConfig.builder().effort(effort).build())
                 .systemOfBetaTextBlockParams(List.of(BetaTextBlockParam.builder().text(SYSTEM)
                         .cacheControl(BetaCacheControlEphemeral.builder().ttl(BetaCacheControlEphemeral.Ttl.TTL_1H).build()).build()))
-                // Also cache the growing conversation, so each tool round re-reads it at the cached rate.
                 .cacheControl(BetaCacheControlEphemeral.builder().build())
                 .messages(messages)
-                // If a safety classifier declines, the API re-runs the turn on the model Anthropic recommends.
                 .addBeta("server-side-fallback-2026-07-01")
                 .fallbacks(BetaFallbacksParam.ofDefault())
                 .addTool(BetaWebSearchTool20260209.builder().maxUses(3L).build());
@@ -247,7 +230,6 @@ public class AssistantService {
         return results;
     }
 
-    /** Runs one tool for either model and reports it to the app. */
     Outcome call(String id, String name, Map<String, Object> input, AssistantTools.Ctx ctx, Consumer<Map<String, Object>> emit) {
         Outcome out;
         try {
@@ -262,10 +244,6 @@ public class AssistantService {
         return out;
     }
 
-    /**
-     * When a safety classifier stopped the first model mid-answer and another one carried on, the declined model's
-     * thinking and tool calls before the switch must not be sent back (or run); text and finished searches stay.
-     */
     static List<BetaContentBlock> afterFallback(List<BetaContentBlock> content) {
         int boundary = -1;
         for (int i = 0; i < content.size(); i++) if (content.get(i).isFallback()) boundary = i;
@@ -283,7 +261,6 @@ public class AssistantService {
         return kept;
     }
 
-    /** Web pages Claude read, so the app can show them as sources under the answer. */
     private void sources(BetaMessage reply, Consumer<Map<String, Object>> emit) {
         List<Map<String, String>> found = new ArrayList<>();
         for (BetaContentBlock block : reply.content()) {
@@ -293,7 +270,6 @@ public class AssistantService {
         if (!found.isEmpty()) emit.accept(Map.of("type", "sources", "items", found));
     }
 
-    /** The conversation as the app sent it, trimmed and checked: starts and ends with the traveller. */
     static List<Turn> clean(List<Turn> history) {
         if (history == null || history.isEmpty() || history.size() > MAX_TURNS) throw ApiException.badRequest("bad_conversation", "Start a new conversation.");
         List<Turn> out = new ArrayList<>();
@@ -301,7 +277,7 @@ public class AssistantService {
             if (t == null || t.text() == null || t.text().isBlank()) continue;
             String text = t.text().length() > MAX_CHARS ? t.text().substring(0, MAX_CHARS) : t.text();
             if ("user".equals(t.role())) out.add(new Turn("user", text));
-            else if ("assistant".equals(t.role()) && !out.isEmpty()) out.add(new Turn("assistant", text)); // the app's greeting isn't sent
+            else if ("assistant".equals(t.role()) && !out.isEmpty()) out.add(new Turn("assistant", text));
         }
         if (out.isEmpty() || !"user".equals(history.get(history.size() - 1).role())) throw ApiException.badRequest("bad_conversation", "Ask Velo something.");
         return out;
@@ -311,7 +287,6 @@ public class AssistantService {
         return turns.stream().map(t -> "user".equals(t.role()) ? BetaMessageParam.ofUser(t.text()) : BetaMessageParam.ofAssistant(t.text())).toList();
     }
 
-    /** Facts about this traveller and moment, after the cached prefix so the cache stays warm across users. */
     private String context(UserEntity u) {
         var m = new LinkedHashMap<String, Object>();
         m.put("now_utc", Instant.now().toString());

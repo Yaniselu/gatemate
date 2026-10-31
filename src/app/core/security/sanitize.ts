@@ -1,11 +1,6 @@
-/**
- * Client-side text hygiene for user-generated content. The backend must repeat these checks:
- * anything done here only improves UX and is never a security boundary on its own.
- */
 
 export const MAX_MESSAGE_LENGTH = 1000;
 
-// Strip ASCII control chars (except newline/tab) and bidi overrides used for spoofing.
 // eslint-disable-next-line no-control-regex
 const CONTROL_RE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F‪-‮⁦-⁩]/g;
 const URL_RE = /\b(?:https?:\/\/|www\.)[^\s]+/i;
@@ -21,7 +16,6 @@ export function containsLink(text: string): boolean {
   return URL_RE.test(text);
 }
 
-/** Looks like a payment card number: warn before the user shares it in chat. */
 export function containsSensitiveNumber(text: string): boolean {
   const match = text.match(CARD_RE);
   if (!match) return false;

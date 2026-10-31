@@ -18,10 +18,6 @@ const KEY = 'gm_lang';
 let dict: Record<string, string> = {};
 let current: Lang = 'en';
 
-/**
- * Translates an English UI text. The English sentence is the key, so anything not yet translated simply stays
- * in English. "{name}"-style placeholders are filled from params.
- */
 export function t(text: string, params?: Record<string, string | number | null | undefined>): string {
   let s = dict[text];
   if (s === undefined) {
@@ -32,21 +28,14 @@ export function t(text: string, params?: Record<string, string | number | null |
   return s;
 }
 
-/** The app's language code. */
 export function currentLang(): Lang {
   return current;
 }
 
-/** BCP 47 locale for dates and numbers in the chosen language. */
 export function locale(): string {
   return LOCALES[current];
 }
 
-/**
- * The app's language: the phone's language the first time (when supported), then whatever the user picks.
- * Translations are small JSON files loaded once at start-up; changing language reloads the app so every
- * screen, date and number switches at once.
- */
 @Injectable({ providedIn: 'root' })
 export class I18nService {
   readonly lang = signal<Lang>('en');
@@ -83,7 +72,6 @@ export class I18nService {
   }
 }
 
-/** {{ 'Good morning' | t }} — or with values: {{ 'Gate {gate}' | t: { gate: f.gate } }} */
 @Pipe({ name: 't' })
 export class TranslatePipe implements PipeTransform {
   transform(text: string | null | undefined, params?: Record<string, string | number | null | undefined>): string {

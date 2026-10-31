@@ -17,10 +17,6 @@ public class GatemateApplication {
         SpringApplication.run(GatemateApplication.class, args);
     }
 
-    /**
-     * Hosts like Render/Heroku/Railway hand out {@code postgres://user:pass@host:port/db}; Spring needs a JDBC URL
-     * with separate credentials. Converts it once at startup; a {@code jdbc:} URL is left untouched.
-     */
     static void adoptPlatformDatabaseUrl(String url) {
         if (url == null || !url.matches("^postgres(ql)?://.*")) return;
         var u = java.net.URI.create(url);

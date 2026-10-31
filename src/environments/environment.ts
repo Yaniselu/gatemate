@@ -1,6 +1,5 @@
 import { AppEnvironment } from './environment.model';
 
-/** Development: runs fully on mock data until the Java backend is ready. */
 export const environment: AppEnvironment = {
   production: false,
   useMocks: true,
@@ -9,7 +8,6 @@ export const environment: AppEnvironment = {
   allowedApiOrigins: ['http://localhost:8080'],
   auth: {
     appleEnabled: false,
-    // Public OAuth client identifiers only. Secrets never belong in the app bundle.
     appleServiceId: 'app.gatemate.signin',
     appleRedirectUrl: '',
     googleWebClientId: 'REPLACE_ME.apps.googleusercontent.com',

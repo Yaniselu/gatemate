@@ -10,9 +10,6 @@ import {
 } from '../models';
 import { sampleBaggage } from './airlines';
 
-// Demo content for the front-end-first phase. Times are relative to "now" so the
-// countdowns, boarding alerts and statuses always look alive.
-
 export const AIRPORTS: Record<string, Airport> = {
   OTP: { code: 'OTP', city: 'Bucharest', name: 'Henri Coandă International', country: 'Romania', timezone: 'Europe/Bucharest' },
   BCN: { code: 'BCN', city: 'Barcelona', name: 'Josep Tarradellas El Prat', country: 'Spain', timezone: 'Europe/Madrid' },

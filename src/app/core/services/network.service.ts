@@ -1,7 +1,6 @@
 import { Injectable, NgZone, inject, signal } from '@angular/core';
 import { Network } from '@capacitor/network';
 
-/** Whether the phone has a connection. Drives the offline banner and re-syncs data when it comes back. */
 @Injectable({ providedIn: 'root' })
 export class NetworkService {
   private zone = inject(NgZone);

@@ -48,7 +48,6 @@ class BcbpAndNameTest {
     void nameMatchingIsDiacriticAndTitleTolerant() {
         assertTrue(NameMatcher.match("ANA MARIA MRS", "POPESCU", "Ana-Maria", "Popescu").ok());
         assertTrue(NameMatcher.match("STEFAN", "IONESCU", "Ștefan", "Ionescu").ok());
-        // BCBP truncates long names at 20 characters.
         assertTrue(NameMatcher.match("A", "CONSTANTINESC", "Alexandra", "Constantinescu").ok());
         assertFalse(NameMatcher.match("JOHN", "DOE", "Ana", "Popescu").ok());
         assertFalse(NameMatcher.match("ANA", "POP", "Ana", "Popescu").ok());

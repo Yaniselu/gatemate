@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, OnInit, signal } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 
-/** Origin → destination arc; the plane glides along it to show live flight progress. */
 @Component({
   selector: 'gm-route-arc',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,7 +35,6 @@ import { IonIcon } from '@ionic/angular/standalone';
   `,
 })
 export class RouteArcComponent implements OnInit {
-  /** 0 = at origin, 1 = landed. */
   readonly progress = input(0);
   readonly t = signal(0);
   private raf = 0;
@@ -53,7 +51,6 @@ export class RouteArcComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // Glide from the origin to the current progress on first render.
     const target = Math.max(0.04, Math.min(1, this.progress()));
     const start = performance.now();
     const step = (now: number) => {

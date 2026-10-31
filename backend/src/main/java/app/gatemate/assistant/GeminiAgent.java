@@ -18,21 +18,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Velo on Google's Gemini API, for servers that have a Gemini key and no Anthropic key. Same tools and the same
- * events for the app as the Claude version; Gemini has no web search alongside function calling, so Velo points to
- * official sources instead.
- */
 final class GeminiAgent {
     private static final Logger log = LoggerFactory.getLogger(GeminiAgent.class);
     private static final Set<String> BLOCKED = Set.of("SAFETY", "PROHIBITED_CONTENT", "BLOCKLIST", "SPII", "RECITATION");
 
-    /** Runs one tool call for the model; the service owns validation, logging and the tool_done event. */
     interface ToolCall {
         AssistantService.Outcome run(String id, String name, Map<String, Object> input);
     }
 
-    /** The Gemini API answered with an error status (429 = quota). */
     static final class Failure extends RuntimeException {
         final int status;
 
@@ -44,7 +37,6 @@ final class GeminiAgent {
 
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).build();
     private final String key;
-    /** Endpoint + model pairs to try, in order; the first that accepts the key is remembered. */
     private final List<String> routes = new ArrayList<>();
     private volatile int route;
     private final List<Map<String, Object>> declarations;
@@ -54,12 +46,8 @@ final class GeminiAgent {
     GeminiAgent(String key, String model, String baseUrl, Duration timeout, List<Map<String, Object>> declarations, JsonMapper json) {
         this.key = key;
         this.timeout = timeout;
-        // Google AI Studio keys (AIza… and the newer AQ.…) use the Gemini API; Vertex AI express keys use Vertex. Both take
-        // the same request. The model alias may not exist on both, so fall back to a pinned model.
         List<String> endpoints = baseUrl != null && !baseUrl.isBlank() ? List.of(baseUrl.replaceAll("/+$", "") + "/v1beta/models/")
                 : List.of(STUDIO, VERTEX);
-        // Overloaded (503), out of quota (429) or silent on one model: the next one usually answers (quotas are per model).
-        // Flash-Lite comes first: it answers in about a second, while Flash often hangs for minutes when Google is busy.
         var models = new java.util.LinkedHashSet<>(List.of(model, "gemini-flash-lite-latest", "gemini-flash-latest", "gemini-3.5-flash-lite"));
         for (String e : endpoints) for (String m : models) routes.add(e + URLEncoder.encode(m, StandardCharsets.UTF_8) + ":generateContent");
         this.declarations = declarations;
@@ -79,7 +67,6 @@ final class GeminiAgent {
     static final String WEB_SEARCH = "- Use web search for things that change: entry and visa rules, strikes, events, opening hours, prices. "
             + "Prefer official sources (governments, airports, airlines) and say where the information comes from.";
 
-    /** One conversation turn: the model answers, calling tools for up to {@code maxSteps} rounds. */
     void run(List<AssistantService.Turn> history, String context, int maxSteps, ToolCall tools, Consumer<Map<String, Object>> emit)
             throws IOException, InterruptedException {
         List<Map<String, Object>> contents = new ArrayList<>();
@@ -118,17 +105,11 @@ final class GeminiAgent {
         boolean blocked, wroteText;
     }
 
-    /** Gemini 3 models take a thinking level, 2.5 models a budget; older ones neither. The first one accepted is kept. */
     private static final List<Map<String, Object>> THINKING = List.of(Map.of("thinkingLevel", "low"), Map.of("thinkingBudget", 0), Map.of());
     private volatile int thinking;
-    /** Longest wait for one model reply before the traveller gets an error instead of an endless spinner. */
     private final Duration timeout;
     private static final Duration ATTEMPT = Duration.ofSeconds(25);
 
-    /**
-     * One model reply, as a whole (Gemini's streaming proved unreliable from our host: replies stalled mid-stream). Text
-     * still reaches the app as a delta event and tool calls as tool events, so the screen looks the same.
-     */
     @SuppressWarnings("unchecked")
     private Reply generate(List<Map<String, Object>> contents, String context, Consumer<Map<String, Object>> emit) throws IOException, InterruptedException {
         long started = System.nanoTime();
@@ -142,7 +123,6 @@ final class GeminiAgent {
             body.put("contents", contents);
             body.put("tools", List.of(Map.of("functionDeclarations", declarations)));
             body.put("generationConfig", config);
-            // The whole reply has `timeout`; a model silent for 25 s is overloaded, so the next one gets the rest of it.
             boolean last = r + 1 >= routes.size();
             Duration left = timeout.minusNanos(System.nanoTime() - started);
             if (left.toMillis() < 500) throw new Failure(504, "no reply from Gemini within " + timeout.toSeconds() + " s");
@@ -168,13 +148,11 @@ final class GeminiAgent {
             }
             String err = res.body().replaceAll("\\s+", " ");
             int code = res.statusCode();
-            // This model doesn't take that kind of thinking setting: try the next kind on the same route.
             if (code == 400 && err.toLowerCase(java.util.Locale.ROOT).contains("thinking") && thinking + 1 < THINKING.size()) {
                 log.info("Gemini refused thinking config {}, trying {}", THINKING.get(thinking), THINKING.get(thinking + 1));
                 thinking++;
                 continue;
             }
-            // Wrong endpoint for this kind of key, or a model this endpoint doesn't have: try the next route.
             boolean wrongRoute = code == 401 || code == 403 || code == 404 || (code == 400 && err.contains("API key"));
             boolean busy = code == 429 || code >= 500;
             if (!(wrongRoute || busy) || r + 1 >= routes.size()) throw new Failure(code, err);
@@ -202,7 +180,6 @@ final class GeminiAgent {
                             emit.accept(Map.of("type", "delta", "text", t));
                             reply.wroteText = true;
                         }
-                        // Plain text parts are joined; a part carrying a thought signature goes back exactly as sent.
                         if (part.size() == 1) {
                             text.append(t);
                             continue;

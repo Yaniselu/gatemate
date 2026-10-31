@@ -5,10 +5,6 @@ import { PlatformService } from './platform.service';
 import { ToastService } from './toast.service';
 import { AchievementsService } from './achievements.service';
 
-/**
- * Trip/group invitations. Links are single-use, expire after 7 days and only add someone after
- * they sign in — so a forwarded link can't be used to read the chat anonymously.
- */
 @Injectable({ providedIn: 'root' })
 export class InviteService {
   private api = inject(GatemateApi);
@@ -24,7 +20,6 @@ export class InviteService {
     return `✈️ Join "${title}" on Gatemate — we'll plan the trip and get gate alerts together:\n${url}`;
   }
 
-  /** Opens WhatsApp with the invite pre-filled; the user picks contacts or groups there. */
   whatsapp(title: string, url: string): void {
     this.platform.tap();
     void this.achievements.track('invite_sent');
@@ -40,7 +35,6 @@ export class InviteService {
       else if (navigator.share) await navigator.share({ title: 'Gatemate invite', text });
       else await this.copy(url);
     } catch {
-      /* share sheet dismissed */
     }
   }
 

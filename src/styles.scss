@@ -3,7 +3,6 @@
 @use 'theme/glass';
 @use 'theme/vivid';
 
-/* Ionic core */
 @import '@ionic/angular/css/core.css';
 @import '@ionic/angular/css/normalize.css';
 @import '@ionic/angular/css/structure.css';
@@ -12,7 +11,6 @@
 @import '@ionic/angular/css/flex-utils.css';
 @import '@ionic/angular/css/display.css';
 @import '@ionic/angular/css/palettes/dark.class.css';
-
 
 html,
 body {
@@ -129,7 +127,6 @@ h3 {
   }
 }
 
-/* Primary button with shine sweep */
 .gm-btn {
   position: relative;
   overflow: hidden;
@@ -200,7 +197,6 @@ h3 {
   }
 }
 
-/* Form fields */
 .gm-field {
   position: relative;
   display: block;
@@ -283,7 +279,6 @@ h3 {
   }
 }
 
-/* Plain white canvas. Glass is kept for floating controls (tab bar, headers, sheets), where it has content to refract. */
 .gm-ambient {
   position: fixed;
   inset: 0;
@@ -296,7 +291,6 @@ h3 {
   }
 }
 
-/* Toasts */
 ion-toast.gm-toast {
   --background: rgba(11, 27, 43, 0.86);
   --color: #fff;
@@ -353,7 +347,6 @@ ion-refresher ion-refresher-content {
   white-space: nowrap;
 }
 
-/* Satellite map pins (Leaflet divIcons) */
 .leaflet-container {
   font-family: var(--ion-font-family);
   background: #1d2b36;
@@ -447,7 +440,6 @@ ion-refresher ion-refresher-content {
   }
 }
 
-/* Accessibility preferences (Settings → Accessibility) */
 ion-content::part(scroll) {
   zoom: var(--gm-text-zoom, 1);
 }
@@ -472,7 +464,6 @@ ion-content::part(scroll) {
   --gm-accent-strong: #06707e;
 }
 
-/* Inline button spinner */
 .spinner {
   width: 20px;
   height: 20px;
@@ -482,7 +473,6 @@ ion-content::part(scroll) {
   animation: gm-spin 0.8s linear infinite;
 }
 
-/* Small "PRO" marker next to features that need Gatemate Pro */
 .pro-tag {
   display: inline-block;
   margin-left: 6px;
@@ -496,7 +486,6 @@ ion-content::part(scroll) {
   vertical-align: middle;
 }
 
-/* Offline banner: sits under the status bar, never blocks taps on the page. */
 .gm-offline {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 6px);
@@ -523,7 +512,6 @@ ion-content::part(scroll) {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* Passport map: flown routes sweep in once. */
 .gm-arc:not(.upcoming) {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
@@ -533,7 +521,6 @@ ion-content::part(scroll) {
 .gm-reduce-motion .gm-arc:not(.upcoming) { animation: none; stroke-dashoffset: 0; }
 @media (prefers-reduced-motion: reduce) { .gm-arc:not(.upcoming) { animation: none; stroke-dashoffset: 0; } }
 
-/* Live aircraft on the route map. */
 .gm-live-plane {
   display: grid;
   place-items: center;
@@ -554,7 +541,6 @@ ion-content::part(scroll) {
   50% { box-shadow: 0 0 0 11px rgba(15, 181, 195, 0.12), 0 6px 14px rgba(0, 0, 0, 0.35); }
 }
 
-/* Drawn airport plan labels. */
 .gm-plan-terminal span,
 .gm-plan-gate span,
 .gm-plan-runway span {
@@ -599,7 +585,6 @@ ion-content::part(scroll) {
   box-shadow: 0 0 0 6px rgba(15, 181, 195, 0.35);
   animation: gm-pop 0.5s var(--gm-ease-spring);
 }
-/* Gates only when zoomed in, so the overview stays readable. */
 .leaflet-container:not(.z-gates) .gm-plan-gate:not(.on),
 .z-far .gm-plan-runway {
   display: none;
@@ -622,16 +607,13 @@ ion-content::part(scroll) {
   font-weight: 600;
   color: #64748b;
 }
-/* Shop names only when zoomed in close enough to read them. */
 .leaflet-container:not(.z-shops) .gm-plan-shop {
   display: none;
 }
-/* Close up, the terminal name steps back so shop names stay readable. */
 .z-shops .gm-plan-terminal span {
   opacity: 0.35;
 }
 
-/* Detail labels on the airport plan, revealed as you zoom in. */
 .gm-plan-building span,
 .gm-plan-stand span {
   display: inline-block;

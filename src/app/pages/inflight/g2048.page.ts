@@ -15,7 +15,6 @@ interface Tile {
   fresh?: boolean;
 }
 
-/** 2048 — swipe to slide the tiles, merge equal numbers. */
 @Component({
   selector: 'gm-2048',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -180,7 +179,6 @@ export class G2048Page {
     if (!moved) return;
     this.platform.selection();
     this.tiles.set(tiles);
-    // let merged-away tiles slide into place before removing them
     setTimeout(() => {
       this.tiles.update((ts) => ts.filter((t) => !removed.has(t.id)));
       this.add();

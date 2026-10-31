@@ -15,10 +15,6 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Live aircraft position from community ADS-B networks (ADS-B Exchange v2-compatible, free, no key), found by the
- * airline's radio callsign: ICAO code + flight number.
- */
 @Service
 public class AdsbService {
     private static final Logger log = LoggerFactory.getLogger(AdsbService.class);
@@ -45,7 +41,6 @@ public class AdsbService {
         return out;
     }
 
-    /** The freshest position for this flight, or empty when no receiver hears it. */
     public Optional<JsonNode> find(String flightNumber) {
         for (String cs : callsigns(flightNumber)) {
             for (String base : NETWORKS) {
@@ -61,7 +56,7 @@ public class AdsbService {
                         log.info("ADS-B network {} reachable", base);
                     }
                     if (best != null) return Optional.of(best);
-                    break; // the network answered: this callsign isn't flying right now
+                    break;
                 } catch (Exception e) {
                     log.debug("ADS-B {} {}: {}", base, cs, e.getMessage());
                 }

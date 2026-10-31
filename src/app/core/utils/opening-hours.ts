@@ -1,11 +1,5 @@
-/**
- * A small reader for OpenStreetMap opening_hours covering the common forms:
- * "24/7", "06:00-22:00", "Mo-Fr 08:00-20:00; Sa,Su 09:00-18:00", "Mo-Su 05:00-12:00,13:00-23:30", "Su off".
- * Anything it doesn't understand returns null, and the raw text is shown instead.
- */
 export interface OpenState {
   open: boolean;
-  /** "Open 24 hours", "Closes 22:00", "Opens 06:00". */
   label: string;
 }
 
@@ -19,7 +13,6 @@ export function openState(spec: string | undefined, timeZone: string, now = Date
   const local = localParts(now, timeZone);
   if (!local) return null;
   const today = local.day, minute = local.minute;
-  // Ranges per weekday, in minutes; a later rule for the same day replaces an earlier one (OSM semantics).
   const week: ([number, number][] | null)[] = Array(7).fill(null);
   for (const rule of s.split(';').map((x) => x.trim()).filter(Boolean)) {
     const m = rule.match(/^((?:(?:Mo|Tu|We|Th|Fr|Sa|Su)(?:-(?:Mo|Tu|We|Th|Fr|Sa|Su))?,?)+)?\s*(.*)$/);
@@ -47,7 +40,6 @@ export function openState(spec: string | undefined, timeZone: string, now = Date
   const fmt = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
   const todayRanges = week[today] ?? [];
   if (todayRanges.length === 1 && todayRanges[0][0] === 0 && todayRanges[0][1] >= 1440) return { open: true, label: 'Open 24 hours' };
-  // Past-midnight ranges from yesterday (e.g. 18:00-02:00).
   const yesterday = week[(today + 6) % 7] ?? [];
   for (const [a, b] of yesterday) if (b < a && minute < b) return { open: true, label: `Closes ${fmt(b)}` };
   for (const [a, b] of todayRanges) {

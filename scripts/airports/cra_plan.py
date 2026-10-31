@@ -1,8 +1,3 @@
-# Builds public/data/maps/CRA.json: a curated plan of Craiova International Airport (CRA/LRCV) in the same
-# OpenStreetMap element format the app parses. Geography is real (runway 09/27, 2,500 x 45 m, ARP 44.3181 N 23.8886 E,
-# terminal south of the runway on Calea Bucuresti); the inside of the new "George (Gogu) Constantinescu" terminal
-# (opened 18 Dec 2025) is a schematic of its published layout: check-in + self check-in, security, separate
-# Schengen / non-Schengen areas, food court, duty free.
 import json, sys
 
 out = []
@@ -26,7 +21,6 @@ def node(tags, lat, lon):
 def line(tags, *pts):
     way(tags, [{'lat': a, 'lon': b} for a, b in pts])
 
-# ---------- airfield ----------
 area({'aeroway': 'aerodrome', 'name': 'Aeroportul Internațional Craiova', 'iata': 'CRA', 'icao': 'LRCV'}, 44.3122, 23.8672, 44.3218, 23.9102)
 RWY = 44.31890
 line({'aeroway': 'runway', 'ref': '09/27', 'width': '45', 'surface': 'concrete'}, (RWY, 23.87305), (RWY, 23.90435))
@@ -35,7 +29,6 @@ line({'aeroway': 'taxiway', 'ref': 'B', 'width': '18'}, (44.31745, 23.88330), (R
 line({'aeroway': 'taxiway', 'ref': 'C', 'width': '18'}, (44.31745, 23.88500), (RWY, 23.88500))
 line({'aeroway': 'taxiway', 'width': '18'}, (44.31770, 23.87900), (44.31770, 23.88760))
 area({'aeroway': 'apron'}, 44.31600, 23.88060, 44.31745, 23.88720)
-# stands on the apron (walk-out boarding / bus, no air bridges reported)
 for i, lon in enumerate([23.88140, 23.88240, 23.88340, 23.88440, 23.88540, 23.88640], 1):
     node({'aeroway': 'parking_position', 'ref': str(i)}, 44.31690, lon)
 area({'aeroway': 'apron'}, 44.31600, 23.88725, 44.31745, 23.89060)
@@ -44,13 +37,11 @@ line({'aeroway': 'taxiway', 'width': '18'}, (44.31770, 23.88760), (44.31770, 23.
 for i, lon in enumerate([23.88790, 23.88860, 23.88930, 23.89000], 7):
     node({'aeroway': 'parking_position', 'ref': str(i)}, 44.31690, lon)
 area({'aeroway': 'hangar', 'building': 'hangar', 'name': 'Hangar'}, 44.31640, 23.89100, 44.31720, 23.89220)
-# The old terminal (2010 building, extended in 2023): no passenger flights since 20 December 2025.
 area({'building': 'yes', 'name': 'Terminal vechi (închis pasagerilor)'}, 44.31505, 23.88520, 44.31570, 23.88700)
 area({'landuse': 'grass'}, 44.31780, 23.86800, 44.32150, 23.91000)
 area({'landuse': 'grass'}, 44.31260, 23.86800, 44.31590, 23.87900)
 area({'landuse': 'grass'}, 44.31260, 23.88960, 44.31590, 23.91000)
 
-# ---------- landside: roads, parking, transport ----------
 line({'highway': 'primary', 'name': 'Calea București'}, (44.31250, 23.86600), (44.31290, 23.88000), (44.31310, 23.89000), (44.31330, 23.91000))
 line({'highway': 'service', 'name': 'Acces terminal'}, (44.31295, 23.88130), (44.31480, 23.88130), (44.31480, 23.88520), (44.31300, 23.88520))
 line({'highway': 'footway'}, (44.31480, 23.88300), (44.31500, 23.88300))
@@ -63,13 +54,11 @@ node({'amenity': 'taxi', 'name': 'Preluare ride-sharing (Uber, Bolt)'}, 44.31470
 area({'amenity': 'parking', 'name': 'Parcare autocare'}, 44.31400, 23.88460, 44.31470, 23.88510)
 node({'amenity': 'charging_station', 'name': 'Încărcare mașini electrice'}, 44.31465, 23.88160)
 
-# ---------- terminal ----------
 T0, T1, W, E = 44.31500, 44.31585, 23.88150, 23.88450
 area({'aeroway': 'terminal', 'building': 'terminal', 'name': 'Terminal George „Gogu” Constantinescu'}, T0, W, T1, E)
 node({'entrance': 'main', 'name': 'Intrare plecări'}, T0, 23.88230)
 node({'entrance': 'yes', 'name': 'Ieșire sosiri'}, T0, 23.88390)
 
-# ground floor (level 0): departures hall west, arrivals hall east
 L = '0'
 area({'indoor': 'corridor', 'level': L}, 44.31512, 23.88160, 44.31528, 23.88440)
 area({'indoor': 'room', 'level': L, 'name': 'Hol plecări'}, 44.31528, 23.88160, 44.31560, 23.88290)
@@ -97,7 +86,6 @@ node({'emergency': 'defibrillator', 'level': L, 'name': 'Defibrilator (DEA)'}, 4
 node({'highway': 'elevator', 'level': '0;1'}, 44.31545, 23.88305)
 line({'highway': 'steps', 'conveying': 'yes', 'level': '0;1'}, (44.31555, 23.88268), (44.31555, 23.88288))
 
-# first floor (level 1, airside): security, Schengen west, non-Schengen east
 L = '1'
 area({'indoor': 'room', 'level': L, 'name': 'Control de securitate'}, 44.31508, 23.88160, 44.31540, 23.88230)
 area({'indoor': 'corridor', 'level': L}, 44.31540, 23.88160, 44.31556, 23.88440)
@@ -119,7 +107,6 @@ node({'amenity': 'device_charging_station', 'level': L}, 44.31560, 23.88410)
 node({'amenity': 'smoking_area', 'level': L, 'name': 'Zonă fumători'}, 44.31580, 23.88334)
 node({'highway': 'elevator', 'level': '0;1'}, 44.31545, 23.88305)
 
-# boarding gates (numbering schematic; follow the screens in the terminal)
 for ref, lon in [('1', 23.88180), ('2', 23.88225), ('3', 23.88270), ('4', 23.88315)]:
     node({'aeroway': 'gate', 'ref': ref, 'level': L, 'name': f'Poarta {ref} (Schengen)'}, 44.31582, lon)
 for ref, lon in [('5', 23.88360), ('6', 23.88415)]:

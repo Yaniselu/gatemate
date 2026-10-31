@@ -57,7 +57,6 @@ public class TripService {
         if (!members.existsByTripIdAndUserId(tripId, me)) throw ApiException.notFound("Trip");
     }
 
-    /** Creates a trip around a first flight, with a default checklist and a private group chat. */
     @Transactional
     public TripEntity createWithFlight(UUID me, FlightEntity f) {
         requireTripAllowance(me);
@@ -92,7 +91,6 @@ public class TripService {
         return trips.save(t);
     }
 
-    /** Free accounts keep up to N upcoming trips at a time; Gatemate Pro has no limit. */
     private void requireTripAllowance(UUID me) {
         var u = users.findById(me).orElseThrow();
         if (u.isPro()) return;
@@ -135,7 +133,6 @@ public class TripService {
         return dto(createWithFlight(me, f), me);
     }
 
-    /** Block-time estimate for manually entered flights (taxi + cruise at ~800 km/h), flagged as unverified anyway. */
     static int estimateMinutes(double km) {
         return (int) Math.round(30 + km / 800 * 60);
     }
@@ -192,8 +189,6 @@ public class TripService {
             if (t.chatId != null) chat.join(t.chatId, userId);
         });
     }
-
-    // ---------- mapping ----------
 
     public TripDtos.TripDto dto(TripEntity t, UUID me) {
         var dest = airportDto(t.destinationIata);

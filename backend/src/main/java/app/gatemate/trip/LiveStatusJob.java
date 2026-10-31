@@ -12,10 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
-/**
- * Turns live ADS-B positions into "departed" and "landed" for flights in the air, with an alert to everyone on the
- * trip. Works without any paid data provider; gates and delays come from FlightStatusJob when a key is configured.
- */
 @Component
 public class LiveStatusJob {
     private static final Logger log = LoggerFactory.getLogger(LiveStatusJob.class);
@@ -62,7 +58,6 @@ public class LiveStatusJob {
             }
             return;
         }
-        // No signal long after the scheduled arrival: it has landed (receivers often lose planes on the ground).
         if (wasFlying && now.isAfter(f.arrives().plus(Duration.ofMinutes(45)))) land(f, city, "landed.arrived");
     }
 

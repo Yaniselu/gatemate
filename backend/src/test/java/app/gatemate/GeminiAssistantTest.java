@@ -29,10 +29,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Velo on Gemini (only a Gemini key configured), against a stand-in for the Gemini API that streams the same
- * server-sent events: a turn that calls a tool, then a turn that writes the answer, then a quota error.
- */
 @SpringBootTest
 @ActiveProfiles("test")
 class GeminiAssistantTest {
@@ -54,23 +50,22 @@ class GeminiAssistantTest {
             paths.add(ex.getRequestURI().toString());
             keys.add(String.valueOf(ex.getRequestHeaders().getFirst("x-goog-api-key")));
             int n = calls.incrementAndGet();
-            if (n == 1) { // this model takes a thinking budget, not a level
+            if (n == 1) {
                 reply(ex, 400, "{\"error\":{\"code\":400,\"message\":\"Unknown name \\\"thinkingLevel\\\" at 'generation_config.thinking_config'\"}}");
             } else if (n == 2) {
                 reply(ex, 200, toolTurn());
             } else if (n == 3) {
                 reply(ex, 200, answerTurn());
-            } else if (n == 4) { // this model is overloaded…
+            } else if (n == 4) {
                 reply(ex, 503, "{\n  \"error\": {\"code\": 503, \"status\": \"UNAVAILABLE\", \"message\": \"The model is overloaded.\"}\n}");
-            } else if (n == 5) { // …the next one answers
+            } else if (n == 5) {
                 reply(ex, 200, answerTurn());
-            } else if (n <= 8) { // every remaining model is out of quota
+            } else if (n <= 8) {
                 reply(ex, 429, "{\"error\":{\"code\":429,\"status\":\"RESOURCE_EXHAUSTED\"}}");
-            } else { // never answers within the timeout
+            } else {
                 try {
                     Thread.sleep(6000);
                 } catch (InterruptedException ignored) {
-                    // test over
                 }
                 reply(ex, 200, "{}");
             }
@@ -126,11 +121,9 @@ class GeminiAssistantTest {
         var labels = checklist.findByTripIdOrderByPosition(UUID.fromString(tripId)).stream().map(c -> c.label).toList();
         assertThat(labels).contains("Adaptor priză tip F", "Euro cash");
 
-        // The first request asked for a low thinking level; refused, the same turn went out with a thinking budget.
         assertThat(json.readTree(bodies.get(0)).path("generationConfig").path("thinkingConfig").path("thinkingLevel").asString()).isEqualTo("low");
         assertThat(json.readTree(bodies.get(1)).path("generationConfig").path("thinkingConfig").path("thinkingBudget").asInt()).isZero();
 
-        // First request: streaming endpoint, key in a header (never in the URL), Gemini-style tool schemas.
         assertThat(paths.get(0)).isEqualTo("/v1beta/models/gemini-flash-lite-latest:generateContent");
         assertThat(keys.get(0)).isEqualTo("gemini-test-key");
         JsonNode first = json.readTree(bodies.get(1));
@@ -138,16 +131,13 @@ class GeminiAssistantTest {
         assertThat(decl).contains("\"add_checklist_items\"").contains("\"OBJECT\"").contains("\"ARRAY\"").doesNotContain("additionalProperties").doesNotContain("maxItems");
         String system = first.path("systemInstruction").toString();
         assertThat(system).contains("powered by Google Gemini").contains("can't search the web").contains("Context from Gatemate").doesNotContain("Use web search");
-        assertThat(first.path("contents").get(0).path("role").asString()).isEqualTo("user"); // the app's greeting isn't sent
+        assertThat(first.path("contents").get(0).path("role").asString()).isEqualTo("user");
         assertThat(bodies.get(1)).doesNotContain(u.email);
 
-        // Second request: the model's call echoed back with its thought signature, then the tool's result.
         String echoed = json.readTree(bodies.get(2)).path("contents").toString();
-        assertThat(bodies.get(2)).contains("thinkingBudget"); // the accepted setting is kept
+        assertThat(bodies.get(2)).contains("thinkingBudget");
         assertThat(echoed).contains("\"functionCall\"").contains("sig-123").contains("\"functionResponse\"").contains("\"id\":\"call-1\"").contains("Euro cash");
 
-        // Quota exhausted on Google's side: the app gets "busy", not a crash.
-        // Overloaded model: the same turn is answered by the next model, which is then kept.
         List<Map<String, Object>> retried = new ArrayList<>();
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Salut")), retried::add);
         assertThat(retried.get(retried.size() - 1)).containsEntry("type", "done");
@@ -158,7 +148,6 @@ class GeminiAssistantTest {
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Și vremea?")), later::add);
         assertThat(later).containsExactly(Map.of("type", "error", "message", "busy"));
 
-        // Google doesn't answer in time: the traveller gets an error, not an endless spinner.
         List<Map<String, Object>> stuck = new ArrayList<>();
         long t0 = System.currentTimeMillis();
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Ce fac?")), stuck::add);

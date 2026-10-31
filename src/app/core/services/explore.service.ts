@@ -19,11 +19,9 @@ export interface Holiday {
   date: string;
   localName: string;
   name: string;
-  /** False when it only applies to some regions. */
   national: boolean;
 }
 
-/** Top sights by notability (Wikidata) and public holidays (Nager.Date). Through the backend in production. */
 @Injectable({ providedIn: 'root' })
 export class ExploreService {
   private http = inject(HttpClient);
@@ -32,7 +30,6 @@ export class ExploreService {
 
   sights(iata: string, lat: number, lon: number): Promise<Sight[]> {
     if (!this.sightsCache.has(iata)) {
-      // Wikidata straight from the phone; our server is the fallback.
       const p = deviceCached(`sights_${iata}`, 7 * 86_400_000, () => this.querySights(lat, lon)
         .catch((e) => (environment.useMocks ? Promise.reject(e) : firstValueFrom(this.http.get<Sight[]>(`${environment.apiUrl}/destinations/${encodeURIComponent(iata)}/sights`)))))
         .catch((e) => {
@@ -64,7 +61,6 @@ export class ExploreService {
     return this.holidayCache.get(key)!;
   }
 
-  /** Same SPARQL the backend runs: notable attractions within 8 km of the centre, ranked by Wikipedia language editions. */
   private async querySights(lat: number, lon: number): Promise<Sight[]> {
     const url = 'https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(sightsQuery(lat, lon));
     const r = await publicFetch(url, { timeoutMs: 15_000 });
@@ -98,7 +94,6 @@ export function parseSights(res: SparqlResult): Sight[] {
     const id = b['item']?.value.split('/').pop();
     const name = b['itemLabel']?.value;
     const m = b['loc']?.value.match(/Point\(([-\d.]+) ([-\d.]+)\)/);
-    // Unlabelled items come back as their Q-id: skip them.
     if (!id || !name || !m || seen.has(id) || /^Q\d+$/.test(name)) continue;
     seen.add(id);
     const img = b['img']?.value;

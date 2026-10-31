@@ -2,12 +2,6 @@ import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { KeychainAccess, SecureStorage } from '@aparajita/capacitor-secure-storage';
 
-/**
- * Secrets (refresh tokens) live in the iOS Keychain / Android Keystore-backed storage.
- * On the web nothing is written to localStorage: the session lives in sessionStorage, which is scoped to
- * the tab and erased when it closes, so a reload keeps you signed in but a shared computer doesn't.
- * Refresh tokens rotate on every use and reuse revokes the whole session family server-side.
- */
 @Injectable({ providedIn: 'root' })
 export class SecureStorageService {
   private readonly native = Capacitor.isNativePlatform();
@@ -42,7 +36,6 @@ export class SecureStorageService {
       return;
     }
     await this.init();
-    // Device-only, unavailable while locked: never synced to iCloud or restored on another phone.
     await SecureStorage.set(key, value, false, false, KeychainAccess.whenUnlockedThisDeviceOnly);
   }
 
@@ -70,7 +63,6 @@ export class SecureStorageService {
       if (op === 'remove') sessionStorage.removeItem(k);
       if (op === 'clear') Object.keys(sessionStorage).filter((x) => x.startsWith('gm_s_')).forEach((x) => sessionStorage.removeItem(x));
     } catch {
-      /* storage blocked: fall back to in-memory only */
       if (op === 'get') return this.memory.get(key) ?? null;
       if (op === 'set') this.memory.set(key, value);
     }

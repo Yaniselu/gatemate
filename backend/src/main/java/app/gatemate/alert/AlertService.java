@@ -10,10 +10,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
-/**
- * Server-side alerts (gate changes, delays) for every traveller on the flight's trip, with a push notification.
- * Title and body are built per traveller, in the language they use the app in.
- */
 @Service
 public class AlertService {
     private final AlertEntity.Repo alerts;

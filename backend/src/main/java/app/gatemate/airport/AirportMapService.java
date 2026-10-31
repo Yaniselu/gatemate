@@ -21,11 +21,6 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Everything inside an airport from OpenStreetMap (Overpass): terminals with outlines, gates and facilities.
- * Same query and output as the app's own direct request, used when the phone can't reach Overpass.
- * Cached per airport for a day (Overpass fair use).
- */
 @Service
 public class AirportMapService {
     private static final Logger log = LoggerFactory.getLogger(AirportMapService.class);
@@ -66,7 +61,6 @@ public class AirportMapService {
         for (String a : amenities) AMENITY.put(a, kind);
     }
 
-    /** Public Overpass instances, tried in order; overpass-api.de refuses some cloud IP ranges, so it isn't first here. */
     private static final List<String> MIRRORS = List.of("https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
             "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass-api.de/api/interpreter");
     private final RestClient http = app.gatemate.common.Http.builder(Duration.ofSeconds(60)).build();
@@ -90,7 +84,6 @@ public class AirportMapService {
         String body = "data=" + URLEncoder.encode(q, StandardCharsets.UTF_8);
         for (String mirror : MIRRORS) {
             try {
-                // Some mirrors send JSON as application/octet-stream: read text and parse it ourselves.
                 String text = http.post().uri(mirror).contentType(MediaType.APPLICATION_FORM_URLENCODED).accept(MediaType.ALL).body(body).retrieve().body(String.class);
                 JsonNode res = text == null ? null : json.readTree(text);
                 if (res != null && res.has("elements")) return res.path("elements");
@@ -99,7 +92,6 @@ public class AirportMapService {
                 log.warn("Overpass {} failed for {}: {}", mirror, iata, e.getMessage());
             }
         }
-        // Throwing (instead of returning an empty list) keeps a failure out of the cache and lets the app say "try again".
         throw new ApiException(HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Airport map data is temporarily unavailable.");
     }
 
@@ -124,16 +116,13 @@ public class AirportMapService {
         return "[out:json][timeout:60];(" + selectors(near) + ")->.p;" + OUTPUTS + shapes(near);
     }
 
-    /** Points for nodes, outlines for shops and rooms mapped as areas, centres for big relations. */
     private static final String OUTPUTS = "node.p;out;way.p;out geom tags;rel.p;out center tags;";
 
-    /** Shapes for the drawn plan: terminals, aprons, runways and taxiways, with geometry. */
     private static String shapes(String scope) {
         return "(way[\"aeroway\"=\"terminal\"]" + scope + ";relation[\"aeroway\"=\"terminal\"]" + scope + ";way[\"building\"=\"terminal\"]" + scope
                 + ";way[\"aeroway\"~\"^(runway|taxiway|apron)$\"]" + scope + ";relation[\"aeroway\"=\"apron\"]" + scope + ";);out geom tags;way[\"indoor\"~\"^(room|area|corridor)$\"]" + scope + ";out geom tags;" + context(scope.replace("around:3000", "around:1500"));
     }
 
-    /** Everything around the terminals that makes the plan read like a real map. */
     private static String context(String scope) {
         String roads = "motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|pedestrian";
         return "(way[\"building\"]" + scope + ";way[\"highway\"~\"^(" + roads + ")$\"]" + scope + ";way[\"railway\"~\"^(rail|light_rail|subway|tram|monorail)$\"]" + scope
@@ -188,7 +177,6 @@ public class AirportMapService {
                     shapes.add(new MapFeature(key, kind, name, mid[0], mid[1], null, null, null, null, null, null, List.of(pts), null, null, cls));
                 }
             } else if (e.has("geometry") && e.path("geometry").size() > 2) {
-                // Shops, cafés, rooms and corridors mapped as areas: keep their outline.
                 var ring = simplify(points(e.path("geometry")));
                 if (ring.size() > 2) outlines.put(key, ring);
                 rest.add(e);
@@ -317,12 +305,10 @@ public class AirportMapService {
         return out;
     }
 
-    /** Douglas–Peucker: drops points that change the shape by less than ~1 m. */
     static List<double[]> simplify(List<double[]> pts) {
         if (pts.size() < 4) return pts;
         double[] first = pts.get(0), last = pts.get(pts.size() - 1);
         if (first[0] == last[0] && first[1] == last[1]) {
-            // Closed ring: simplify it as an open path, then close it again.
             var open = new ArrayList<>(simplify(pts.subList(0, pts.size() - 1)));
             open.add(first);
             return open;

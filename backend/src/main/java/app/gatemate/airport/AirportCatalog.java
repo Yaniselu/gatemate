@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/** ~5,300 airports with IATA codes and scheduled service (OurAirports, public domain) + IANA time zones. */
 @Component
 public class AirportCatalog {
     public record Airport(String iata, String icao, String name, String city, String country, double lat, double lon, String tz, String size) {}

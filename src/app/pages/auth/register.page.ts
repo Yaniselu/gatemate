@@ -41,7 +41,6 @@ export class RegisterPage {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly submitted = signal(false);
-  /** Shown when the server takes a while (a free-tier server waking up). */
   readonly slow = signal(false);
 
   invalid(name: 'name' | 'email' | 'password' | 'age' | 'terms'): boolean {
@@ -65,7 +64,6 @@ export class RegisterPage {
       const { name, email, password } = this.form.getRawValue();
       await this.auth.register(name, email, password);
       this.platform.success();
-      // The confirmation code is already on its way (when this server sends e-mail).
       await this.nav.navigateRoot((await this.auth.emailCodes()) ? '/verify-email' : '/tabs/home');
     } catch (e) {
       this.platform.error();

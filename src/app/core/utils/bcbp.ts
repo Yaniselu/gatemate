@@ -1,19 +1,13 @@
-/**
- * Parser for IATA Bar Coded Boarding Pass (BCBP, Resolution 792) mandatory fields.
- * This is the PDF417/Aztec/QR payload printed on every boarding pass.
- */
 export interface BoardingPassData {
   passengerName: string;
   firstName: string;
   lastName: string;
-  /** Raw barcode payload, kept so the backend can check the airline's digital signature when present. */
   raw: string;
   bookingRef: string;
   from: string;
   to: string;
   carrier: string;
   flightNumber: string;
-  /** Day of year (1-366) of the flight. */
   julianDate: number;
   flightDate: Date;
   cabinCode: string;
@@ -55,7 +49,6 @@ export function parseBcbp(raw: string, today = new Date()): BoardingPassData {
   };
 }
 
-/** BCBP omits the year: choose the closest date that is not more than ~2 months in the past. */
 function dateFromJulian(day: number, today: Date): Date {
   const candidate = (year: number) => new Date(Date.UTC(year, 0, day));
   const thisYear = candidate(today.getUTCFullYear());

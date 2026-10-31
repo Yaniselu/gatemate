@@ -4,7 +4,6 @@ import { Flight } from '../../core/models';
 import { ClockPipe, ShortDatePipe } from '../pipes/time.pipes';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** Tap-to-flip boarding pass. Front: journey details. Back: scannable code area. */
 @Component({
   selector: 'gm-boarding-pass',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,7 +62,6 @@ export class BoardingPassComponent {
   readonly flight = input.required<Flight>();
   readonly flipped = signal(false);
 
-  // Deterministic visual code derived from the booking data (decorative until the real barcode payload is stored).
   readonly matrix = computed(() => {
     const seed = `${this.flight().bookingRef}${this.flight().number}${this.flight().seat}`;
     let h = 2166136261;

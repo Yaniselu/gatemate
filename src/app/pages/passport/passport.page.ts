@@ -51,7 +51,6 @@ export class PassportPage {
     this.summary().countries.map((cc) => ({ cc, flag: flagEmoji(cc), name: this.db.countryName(cc) || cc })),
   );
   readonly upcomingCount = computed(() => this.summary().routes.filter((r) => r.upcoming).length);
-  /** A light-hearted comparison so big numbers mean something. */
   readonly fact = computed(() => {
     const s = this.summary();
     if (!s.flights) return '';
@@ -85,7 +84,6 @@ export class PassportPage {
     }
   }
 
-  /** 1080×1350 (Instagram portrait) card, drawn locally: no network, nothing uploaded. */
   private async renderCard(): Promise<HTMLCanvasElement> {
     const s = this.summary();
     const W = 1080, H = 1350;
@@ -132,10 +130,8 @@ export class PassportPage {
     ctx.font = font(800, 76);
     ctx.fillText('passport', 72, 334);
 
-    // Route sketch: airports projected into the header, connected by arcs.
     this.drawRoutes(ctx, s, { x: 72, y: 372, w: W - 144, h: 150 });
 
-    // Stats grid.
     const stats: [string, string][] = [
       [s.flights.toLocaleString('en'), s.flights === 1 ? 'flight' : 'flights'],
       [s.km.toLocaleString('en'), 'km flown'],
@@ -158,11 +154,9 @@ export class PassportPage {
       ctx.fillText(l, x + 24, y + 138);
     });
 
-    // Flags.
     const flags = s.countries.slice(0, 12).map(flagEmoji);
     if (flags.length) {
       ctx.font = `60px ${CARD_FONT}`;
-      // Advance by the measured width: emoji widths differ between fonts.
       let x = 72;
       for (const f of flags) {
         const w = ctx.measureText(f).width;
@@ -232,7 +226,6 @@ function cap(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** Largest font size (≤ max) at which the text fits the width. */
 function fit(ctx: CanvasRenderingContext2D, text: string, width: number, max: number): number {
   let size = max;
   ctx.font = `800 ${size}px ${CARD_FONT}`;

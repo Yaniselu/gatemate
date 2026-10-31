@@ -4,7 +4,6 @@ export const environment: AppEnvironment = {
   production: true,
   useMocks: false,
   hashRouting: false,
-  // Render deployment (see render.yaml). Change both lines when you move to your own domain.
   apiUrl: 'https://gatemate-api-2n16.onrender.com/api/v1',
   allowedApiOrigins: ['https://gatemate-api-2n16.onrender.com'],
   auth: {

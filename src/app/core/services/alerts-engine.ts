@@ -7,16 +7,10 @@ const SCHENGEN = new Set(['AT', 'BE', 'BG', 'HR', 'CZ', 'DK', 'EE', 'FI', 'FR', 
 export interface EngineContext {
   now: number;
   countryOf: (iata: string) => string | undefined;
-  /** km from the user to the departure airport, if location is known. */
   kmToAirport?: (iata: string) => number | undefined;
-  /** Weather code forecast for the arrival day, if known. */
   arrivalWeather?: (trip: Trip) => number | undefined;
 }
 
-/**
- * Builds reminders from the user's own trips. Each alert has a stable id so read/dismissed state
- * survives refreshes. Live gate/delay changes come from the server as push notifications.
- */
 export function buildAlerts(trips: Trip[], ctx: EngineContext): FlightAlert[] {
   const out: FlightAlert[] = [];
   const iso = (t: number) => new Date(t).toISOString();
@@ -65,11 +59,10 @@ export function buildAlerts(trips: Trip[], ctx: EngineContext): FlightAlert[] {
   return out;
 }
 
-/** When to be at the airport and when to leave: 2 h inside Schengen, 3 h otherwise, plus the drive. */
 function arrivalPlan(f: Flight, schengen: boolean, km: number | undefined) {
   const dep = new Date(f.departure).getTime();
   const arriveBeforeH = schengen ? 2 : 3;
-  const driveMin = km !== undefined ? Math.max(10, Math.round((km / 45) * 60)) : 45; // conservative 45 km/h city average
+  const driveMin = km !== undefined ? Math.max(10, Math.round((km / 45) * 60)) : 45;
   const arriveAt = dep - arriveBeforeH * H;
   return { arriveBeforeH, driveMin, arriveAt, leaveAt: arriveAt - driveMin * 60_000 };
 }
@@ -82,10 +75,6 @@ export interface DayStep {
   at: number;
 }
 
-/**
- * The flight day as a timeline, from leaving home to landing. Times are typical airline cut-offs;
- * the airline's own times (boarding) are used when we have them.
- */
 export function airportDay(f: Flight, ctx: Pick<EngineContext, 'countryOf' | 'kmToAirport'>): DayStep[] {
   const dep = new Date(f.departure).getTime();
   const fromC = ctx.countryOf(f.from.code), toC = ctx.countryOf(f.to.code);

@@ -59,12 +59,10 @@ class ApiFlowTest {
         mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + access)).andExpect(status().isOk()).andExpect(jsonPath("$.email").value(email))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
         mvc.perform(get("/api/v1/me")).andExpect(status().isUnauthorized());
-        // Tamper with the payload (e.g. try to change the subject): the signature no longer matches.
         String[] parts = access.split("\\.");
         String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1])).replaceFirst("\"sub\":\"[^\"]+\"", "\"sub\":\"" + UUID.randomUUID() + "\"");
         String forged = parts[0] + "." + java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes()) + "." + parts[2];
         mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + forged)).andExpect(status().isUnauthorized());
-        // An unsigned token ("alg":"none") is rejected too.
         String none = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString("{\"alg\":\"none\"}".getBytes()) + "." + parts[1] + ".";
         mvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + none)).andExpect(status().isUnauthorized());
 
@@ -72,7 +70,6 @@ class ApiFlowTest {
         post("/api/v1/auth/login", null, "{\"email\":\"" + email + "\",\"password\":\"Correct-Horse-42!\"}", 200);
 
         String rt2 = post("/api/v1/auth/refresh", null, "{\"refreshToken\":\"" + rt1 + "\"}", 200).get("refreshToken").asString();
-        // Re-using the old token revokes the whole family, including rt2.
         post("/api/v1/auth/refresh", null, "{\"refreshToken\":\"" + rt1 + "\"}", 401);
         post("/api/v1/auth/refresh", null, "{\"refreshToken\":\"" + rt2 + "\"}", 401);
     }
@@ -98,7 +95,6 @@ class ApiFlowTest {
         String barcode = BcbpAndNameTest.pass("POPESCU/ANA", "QWE" + (int) (Math.random() * 900 + 100), "OTP", "LTN", "W6", "3301", julian, "012A");
         String claim = "{\"method\":\"pass\",\"barcode\":\"" + barcode + "\"}";
 
-        // No legal name yet.
         post("/api/v1/flights/claim", access, claim, 422);
 
         mvc.perform(patch("/api/v1/me").header("Authorization", "Bearer " + access).contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +106,6 @@ class ApiFlowTest {
         var trip = post("/api/v1/flights/claim", access, claim, 200);
         org.junit.jupiter.api.Assertions.assertEquals("verified", trip.path("flights").get(0).path("verification").path("status").asString());
 
-        // The same ticket can't be claimed twice — by anyone.
         post("/api/v1/flights/claim", access, claim, 409);
         String other = register("other+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
         mvc.perform(patch("/api/v1/me").header("Authorization", "Bearer " + other).contentType(MediaType.APPLICATION_JSON)
@@ -119,7 +114,6 @@ class ApiFlowTest {
 
         mvc.perform(get("/api/v1/trips").header("Authorization", "Bearer " + access)).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].destination.code").value("LTN"));
-        // Another user cannot see someone else's trip.
         mvc.perform(get("/api/v1/trips").header("Authorization", "Bearer " + other)).andExpect(jsonPath("$", hasSize(0)));
     }
 
@@ -131,20 +125,17 @@ class ApiFlowTest {
         org.junit.jupiter.api.Assertions.assertEquals("unverified", trip.path("flights").get(0).path("verification").path("status").asString());
         String chatId = trip.path("chatId").asString();
         post("/api/v1/chats/" + chatId + "/messages", access, "{\"text\":\"Hello team\",\"clientId\":\"c-1\"}", 200);
-        // Idempotent on clientId.
         post("/api/v1/chats/" + chatId + "/messages", access, "{\"text\":\"Hello team\",\"clientId\":\"c-1\"}", 200);
         mvc.perform(get("/api/v1/chats/" + chatId + "/messages").header("Authorization", "Bearer " + access)).andExpect(jsonPath("$", hasSize(1)));
 
         String outsider = register("out+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
         mvc.perform(get("/api/v1/chats/" + chatId + "/messages").header("Authorization", "Bearer " + outsider)).andExpect(status().isNotFound());
 
-        // Add a checklist item (members only).
         String tripId = trip.path("id").asString();
         post("/api/v1/trips/" + tripId + "/checklist", access, "{\"label\":\"Plug adapter\",\"category\":\"packing\"}", 200);
         post("/api/v1/trips/" + tripId + "/checklist", register("x+" + UUID.randomUUID() + "@example.com").get("accessToken").asString(),
                 "{\"label\":\"Nope\",\"category\":\"packing\"}", 404);
 
-        // Invite → accept → member.
         String url = post("/api/v1/invites", access, "{\"targetId\":\"" + trip.path("id").asString() + "\"}", 200).path("url").asString();
         String token = url.substring(url.lastIndexOf('/') + 1);
         post("/api/v1/invites/" + token + "/accept", outsider, "{}", 200);
@@ -192,10 +183,9 @@ class ApiFlowTest {
         long exp = System.currentTimeMillis() + 30L * 86_400_000;
         String event = "{\"event\":{\"id\":\"evt-" + UUID.randomUUID() + "\",\"type\":\"INITIAL_PURCHASE\",\"app_user_id\":\"" + userId
                 + "\",\"product_id\":\"gatemate_pro_monthly\",\"expiration_at_ms\":" + exp + "}}";
-        // Wrong secret: rejected; the app itself can never grant Pro.
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/billing/revenuecat")
                 .header("Authorization", "Bearer nope").contentType(MediaType.APPLICATION_JSON).content(event)).andExpect(status().isUnauthorized());
-        for (int i = 0; i < 2; i++) { // second delivery is a no-op
+        for (int i = 0; i < 2; i++) {
             mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/billing/revenuecat")
                     .header("Authorization", "Bearer test-webhook-secret").contentType(MediaType.APPLICATION_JSON).content(event)).andExpect(status().isOk());
         }
@@ -236,7 +226,6 @@ class ApiFlowTest {
         org.junit.jupiter.api.Assertions.assertEquals("12A", f.path("seat").asString());
         org.junit.jupiter.api.Assertions.assertEquals("K7Q2MX", preview.path("bookingRef").asString());
         org.junit.jupiter.api.Assertions.assertTrue(preview.path("nameFound").asBoolean());
-        // 06:10 in Bucharest.
         var dep = java.time.Instant.parse(f.path("departure").asString()).atZone(java.time.ZoneId.of("Europe/Bucharest"));
         org.junit.jupiter.api.Assertions.assertEquals(java.time.LocalTime.of(6, 10), dep.toLocalTime());
 
@@ -264,16 +253,13 @@ class ApiFlowTest {
                 "Headers", java.util.List.of(java.util.Map.of("Name", "Received-SPF", "Value", spf))));
         String basic = "Basic " + java.util.Base64.getEncoder().encodeToString("gatemate:test-inbound-secret".getBytes());
 
-        // Wrong secret.
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/inbound/email").contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("x:nope".getBytes())).content(postmark.apply(email, "Pass"))).andExpect(status().isUnauthorized());
-        // Someone else forwarding to this address, and a forged "from" that fails SPF: accepted (202) but nothing imported.
         for (String bad : java.util.List.of(postmark.apply("stranger@example.com", "Pass"), postmark.apply(email, "Fail"))) {
             mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/inbound/email").contentType(MediaType.APPLICATION_JSON)
                     .header("Authorization", basic).content(bad)).andExpect(status().isAccepted());
         }
         mvc.perform(get("/api/v1/trips").header("Authorization", "Bearer " + access)).andExpect(jsonPath("$", hasSize(0)));
-        // The owner forwarding from their own, authenticated address.
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/v1/inbound/email").contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", basic).content(postmark.apply(email, "Pass (sender SPF authorized)"))).andExpect(status().isAccepted());
         mvc.perform(get("/api/v1/trips").header("Authorization", "Bearer " + access)).andExpect(jsonPath("$", hasSize(1)))

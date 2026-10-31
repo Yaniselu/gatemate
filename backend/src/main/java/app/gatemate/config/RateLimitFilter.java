@@ -13,11 +13,6 @@ import java.time.Duration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * Per-IP token buckets: a general API limit plus tighter limits on sensitive endpoints
- * (login, registration, password reset, booking lookups). Per-account limits live in the services.
- * Behind a proxy, configure {@code server.forward-headers-strategy=native} so the real client IP is used.
- */
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
     private final Bucket global = Bucket.builder().addLimit(Bandwidth.builder().capacity(600).refillGreedy(600, Duration.ofMinutes(1)).build()).build();
@@ -29,7 +24,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = req.getRequestURI();
         String group;
         Bandwidth limit;
-        // Server-wide ceilings: even with many (or spoofed) IPs, sign-in endpoints can't be hammered.
         if (path.startsWith("/api/v1/auth/") && !global.tryConsume(1)) {
             tooMany(res, 30);
             return;

@@ -9,11 +9,6 @@ import { PrefsService } from '../services/prefs.service';
 
 const RELOCK_AFTER_BACKGROUND_MS = 30_000;
 
-/**
- * Optional Face ID / Touch ID / fingerprint lock:
- * - locks when the app returns from background after 30s, or after N minutes idle;
- * - hides the screen in the app switcher (boarding passes and chats stay private).
- */
 @Injectable({ providedIn: 'root' })
 export class AppLockService {
   private auth = inject(AuthService);
@@ -74,7 +69,6 @@ export class AppLockService {
     }
   }
 
-  /** Confirms the owner is present before sensitive actions (enable lock, delete account). */
   async confirmPresence(reason: string): Promise<boolean> {
     if (!this.platform.isNative) return true;
     try {
@@ -93,7 +87,6 @@ export class AppLockService {
   private async detectBiometry(): Promise<void> {
     const info = await BiometricAuth.checkBiometry().catch(() => null);
     const t = info?.biometryType;
-    // BiometryType: 1 touchId, 2 faceId, 3 fingerprint, 4 face, 5 iris
     this.biometryLabel.set(t === 1 ? 'Touch ID' : t === 2 ? 'Face ID' : t === 3 ? 'Fingerprint' : 'Biometrics');
   }
 }

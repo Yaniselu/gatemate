@@ -6,12 +6,10 @@ const config: CapacitorConfig = {
   appId: 'app.gatemate',
   appName: 'Gatemate',
   webDir: 'www',
-  // Never log bridge traffic (it can contain tokens) in release builds.
   loggingBehavior: isProd ? 'none' : 'debug',
   server: {
     androidScheme: 'https',
     iosScheme: 'capacitor',
-    // Only allow in-app navigation to our own domains.
     allowNavigation: [],
   },
   ios: {

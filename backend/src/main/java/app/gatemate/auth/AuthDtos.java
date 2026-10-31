@@ -17,7 +17,6 @@ public final class AuthDtos {
             @NotBlank @Size(min = 2, max = 60) @Pattern(regexp = "^[\\p{L}][\\p{L}\\p{M}' .-]{1,59}$") String name,
             @NotBlank @Email @Size(max = 254) String email,
             @NotBlank @Size(min = 10, max = 128) String password,
-            /** App language for the confirmation e-mail and alerts; optional. */
             @Size(max = 5) String lang) {}
 
     public record SocialRequest(

@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChatService {
-    /** Messages auto-hide after this many reports, pending moderator review (within 24 h). */
     public static final int AUTO_HIDE_REPORTS = 3;
     private static final int MAX_PER_10S = 8;
 
@@ -74,7 +73,6 @@ public class ChatService {
         }
         threads.save(th);
         join(th.id, me);
-        // A group linked to a trip starts with everyone already on that trip.
         if (trip != null) for (var m : tripMembers.findByTripId(trip)) join(th.id, m.userId);
         return dto(th, me);
     }
@@ -89,7 +87,6 @@ public class ChatService {
         members.save(m);
     }
 
-    /** Opt-in public lounge for everyone on the same flight and date. */
     @Transactional
     public ChatDtos.ThreadDto joinLounge(UUID me, String flightNumber, String date) {
         String key = (flightNumber.replace(" ", "") + "|" + date).toUpperCase(Locale.ROOT);
@@ -126,7 +123,7 @@ public class ChatService {
     public ChatDtos.MessageDto send(UUID me, UUID threadId, ChatDtos.SendRequest in) {
         member(threadId, me);
         var existing = messages.findByAuthorIdAndClientId(me, in.clientId());
-        if (existing.isPresent()) return dto(existing.get(), me); // idempotent retry
+        if (existing.isPresent()) return dto(existing.get(), me);
         var user = users.findById(me).orElseThrow();
         if (user.banned) throw ApiException.forbidden();
         if (messages.countSince(me, Instant.now().minus(Duration.ofSeconds(10))) >= MAX_PER_10S) throw ApiException.tooMany(10);

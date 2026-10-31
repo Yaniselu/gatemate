@@ -51,7 +51,6 @@ export class ProfilePage implements OnInit {
   protected ach = inject(AchievementsService);
   private db = inject(AirportDbService);
 
-  /** Computed from the user's own completed flights — no estimates. */
   readonly travel = computed(() => {
     this.db.ready();
     const s = summarize(this.store.trips().flatMap((t) => t.flights), (c) => this.db.get(c));
@@ -120,7 +119,6 @@ export class ProfilePage implements OnInit {
     await alert.present();
   }
 
-  /** App Store guideline 5.1.1(v): accounts created in-app must be deletable in-app. */
   async deleteAccount() {
     const alert = await this.alerts.create({
       header: tr('Delete account'),

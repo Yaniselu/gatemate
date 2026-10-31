@@ -4,10 +4,8 @@ import app.gatemate.common.ApiException;
 import java.time.LocalDate;
 import java.time.Year;
 
-/** IATA Resolution 792 Bar Coded Boarding Pass — mandatory unique fields (same rules as the app). */
 public record Bcbp(String raw, String firstName, String lastName, String bookingRef, String from, String to, String carrier,
         String flightNumber, int julianDate, LocalDate flightDate, String cabinCode, String seat, String sequence) {
-
     public static Bcbp parse(String input, LocalDate today) {
         String d = input == null ? "" : input.replaceAll("\\r?\\n", "");
         if (d.length() < 60 || d.charAt(0) != 'M') throw ApiException.badRequest("not_a_boarding_pass", "This code is not a boarding pass.");

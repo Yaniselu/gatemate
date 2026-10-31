@@ -25,7 +25,6 @@ public class AirportController {
         return catalog.get(iata).orElseThrow(() -> ApiException.notFound("Airport"));
     }
 
-    /** Gates, terminals and facilities from OpenStreetMap (cached for a day). */
     @GetMapping("/{iata}/map")
     public List<AirportMapService.MapFeature> map(@PathVariable String iata) {
         return maps.features(catalog.get(iata).orElseThrow(() -> ApiException.notFound("Airport")));

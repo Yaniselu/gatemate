@@ -27,7 +27,6 @@
   }
 }
 
-/* ---------- Clouds ---------- */
 .clouds {
   position: absolute;
   left: 0;
@@ -72,7 +71,6 @@
   }
 }
 
-/* ---------- Plane ---------- */
 .plane-stage {
   position: absolute;
   left: 50%;
@@ -146,7 +144,6 @@
   }
 }
 
-/* ---------- Speed lines + runway (visible during take-off) ---------- */
 .speed-lines {
   position: absolute;
   inset: 0;
@@ -182,7 +179,6 @@
   }
 }
 
-/* ---------- Content ---------- */
 .content {
   position: relative;
   z-index: 2;
@@ -327,7 +323,6 @@ h1 {
   pointer-events: none;
 }
 
-/* ---------- Take-off state ---------- */
 .taking-off {
   .bob,
   .plane-stage {

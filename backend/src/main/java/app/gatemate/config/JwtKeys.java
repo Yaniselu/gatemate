@@ -15,13 +15,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-/**
- * RS256 signing keys for access tokens, in order of preference:
- *  1. JWT_PRIVATE_KEY / JWT_PUBLIC_KEY from the environment (secret manager);
- *  2. a key pair generated once by the server and stored in the database, encrypted with TOKEN_ENCRYPTION_KEY,
- *     so sessions survive restarts without the private key ever leaving the server;
- *  3. an in-memory key pair (local development without an encryption key).
- */
 @Component
 public class JwtKeys {
     private static final Logger log = LoggerFactory.getLogger(JwtKeys.class);
@@ -55,7 +48,6 @@ public class JwtKeys {
             try {
                 return decode(cipher.decrypt(stored.get(0)), kf);
             } catch (IllegalStateException e) {
-                // The encryption key changed: the old signing key is unreadable, so rotate it (users sign in again).
                 log.warn("Stored JWT key can't be decrypted with the current TOKEN_ENCRYPTION_KEY — rotating it.");
                 jdbc.update("DELETE FROM server_keys WHERE id = ?", DB_ID);
             }
@@ -67,7 +59,6 @@ public class JwtKeys {
             log.info("Generated and stored a new JWT signing key.");
             return kp;
         } catch (DuplicateKeyException race) {
-            // Another instance created it first: use theirs.
             return decode(cipher.decrypt(jdbc.queryForObject("SELECT secret FROM server_keys WHERE id = ?", String.class, DB_ID)), kf);
         }
     }

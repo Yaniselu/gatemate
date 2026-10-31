@@ -69,7 +69,6 @@ export class AddFlightPage {
     return q ? AIRLINES.filter((a) => a.name.toLowerCase().includes(q) || a.code.toLowerCase().includes(q)) : AIRLINES;
   });
   readonly importEmail = signal<string | null>(null);
-  /** 'off' when the server has no inbound mail provider yet: then only pasting is offered. */
   readonly forwardState = signal<'loading' | 'ready' | 'off'>('loading');
   readonly emailText = signal('');
   readonly emailPreview = signal<EmailPreview | null>(null);
@@ -100,11 +99,9 @@ export class AddFlightPage {
     { id: 'email', icon: 'mail-outline', title: 'From the confirmation e-mail', body: 'Paste it or forward it. Every flight in the booking, with times.', badge: 'Best' },
     { id: 'scan', icon: 'scan-outline', title: 'Scan boarding pass', body: 'Paper pass or another phone’s screen.' },
     { id: 'upload', icon: 'image-outline', title: 'Upload a screenshot', body: 'From the Wizz Air, Ryanair or any airline app.' },
-    // Direct airline lookups need airline partnerships; the demo build shows how it works.
     ...(environment.useMocks ? [{ id: 'airline', icon: 'airplane-outline', title: 'Import from airline', body: 'Booking reference + last name. Bags and seats included.' }] : []),
   ];
 
-  // ----- Navigation -----
   choose(id: string) {
     this.platform.tap();
     if (id === 'scan') void this.scan();
@@ -135,7 +132,6 @@ export class AddFlightPage {
     if (v !== input.value) ctrl.setValue(v);
   }
 
-  // ----- Sources -----
   async scan() {
     if (!this.platform.isNative) {
       if (environment.useMocks) {
@@ -153,7 +149,6 @@ export class AddFlightPage {
       await this.toast.show(e instanceof BcbpError ? e.message : 'The camera scanner could not start.', 'error');
       return;
     }
-    // Closing the scanner is not an error: just stay on this screen.
     if (raw) await this.verifyPass(raw);
   }
 
@@ -167,7 +162,6 @@ export class AddFlightPage {
       raw = await this.reader.fromImage(file);
     } catch (e) {
       if (environment.useMocks && !this.platform.isNative) {
-        // Demo build in a browser: fall back to a sample pass so the flow can be tried.
         await this.toast.show(e instanceof Error ? e.message : 'Could not read that image.');
         await this.verifyPass(this.sample());
       } else {
@@ -257,7 +251,6 @@ export class AddFlightPage {
     }
   }
 
-  // ----- Verification flows -----
   private async verifyPass(raw: string) {
     let pass: BoardingPassData;
     try {
@@ -309,7 +302,6 @@ export class AddFlightPage {
     );
   }
 
-  /** Animates each check, runs the work, then shows success or a clear failure. */
   private async runChecks(labels: string[], work: (advance: (ok: boolean) => Promise<void>) => Promise<Trip>) {
     this.failure.set(null);
     this.checks.set(labels.map((label, i) => ({ label, state: i === 0 ? 'run' : 'wait' })));
@@ -366,7 +358,6 @@ export class AddFlightPage {
         carrier: v.carrier,
         airlineName: AIRLINES.find((a) => a.code === v.carrier)?.name,
         flightNumber: v.flightNumber,
-        // Departure time as printed on the ticket: local time at the departure airport.
         date: v.date.slice(0, 16),
         from: v.from,
         to: v.to,
@@ -392,7 +383,6 @@ export class AddFlightPage {
     await this.nav.navigateForward(['/trip', trip.id]);
   }
 
-  /** Demo IATA BCBP payload in the signed-in user's legal name, three days from today. */
   private sample(): string {
     const u = this.auth.user();
     const last = (u?.legalLastName || 'MORGAN').toUpperCase().normalize('NFD').replace(/[^A-Z ]/g, '');

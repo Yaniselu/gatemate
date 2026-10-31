@@ -12,18 +12,15 @@ const DEFAULT_NOTIFS: NotificationPrefs = {
   tips: false,
 };
 
-/** Non-sensitive preferences only. Tokens and personal data never go here. */
 @Injectable({ providedIn: 'root' })
 export class PrefsService {
   readonly onboarded = signal(false);
   readonly biometricLock = signal(false);
   readonly notifications = signal<NotificationPrefs>(DEFAULT_NOTIFS);
   readonly homeAirport = signal('OTP');
-  /** Accessibility: content zoom (1 = default), reduced motion, high contrast. */
   readonly textScale = signal(1);
   readonly reduceMotion = signal(false);
   readonly highContrast = signal(false);
-  /** Appearance: follow the phone, or always light / dark. `themeChosen` is false until the user has picked once. */
   readonly theme = signal<'system' | 'light' | 'dark'>('system');
   readonly themeChosen = signal(true);
 
@@ -45,7 +42,6 @@ export class PrefsService {
         const n = JSON.parse((await this.read('notifications')) || 'null');
         if (n && typeof n === 'object') this.notifications.set({ ...DEFAULT_NOTIFS, ...pickBooleans(n) });
       } catch {
-        /* ignore corrupt prefs */
       }
     })();
     return this.loaded;
@@ -110,7 +106,6 @@ export class PrefsService {
     try {
       await Preferences.set({ key, value });
     } catch {
-      /* storage unavailable (private mode) — keep in-memory value */
     }
   }
 }

@@ -7,24 +7,18 @@ import { GatemateApi } from './api';
 import { MockApi } from './mock-api';
 import { t as tr } from '../i18n/i18n.service';
 
-/** What a Pro plan looks like on the paywall. Prices always come from the store, already localized. */
 export interface ProPlan {
   id: 'monthly' | 'annual';
   title: string;
   price: string;
   perMonth?: string;
   trial?: string;
-  /** Store package (RevenueCat) — absent in demo builds. */
   pkg?: unknown;
 }
 
 export type ProReason = 'trips' | 'explore' | 'expenses' | 'profile';
 const ENTITLEMENT = 'pro';
 
-/**
- * Gatemate Pro. Purchases go through the App Store / Google Play (RevenueCat SDK); the server is told by the store,
- * not by the app, so `isPro` follows the server's answer. The local store state only fills the gap until it arrives.
- */
 @Injectable({ providedIn: 'root' })
 export class ProService {
   private auth = inject(AuthService);
@@ -47,7 +41,6 @@ export class ProService {
   }
 
   constructor() {
-    // Tie the store account to our user id, so the server can match store events to this account.
     effect(() => {
       const id = this.auth.user()?.id;
       if (id && id !== this.configuredFor) void this.configure(id);
@@ -66,7 +59,6 @@ export class ProService {
       await Purchases.addCustomerInfoUpdateListener((info) => this.applyInfo(info));
       this.applyInfo((await Purchases.getCustomerInfo()).customerInfo);
     } catch {
-      /* store not reachable: stays free until next launch */
     }
   }
 
@@ -118,7 +110,6 @@ export class ProService {
     }
   }
 
-  /** Returns true when the user is Pro afterwards; false if they cancelled. Throws on store errors. */
   async purchase(plan: ProPlan): Promise<boolean> {
     this.busy.set(true);
     try {
@@ -155,7 +146,6 @@ export class ProService {
     }
   }
 
-  /** Subscriptions are managed in the store (Apple ID / Google Play settings). */
   manage() {
     const url = this.managementUrl ?? (Capacitor.getPlatform() === 'android' ? 'https://play.google.com/store/account/subscriptions' : 'https://apps.apple.com/account/subscriptions');
     window.open(url, '_system');
@@ -169,12 +159,10 @@ export class ProService {
     try {
       this.auth.setUser(await this.api.syncPro());
     } catch {
-      /* the webhook will update the account shortly */
     }
   }
 }
 
-/** "7-day free trial", "1-month free trial"… in the app's language. */
 function trialLabel(n: number, unit: string): string {
   const u = unit.toLowerCase();
   if (u.startsWith('week')) return tr('{n}-week free trial', { n });

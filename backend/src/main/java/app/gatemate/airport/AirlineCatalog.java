@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-/** Common airlines: IATA code, ICAO code(s) used as radio callsign prefixes, name. */
 @Component
 public class AirlineCatalog {
     public record Airline(String iata, List<String> icao, String name) {}

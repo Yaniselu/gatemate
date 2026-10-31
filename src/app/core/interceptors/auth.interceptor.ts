@@ -14,11 +14,6 @@ function isOwnApi(url: string): boolean {
   }
 }
 
-/**
- * - Refuses plain-HTTP API calls in production builds.
- * - Attaches the bearer token only to our own API origin (never leaks it to third parties).
- * - On 401 refreshes once (single-flight) and replays; a second 401 signs the user out.
- */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
 

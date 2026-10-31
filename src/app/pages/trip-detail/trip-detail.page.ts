@@ -50,7 +50,6 @@ type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' 
 export class TripDetailPage implements OnInit {
   protected pro = inject(ProService);
   readonly id = input.required<string>();
-  /** Optional deep link to a section, e.g. ?tab=pass */
   readonly tab = input<Section | undefined>();
 
   private store = inject(TravelStore);
@@ -80,7 +79,6 @@ export class TripDetailPage implements OnInit {
   readonly lockShown = signal(false);
   private live = inject(LiveFlightService);
   private clockTick = signal(Date.now());
-  /** The trip's flight that is in the air or about to be (tracked live). */
   readonly liveFlight = computed(() => {
     const now = this.clockTick();
     return (this.trip()?.flights ?? []).find((f) => this.live.inWindow(f, now));
@@ -94,7 +92,6 @@ export class TripDetailPage implements OnInit {
   });
 
   readonly totalSpent = computed(() => (this.trip()?.expenses ?? []).reduce((s, e) => s + e.amount, 0));
-  /** Net balance per traveller: positive = is owed money. */
   readonly balances = computed(() => {
     const t = this.trip();
     if (!t) return [];
@@ -107,7 +104,6 @@ export class TripDetailPage implements OnInit {
     return t.travellers.map((p) => ({ person: p, amount: Math.round((net.get(p.id) ?? 0) * 100) / 100 }));
   });
 
-  /** Fewest transfers that settle every balance (greedy: largest debtor pays largest creditor). Pro. */
   readonly settleUp = computed(() => {
     const debt = this.balances().filter((b) => b.amount < -0.004).map((b) => ({ p: b.person, v: -b.amount })).sort((a, b) => b.v - a.v);
     const cred = this.balances().filter((b) => b.amount > 0.004).map((b) => ({ p: b.person, v: b.amount })).sort((a, b) => b.v - a.v);
@@ -133,7 +129,6 @@ export class TripDetailPage implements OnInit {
   }
   readonly showSettle = signal(false);
 
-  /** CSV of all expenses (Pro). Shared via the system sheet on the phone, downloaded in a browser. */
   async exportCsv() {
     const t = this.trip();
     if (!t) return;
@@ -166,7 +161,6 @@ export class TripDetailPage implements OnInit {
     return id === 'me' ? 'You' : this.trip()?.travellers.find((p) => p.id === id)?.name ?? id;
   }
 
-  // New expense form
   readonly addingExpense = signal(false);
   expenseLabel = '';
   expenseAmount: number | null = null;
@@ -222,7 +216,6 @@ export class TripDetailPage implements OnInit {
     ];
   }
 
-  // Interactive "will it fit" checker against the next flight's allowance.
   fitL: number | null = 40;
   fitW: number | null = 30;
   fitH: number | null = 20;
@@ -278,7 +271,6 @@ export class TripDetailPage implements OnInit {
     return this.trip()?.travellers.find((p) => p.id === id)?.name.split(' ')[0] ?? 'Someone';
   }
 
-  /** Story-sized countdown card ("12 days until Barcelona") for Instagram, WhatsApp… */
   async shareTrip(): Promise<void> {
     const t = this.trip();
     if (!t || this.sharing()) return;

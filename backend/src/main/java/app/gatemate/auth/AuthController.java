@@ -18,7 +18,6 @@ public class AuthController {
         this.verification = verification;
     }
 
-    /** What this server can do, so the app only offers working options (e.g. codes by e-mail). */
     @GetMapping("/features")
     public java.util.Map<String, Boolean> features() {
         return java.util.Map.of("emailCodes", verification.mailEnabled());
@@ -27,7 +26,6 @@ public class AuthController {
     @PostMapping("/register")
     public AuthDtos.Session register(@Valid @RequestBody AuthDtos.RegisterRequest r) {
         var session = auth.register(r);
-        // After the account is saved: e-mail the confirmation code.
         verification.sendQuietly(session.user().id());
         return session;
     }
@@ -48,14 +46,12 @@ public class AuthController {
         return tokens.rotate(r.refreshToken());
     }
 
-    /** Signs out everywhere: every refresh token of the account is revoked. */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@Valid @RequestBody AuthDtos.RefreshRequest r) {
         try {
             var s = tokens.rotate(r.refreshToken());
             tokens.revokeAll(s.user().id());
         } catch (ApiException ignored) {
-            // already invalid — nothing to revoke
         }
         return ResponseEntity.noContent().build();
     }

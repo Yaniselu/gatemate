@@ -17,10 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Confirms the account's e-mail with a 6-digit code sent by e-mail (typed in the app: no links to open, works on any
- * phone). Codes are stored hashed, expire after 30 minutes and allow 5 tries; sending is rate-limited per account.
- */
 @Service
 public class EmailVerificationService {
     @Entity
@@ -53,7 +49,6 @@ public class EmailVerificationService {
         return mail.enabled();
     }
 
-    /** Sends a fresh code (replacing any earlier one). At most one a minute and five an hour per account. */
     @Transactional
     public void send(UserEntity u) {
         if (u.emailVerified) return;
@@ -70,12 +65,10 @@ public class EmailVerificationService {
         mail.sendVerificationCode(u.email, u.displayName, code, u.lang);
     }
 
-    /** Sends a code right after sign-up (after the account is saved); never fails the registration. */
     public void sendQuietly(UUID userId) {
         try {
             if (mail.enabled()) users.findById(userId).ifPresent(this::send);
         } catch (Exception ignored) {
-            // the app offers "Resend code"
         }
     }
 

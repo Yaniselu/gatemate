@@ -7,7 +7,6 @@ export class RelativeTimePipe implements PipeTransform {
     if (!value) return '';
     const diff = new Date(value).getTime() - Date.now();
     const abs = Math.abs(diff);
-    // "5 min ago", "acum 5 min", "hace 5 min"… in the app's language.
     const rtf = new Intl.RelativeTimeFormat(locale(), { numeric: 'auto', style: 'narrow' });
     if (abs < 60_000) return rtf.format(0, 'second');
     if (abs < 3_600_000) return rtf.format(Math.round(diff / 60_000), 'minute');
@@ -36,7 +35,6 @@ export class DurationPipe implements PipeTransform {
 
 @Pipe({ name: 'shortDate' })
 export class ShortDatePipe implements PipeTransform {
-  /** Pass the airport's time zone for flight dates so a 23:50 departure isn't shown on the wrong day. */
   transform(value: string | undefined | null, withWeekday = true, timeZone?: string): string {
     if (!value) return '';
     return new Date(value).toLocaleDateString(locale(), { weekday: withWeekday ? 'short' : undefined, day: 'numeric', month: 'short', timeZone });

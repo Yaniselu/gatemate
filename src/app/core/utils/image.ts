@@ -1,8 +1,3 @@
-/**
- * Shrinks a user photo before upload: centre-crops to a square, resizes to `size` px and
- * re-encodes as WebP (JPEG fallback). Re-encoding through a canvas also drops EXIF metadata,
- * including GPS location, so a profile photo never leaks where it was taken.
- */
 export async function compressAvatar(file: File, size = 320, quality = 0.82): Promise<string> {
   if (!/^image\/(jpeg|png|webp|heic|heif|gif)$/i.test(file.type)) throw new Error('Choose a JPG, PNG, WebP or HEIC photo.');
   if (file.size > 20 * 1024 * 1024) throw new Error('That photo is too large (max 20 MB).');

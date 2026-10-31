@@ -29,12 +29,10 @@
       <div class="card notice"><ion-icon name="alert-circle-outline" /><p>{{ 'We don’t know this airport code.' | t }}</p></div>
     }
 
-    <!-- About -->
     @if (info()?.summary; as s) {
       <p class="lead anim-fade-up">{{ s.description ? s.description + '. ' : '' }}{{ s.extract.split('. ').slice(0, 2).join('. ') }}{{ s.extract.split('. ').length > 2 ? '.' : '' }}</p>
     }
 
-    <!-- Sights -->
     <section id="ex-sights" class="block">
       <header><h2>{{ 'Top sights' | t }}</h2><small>{{ 'Most notable first' | t }}</small></header>
       @if (sights(); as list) {
@@ -148,7 +146,6 @@
       }
     </section>
 
-    <!-- Days & holidays -->
     <section id="ex-when" class="block">
       <header><h2>{{ 'Days & holidays' | t }}</h2><small>{{ tripData() ? ('During your trip' | t) : ('Next 30 days' | t) }}</small></header>
       <div class="card sunbox">
@@ -186,7 +183,6 @@
       }
     </section>
 
-    <!-- Phrases -->
     <section id="ex-phrases" class="block">
       <header>
         <h2>{{ 'Phrases' | t }}</h2>
@@ -209,7 +205,6 @@
       }
     </section>
 
-    <!-- Money -->
     <section id="ex-money" class="block">
       <header><h2>{{ 'Money' | t }}</h2><small>{{ currencyName(country()?.currency?.[0]) }}</small></header>
       @if (info()?.fx; as fx) {
@@ -241,7 +236,6 @@
       }
     </section>
 
-    <!-- Pack -->
     <section id="ex-pack" class="block">
       <header><h2>{{ 'Pack for the weather' | t }}</h2><small>{{ 'From the 5-day forecast' | t }}</small></header>
       @if (info(); as d) {
@@ -271,7 +265,6 @@
       }
     </section>
 
-    <!-- Essentials -->
     <section id="ex-essentials" class="block">
       <header><h2>{{ 'Essentials' | t }}</h2></header>
       @if (country(); as c) {

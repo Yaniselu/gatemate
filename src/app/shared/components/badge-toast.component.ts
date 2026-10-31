@@ -5,7 +5,6 @@ import { AchievementsService } from '../../core/services/achievements.service';
 import { ConfettiService } from './confetti.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** Celebrates a newly earned badge with a glass banner that drops in from the top. */
 @Component({
   selector: 'gm-badge-toast',
   changeDetection: ChangeDetectionStrategy.OnPush,

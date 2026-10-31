@@ -1,7 +1,3 @@
-/**
- * Survival phrases for travellers. Each entry is [phrase, romanisation?]. Polite/neutral forms are used.
- * Keys match the language names in public/data/countries.json.
- */
 export const PHRASE_KEYS = ['Hello', 'Thank you', 'Please', 'Sorry / excuse me', 'Yes', 'No', 'How much is it?', 'Where is the toilet?', 'The bill, please', 'Help!', 'Goodbye'] as const;
 
 type Phrase = [string, string?];
@@ -49,7 +45,6 @@ export const PHRASEBOOK: Record<string, PhraseSet> = {
   Swahili: { native: 'Kiswahili', phrases: [['Habari · Jambo'], ['Asante'], ['Tafadhali'], ['Samahani'], ['Ndiyo'], ['Hapana'], ['Bei gani?'], ['Choo kiko wapi?'], ['Naomba bili'], ['Msaada!'], ['Kwaheri']] },
 };
 
-/** First language of the country that we have phrases for (English is skipped — the UI is already English). */
 export function phrasesFor(languages: string[] | undefined): { language: string; set: PhraseSet } | null {
   for (const l of languages ?? []) {
     if (PHRASEBOOK[l]) return { language: l, set: PHRASEBOOK[l] };

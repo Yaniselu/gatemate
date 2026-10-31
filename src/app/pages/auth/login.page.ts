@@ -31,7 +31,6 @@ export class LoginPage {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly submitted = signal(false);
-  /** Shown when the server takes a while (a free-tier server waking up). */
   readonly slow = signal(false);
 
   invalid(name: 'email' | 'password'): boolean {
@@ -57,7 +56,6 @@ export class LoginPage {
       this.platform.error();
       this.error.set(e instanceof ApiError ? e.message : 'Could not sign in. Please try again.');
       this.form.controls.password.reset('');
-      // The banner explains what went wrong; don't also flag the now-empty field as a validation error.
       this.submitted.set(false);
     } finally {
       clearTimeout(slowTimer);

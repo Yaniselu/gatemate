@@ -5,11 +5,9 @@ export type ImportMethod = 'booking' | 'email' | 'pass';
 export interface AirlineOption {
   code: string;
   name: string;
-  /** Ways a booking from this airline can be imported and verified. */
   methods: ImportMethod[];
 }
 
-// Airline names are used only to identify the carrier of the user's own booking (no logos, no affiliation).
 export const AIRLINES: AirlineOption[] = [
   { code: 'W6', name: 'Wizz Air', methods: ['booking', 'email', 'pass'] },
   { code: 'FR', name: 'Ryanair', methods: ['booking', 'email', 'pass'] },
@@ -25,7 +23,6 @@ export const AIRLINES: AirlineOption[] = [
   { code: 'EK', name: 'Emirates', methods: ['booking', 'email', 'pass'] },
 ];
 
-/** Typical fare bundles used by the mock API to build realistic allowances. Real data comes from the booking. */
 export function sampleBaggage(airlineCode: string, seed: number): { fareName: string; baggage: BaggageAllowance } {
   const lowCost = ['W6', 'FR', 'U2', 'H4'].includes(airlineCode);
   const tier = seed % 3;

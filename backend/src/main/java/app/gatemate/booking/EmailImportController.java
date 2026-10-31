@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.springframework.web.bind.annotation.*;
 
-/** "Paste your confirmation e-mail": read flights out of the text, show them, then add them. */
 @RestController
 @RequestMapping("/api/v1/bookings/email")
 public class EmailImportController {

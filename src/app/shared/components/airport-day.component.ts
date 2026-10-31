@@ -6,7 +6,6 @@ import { AirportDbService, haversineKm } from '../../core/services/airport-db.se
 import { LocationService } from '../../core/services/location.service';
 import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** "Your airport day": the flight day as a live timeline, from leaving home to landing. */
 @Component({
   selector: 'gm-airport-day',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,7 +76,6 @@ export class AirportDayComponent {
       },
     });
   });
-  /** Index of the next thing to do. */
   readonly current = computed(() => {
     const n = this.now();
     const i = this.steps().findIndex((s) => s.at > n);

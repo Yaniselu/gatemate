@@ -2,7 +2,6 @@ package app.gatemate.common;
 
 import org.springframework.http.HttpStatus;
 
-/** Business error with a stable machine-readable code and a user-safe message. */
 public class ApiException extends RuntimeException {
     private final HttpStatus status;
     private final String code;

@@ -19,7 +19,6 @@ import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview,
 
 const ACCESS_TTL_MS = 15 * 60_000;
 
-/** In-memory backend used until the Java API exists. Adds realistic latency so skeletons are visible. */
 @Injectable()
 export class MockApi extends GatemateApi {
   private user: User | null = null;
@@ -64,7 +63,6 @@ export class MockApi extends GatemateApi {
     };
   }
 
-  // ---------- Auth ----------
   async loginWithPassword(email: string, password: string): Promise<Session> {
     await this.delay(null, 700, 1200);
     if (password.length < 8) throw new ApiError('Incorrect email or password.', 401, 'invalid_credentials');
@@ -91,7 +89,6 @@ export class MockApi extends GatemateApi {
   async refresh(refreshToken: string): Promise<Session> {
     await this.delay(null, 150, 300);
     if (!refreshToken.startsWith('rt_')) throw new ApiError('Session expired.', 401, 'invalid_grant');
-    // After a page reload the in-memory mock forgot the user: restore a demo profile.
     return this.session(this.user ?? this.makeUser('Alex Morgan', 'alex.morgan@example.com', 'password'));
   }
 
@@ -102,11 +99,9 @@ export class MockApi extends GatemateApi {
   }
 
   async requestPasswordReset(_email: string): Promise<void> {
-    // Always succeeds so the response never reveals whether an account exists.
     await this.delay(null, 700, 1100);
   }
 
-  /** Demo builds: the code is always 246810 (shown on the screen). */
   static readonly DEMO_CODE = '246810';
 
   async confirmPasswordReset(_email: string, code: string, _password: string): Promise<void> {
@@ -153,14 +148,12 @@ export class MockApi extends GatemateApi {
     return this.delay(this.user, 300, 600);
   }
 
-  /** Demo builds only: simulates a completed store purchase (no payment happens). */
   async demoGrantPro(): Promise<User> {
     if (!this.user) throw new ApiError('Not signed in.', 401);
     this.user = { ...this.user, pro: true, proUntil: new Date(Date.now() + 30 * 86_400_000).toISOString() };
     return this.delay(this.user, 500, 900);
   }
 
-  /** Same rule as the server: free accounts keep up to 3 upcoming trips. */
   private requireTripAllowance() {
     if (this.user?.pro) return;
     const upcoming = this.ensureTrips().filter((t) => +new Date(t.endDate) > Date.now()).length;
@@ -171,10 +164,8 @@ export class MockApi extends GatemateApi {
     await this.delay(null, 500, 900);
   }
 
-  // ---------- Booking import & ownership ----------
   async lookupBooking(req: BookingLookup): Promise<BookingLookupResult> {
     await this.delay(null, 1200, 1800);
-    // Booking references are guessable: the real API rate-limits per account and IP.
     const now = Date.now();
     this.lookupAttempts = this.lookupAttempts.filter((t) => now - t < 10 * 60_000);
     if (this.lookupAttempts.length >= 5) throw new ApiError('Too many lookups. Try again in a few minutes.', 429, 'rate_limited', 300);
@@ -183,7 +174,6 @@ export class MockApi extends GatemateApi {
     const legalLast = this.user?.legalLastName ?? '';
     const match = matchPassengerName(this.user?.legalFirstName ?? '', req.lastName, this.user?.legalFirstName ?? '', legalLast);
     if (!/^[A-Z0-9]{6}$/.test(req.bookingRef) || !match.lastNameOk) {
-      // Same message whether the reference or the name is wrong (no enumeration).
       throw new ApiError('We could not find a booking with this reference and last name.', 404, 'not_found');
     }
     const airline = AIRLINES.find((a) => a.code === req.airline);
@@ -279,7 +269,6 @@ export class MockApi extends GatemateApi {
     return this.delay(`trips+${(this.user?.id ?? 'demo').slice(-8).toLowerCase()}@in.gatemate.app`, 200, 400);
   }
 
-  /** Demo reader: same idea as the server's (flight number, two airport codes, date, time). */
   private async readEmail(text: string): Promise<{ input: NewFlightInput; ref?: string; nameFound: boolean }> {
     await this.airportDb.load();
     const fn = text.match(/\b([A-Z][A-Z0-9])\s?(\d{1,4})\b/);
@@ -304,7 +293,6 @@ export class MockApi extends GatemateApi {
   async previewEmail(text: string): Promise<EmailPreview> {
     const r = await this.readEmail(text);
     const trip = await this.addFlight(r.input);
-    // Preview only: take the demo trip back out.
     this.trips = this.ensureTrips().filter((t) => t.id !== trip.id);
     return this.delay({ flights: trip.flights, bookingRef: r.ref ?? null, nameFound: r.nameFound }, 300, 600);
   }
@@ -354,7 +342,6 @@ export class MockApi extends GatemateApi {
     };
   }
 
-  // ---------- Trips ----------
   private ensureTrips(): Trip[] {
     this.trips ??= createMockTrips(this.user?.name ?? 'Traveller');
     return this.trips;
@@ -374,7 +361,6 @@ export class MockApi extends GatemateApi {
     if (!ra || !rb) throw new ApiError('Unknown airport code.', 400, 'unknown_airport');
     const ap = (r: typeof ra) => ({ code: r.iata, city: r.city, name: r.name, country: this.airportDb.countryName(r.country), timezone: r.tz });
     const from = ap(ra), to = ap(rb);
-    // Same rules as the server: wall-clock time at the departure airport; block time = 30 min + cruise at 800 km/h.
     const departure = /Z$|[+-]\d\d:\d\d$/.test(input.date) ? new Date(input.date) : zonedToUtc(input.date, ra.tz);
     if (isNaN(departure.getTime())) throw new ApiError('Enter a valid departure date and time.', 400, 'bad_date');
     const km = Math.round(haversineKm(ra.lat, ra.lon, rb.lat, rb.lon));
@@ -442,14 +428,12 @@ export class MockApi extends GatemateApi {
     return this.delay(flight, 300, 700);
   }
 
-  // ---------- Velo (demo) ----------
   private veloUsed = 0;
 
   async assistantStatus(): Promise<AssistantStatus> {
     return this.delay({ enabled: true, used: this.veloUsed, limit: 20 }, 100, 250);
   }
 
-  /** Demo agent: the same events the real one streams (tools, text, actions), built from the demo trips. */
   async assistantChat(messages: AssistantTurn[], onEvent: (e: AssistantEvent) => void, signal: AbortSignal): Promise<void> {
     this.veloUsed++;
     const q = (messages[messages.length - 1]?.text ?? '').toLowerCase();
@@ -496,7 +480,6 @@ export class MockApi extends GatemateApi {
     emit({ type: 'done' });
   }
 
-  // ---------- Alerts ----------
   async getAlerts(): Promise<FlightAlert[]> {
     return this.delay(this.alerts, 400, 900);
   }
@@ -506,7 +489,6 @@ export class MockApi extends GatemateApi {
     await this.delay(null, 80, 160);
   }
 
-  // ---------- Chat ----------
   async getThreads(): Promise<ChatThread[]> {
     return this.delay(this.threads, 500, 1000);
   }
@@ -568,7 +550,6 @@ export class MockApi extends GatemateApi {
     await this.delay(null, 300, 600);
   }
 
-  // ---------- Airport & profile ----------
   async getStats(): Promise<TravelStats> {
     return this.delay(createMockStats(), 500, 1000);
   }

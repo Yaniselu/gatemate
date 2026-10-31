@@ -7,7 +7,6 @@ import { PressableDirective } from '../../shared/directives/pressable.directive'
 import { t, TranslatePipe } from '../../core/i18n/i18n.service';
 import { AIRPORT_RULES, AirportRule, RULE_CATEGORIES, RuleCategory } from './airport-rules.data';
 
-/** Folds accents and case so "pasaport" finds "pașaport". */
 const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 @Component({
@@ -166,7 +165,6 @@ export class AirportRulesPage {
   readonly cat = signal<string | null>(null);
   readonly mustOnly = signal(false);
 
-  /** Each rule with its searchable text, in English and in the app language. */
   private readonly index = AIRPORT_RULES.map((r) => ({ r, text: fold([r.title, r.body, t(r.title), t(r.body)].join(' ')) }));
 
   readonly groups = computed(() => {

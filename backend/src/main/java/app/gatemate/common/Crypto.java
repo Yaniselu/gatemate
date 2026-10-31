@@ -12,7 +12,6 @@ public final class Crypto {
 
     private Crypto() {}
 
-    /** URL-safe random token with {@code bytes} of entropy. */
     public static String token(int bytes) {
         byte[] b = new byte[bytes];
         RNG.nextBytes(b);

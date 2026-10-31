@@ -12,7 +12,6 @@ export interface RouteLine {
   from: RoutePoint;
   to: RoutePoint;
   count: number;
-  /** Not flown yet. */
   upcoming: boolean;
 }
 
@@ -20,20 +19,14 @@ export interface TravelSummary {
   flights: number;
   km: number;
   hours: number;
-  /** ISO country codes, in the order first visited. */
   countries: string[];
   airports: number;
-  /** Times around the Earth (equator, 40,075 km). */
   laps: number;
   longest?: { from: string; to: string; km: number };
   topCity?: { city: string; count: number };
   routes: RouteLine[];
 }
 
-/**
- * Totals for flights already landed; upcoming ones only add routes to the map. Shared by Profile and
- * Passport so both always show the same numbers.
- */
 export function summarize(all: Flight[], lookup: (code: string) => AirportRecord | undefined, now = Date.now()): TravelSummary {
   const sorted = [...all].sort((a, b) => +new Date(a.departure) - +new Date(b.departure));
   const flown = sorted.filter((f) => new Date(f.arrival).getTime() < now);
@@ -54,7 +47,6 @@ export function summarize(all: Flight[], lookup: (code: string) => AirportRecord
     const upcoming = new Date(f.arrival).getTime() >= now;
     const a = point(f.from.code, f.from.city), b = point(f.to.code, f.to.city);
     if (a && b) {
-      // One line per airport pair, whichever direction it was flown.
       const key = [a.code, b.code].sort().join('-');
       const r = routes.get(key);
       if (r) {
@@ -91,13 +83,11 @@ export function summarize(all: Flight[], lookup: (code: string) => AirportRecord
   };
 }
 
-/** 🇷🇴 from "RO". */
 export function flagEmoji(cc: string): string {
   if (!/^[A-Za-z]{2}$/.test(cc)) return '🏳️';
   return String.fromCodePoint(...[...cc.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
 }
 
-/** Points along the great circle between two airports, for drawing a curved route. */
 export function greatCircle(a: { lat: number; lon: number }, b: { lat: number; lon: number }, steps = 48): [number, number][] {
   const r = Math.PI / 180;
   const [φ1, λ1, φ2, λ2] = [a.lat * r, a.lon * r, b.lat * r, b.lon * r];
@@ -112,7 +102,6 @@ export function greatCircle(a: { lat: number; lon: number }, b: { lat: number; l
     const y = A * Math.cos(φ1) * Math.sin(λ1) + B * Math.cos(φ2) * Math.sin(λ2);
     const z = A * Math.sin(φ1) + B * Math.sin(φ2);
     let lon = Math.atan2(y, x) / r;
-    // Keep the line continuous across the antimeridian instead of jumping across the map.
     if (prevLon !== undefined) while (lon - prevLon > 180) lon -= 360;
     if (prevLon !== undefined) while (prevLon - lon > 180) lon += 360;
     prevLon = lon;

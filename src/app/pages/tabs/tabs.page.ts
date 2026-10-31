@@ -60,7 +60,6 @@ export class TabsPage {
 
   private auth = inject(AuthService);
   private prefs = inject(PrefsService);
-  /** Asked once, after the first sign-in on this device. */
   readonly askTheme = computed(() => !this.prefs.themeChosen());
 
   confirmTheme() {
@@ -68,7 +67,6 @@ export class TabsPage {
   }
 
   constructor() {
-    // First sign-in on this device: ask for the home airport and notifications once.
     const id = this.auth.user()?.id;
     if (id) {
       void Preferences.get({ key: onboardedKey(id) }).then(({ value }) => {
@@ -80,7 +78,6 @@ export class TabsPage {
       pending = sessionStorage.getItem(PENDING_INVITE);
       sessionStorage.removeItem(PENDING_INVITE);
     } catch {
-      /* storage unavailable */
     }
     if (pending) setTimeout(() => void this.router.navigateByUrl(`/invite/${encodeURIComponent(pending!)}`), 400);
   }

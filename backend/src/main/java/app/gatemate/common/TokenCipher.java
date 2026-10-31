@@ -10,7 +10,6 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Component;
 
-/** AES-256-GCM for third-party secrets at rest (e.g. Apple refresh tokens needed for revocation). */
 @Component
 public class TokenCipher {
     private final SecretKeySpec key;
@@ -22,7 +21,6 @@ public class TokenCipher {
         byte[] raw;
         ephemeral = k == null || k.isBlank();
         if (ephemeral) {
-            // Dev only: an ephemeral key means stored third-party tokens become unreadable after a restart.
             org.slf4j.LoggerFactory.getLogger(TokenCipher.class).warn("TOKEN_ENCRYPTION_KEY not set — using an ephemeral key. Never do this in production.");
             raw = new byte[32];
             rng.nextBytes(raw);
@@ -32,13 +30,11 @@ public class TokenCipher {
         this.key = new SecretKeySpec(raw, "AES");
     }
 
-    /** Accepts a base64 32-byte key (openssl rand -base64 32); any other secret string is stretched with SHA-256. */
     private static byte[] decodeKey(String k) {
         try {
             byte[] b = Base64.getDecoder().decode(k);
             if (b.length == 32) return b;
         } catch (IllegalArgumentException notBase64) {
-            // fall through
         }
         if (k.length() < 32) throw new IllegalStateException("TOKEN_ENCRYPTION_KEY is too short (use openssl rand -base64 32)");
         try {
@@ -48,7 +44,6 @@ public class TokenCipher {
         }
     }
 
-    /** True when no TOKEN_ENCRYPTION_KEY is configured: anything encrypted now is unreadable after a restart. */
     public boolean isEphemeral() {
         return ephemeral;
     }

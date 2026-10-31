@@ -16,7 +16,6 @@ interface Place {
   lon: number;
 }
 
-/** Typical ride-hailing (UberX / Bolt) prices in € and a single public-transport ticket, by country. */
 const PRICES: Record<string, { base: number; km: number; min: number; floor: number; ticket: number }> = {
   RO: { base: 1.0, km: 0.45, min: 0.1, floor: 3, ticket: 0.7 },
   ES: { base: 2.5, km: 1.1, min: 0.2, floor: 7, ticket: 2.5 },
@@ -30,11 +29,9 @@ const PRICES: Record<string, { base: number; km: number; min: number; floor: num
   NL: { base: 3.0, km: 1.5, min: 0.25, floor: 8, ticket: 3.4 },
 };
 const DEFAULT_PRICE = { base: 2.5, km: 1.1, min: 0.2, floor: 6, ticket: 2.5 };
-/** Typical economy rental per day in € (insurance basics included, fuel not). */
 const RENTAL_DAY: Record<string, number> = { RO: 25, ES: 35, IT: 40, FR: 45, DE: 50, GB: 45, PT: 30, GR: 35, BE: 45, NL: 50 };
 const RENTAL_RE = /rent|rental|închiri|alquiler|location|noleggio|vermietung|avis|hertz|sixt|europcar|enterprise|budget|goldcar|thrifty|national|alamo|autonom/i;
 
-/** What the rental desk will ask for. */
 export const RENTAL_DOCS = [
   'Driving licence, valid and held for at least 1–2 years',
   'Passport or ID card',
@@ -50,10 +47,6 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-/**
- * After landing: where ride-hailing and public transport leave from, deep links to Uber, Bolt and transit
- * directions, and, with the accommodation entered, which one is worth it (time, cost per person, night arrival).
- */
 @Component({
   selector: 'gm-arrival-transport',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -199,7 +192,6 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
 export class ArrivalTransportComponent implements OnInit {
   readonly flight = input.required<Flight>();
   readonly tripId = input.required<string>();
-  /** Travellers on the trip, to split a ride. */
   readonly people = input(1);
   private db = inject(AirportDbService);
   private gates = inject(GatesService);
@@ -228,7 +220,7 @@ export class ArrivalTransportComponent implements OnInit {
   readonly plan = computed(() => {
     const a = this.airport(), s = this.stay();
     if (!a || !s) return null;
-    const d = km(a, s) * 1.3; // roads aren't straight
+    const d = km(a, s) * 1.3;
     const price = PRICES[a.country] ?? DEFAULT_PRICE;
     const rideMin = Math.round(d / 32 * 60 + 8);
     const rideCost = Math.max(price.floor, price.base + price.km * d + price.min * rideMin);
@@ -239,7 +231,7 @@ export class ArrivalTransportComponent implements OnInit {
     let hour = this.arrival().getUTCHours();
     try {
       hour = +new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: this.flight().to.timezone }).format(this.arrival()) % 24;
-    } catch { /* keep UTC */ }
+    } catch { }
     const night = hour >= 0 && hour < 5;
     const saved = transitMin - rideMin;
     let best: 'ride' | 'transit' = 'transit';
@@ -301,7 +293,6 @@ export class ArrivalTransportComponent implements OnInit {
         this.stay.set(p);
         this.query.set(p.name);
       }
-      // Bus stops and stations mapped at the airport (from the airport plan, if it's already loaded or cached).
       if (a) {
         void this.gates.get(a).then((f) => {
           const transport = f.filter((x) => x.kind === 'poi' && x.poi === 'transport' && x.ref);
@@ -310,7 +301,6 @@ export class ArrivalTransportComponent implements OnInit {
         }).catch(() => {});
       }
     } catch {
-      /* offline: the links still work */
     }
   }
 
@@ -340,7 +330,6 @@ export class ArrivalTransportComponent implements OnInit {
     }
   }
 
-  /** Puts the rental documents on the trip's checklist. */
   async addDocs() {
     try {
       const n = await this.store.addChecklistItems(this.tripId(), this.docs.map((d) => ({ label: t(d).split(',')[0].split(' (')[0], category: 'documents' as const })));

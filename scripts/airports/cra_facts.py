@@ -1,10 +1,7 @@
-# Generates src/app/core/data/airport-facts.ts and the translations for the "About this airport" section.
-# Facts checked in October 2026 (press coverage of the new terminal, Wizz Air schedule changes, aeronautical data).
 import json, sys
 ROOT = sys.argv[1]
 LANGS = ['ro', 'es', 'fr', 'de', 'it']
 
-# (en, ro, es, fr, de, it)
 X = {}
 def tr(en, ro, es, fr, de, it):
     X[en] = (ro, es, fr, de, it)

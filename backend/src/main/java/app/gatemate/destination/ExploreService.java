@@ -20,13 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 
-/** Top sights (Wikidata, CC0), public holidays (Nager.Date) and ECB exchange rates, cached server-side. */
 @Service
 public class ExploreService {
     private static final Logger log = LoggerFactory.getLogger(ExploreService.class);
     private static final Pattern POINT = Pattern.compile("Point\\(([-\\d.]+) ([-\\d.]+)\\)");
     private static final Pattern QID = Pattern.compile("^Q\\d+$");
-    /** Currencies with an ECB reference rate (same list as the app). */
     public static final List<String> FX = List.of("EUR", "USD", "GBP", "RON", "CHF", "PLN", "CZK", "HUF", "BGN", "DKK", "SEK", "NOK", "ISK", "TRY", "JPY",
             "CNY", "KRW", "HKD", "SGD", "THB", "MYR", "IDR", "PHP", "INR", "ILS", "AUD", "NZD", "CAD", "MXN", "BRL", "ZAR");
 
@@ -52,14 +50,12 @@ public class ExploreService {
         var a = airports.get(iata).orElseThrow(() -> ApiException.notFound("Airport"));
         if (!enabled) return List.of();
         double lat = a.lat(), lon = a.lon();
-        // Centre on the city (from its Wikipedia article) rather than the airport, which can be 30 km out.
         Object summary = destinations.get(a.iata(), "EUR").get("summary");
         if (summary instanceof Map<?, ?> m && m.get("coords") instanceof Map<?, ?> c) {
             lat = ((Number) c.get("lat")).doubleValue();
             lon = ((Number) c.get("lon")).doubleValue();
         }
         try {
-            // URI.create: the query is already percent-encoded; a String template would encode it a second time.
             JsonNode res = http.get().uri(java.net.URI.create("https://query.wikidata.org/sparql?format=json&query=" + URLEncoder.encode(sightsQuery(lat, lon, 8), StandardCharsets.UTF_8)))
                     .header("Accept", "application/sparql-results+json").retrieve().body(JsonNode.class);
             return parse(res);
@@ -114,7 +110,7 @@ public class ExploreService {
             }
             return out;
         } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
-            return List.of(); // country not covered
+            return List.of();
         } catch (Exception e) {
             log.warn("Holidays failed for {} {}: {}", country, year, e.getMessage());
             throw new ApiException(org.springframework.http.HttpStatus.BAD_GATEWAY, "upstream_unavailable", "Holiday calendar is temporarily unavailable.");

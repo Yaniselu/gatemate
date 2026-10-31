@@ -1,10 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, input, model, output, viewChild } from '@angular/core';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/**
- * Six-digit code entry: one real input (so iOS can fill the code from Mail/Messages and paste works),
- * drawn as six boxes with the caret in the next empty one.
- */
 @Component({
   selector: 'gm-code-input',
   changeDetection: ChangeDetectionStrategy.OnPush,

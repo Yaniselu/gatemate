@@ -21,10 +21,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 
-/**
- * Sign in with Apple server calls required by App Store Review Guideline 5.1.1(v):
- * exchange the authorization code for a refresh token at sign-in, and revoke it when the account is deleted.
- */
 @Component
 public class AppleClient {
     private static final Logger log = LoggerFactory.getLogger(AppleClient.class);
@@ -65,7 +61,6 @@ public class AppleClient {
         http.post().uri("/auth/revoke").contentType(MediaType.APPLICATION_FORM_URLENCODED).body(form).retrieve().toBodilessEntity();
     }
 
-    /** ES256 client secret signed with the .p8 key (valid 5 minutes). */
     private String clientSecret() {
         try {
             byte[] der = Base64.getDecoder().decode(cfg.privateKeyPem().replaceAll("-----[A-Z ]+-----", "").replaceAll("\\s", ""));

@@ -15,7 +15,6 @@ const FEATURES = [
   { icon: 'heart-outline', title: 'Support an independent app', body: 'No ads, no selling your data — ever.' },
 ];
 
-/** Gatemate Pro paywall. Store-compliant: real prices from the store, trial terms, restore, terms & privacy links. */
 @Component({
   selector: 'gm-pro',
   changeDetection: ChangeDetectionStrategy.OnPush,

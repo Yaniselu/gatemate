@@ -14,10 +14,6 @@ const PHASES: Record<JourneyPhase, { label: string; icon: string }> = {
   arrived: { label: 'Arrived', icon: 'checkmark-circle' },
 };
 
-/**
- * The trip as a short 3D film on the boarding pass: taxi, take-off, the real route over the globe, landing.
- * three.js is loaded only when this shows up; it pauses off-screen and falls back to nothing without WebGL.
- */
 @Component({
   selector: 'gm-flight-journey',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -116,7 +112,6 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
   private readonly reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   async ngAfterViewInit() {
-    // Let the page transition finish and the screen settle before building the 3D scene.
     await new Promise<void>((done) => {
       const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
       if (ric) ric(() => done(), { timeout: 1200 });
@@ -139,7 +134,6 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
       this.resizer = new ResizeObserver(() => this.resize());
       this.resizer.observe(cv);
       if (this.reduced) {
-        // No motion: one still of the route over the globe.
         this.elapsed = 10;
         this.draw(performance.now(), true);
       }
@@ -150,7 +144,6 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
         else this.pause();
       }, { threshold: 0.25 });
       this.observer.observe(this.host.nativeElement);
-      // Scrolling gets the GPU to itself: the film holds while the page moves and picks up when it stops.
       const content = this.host.nativeElement.closest('ion-content') as (HTMLElement & { getScrollElement?: () => Promise<HTMLElement> }) | null;
       const scroller = await content?.getScrollElement?.();
       if (scroller && !this.destroyed) {
@@ -208,7 +201,6 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
 
   private draw(now: number, force: boolean) {
     const f = this.scene!.render(this.elapsed, now);
-    // The HUD updates ~12 times a second; the 3D scene every frame.
     if (force || now - this.lastHud > 80 || f.phase !== this.frame().phase || this.elapsed >= this.duration) {
       this.lastHud = now;
       this.zone.run(() => this.frame.set(f));

@@ -1,4 +1,3 @@
-// Motion library. Everything is transform/opacity only so it stays on the compositor.
 
 @keyframes gm-fade-up {
   from {
@@ -156,7 +155,6 @@
   }
 }
 
-// Utility classes
 .anim-fade-up {
   animation: gm-fade-up var(--gm-dur) var(--gm-ease-out) both;
 }
@@ -170,13 +168,11 @@
   animation: gm-float 4s ease-in-out infinite;
 }
 
-// Stagger children: set --i on each child (done by gmStagger directive or inline style).
 .stagger > * {
   animation: gm-fade-up var(--gm-dur) var(--gm-ease-out) both;
   animation-delay: calc(var(--i, 0) * 60ms + var(--stagger-base, 0ms));
 }
 
-// Scroll reveal (gmReveal directive toggles .is-visible).
 .gm-reveal {
   opacity: 0;
   transform: translate3d(0, 26px, 0) scale(0.98);
@@ -189,7 +185,6 @@
   }
 }
 
-// Pressable feedback (gmPressable directive).
 .gm-pressable {
   transition: transform 0.22s var(--gm-ease-spring);
   will-change: transform;
@@ -201,7 +196,6 @@
   }
 }
 
-// Accessibility: honour the OS "reduce motion" setting.
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

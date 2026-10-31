@@ -2,10 +2,6 @@ import { ChangeDetectionStrategy, Component, ElementRef, inject, input, output, 
 import { IonIcon } from '@ionic/angular/standalone';
 import { PlatformService } from '../../core/services/platform.service';
 
-/**
- * Slide-to-confirm control. Drag the thumb to the right end to trigger `completed`.
- * Keyboard and screen-reader users can press the thumb (Enter/Space) instead.
- */
 @Component({
   selector: 'gm-swipe-button',
   changeDetection: ChangeDetectionStrategy.OnPush,

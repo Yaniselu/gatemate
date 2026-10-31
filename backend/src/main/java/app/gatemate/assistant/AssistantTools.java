@@ -24,16 +24,10 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import org.springframework.stereotype.Component;
 
-/**
- * What Velo can look up and do. Every tool runs as the signed-in traveller and only sees their own trips; booking
- * references, passenger names and e-mail addresses are never handed to the model.
- */
 @Component
 public class AssistantTools {
-    /** Who the tools act for, and where they report actions the app should reflect (e.g. a refreshed checklist). */
     public record Ctx(UUID userId, Consumer<Map<String, Object>> events) {}
 
-    /** A tool failure the model should see and recover from (bad id, unknown airport…). */
     public static class ToolError extends RuntimeException {
         public ToolError(String message) {
             super(message);
@@ -56,17 +50,12 @@ public class AssistantTools {
         this.explore = explore;
     }
 
-    /** A tool as plain JSON Schema, so it can be handed to either model provider. */
     record Spec(String name, String description, Map<String, Object> props, List<String> required) {}
 
     public List<BetaTool> definitions() {
         return specs().stream().map(AssistantTools::beta).toList();
     }
 
-    /**
-     * The same tools as Gemini function declarations. Gemini takes an OpenAPI subset: upper-case types and no
-     * additionalProperties or maxItems (run() enforces the limits itself).
-     */
     public List<Map<String, Object>> geminiDeclarations() {
         return specs().stream().map(s -> Map.<String, Object>of("name", s.name(), "description", s.description(),
                 "parameters", gemini(Map.of("type", "object", "properties", s.props(), "required", s.required())))).toList();
@@ -86,7 +75,7 @@ public class AssistantTools {
                 }
                 case "required" -> { if (!((List<?>) v).isEmpty()) out.put(k, v); }
                 case "description", "enum" -> out.put(k, v);
-                default -> { } // maxItems, additionalProperties: not part of Gemini's schema subset
+                default -> { }
             }
         });
         return out;
@@ -126,7 +115,6 @@ public class AssistantTools {
                     List.of("trip_id", "items")));
     }
 
-    /** Runs a tool and returns its result as JSON text for the model. */
     public Object run(String name, Map<String, Object> in, Ctx ctx) {
         return switch (name) {
             case "get_my_trips" -> myTrips(ctx.userId());
@@ -139,8 +127,6 @@ public class AssistantTools {
             default -> throw new ToolError("Unknown tool " + name + ".");
         };
     }
-
-    // ---------- tools ----------
 
     private Object myTrips(UUID me) {
         List<Map<String, Object>> out = new ArrayList<>();
@@ -307,8 +293,6 @@ public class AssistantTools {
         return Map.of("added", added);
     }
 
-    // ---------- helpers ----------
-
     private static Spec tool(String name, String description, Map<String, Object> props, List<String> required) {
         return new Spec(name, description, props, required);
     }
@@ -317,7 +301,6 @@ public class AssistantTools {
         String name = s.name(), description = s.description();
         var schema = BetaTool.InputSchema.builder().properties(JsonValue.from(s.props())).required(s.required())
                 .putAdditionalProperty("additionalProperties", JsonValue.from(false)).build();
-        // Streams arguments as they're written; run() validates them, since the SDK doesn't when this is on.
         return BetaTool.builder().name(name).description(description).inputSchema(schema).eagerInputStreaming(true).build();
     }
 

@@ -37,7 +37,6 @@ export class App {
   protected lock = inject(AppLockService);
   protected net = inject(NetworkService);
   private prefs = inject(PrefsService);
-  /** Next flight on the lock screen, Dynamic Island and Apple Watch (iOS). */
   private liveActivity = inject(LiveActivityService);
   private store = inject(TravelStore);
   private notifications = inject(NotificationsService);
@@ -57,7 +56,6 @@ export class App {
       root.classList.toggle('gm-reduce-motion', this.prefs.reduceMotion());
       root.classList.toggle('gm-high-contrast', this.prefs.highContrast());
     });
-    // Appearance: the chosen theme, or the phone's while it's set to follow it.
     const media = typeof matchMedia !== 'undefined' ? matchMedia('(prefers-color-scheme: dark)') : null;
     const systemDark = signal(media?.matches ?? false);
     media?.addEventListener('change', (e) => systemDark.set(e.matches));
@@ -69,15 +67,12 @@ export class App {
       root.classList.toggle('ion-palette-dark', dark);
       if (Capacitor.isNativePlatform()) void StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(() => {});
     });
-    // Wake a sleeping (free-tier) server while the user is still on the welcome / sign-in screen.
     if (!environment.useMocks) {
       try {
         void fetch(new URL(environment.apiUrl).origin + '/actuator/health', { cache: 'no-store' }).catch(() => {});
       } catch {
-        /* bad URL in config */
       }
     }
-    // Universal / App Links: only our own invite paths are routed; anything else is ignored.
     if (Capacitor.isNativePlatform()) {
       const router = inject(Router);
       const zone = inject(NgZone);
@@ -87,7 +82,6 @@ export class App {
           const m = u.pathname.match(/^\/invite\/([A-Za-z0-9_-]{16,64})$/);
           if (u.hostname === 'gatemate.app' && m) zone.run(() => void router.navigateByUrl(`/invite/${m[1]}`));
         } catch {
-          /* malformed link */
         }
       });
     }

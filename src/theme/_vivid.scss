@@ -1,13 +1,4 @@
-// Vivid layer: colour and Liquid Glass on top of the base design, built to stay smooth on any phone.
-//
-// Performance rules this file follows (the app lagged when they were broken):
-//   - Nothing behind blurred layers moves: the background is static, so floating glass blurs once, not every frame.
-//   - Live blur (backdrop-filter) only on floating layers: header, tab bar, sheets. Cards fake the frost with an
-//     opaque-ish fill and a specular rim, which costs nothing while scrolling.
-//   - No infinite animations of background-position or filters (they repaint every frame). Motion is one-shot and
-//     uses transform/opacity only.
 
-// ---------- tokens ----------
 :root {
   --gm-canvas: #f4f6fb;
   --gm-glow-1: rgba(15, 181, 195, 0.16);
@@ -48,7 +39,6 @@ html.gm-dark {
   --gm-title-gradient: linear-gradient(100deg, #f1f5fb 0%, #9fe7ee 60%, #5fd8e3 100%);
 }
 
-// Inside screens, cards and wells are frosted (modals and sheets outside keep their solid colours).
 ion-content {
   --gm-card-bg: var(--gm-frost);
   --gm-card-border: rgba(255, 255, 255, 0.75);
@@ -59,7 +49,6 @@ html.gm-dark ion-content {
   --gm-surface: rgba(255, 255, 255, 0.05);
 }
 
-// ---------- background: static, soft, professional ----------
 html:root {
   background:
     radial-gradient(90% 55% at 0% 0%, var(--gm-glow-1), transparent 60%),
@@ -71,12 +60,10 @@ html:root {
 html body {
   background: transparent;
 }
-// The old plain canvas layer at the app root steps aside.
 .gm-ambient {
   background: transparent !important;
 }
 
-// ---------- cards: frost without live blur ----------
 ion-content .card {
   background: var(--gm-frost);
   border-color: var(--gm-card-border);
@@ -88,7 +75,6 @@ ion-content .card.gm-pressed {
   transform: scale(0.98);
 }
 
-// ---------- floating glass: the real thing ----------
 .glass.tinted {
   background: var(--gm-brand-gradient);
   box-shadow: 0 14px 32px rgba(47, 134, 230, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -126,8 +112,6 @@ html.gm-dark ion-tab-bar.gm-tabbar .indicator {
   background: linear-gradient(135deg, rgba(15, 181, 195, 0.3), rgba(91, 91, 214, 0.3)) !important;
 }
 
-// ---------- colour, without continuous repaints ----------
-// Page titles only: hero cards with their own dark backgrounds keep their white headings.
 .gm-page-title {
   background: var(--gm-title-gradient);
   -webkit-background-clip: text;
@@ -156,7 +140,6 @@ html.gm-dark .gm-well {
   background: linear-gradient(145deg, color-mix(in srgb, var(--c) 22%, transparent), color-mix(in srgb, var(--c) 8%, transparent));
 }
 
-// ---------- motion: one-shot, transform and opacity only ----------
 :where(ion-content .page, ion-content .section) > :where(:not([class*='anim-']):not(.gm-reveal):not(ion-refresher)) {
   animation: gm-rise 0.45s var(--gm-ease-out) both;
 }
@@ -177,12 +160,10 @@ html.gm-dark .gm-well {
   transition: transform 0.25s var(--gm-ease-spring);
 }
 
-// Repaint-heavy loops elsewhere in the app, stilled: gradient shifts on large surfaces.
 .hero {
   animation-name: none !important;
 }
 
-// ---------- dark-mode fixes for light-only pieces ----------
 html.gm-dark :is(.edit-btn, .gm-chip.neutral, .segment),
 html.gm-dark ion-content .edit-btn {
   background: var(--gm-surface) !important;
@@ -195,7 +176,6 @@ html.gm-dark ion-action-sheet.gm-sheet {
   --background: rgba(15, 22, 38, 0.9);
 }
 
-// ---------- accessibility ----------
 html.gm-high-contrast ion-content {
   --gm-card-bg: #ffffff;
   --gm-surface: #f1f4f7;

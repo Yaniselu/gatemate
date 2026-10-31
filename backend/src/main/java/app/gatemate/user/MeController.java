@@ -18,7 +18,6 @@ public class MeController {
         this.verification = verification;
     }
 
-    /** E-mails a new 6-digit confirmation code. */
     @PostMapping("/email/code")
     public ResponseEntity<Void> sendCode() {
         verification.send(me.get(CurrentUser.id()));

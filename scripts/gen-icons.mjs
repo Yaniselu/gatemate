@@ -1,5 +1,3 @@
-// Regenerates src/app/icons.ts from every ionicon name used in templates and code,
-// so only the icons the app uses are bundled. Run: node scripts/gen-icons.mjs
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import * as all from 'ionicons/icons';

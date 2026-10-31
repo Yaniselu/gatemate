@@ -2,10 +2,6 @@ import { Capacitor } from '@capacitor/core';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 
-/**
- * Shares a rendered card through the system share sheet (Instagram, WhatsApp, Messages…).
- * Native: written to the app cache and shared as a file. Web: Web Share with a file, else a download.
- */
 export async function shareCanvas(canvas: HTMLCanvasElement, fileName: string, text: string): Promise<void> {
   const name = fileName.replace(/[^\w.-]+/g, '-');
   if (Capacitor.isNativePlatform()) {
@@ -28,13 +24,11 @@ export async function shareCanvas(canvas: HTMLCanvasElement, fileName: string, t
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-/** True when the user closed the share sheet; not an error worth showing. */
 export function isShareCancel(e: unknown): boolean {
   const msg = String((e as { message?: string })?.message ?? e).toLowerCase();
   return msg.includes('cancel') || msg.includes('abort');
 }
 
-/** Loads an image from our own bundle (same origin, so the canvas stays exportable). */
 export function loadImage(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();

@@ -34,7 +34,7 @@ class AirportMapParseTest {
         var runway = features.get(0);
         assertThat(runway.ref()).isEqualTo("08R/26L");
         assertThat(runway.width()).isEqualTo(45.0);
-        assertThat(runway.line()).hasSize(2); // the straight middle point is simplified away
+        assertThat(runway.line()).hasSize(2);
         features = features.subList(2, features.size());
         assertThat(features).extracting(AirportMapService.MapFeature::ref).containsExactly("Terminal 1", "Starbucks", "Toilets", "B12", "Dufry", "Inmedio", "");
         var shop = features.get(5);

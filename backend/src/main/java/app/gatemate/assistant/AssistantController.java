@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-/** Velo, the AI travel agent. The answer streams back as server-sent events (delta, tool, tool_done, action, sources, done, error). */
 @RestController
 @RequestMapping("/api/v1/assistant")
 public class AssistantController {
@@ -39,7 +38,7 @@ public class AssistantController {
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter chat(@RequestBody ChatRequest in) {
         var me = CurrentUser.id();
-        limiter.check("assistant:" + me, 6, Duration.ofMinutes(1)); // bursts, on top of the daily allowance
+        limiter.check("assistant:" + me, 6, Duration.ofMinutes(1));
         assistant.reserve(me);
         var emitter = new SseEmitter(Duration.ofMinutes(4).toMillis());
         pool.submit(() -> {
@@ -58,7 +57,6 @@ public class AssistantController {
         try {
             emitter.send(SseEmitter.event().data(event, MediaType.APPLICATION_JSON));
         } catch (IOException | IllegalStateException e) {
-            // The app went away mid-answer; the rest is dropped.
         }
     }
 }

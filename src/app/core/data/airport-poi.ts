@@ -1,4 +1,3 @@
-/** Facility categories shown in the airport guide and on the map, each with its own colour. */
 export type PoiKind =
   | 'coffee' | 'food' | 'bar' | 'shop' | 'dutyfree' | 'pharmacy' | 'medical' | 'toilets' | 'family' | 'money'
   | 'charging' | 'lounge' | 'prayer' | 'info' | 'transport' | 'parking' | 'services' | 'hotel';
@@ -7,7 +6,6 @@ export interface PoiMeta {
   label: string;
   icon: string;
   color: string;
-  /** Short glyph for map pins. */
   glyph: string;
 }
 
@@ -50,7 +48,6 @@ const AMENITY: Record<string, PoiKind> = {
   townhall: 'services', customs: 'services', conference_centre: 'services', coworking_space: 'services',
 };
 
-/** Overpass value list for amenity=* (only what a traveller looks for, not benches or bins). */
 export const AMENITY_RE = Object.keys(AMENITY).join('|');
 
 export function classify(t: Record<string, string>): PoiKind | null {
@@ -71,7 +68,6 @@ export function classify(t: Record<string, string>): PoiKind | null {
   return null;
 }
 
-/** Name for things mapped without one ("Toilets", "ATM"…). */
 export function fallbackName(kind: PoiKind, t: Record<string, string>): string {
   const a = t['amenity'];
   if (a === 'atm') return 'ATM';

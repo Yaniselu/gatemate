@@ -3,7 +3,6 @@ package app.gatemate.booking;
 import app.gatemate.common.Text;
 import java.util.Locale;
 
-/** Compares ticket names with the account's legal name: diacritics, titles and BCBP truncation tolerant. */
 public final class NameMatcher {
     private NameMatcher() {}
 

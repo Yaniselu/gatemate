@@ -29,11 +29,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-
     @Bean
     SecurityFilterChain api(HttpSecurity http, RateLimitFilter rateLimit) throws Exception {
         http
-            .csrf(c -> c.disable()) // stateless bearer tokens, no cookies
+            .csrf(c -> c.disable())
             .cors(Customizer.withDefaults())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(h -> h
@@ -44,7 +43,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(a -> a
                 .requestMatchers("/api/v1/auth/**", "/actuator/health", "/api/v1/airports/**", "/api/v1/destinations/**", "/api/v1/countries/**", "/api/v1/fx").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/inbound/email", "/api/v1/billing/revenuecat").permitAll()
-                .requestMatchers("/ws/**").permitAll() // authenticated on STOMP CONNECT
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .oauth2ResourceServer(o -> o.bearerTokenResolver(bearerResolver()).jwt(j -> j.jwtAuthenticationConverter(jwtAuth())))
@@ -75,7 +74,6 @@ public class SecurityConfig {
         return d;
     }
 
-    /** Webhooks carry their own shared secret in Authorization; it is not a user JWT, so don't try to decode it. */
     private static org.springframework.security.oauth2.server.resource.web.BearerTokenResolver bearerResolver() {
         var standard = new org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver();
         return request -> {
@@ -85,17 +83,14 @@ public class SecurityConfig {
         };
     }
 
-    /** Argon2id (memory-hard) — Spring Security's recommended parameters. */
     @Bean
     PasswordEncoder passwordEncoder() {
         return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
 
     @Bean
-    // Must be named corsConfigurationSource: that is the bean Spring Security's .cors() looks up.
     CorsConfigurationSource corsConfigurationSource(GatemateProperties props) {
         var c = new CorsConfiguration();
-        // Patterns so a dev profile can allow the LAN (e.g. http://192.168.*:4200) for testing on a phone.
         c.setAllowedOriginPatterns(props.corsOrigins() == null ? List.of() : props.corsOrigins());
         c.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         c.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));

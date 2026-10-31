@@ -85,17 +85,12 @@ interface State {
 
 const KEY = 'gm_achievements';
 
-/**
- * Badges, XP levels and a daily streak — all earned from real actions in the app (no purchases,
- * no random rewards). Stored on the device; synced to the account by the backend when available.
- */
 @Injectable({ providedIn: 'root' })
 export class AchievementsService {
   private platform = inject(PlatformService);
   private state = signal<State>({ counters: {}, earned: {}, streak: 0, lastDay: '' });
   private loaded: Promise<void> | null = null;
 
-  /** Queue of newly unlocked badges, shown one by one by the badge toast. */
   readonly unlocked = signal<BadgeView[]>([]);
 
   readonly badges = computed<BadgeView[]>(() => {
@@ -122,13 +117,11 @@ export class AchievementsService {
         const v = (await Preferences.get({ key: KEY })).value;
         if (v) this.state.set({ counters: {}, earned: {}, streak: 0, lastDay: '', ...JSON.parse(v) });
       } catch {
-        /* first run */
       }
     })();
     return this.loaded;
   }
 
-  /** Daily streak: consecutive calendar days with the app opened. */
   async openedToday(): Promise<void> {
     await this.load();
     const today = new Date().toISOString().slice(0, 10);

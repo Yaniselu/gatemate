@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-/** Shimmering placeholder. Compose several to mirror the layout that is loading. */
 @Component({
   selector: 'gm-skeleton',
   changeDetection: ChangeDetectionStrategy.OnPush,

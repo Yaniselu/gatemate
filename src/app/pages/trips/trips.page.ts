@@ -43,7 +43,6 @@ export class TripsPage implements OnInit {
     (ev.target as HTMLIonRefresherElement).complete();
   }
 
-  /** Calendar-day countdown: "Today", "Tomorrow", "in 5 days", or "Now" once the trip started. */
   countdownLabel(t: Trip): string {
     const start = new Date(t.startDate);
     if (start.getTime() <= Date.now()) return 'Happening now';

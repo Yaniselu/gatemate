@@ -27,7 +27,6 @@ export class ChatService {
       this.threads.set(await this.api.getThreads());
       this.threadsState.set('ready');
     } catch {
-      // A background refresh failing (offline) keeps the list on screen.
       if (!force || this.threadsState() !== 'ready') this.threadsState.set('error');
     }
   }
@@ -42,7 +41,6 @@ export class ChatService {
     this.threads.update((ts) => ts.map((t) => (t.id === threadId ? { ...t, unread: 0 } : t)));
   }
 
-  /** Validates, filters and rate-limits locally, then sends optimistically. */
   async send(threadId: string, raw: string, authorName: string): Promise<{ ok: boolean; reason?: string }> {
     const text = cleanText(raw);
     if (!text) return { ok: false };

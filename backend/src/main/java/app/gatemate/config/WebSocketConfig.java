@@ -19,10 +19,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-/**
- * Real-time chat over STOMP. The access token is checked on CONNECT, and SUBSCRIBE to a chat topic
- * is only allowed for members of that chat. Clients can't publish — sending goes through REST.
- */
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {

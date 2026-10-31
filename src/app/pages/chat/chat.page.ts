@@ -40,7 +40,6 @@ export class ChatPage implements OnInit {
     void this.chat.loadThreads();
   }
 
-  /** Coming back to the tab (e.g. after creating a group or adding a trip): show new chats straight away. */
   ionViewWillEnter(): void {
     if (this.chat.threadsState() === 'ready') void this.chat.loadThreads(true);
   }

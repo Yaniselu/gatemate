@@ -8,7 +8,6 @@ import { CodeInputComponent } from '../../shared/components/code-input.component
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** "Check your inbox": type the 6-digit code from the confirmation e-mail. */
 @Component({
   selector: 'gm-verify-email',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,7 +74,6 @@ export class VerifyEmailPage {
   readonly busy = signal(false);
   readonly sending = signal(false);
   readonly done = signal(false);
-  /** Seconds before another code can be sent (the server allows one a minute). */
   readonly cooldown = signal(60);
 
   constructor() {

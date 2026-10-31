@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-/** Moderation queue for user reports (App Store 1.2: act on objectionable content within 24 hours). ROLE_ADMIN only. */
 @RestController
 @RequestMapping("/api/v1/admin")
 public class AdminController {

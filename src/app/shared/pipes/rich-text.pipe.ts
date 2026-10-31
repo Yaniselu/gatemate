@@ -1,9 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-/**
- * The little Markdown Velo writes (**bold**, lists, https links, line breaks) as HTML. Everything is escaped
- * first, so only the tags made here can appear; Angular's sanitizer runs on top of that.
- */
 @Pipe({ name: 'richText' })
 export class RichTextPipe implements PipeTransform {
   transform(text: string | null | undefined): string {

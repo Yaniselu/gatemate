@@ -2,11 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, input, si
 import { DestinationService } from '../../core/services/destination.service';
 import { AirportDbService } from '../../core/services/airport-db.service';
 
-/**
- * Destination cover. Shows the real photo (backend-licensed, otherwise the city's Wikipedia lead image)
- * with a soft fade-in. Until it loads — or offline — a quiet typographic cover is shown instead:
- * a muted tone per destination, contour lines and the airport code. No illustrations.
- */
 @Component({
   selector: 'gm-city-image',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,9 +43,7 @@ import { AirportDbService } from '../../core/services/airport-db.service';
   `,
 })
 export class CityImageComponent {
-  /** IATA airport code of the destination. */
   readonly code = input.required<string>();
-  /** Optional licensed photo URL from the backend. */
   readonly src = input<string | undefined>();
   readonly alt = input('');
   readonly showCredit = input(false);
@@ -67,7 +60,6 @@ export class CityImageComponent {
   readonly hue = computed(() => {
     let h = 0;
     for (const ch of this.code()) h = (h * 31 + ch.charCodeAt(0)) % 360;
-    // Keep to calm blues, teals, greens and warm sands; skip saturated purples/pinks.
     const bands = [190, 200, 175, 160, 210, 28, 35, 145, 220, 185];
     return bands[h % bands.length];
   });
@@ -79,7 +71,6 @@ export class CityImageComponent {
     return `${f(r.lat, 'N', 'S')}  ${f(r.lon, 'E', 'W')}`;
   });
 
-  /** Deterministic contour lines, so every destination has its own quiet texture. */
   readonly contours = computed(() => {
     let seed = 0;
     for (const ch of this.code()) seed = seed * 7 + ch.charCodeAt(0);

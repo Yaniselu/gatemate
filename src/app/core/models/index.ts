@@ -7,23 +7,18 @@ export interface User {
   name: string;
   email: string;
   avatarColor: string;
-  /** Small, EXIF-stripped WebP data URL or CDN URL. */
   avatarUrl?: string;
   provider: AuthProvider;
   homeAirport?: string;
-  /** Exactly as printed in the passport / ID — used to prove a ticket belongs to this account. */
   legalFirstName?: string;
   legalLastName?: string;
   phone?: string;
   seatPreference?: SeatPreference;
   bio?: string;
   createdAt: string;
-  /** Active Gatemate Pro subscription, as confirmed by the server from App Store / Google Play events. */
   pro?: boolean;
   proUntil?: string;
-  /** The account's e-mail was confirmed with a code. */
   emailVerified?: boolean;
-  /** App language; the server writes push alerts and e-mails in it. */
   lang?: string;
 }
 
@@ -32,7 +27,6 @@ export type ProfilePatch = Partial<Pick<User, 'name' | 'homeAirport' | 'legalFir
 export interface Session {
   user: User;
   accessToken: string;
-  /** Epoch ms when the access token expires. */
   expiresAt: number;
   refreshToken: string;
 }
@@ -43,7 +37,6 @@ export interface Airport {
   name: string;
   country: string;
   timezone: string;
-  /** Licensed destination photo served by the backend. */
   imageUrl?: string;
 }
 
@@ -80,7 +73,6 @@ export interface Flight {
 
 export interface BagItem {
   label: string;
-  /** Length × width × height in cm. */
   dimensionsCm: [number, number, number];
   maxKg?: number;
   count: number;
@@ -92,7 +84,6 @@ export interface BaggageAllowance {
   cabinBag: BagItem | null;
   checked: BagItem[];
   notes: string[];
-  /** Where the allowance came from — the airline booking is authoritative. */
   source: 'airline' | 'boarding-pass' | 'manual';
 }
 
@@ -156,7 +147,6 @@ export interface FlightAlert {
   read: boolean;
   flightId?: string;
   tripId?: string;
-  /** For reminders generated on the device: when the notification fires. */
   scheduledFor?: string;
   source?: 'server' | 'device';
 }
@@ -170,7 +160,6 @@ export interface ChatThread {
   members: Traveller[];
   lastMessage?: ChatMessage;
   unread: number;
-  /** Public flight lounges are opt-in and moderated. */
   isPublic: boolean;
   muted: boolean;
 }

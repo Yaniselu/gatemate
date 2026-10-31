@@ -5,11 +5,6 @@ export interface PublicResponse {
   text: string;
 }
 
-/**
- * Requests to public open-data services (OpenStreetMap, ADS-B). In the app they go through the native HTTP stack,
- * so they don't depend on the service's CORS headers or on the web view; in a browser they use fetch.
- * Never used for our own API (that goes through HttpClient with the auth interceptor).
- */
 export async function publicFetch(
   url: string,
   opts: { method?: 'GET' | 'POST'; form?: Record<string, string>; timeoutMs?: number; signal?: AbortSignal } = {},
@@ -47,17 +42,12 @@ function withAbort<T>(p: Promise<T>, signal?: AbortSignal): Promise<T> {
   });
 }
 
-/** GET (or POST) JSON from a public source; throws on HTTP errors and after the timeout. */
 export async function publicJson<T>(url: string, opts: { timeoutMs?: number; accept?: string } = {}): Promise<T> {
   const r = await publicFetch(url, { timeoutMs: opts.timeoutMs ?? 12_000 });
   if (r.status < 200 || r.status >= 300) throw new Error(`HTTP ${r.status}`);
   return JSON.parse(r.text) as T;
 }
 
-/**
- * Keeps public data (city guide, sights, holidays, rates) on the device: fresh copies are used straight away,
- * older ones refresh in the background, and anything up to a month old still shows when offline.
- */
 export async function deviceCached<T>(key: string, freshMs: number, load: () => Promise<T>): Promise<T> {
   const { Preferences } = await import('@capacitor/preferences');
   const k = 'gm_pub_' + key;

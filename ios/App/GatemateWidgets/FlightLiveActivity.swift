@@ -13,7 +13,6 @@ struct GatemateWidgetsBundle: WidgetBundle {
     }
 }
 
-/// The flight on the lock screen and in the Dynamic Island; watchOS 11+ shows it in the Smart Stack too.
 struct FlightLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FlightActivityAttributes.self) { context in
@@ -118,7 +117,6 @@ private struct Info: View {
     }
 }
 
-/// "Departs in", "Lands in" or "Landed", depending on where the flight is now.
 private struct Headline: View {
     let attributes: FlightActivityAttributes
     let state: FlightActivityAttributes.ContentState
@@ -135,7 +133,6 @@ private struct Headline: View {
     }
 }
 
-/// A live countdown the system keeps ticking without waking the app.
 private struct Countdown: View {
     let state: FlightActivityAttributes.ContentState
 
@@ -151,7 +148,6 @@ private struct Countdown: View {
     }
 }
 
-/// Before take-off: time to departure; in the air: progress to landing.
 private struct FlightProgress: View {
     let state: FlightActivityAttributes.ContentState
 

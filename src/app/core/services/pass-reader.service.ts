@@ -4,15 +4,12 @@ import { PlatformService } from './platform.service';
 import { BcbpError } from '../utils/bcbp';
 
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
-/** Longest side the decoder works on: big enough for a PDF417 on a phone screenshot, small enough to be quick. */
 const DECODE_MAX_SIDE = 2000;
 
-/** Reads boarding-pass barcodes (PDF417, Aztec, QR, Data Matrix) from the camera or a screenshot, entirely on-device. */
 @Injectable({ providedIn: 'root' })
 export class PassReaderService {
   private platform = inject(PlatformService);
 
-  /** Native camera scanner (iOS / Android). Resolves null when the user closes the scanner. */
   async fromCamera(): Promise<string | null> {
     if (!this.platform.isNative) return null;
     try {
@@ -33,7 +30,6 @@ export class PassReaderService {
     }
   }
 
-  /** Decodes a screenshot or photo in the app (no upload). Works the same on iOS, Android and the web. */
   async fromImage(file: File): Promise<string> {
     if (!file.type.startsWith('image/')) throw new BcbpError('Choose a screenshot or photo of your boarding pass.');
     if (file.size > MAX_IMAGE_BYTES) throw new BcbpError('That image is too large (max 15 MB).');
@@ -44,14 +40,12 @@ export class PassReaderService {
     hints.set(zx.DecodeHintType.TRY_HARDER, true);
     const reader = new zx.MultiFormatReader();
     reader.setHints(hints);
-    // Try the full image, then a smaller copy: small barcodes and very large images decode best at different scales.
     for (const scale of [1, 0.5]) {
       const { data, width, height } = grayscale(bitmap, scale);
       try {
         const result = reader.decode(new zx.BinaryBitmap(new zx.HybridBinarizer(new zx.RGBLuminanceSource(data, width, height))));
         if (result.getText()) return result.getText();
       } catch {
-        /* not found at this scale */
       }
     }
     throw new BcbpError('No boarding-pass barcode found in that image. Crop closer to the barcode and try again.');

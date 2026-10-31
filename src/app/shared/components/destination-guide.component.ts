@@ -7,7 +7,6 @@ import { SkeletonComponent } from './skeleton.component';
 import { RevealDirective } from '../directives/reveal.directive';
 import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
 
-/** Practical, sourced facts about a destination. Every block hides itself when its data is unavailable. */
 @Component({
   selector: 'gm-destination-guide',
   changeDetection: ChangeDetectionStrategy.OnPush,

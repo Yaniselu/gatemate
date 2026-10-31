@@ -4,7 +4,6 @@ import { Flight } from '../../core/models';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
 
 interface Cabin {
-  /** Seat letters across the cabin, '|' for an aisle. */
   cols: string[];
   rows: number;
   exits: number[];
@@ -14,7 +13,6 @@ interface Cabin {
 
 const CELL = 22, NOSE = 92, TAIL = 70;
 
-/** A typical layout for the aircraft (the airline's real one can differ). */
 function cabinFor(aircraft: string | undefined, seatRow: number): Cabin {
   const a = (aircraft ?? '').toUpperCase();
   if (/A33|A34|A35|A38|777|787|767|747|B77|B78/.test(a)) {
@@ -29,10 +27,6 @@ function cabinFor(aircraft: string | undefined, seatRow: number): Cabin {
   return { cols: ['A', 'B', 'C', '|', 'D', 'E', 'F'], rows, exits: [1, 11, 12, rows], wing: [9, 17], name: 'narrow' };
 }
 
-/**
- * Top-down cabin plan with the traveller's seat lit up, nose on the left, and what's useful to know about the seat:
- * window/middle/aisle, side, over the wing, distance to the nearest exit.
- */
 @Component({
   selector: 'gm-seat-map',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,20 +48,15 @@ function cabinFor(aircraft: string | undefined, seatRow: number): Cabin {
               </linearGradient>
               <radialGradient id="pulse"><stop offset="0" stop-color="#22c7d3" stop-opacity=".55" /><stop offset="1" stop-color="#22c7d3" stop-opacity="0" /></radialGradient>
             </defs>
-            <!-- wings under the cabin -->
             <path [attr.d]="wingPath(-1)" fill="#cbd5e1" />
             <path [attr.d]="wingPath(1)" fill="#cbd5e1" />
-            <!-- fuselage -->
             <path [attr.d]="hullPath()" fill="url(#hull)" stroke="#94a3b8" stroke-width="1.5" />
-            <!-- cockpit windows -->
             <path [attr.d]="'M ' + (18) + ' ' + (height() / 2 - 9) + ' q 8 9 0 18'" fill="none" stroke="#334155" stroke-width="4" stroke-linecap="round" />
-            <!-- galleys / lavatories -->
             <rect [attr.x]="NOSE - 34" [attr.y]="top() + 4" width="26" [attr.height]="cabinH() - 8" rx="5" fill="#e2e8f0" />
             <text [attr.x]="NOSE - 21" [attr.y]="height() / 2 + 3" class="lab" text-anchor="middle">WC</text>
             <rect [attr.x]="NOSE + cabin().rows * CELL + 6" [attr.y]="top() + 4" width="26" [attr.height]="cabinH() - 8" rx="5" fill="#e2e8f0" />
             <text [attr.x]="NOSE + cabin().rows * CELL + 19" [attr.y]="height() / 2 + 3" class="lab" text-anchor="middle">WC</text>
 
-            <!-- exits -->
             @for (e of cabin().exits; track e) {
               <g>
                 <rect [attr.x]="rowX(e) - 3" [attr.y]="top() - 7" width="16" height="5" rx="2" fill="#16a34a" />
@@ -75,7 +64,6 @@ function cabinFor(aircraft: string | undefined, seatRow: number): Cabin {
               </g>
             }
 
-            <!-- seats -->
             @for (r of rowList(); track r) {
               @if (r % 5 === 0 || r === 1) { <text [attr.x]="rowX(r) + 8" [attr.y]="top() + cabinH() + 20" class="num" text-anchor="middle">{{ r }}</text> }
               @for (c of seatCols(); track c.letter) {
@@ -83,11 +71,9 @@ function cabinFor(aircraft: string | undefined, seatRow: number): Cabin {
                       [class.me]="r === s.row && c.letter === s.letter" [class.exit]="isExit(r)" class="seat" />
               }
             }
-            <!-- column letters at the front -->
             @for (c of seatCols(); track c.letter) {
               <text [attr.x]="NOSE - 46" [attr.y]="c.y + 11" class="col" text-anchor="middle">{{ c.letter }}</text>
             }
-            <!-- your seat -->
             <circle [attr.cx]="rowX(s.row) + 8" [attr.cy]="seatY(s.letter) + 7.5" r="22" fill="url(#pulse)" class="ring" />
             <g [attr.transform]="'translate(' + (rowX(s.row) + 8) + ' ' + (seatY(s.letter) < height() / 2 ? seatY(s.letter) - 14 : seatY(s.letter) + 30) + ')'">
               <rect x="-22" y="-12" width="44" height="18" rx="9" fill="#0f172a" />
@@ -153,7 +139,6 @@ export class SeatMapComponent implements AfterViewInit {
   readonly width = computed(() => NOSE + this.cabin().rows * CELL + 40 + TAIL);
   readonly top = computed(() => (this.height() - this.cabinH()) / 2 - 4);
 
-  /** Seat rows drawn top to bottom: the aircraft's right side (last letter) at the top, as seen from above, nose left. */
   readonly seatCols = computed(() => {
     const cols = [...this.cabin().cols].reverse();
     const out: { letter: string; y: number }[] = [];
@@ -220,7 +205,6 @@ export class SeatMapComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Bring the seat into view.
     const s = this.seat(), el = this.scroll()?.nativeElement;
     if (s && el) el.scrollLeft = Math.max(0, this.rowX(s.row) - el.clientWidth / 2);
   }

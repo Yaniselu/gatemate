@@ -1,8 +1,3 @@
-"""Builds public/i18n/<lang>.json from i18n-src/keys.json (English texts) and i18n-src/<lang>.tsv.
-
-Each TSV line is "<index>\t<translation>", or "@<English text>\t<translation>" for texts added later.
-Checks that every {placeholder} survives translation. Run: python3 scripts/i18n-build.py
-"""
 import json, re, sys, glob, os
 
 keys = json.load(open('i18n-src/keys.json'))
@@ -19,7 +14,6 @@ for tsv in sorted(glob.glob('i18n-src/*.tsv')):
         if set(re.findall(r'\{\w+\}', key)) != set(re.findall(r'\{\w+\}', text)):
             print(f'{lang}:{n} placeholders differ: {key!r} -> {text!r}')
             ok = False
-        # Keep the spacing at the edges of sentence fragments ("Free accounts can have ").
         lead = key[: len(key) - len(key.lstrip())]
         trail = key[len(key.rstrip()):]
         out[key] = lead + text.strip() + trail

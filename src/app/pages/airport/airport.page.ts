@@ -49,7 +49,6 @@ export class AirportPage implements OnInit {
   readonly openRule = signal<string | null>(null);
   private now = signal(Date.now());
 
-  /** The user's next flight leaving from the airport on screen. */
   readonly myFlight = computed(() => {
     const n = this.store.nextFlight();
     return n && n.flight.from.code === this.airport()?.iata ? n.flight : null;
@@ -58,7 +57,6 @@ export class AirportPage implements OnInit {
     const g = this.myFlight()?.gate?.toUpperCase();
     return g ? this.features()?.find((f) => f.kind === 'gate' && f.ref.toUpperCase() === g) : undefined;
   });
-  /** Hand-checked details (terminal, runway, transport, airlines) for airports we know well. */
   readonly facts = computed(() => AIRPORT_FACTS[this.airport()?.iata ?? ''] ?? null);
   readonly gateCount = computed(() => this.features()?.filter((f) => f.kind === 'gate').length ?? 0);
   readonly distanceToAirportKm = computed(() => {
@@ -71,7 +69,6 @@ export class AirportPage implements OnInit {
     const m = haversineKm(f.lat, f.lon, g.lat, g.lon) * 1000;
     return { meters: Math.round(m), minutes: walkMinutes(m) };
   });
-  /** Where distances are measured from: your gate, else you (when at the airport), else the airport centre. */
   private origin = computed(() => {
     const fix = this.location.fix();
     return this.gateFeature() ?? (fix && (this.distanceToAirportKm() ?? 99) < 3 ? { lat: fix.lat, lon: fix.lon } : this.airport());
@@ -81,7 +78,6 @@ export class AirportPage implements OnInit {
     (this.features() ?? []).filter((f) => f.kind === 'terminal').sort((a, b) => a.ref.localeCompare(b.ref, undefined, { numeric: true })),
   );
   readonly terminalNames = computed(() => [...new Set(this.terminals().map((t) => t.ref))]);
-  /** Places matching the search and terminal filter, before the category filter (for the chip counts). */
   private matching = computed(() => {
     const q = fold(this.query().trim());
     const term = this.terminal();
@@ -108,7 +104,6 @@ export class AirportPage implements OnInit {
       .sort((x, y) => x.meters - y.meters);
   });
   readonly visible = computed(() => this.results().slice(0, this.limit()));
-  /** Gates matching the search ("B12"), shown above the places. */
   readonly gateHits = computed(() => {
     const q = this.query().trim().toUpperCase().replace(/^GATE\s*/, '');
     if (!q) return [];
@@ -226,7 +221,6 @@ export class AirportPage implements OnInit {
     return n < 1 ? `${Math.round(n * 1000)} m` : n < 100 ? `${n.toFixed(1)} km` : `${Math.round(n)} km`;
   }
 
-  /** Opening point of the plan: the terminal for hand-drawn airports, else the airport's reference point. */
   view(a: { iata: string; lat: number; lon: number }) {
     const v = PLAN_VIEW[a.iata];
     return v ? { lat: v.lat, lon: v.lon } : { lat: a.lat, lon: a.lon };

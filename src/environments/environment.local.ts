@@ -1,9 +1,5 @@
 import { AppEnvironment } from './environment.model';
 
-/**
- * Real backend on your computer (npm run start:api). The API address follows the page's host, so the same
- * build works on the laptop (localhost) and on a phone on the same Wi-Fi (http://<laptop-ip>:4200).
- */
 const host = typeof location !== 'undefined' && location.hostname ? location.hostname : 'localhost';
 const api = `http://${host}:8080`;
 

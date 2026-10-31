@@ -52,7 +52,6 @@
   color: rgba(255, 255, 255, 0.62);
 }
 
-/* ---------- Hero: smoked glass over the destination ---------- */
 .hero {
   position: relative;
   margin-top: 10px;
@@ -72,7 +71,6 @@
   .hero-bg {
     position: absolute;
     inset: 0;
-    // Slow "Ken Burns" drift on the city photo.
     animation: gm-ken-burns 22s ease-in-out infinite alternate;
   }
   .cover::after {
@@ -353,7 +351,6 @@
   }
 }
 
-/* ---------- Quick actions ---------- */
 .actions {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -394,7 +391,6 @@
   }
 }
 
-/* ---------- Bags ---------- */
 .bags {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -438,7 +434,6 @@
   }
 }
 
-/* ---------- In-flight ---------- */
 .rows {
   margin-top: 22px;
   padding: 0 14px;
@@ -481,7 +476,6 @@
   }
 }
 
-/* ---------- Alerts ---------- */
 .alerts {
   padding: 2px 14px;
 }
@@ -539,7 +533,6 @@
   }
 }
 
-/* ---------- Tips ---------- */
 .tips {
   display: flex;
   gap: 10px;
@@ -573,7 +566,6 @@
   }
 }
 
-/* ---------- Destination ---------- */
 .dest {
   display: flex;
   gap: 16px;
@@ -668,7 +660,6 @@
   .chev { color: var(--gm-ink-3); }
 }
 
-/* Velo, the AI travel agent: the same orb as on its screen. */
 .velo-orb {
   position: relative;
   flex: none;
