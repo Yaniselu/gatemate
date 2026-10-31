@@ -52,6 +52,18 @@
           <ul class="inside">
             @for (x of fx.inside; track x) { <li><ion-icon name="checkmark-circle" />{{ x | t }}</li> }
           </ul>
+          @if (fx.departure?.length) {
+            <h4>{{ fx.departureTitle ?? '' | t }}</h4>
+            <ol class="steps">
+              @for (st of fx.departure; track st; let i = $index) { <li><span class="n">{{ i + 1 }}</span><span>{{ st | t }}</span></li> }
+            </ol>
+          }
+          @if (fx.arrival?.length) {
+            <h4>{{ fx.arrivalTitle ?? '' | t }}</h4>
+            <ol class="steps arr">
+              @for (st of fx.arrival; track st; let i = $index) { <li><span class="n">{{ i + 1 }}</span><span>{{ st | t }}</span></li> }
+            </ol>
+          }
           <h4>{{ 'Getting there' | t }}</h4>
           <div class="facts">
             @for (tp of fx.transport; track tp.title) {

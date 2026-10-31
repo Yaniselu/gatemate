@@ -5,6 +5,11 @@ export interface AirportFacts {
   inside: string[];
   transport: { icon: string; title: string; body: string }[];
   airlines: { name: string; destinations: string[]; note?: string }[];
+  /** Step by step through the terminal. */
+  departure?: string[];
+  arrival?: string[];
+  departureTitle?: string;
+  arrivalTitle?: string;
   note: string;
   checked: string;
 }
@@ -18,6 +23,8 @@ export const AIRPORT_FACTS: Record<string, AirportFacts> = {
       { icon: 'people-outline', label: "Capacity", value: "Up to 2 million passengers a year. The 500,000th passenger of 2026 landed in August." },
       { icon: 'airplane-outline', label: "Runway", value: "09/27, 2,500 × 45 m, with ILS on runway 27." },
       { icon: 'location-outline', label: "Address", value: "Calea București 325, about 7 km east of the city centre." },
+      { icon: 'airplane-outline', label: "Aprons", value: "Two new aircraft aprons and three taxiways, so several planes can be handled at once. Boarding is on foot or by bus across the apron." },
+      { icon: 'construct-outline', label: "In 2026", value: "About 44 million lei of investment, including an ILS CAT III system for landings in fog and green energy." },
       { icon: 'id-card-outline', label: "Codes", value: "IATA CRA · ICAO LRCV · elevation 191 m" },
     ],
     inside: [
@@ -29,12 +36,27 @@ export const AIRPORT_FACTS: Record<string, AirportFacts> = {
     ],
     transport: [
       { icon: 'bus-outline', title: "Bus 9 (RAT Craiova)", body: "Stops in front of the terminal; about 30 minutes to the city centre." },
-      { icon: 'car-outline', title: "Taxi", body: "Taxi rank in front of the terminal, about 15 minutes to the centre." },
+      { icon: 'car-outline', title: "Taxi, Uber and Bolt", body: "Taxi rank and a ride-sharing pick-up in front of the terminal, about 15 minutes to the centre." },
       { icon: 'car-sport-outline', title: "Parking", body: "Short- and long-stay car parks next to the terminal; the first 10 minutes are free." },
     ],
     airlines: [
       { name: "Wizz Air", destinations: ["Bari", "Bergamo (Milano)", "Birmingham", "Bruxelles Charleroi", "Dortmund", "London Luton", "Madrid"], note: "From late October 2026, Paris Beauvais, Barcelona, Rome, Bologna and Venice are suspended." },
       { name: "Holiday charters (HiSky, AnimaWings)", destinations: ["Antalya", "Heraklion", "Hurghada", "Enfidha"], note: "Summer season, sold by travel agencies." },
+    ],
+    departureTitle: "Leaving from Craiova",
+    arrivalTitle: "Landing in Craiova",
+    departure: [
+      "Use the Departures entrance; the screens show your flight’s check-in desk.",
+      "Check in at a desk or a self check-in kiosk on the ground floor and drop checked bags. Desks usually close 40 minutes before departure.",
+      "Go upstairs to security: liquids up to 100 ml in one clear bag, laptop out.",
+      "Schengen flights go straight to their gates. For non-Schengen flights (London, Birmingham) you also pass passport control.",
+      "At boarding you walk or take a bus across the apron to the plane: follow the screens and Gatemate alerts.",
+    ],
+    arrival: [
+      "You walk or ride a bus from the plane into the ground floor of the terminal.",
+      "From outside Schengen: passport control (non-EU travellers are registered in the EES).",
+      "Collect your bags in the baggage hall; lost and found is next to the exit.",
+      "In the arrivals hall: car rental, tourist information and cash machines. Outside: taxis, Uber/Bolt pick-up and bus 9 to the centre.",
     ],
     note: "Gate numbers and positions on the plan are a guide: always follow the screens in the terminal and Gatemate alerts.",
     checked: "Checked October 2026",

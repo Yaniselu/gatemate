@@ -555,6 +555,46 @@
       color: var(--gm-mint, #10b981);
     }
   }
+  .steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      position: relative;
+      display: flex;
+      gap: 12px;
+      padding: 0 0 14px;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--gm-ink-2);
+    }
+    li:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 13px;
+      top: 28px;
+      bottom: 2px;
+      width: 2px;
+      background: linear-gradient(var(--gm-accent-soft), transparent);
+    }
+    .n {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #0fb5c3, #2f86e6);
+    }
+    &.arr .n {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+    }
+  }
   .airline {
     padding: 10px 0;
 
