@@ -36,7 +36,7 @@ public record GatemateProperties(
         }
     }
 
-    public record Billing(String webhookSecret, String secretApiKey, String entitlement, int freeUpcomingTrips) {}
+    public record Billing(String webhookSecret, String secretApiKey, String entitlement, int freeUpcomingTrips, java.util.List<String> proEmails) {}
 
     public record Integrations(String unsplashAccessKey, String aeroDataBoxKey, boolean publicDataEnabled) {}
 

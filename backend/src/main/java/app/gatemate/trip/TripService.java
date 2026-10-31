@@ -69,7 +69,7 @@ public class TripService {
 
     @Transactional
     public TripEntity createWithFlight(UUID me, FlightEntity f) {
-        requireTripAllowance(me);
+        requireTickets(me, (f.ownerFlying ? 1 : 0) + passengers(f).size());
         var to = airports.get(f.toIata).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + f.toIata + "."));
         String lang = users.findById(me).map(u -> u.lang).orElse("en");
         var t = new TripEntity();
@@ -101,15 +101,23 @@ public class TripService {
         return trips.save(t);
     }
 
-    private void requireTripAllowance(UUID me) {
+    public void requireTickets(UUID me, int adding) {
+        if (adding <= 0) return;
         var u = users.findById(me).orElseThrow();
         if (u.isPro()) return;
-        int limit = props.billing() == null || props.billing().freeUpcomingTrips() <= 0 ? 3 : props.billing().freeUpcomingTrips();
+        int limit = props.billing() == null || props.billing().freeUpcomingTrips() <= 0 ? 5 : props.billing().freeUpcomingTrips();
         Instant now = Instant.now();
-        long upcoming = trips.findForMember(me).stream().filter(t -> t.ownerId.equals(me) && t.endAt != null && t.endAt.isAfter(now)).count();
-        if (upcoming >= limit) {
+        long tickets = 0;
+        for (var t : trips.findForMember(me)) {
+            if (!t.ownerId.equals(me)) continue;
+            for (var f : flights.findByTripIdOrderByDepartureAt(t.id)) {
+                if (!f.arrives().isAfter(now)) continue;
+                tickets += (f.ownerFlying ? 1 : 0) + passengers(f).size();
+            }
+        }
+        if (tickets + adding > limit) {
             throw new ApiException(org.springframework.http.HttpStatus.PAYMENT_REQUIRED, "pro_required",
-                    "Free accounts can have " + limit + " upcoming trips. Upgrade to Gatemate Pro for unlimited trips.");
+                    "Free accounts can keep " + limit + " upcoming tickets. Upgrade to Gatemate Pro for unlimited tickets.");
         }
     }
 
@@ -176,6 +184,7 @@ public class TripService {
     public TripDtos.FlightDto addPassenger(UUID me, UUID flightId, TripDtos.PassengerIn in) {
         var f = flights.findById(flightId).orElseThrow(() -> ApiException.notFound("Flight"));
         requireMember(f.tripId, me);
+        if (passengers(f).stream().noneMatch(x -> x.c().equals(in.companionId()))) requireTickets(me, 1);
         addPassengerTo(f, me, in);
         flights.save(f);
         return flightDto(f, me);
@@ -245,6 +254,7 @@ public class TripService {
 
     public void putPassengerPass(FlightEntity f, app.gatemate.identity.CompanionEntity c, String seat, String barcode, String key) {
         var list = passengers(f);
+        if (list.stream().noneMatch(x -> x.c().equals(c.id.toString()))) requireTickets(c.ownerId, 1);
         list.removeIf(x -> x.c().equals(c.id.toString()));
         if (list.size() >= 12) throw ApiException.badRequest("too_many", "Up to 12 extra passengers per flight.");
         list.add(new Seat(c.id.toString(), c.fullName(), seat, seal(barcode), key));

@@ -93,7 +93,8 @@ gatemate:
     webhook-secret: ${REVENUECAT_WEBHOOK_SECRET:}
     secret-api-key: ${REVENUECAT_SECRET_KEY:}
     entitlement: pro
-    free-upcoming-trips: 3
+    free-upcoming-trips: 5
+    pro-emails: ${PRO_EMAILS:}
   assistant:
     api-key: ${ANTHROPIC_API_KEY:}
     model: ${ASSISTANT_MODEL:claude-opus-5-5}

@@ -55,6 +55,8 @@ export class MockApi extends GatemateApi {
       name,
       email,
       provider,
+      pro: true,
+      proUntil: '2099-12-31T00:00:00.000Z',
       legalFirstName: first,
       legalLastName: rest.join(' ') || undefined,
       seatPreference: 'window',
@@ -163,10 +165,13 @@ export class MockApi extends GatemateApi {
     return this.delay(this.user, 500, 900);
   }
 
-  private requireTripAllowance() {
-    if (this.user?.pro) return;
-    const upcoming = this.ensureTrips().filter((t) => +new Date(t.endDate) > Date.now()).length;
-    if (upcoming >= 3) throw new ApiError('Free accounts can have 3 upcoming trips. Upgrade to Gatemate Pro for unlimited trips.', 402, 'pro_required');
+  private requireTripAllowance(adding = 1) {
+    if (this.user?.pro || adding <= 0) return;
+    const tickets = this.ensureTrips()
+      .flatMap((t) => t.flights)
+      .filter((f) => +new Date(f.arrival) > Date.now())
+      .reduce((n, f) => n + (f.ownerFlying === false ? 0 : 1) + (f.passengers?.length ?? 0), 0);
+    if (tickets + adding > 5) throw new ApiError('Free accounts can keep 5 upcoming tickets. Upgrade to Gatemate Pro for unlimited tickets.', 402, 'pro_required');
   }
 
   async sendFeedback(_input: FeedbackInput): Promise<void> {
@@ -243,6 +248,7 @@ export class MockApi extends GatemateApi {
         const same = this.ensureTrips().find((t) => t.flights.some((f) => f.number.replace(' ', '') === `${p.carrier}${p.flightNumber}` && f.departure.slice(0, 10) === p.flightDate.toISOString().slice(0, 10)));
         if (same) {
           const f = same.flights.find((x) => x.number.replace(' ', '') === `${p.carrier}${p.flightNumber}`)!;
+          if (!(f.passengers ?? []).some((x) => x.companionId === c.id)) this.requireTripAllowance(1);
           f.passengers = [...(f.passengers ?? []).filter((x) => x.companionId !== c.id), passenger];
           return this.delay({ ...same }, 0, 0);
         }
@@ -501,6 +507,7 @@ export class MockApi extends GatemateApi {
 
   async addPassenger(flightId: string, companionId: string, seat?: string): Promise<Flight> {
     const f = this.flight(flightId);
+    if (!(f.passengers ?? []).some((p) => p.companionId === companionId)) this.requireTripAllowance(1);
     f.passengers = [...(f.passengers ?? []).filter((p) => p.companionId !== companionId), this.passenger(companionId, seat)];
     return this.delay({ ...f }, 250, 500);
   }

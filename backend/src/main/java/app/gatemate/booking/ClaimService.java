@@ -123,6 +123,7 @@ public class ClaimService {
                 .filter(f -> f.claimKey == null && me.equals(f.claimedBy));
         if (existing.isPresent()) {
             var f = existing.get();
+            if (!f.ownerFlying) trips.requireTickets(me, 1);
             f.ownerFlying = true;
             if (!p.seat().isBlank()) f.seat = p.seat();
             f.bookingRef = p.bookingRef();

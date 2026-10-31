@@ -38,7 +38,7 @@ export const FEATURES: SearchEntry[] = [
   { title: 'Security & privacy', sub: 'Face ID, app lock, sessions, data', icon: 'lock-closed-outline', color: '#334155', route: '/settings/security', keys: 'security privacy face id lock pin password data export delete account securitate confidentialitate parola sterge cont' },
   { title: 'Accessibility', sub: 'Text size, motion, contrast', icon: 'accessibility-outline', color: '#0EA5E9', route: '/settings/accessibility', keys: 'accessibility text size motion contrast accesibilitate marime text' },
   { title: 'Appearance', sub: 'Light, dark or like your phone', icon: 'contrast-outline', color: '#334155', route: '/settings/accessibility', keys: 'dark mode light theme appearance tema intunecata luminoasa aspect' },
-  { title: 'Gatemate Pro', sub: 'Unlimited trips and more', icon: 'diamond-outline', color: '#8B5CF6', route: '/pro', keys: 'pro premium subscription upgrade abonament' },
+  { title: 'Gatemate Pro', sub: 'Unlimited tickets and more', icon: 'diamond-outline', color: '#8B5CF6', route: '/pro', keys: 'pro premium subscription upgrade abonament' },
   { title: 'Feedback', sub: 'Tell us what to improve', icon: 'chatbox-ellipses-outline', color: '#14B8A6', route: '/feedback', keys: 'feedback bug report idea suggestion parere problema sugestie' },
   { title: 'Privacy policy', sub: 'How your data is used', icon: 'document-text-outline', color: '#64748B', route: '/legal/privacy', keys: 'privacy policy gdpr data confidentialitate date' },
 ];

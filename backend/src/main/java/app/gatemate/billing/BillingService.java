@@ -36,6 +36,24 @@ public class BillingService {
         this.cfg = props.billing();
     }
 
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    @org.springframework.scheduling.annotation.Scheduled(initialDelay = 600_000, fixedDelay = 600_000)
+    @Transactional
+    public void grantListedPro() {
+        if (cfg == null || cfg.proEmails() == null) return;
+        for (String raw : cfg.proEmails()) {
+            String email = raw == null ? "" : raw.trim().toLowerCase(java.util.Locale.ROOT);
+            if (email.isEmpty()) continue;
+            users.findByEmail(email).ifPresent(u -> {
+                if (u.isPro() && u.proUntil.isAfter(java.time.Instant.now().plus(java.time.Duration.ofDays(3000)))) return;
+                u.proUntil = java.time.Instant.parse("2099-12-31T00:00:00Z");
+                u.proProduct = "granted";
+                users.save(u);
+                log.info("billing: Pro granted to a listed account");
+            });
+        }
+    }
+
     public boolean webhookConfigured() {
         return cfg != null && cfg.webhookSecret() != null && !cfg.webhookSecret().isBlank();
     }
@@ -45,7 +63,7 @@ public class BillingService {
     }
 
     public int freeUpcomingTrips() {
-        return cfg == null || cfg.freeUpcomingTrips() <= 0 ? 3 : cfg.freeUpcomingTrips();
+        return cfg == null || cfg.freeUpcomingTrips() <= 0 ? 5 : cfg.freeUpcomingTrips();
     }
 
     @Transactional

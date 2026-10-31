@@ -182,4 +182,19 @@ class IdentityTest {
         var withFriend = post("/api/v1/flights/claim", access, body, 200);
         assertThat(withFriend.path("flights").get(0).path("passengers").size()).isEqualTo(2);
     }
+
+    @Test
+    void freeAccountsKeepALimitedNumberOfTicketsFamilyIncluded() throws Exception {
+        String access = register("limit+" + UUID.randomUUID() + "@example.com", "Dana Pop").get("accessToken").asString();
+        var ids = new java.util.ArrayList<String>();
+        for (String n : List.of("Ilie", "Rares", "Sara")) {
+            ids.add(post("/api/v1/me/companions", access, "{\"firstName\":\"" + n + "\",\"lastName\":\"Pop\",\"relation\":\"child\"}", 200).path("id").asString());
+        }
+        String body = "{\"carrier\":\"RO\",\"flightNumber\":\"401\",\"date\":\"" + LocalDate.now().plusDays(20) + "T08:00:00\",\"from\":\"OTP\",\"to\":\"LHR\","
+                + "\"passengers\":[{\"companionId\":\"" + ids.get(0) + "\"},{\"companionId\":\"" + ids.get(1) + "\"}]}";
+        var trip = post("/api/v1/flights", access, body, 200);
+        String flight = trip.path("flights").get(0).path("id").asString();
+        var res = post("/api/v1/flights/" + flight + "/passengers", access, "{\"companionId\":\"" + ids.get(2) + "\"}", 402);
+        assertThat(res.path("code").asString()).isEqualTo("pro_required");
+    }
 }

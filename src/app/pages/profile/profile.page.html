@@ -36,7 +36,7 @@
         @if (pro.isPro()) {
           <b>{{ 'Gatemate Pro' | t }}</b><small>Active{{ auth.user()?.proUntil ? ' · renews or ends ' + (auth.user()!.proUntil! | shortDate: false) : '' }} · Manage</small>
         } @else {
-          <b>{{ 'Upgrade to Gatemate Pro' | t }}</b><small>{{ 'Unlimited trips, full city guides, settle-up' | t }}</small>
+          <b>{{ 'Upgrade to Gatemate Pro' | t }}</b><small>{{ 'Unlimited tickets, full city guides, settle-up' | t }}</small>
         }
       </span>
       <ion-icon name="chevron-forward" class="chev" />

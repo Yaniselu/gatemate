@@ -425,7 +425,7 @@ export class AddFlightPage {
           : err?.code === 'legal_name_missing'
             ? { title: 'Add your legal name first', body: 'We compare it with the name on the ticket to make sure it’s yours.', code: err.code }
             : err?.code === 'pro_required'
-              ? { title: 'You’ve reached the free limit', body: 'Free accounts keep 3 upcoming trips at a time. Upgrade to Gatemate Pro for unlimited trips, or wait until one of your trips is over.', code: err.code }
+              ? { title: 'You’ve reached the free limit', body: 'Free accounts keep up to 5 upcoming tickets, your family’s included. Upgrade to Gatemate Pro for unlimited tickets, or wait until a trip is over.', code: err.code }
             : { title: 'We couldn’t verify this booking', body: err?.message ?? 'Please check the details and try again.', code: err?.code },
       );
       await wait(400);
