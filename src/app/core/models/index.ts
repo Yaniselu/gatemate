@@ -67,6 +67,8 @@ export interface Flight {
   passengerName: string;
   status: FlightStatus;
   delayMinutes?: number;
+  scheduledDeparture?: string;
+  scheduledArrival?: string;
   baggageBelt?: string;
   durationMinutes: number;
   distanceKm: number;

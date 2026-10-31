@@ -1,0 +1,2 @@
+ALTER TABLE flights ADD COLUMN delay_minutes INT NOT NULL DEFAULT 0;
+ALTER TABLE flights ADD COLUMN arrival_delay_minutes INT NOT NULL DEFAULT 0;

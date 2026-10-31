@@ -68,7 +68,7 @@
                 <div class="leg">
                   <span class="gm-label">{{ f.number }}</span>
                   <b>{{ f.from.code }} <ion-icon name="arrow-forward" /> {{ f.to.code }}</b>
-                  <small>{{ f.departure | shortDate: false : f.from.timezone }} · {{ f.departure | clock: f.from.timezone }}</small>
+                  <small>{{ f.departure | shortDate: false : f.from.timezone }} · {{ f.departure | clock: f.from.timezone }}@if (f.delayMinutes && f.scheduledDeparture) { <s>{{ f.scheduledDeparture | clock: f.from.timezone }}</s>}</small>
                 </div>
               }
             </div>

@@ -13,6 +13,8 @@ import { ProService } from '../../core/services/pro.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { PHRASE_KEYS, phrasesFor } from '../../core/data/phrasebook';
 import { sunTimes } from '../../core/utils/sun';
+import { buildPlan, PlanDay, routeUrl } from '../../core/utils/trip-plan';
+import { Share } from '@capacitor/share';
 import { CityImageComponent } from '../../shared/components/city-image.component';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
@@ -20,7 +22,7 @@ import { PressableDirective } from '../../shared/directives/pressable.directive'
 import { ChecklistItem } from '../../core/models';
 import { locale, t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
-type Section = 'sights' | 'when' | 'phrases' | 'money' | 'pack' | 'essentials';
+type Section = 'sights' | 'plan' | 'when' | 'phrases' | 'money' | 'pack' | 'essentials';
 interface PackItem { label: string; why: string; category: ChecklistItem['category'] }
 
 @Component({
@@ -62,6 +64,7 @@ export class ExplorePage {
 
   readonly sections: { id: Section; label: string; icon: string }[] = [
     { id: 'sights', label: 'Sights', icon: 'camera-outline' },
+    { id: 'plan', label: 'Travel plan', icon: 'map-outline' },
     { id: 'when', label: 'Days & holidays', icon: 'calendar-outline' },
     { id: 'phrases', label: 'Phrases', icon: 'chatbubble-ellipses-outline' },
     { id: 'money', label: 'Money', icon: 'cash-outline' },
@@ -119,6 +122,65 @@ export class ExplorePage {
     const s = this.sights() ?? [];
     return this.showAllSights() ? s : s.slice(0, 8);
   });
+
+  readonly planDays = signal(3);
+  readonly plan = computed<PlanDay[]>(() => {
+    const a = this.airport(), list = this.sights();
+    if (!a || !list?.length) return [];
+    const flights = this.tripData()?.flights ?? [];
+    const inbound = flights.filter((f) => f.to.code === a.iata).sort((x, y) => +new Date(x.arrival) - +new Date(y.arrival))[0];
+    const outbound = flights.filter((f) => f.from.code === a.iata).sort((x, y) => +new Date(y.departure) - +new Date(x.departure))[0];
+    const arrival = inbound ? new Date(inbound.arrival) : undefined;
+    const departure = outbound && arrival && +new Date(outbound.departure) > +arrival ? new Date(outbound.departure) : undefined;
+    return buildPlan({
+      sights: list,
+      tz: a.tz,
+      arrival,
+      departure,
+      days: departure ? undefined : this.planDays(),
+      weather: this.info()?.weather?.days,
+      holidays: this.holidays() ?? undefined,
+    });
+  });
+  readonly planFromTrip = computed(() => {
+    const a = this.airport();
+    return !!a && !!this.tripData()?.flights.some((f) => f.from.code === a.iata);
+  });
+  protected routeUrl = routeUrl;
+
+  dayLabel(d: PlanDay) {
+    return new Date(d.date + 'T12:00:00').toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+
+  morePlanDays(delta: number) {
+    this.platform.selection();
+    this.planDays.update((n) => Math.max(1, Math.min(7, n + delta)));
+  }
+
+  async sharePlan() {
+    const city = this.airport()?.city ?? '';
+    const lines = [tr('{city} · travel plan', { city }), ''];
+    for (const d of this.plan()) {
+      lines.push(`${tr('Day {n}', { n: d.index })} · ${this.dayLabel(d)}`);
+      for (const s of d.stops) {
+        const what = s.kind === 'sight' ? s.sight!.name : s.kind === 'lunch' ? tr('Lunch nearby') : s.kind === 'arrive' ? tr('Landing') : s.kind === 'free' ? tr('Free day') : tr('Leave for the airport');
+        lines.push(`  ${s.time}  ${what}`);
+      }
+      lines.push('');
+    }
+    lines.push('Gatemate');
+    const text = lines.join('\n');
+    try {
+      if (this.platform.isNative) await Share.share({ title: tr('{city} · travel plan', { city }), text });
+      else if (navigator.share) await navigator.share({ text });
+      else {
+        await navigator.clipboard.writeText(text);
+        void this.toast.show('Copied', 'success');
+      }
+    } catch {
+      return;
+    }
+  }
 
   // ----- Money -----
   readonly homeCurrency = computed(() => {

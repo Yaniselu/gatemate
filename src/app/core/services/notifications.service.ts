@@ -75,13 +75,14 @@ export class NotificationsService {
     const boarding = new Date(flight.boardingTime).getTime();
     const departure = new Date(flight.departure).getTime();
     const baseId = hash(flight.id);
+    const gate = flight.gate ?? tr('TBA');
     const items = [
       prefs.checkIn && { id: baseId + 1, at: departure - 24 * 3600_000, title: tr('Check-in is open · {flight}', { flight: flight.number }), body: tr('Check in for {from} → {to}.', { from: flight.from.city, to: flight.to.city }) },
-      prefs.boarding && { id: baseId + 2, at: boarding - 15 * 60_000, title: tr('Boarding in 15 minutes'), body: tr('{flight} · Gate {gate} · Seat {seat}', { flight: flight.number, gate: flight.gate ?? tr('TBA'), seat: flight.seat ?? '—' }) },
-      prefs.boarding && { id: baseId + 3, at: boarding, title: tr('Boarding has started ✈️'), body: tr('Head to gate {gate} now.', { gate: flight.gate ?? tr('TBA') }) },
+      ...[20, 10, 5].map((min, i) => prefs.boarding && { id: baseId + 2 + i, at: boarding - min * 60_000, title: tr('Boarding in {min} minutes · {flight}', { min, flight: flight.number }), body: tr('{flight} · Gate {gate} · Seat {seat}', { flight: flight.number, gate, seat: flight.seat ?? '—' }) }),
+      prefs.boarding && { id: baseId + 5, at: boarding, title: tr('Boarding has started ✈️'), body: tr('Head to gate {gate} now.', { gate }) },
     ].filter((x): x is { id: number; at: number; title: string; body: string } => !!x && x.at > Date.now());
 
-    await LocalNotifications.cancel({ notifications: [1, 2, 3].map((n) => ({ id: baseId + n })) }).catch(() => {});
+    await LocalNotifications.cancel({ notifications: [1, 2, 3, 4, 5].map((n) => ({ id: baseId + n })) }).catch(() => {});
     if (!items.length) return;
     await LocalNotifications.schedule({
       notifications: items.map((n) => ({ id: n.id, title: n.title, body: n.body, schedule: { at: new Date(n.at), allowWhileIdle: true } })),

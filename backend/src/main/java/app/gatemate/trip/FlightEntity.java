@@ -29,5 +29,19 @@ public class FlightEntity {
     public String baggageJson;
     public String verificationJson;
     public String claimKey;
+    public int delayMinutes;
+    public int arrivalDelayMinutes;
     public Instant createdAt = Instant.now();
+
+    public Instant departs() {
+        return departureAt.plusSeconds(delayMinutes * 60L);
+    }
+
+    public Instant arrives() {
+        return arrivalAt.plusSeconds(arrivalDelayMinutes * 60L);
+    }
+
+    public Instant boards() {
+        return boardingAt.plusSeconds(delayMinutes * 60L);
+    }
 }

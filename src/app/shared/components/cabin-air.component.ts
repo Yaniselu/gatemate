@@ -127,7 +127,7 @@ export class CabinAirComponent {
   readonly profile = computed(() => cabinProfile(this.flight().durationMinutes, this.flight().aircraft));
   /** Minutes since departure while airborne, else null. */
   readonly now = computed(() => {
-    const f = this.flight(), dep = new Date(f.departure).getTime() + (f.delayMinutes ?? 0) * 60_000;
+    const f = this.flight(), dep = new Date(f.departure).getTime();
     const m = (this.tick() - dep) / 60_000;
     return m >= 0 && m <= f.durationMinutes ? m : null;
   });

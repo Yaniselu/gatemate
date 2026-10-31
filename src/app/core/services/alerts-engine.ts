@@ -48,7 +48,12 @@ export function buildAlerts(trips: Trip[], ctx: EngineContext): FlightAlert[] {
       const leave = { time: clock(plan.leaveAt, f.from.timezone), airport: f.from.code, hours: plan.arriveBeforeH, min: plan.driveMin };
       out.push({ ...base, id: `leave-${f.id}`, kind: 'leave', title: tr('Time to leave for the airport'), body: km !== undefined ? tr('Leave around {time} to be at {airport} {hours} h before departure (≈{min} min drive). Estimate — check traffic.', leave) : tr('Leave around {time} to be at {airport} {hours} h before departure. Estimate — check traffic.', leave), createdAt: iso(plan.leaveAt), scheduledFor: iso(plan.leaveAt) });
 
-      out.push({ ...base, id: `boarding-${f.id}`, kind: 'boarding', title: tr('Boarding in 15 minutes · {flight}', { flight: f.number }), body: tr('Gate {gate}. Have your boarding pass and ID ready.', { gate: f.gate ?? 'TBA' }), createdAt: iso(board - 15 * 60_000), scheduledFor: iso(board - 15 * 60_000) });
+      const gate = f.gate ?? tr('TBA');
+      for (const min of [20, 10, 5]) {
+        const at = board - min * 60_000;
+        out.push({ ...base, id: `boarding-${min}-${f.id}`, kind: 'boarding', title: tr('Boarding in {min} minutes · {flight}', { min, flight: f.number }), body: min === 5 ? tr('Gate {gate}. Head there now with your boarding pass and ID.', { gate }) : tr('Gate {gate}. Have your boarding pass and ID ready.', { gate }), createdAt: iso(at), scheduledFor: iso(at) });
+      }
+      out.push({ ...base, id: `boarding-now-${f.id}`, kind: 'boarding', title: tr('Boarding has started ✈️'), body: tr('Head to gate {gate} now.', { gate }), createdAt: iso(board), scheduledFor: iso(board) });
 
       const code = ctx.arrivalWeather?.(trip);
       if (code !== undefined && code >= 51) {

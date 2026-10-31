@@ -1,5 +1,7 @@
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { LiveActivityService } from './core/services/live-activity.service';
+import { NotificationsService } from './core/services/notifications.service';
+import { TravelStore } from './core/services/travel.store';
 import { ChangeDetectionStrategy, Component, effect, inject, NgZone, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { App as CapApp } from '@capacitor/app';
@@ -37,8 +39,18 @@ export class App {
   private prefs = inject(PrefsService);
   /** Next flight on the lock screen, Dynamic Island and Apple Watch (iOS). */
   private liveActivity = inject(LiveActivityService);
+  private store = inject(TravelStore);
+  private notifications = inject(NotificationsService);
 
   constructor() {
+    let scheduled = '';
+    effect(() => {
+      const due = this.store.upcomingReminders().filter((a) => a.source === 'device');
+      const key = due.map((a) => a.id + '@' + a.scheduledFor).join('|');
+      if (key === scheduled) return;
+      scheduled = key;
+      void this.notifications.syncReminders(due);
+    });
     effect(() => {
       const root = document.documentElement;
       root.style.setProperty('--gm-text-zoom', String(this.prefs.textScale()));

@@ -36,7 +36,7 @@ public class LiveStatusJob {
     public void refresh() {
         var now = Instant.now();
         for (var f : flights.findByDepartureAtBetween(now.minus(Duration.ofHours(20)), now.plus(Duration.ofMinutes(30)))) {
-            if ("landed".equals(f.status) || "cancelled".equals(f.status) || f.arrivalAt.plus(Duration.ofHours(3)).isBefore(now)) continue;
+            if ("landed".equals(f.status) || "cancelled".equals(f.status) || f.arrives().plus(Duration.ofHours(3)).isBefore(now)) continue;
             try {
                 update(f, adsb.find(f.flightNumber).orElse(null), now);
             } catch (Exception e) {
@@ -63,7 +63,7 @@ public class LiveStatusJob {
             return;
         }
         // No signal long after the scheduled arrival: it has landed (receivers often lose planes on the ground).
-        if (wasFlying && now.isAfter(f.arrivalAt.plus(Duration.ofMinutes(45)))) land(f, city, "landed.arrived");
+        if (wasFlying && now.isAfter(f.arrives().plus(Duration.ofMinutes(45)))) land(f, city, "landed.arrived");
     }
 
     private void land(FlightEntity f, String city, String bodyKey) {

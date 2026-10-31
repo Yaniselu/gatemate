@@ -4,7 +4,6 @@ import { IonContent, IonHeader, IonIcon, IonRefresher, IonRefresherContent, IonT
 import { AuthService } from '../../core/services/auth.service';
 import { TravelStore } from '../../core/services/travel.store';
 import { ChatService } from '../../core/services/chat.service';
-import { NotificationsService } from '../../core/services/notifications.service';
 import { AlertKind } from '../../core/models';
 import { SkeletonComponent } from '../../shared/components/skeleton.component';
 import { CountdownComponent } from '../../shared/components/countdown.component';
@@ -50,7 +49,6 @@ export class HomePage implements OnInit {
   protected auth = inject(AuthService);
   protected store = inject(TravelStore);
   private chat = inject(ChatService);
-  private notifications = inject(NotificationsService);
   private destinations = inject(DestinationService);
   private achievements = inject(AchievementsService);
   readonly glance = signal<DestinationInfo | null>(null);
@@ -133,7 +131,6 @@ export class HomePage implements OnInit {
     await Promise.all([this.store.loadTrips(force), this.store.loadAlerts(force), this.chat.loadThreads(force)]);
     const next = this.next();
     if (next) {
-      void this.notifications.syncReminders(this.store.upcomingReminders());
       this.destinations.get(next.flight.to.code).then((d) => this.glance.set(d)).catch(() => {});
     }
   }

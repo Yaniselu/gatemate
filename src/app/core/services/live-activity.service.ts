@@ -61,8 +61,8 @@ export class LiveActivityService {
       this.last = '';
       return;
     }
-    const dep = new Date(f.departure).getTime() + (f.delayMinutes ?? 0) * 60_000;
-    const arr = new Date(f.arrival).getTime() + (f.delayMinutes ?? 0) * 60_000;
+    const dep = new Date(f.departure).getTime();
+    const arr = new Date(f.arrival).getTime();
     if (now > arr + AFTER_LANDING_MS) {
       await LiveActivity.end({ flightId: f.id }).catch(() => {});
       this.last = '';
@@ -70,7 +70,7 @@ export class LiveActivityService {
     }
     if (dep - now > LEAD_MS) return;
     // Only call into iOS when something the activity shows has changed.
-    const key = [f.id, f.gate, f.terminal, f.seat, f.status, f.delayMinutes ?? 0].join('|');
+    const key = [f.id, f.gate, f.terminal, f.seat, f.status, f.departure, f.arrival].join('|');
     if (key === this.last) return;
     try {
       if (!(await LiveActivity.isAvailable()).available) return;
@@ -82,7 +82,6 @@ export class LiveActivityService {
   }
 
   private payload(f: Flight) {
-    const shift = (iso: string) => new Date(new Date(iso).getTime() + (f.delayMinutes ?? 0) * 60_000).toISOString();
     const delayed = f.status === 'delayed' && (f.delayMinutes ?? 0) > 0;
     return {
       flightId: f.id,
@@ -92,9 +91,9 @@ export class LiveActivityService {
       fromCity: f.from.city,
       toCode: f.to.code,
       toCity: f.to.city,
-      departure: shift(f.departure),
-      arrival: shift(f.arrival),
-      boarding: f.boardingTime ? shift(f.boardingTime) : undefined,
+      departure: f.departure,
+      arrival: f.arrival,
+      boarding: f.boardingTime || undefined,
       gate: f.gate,
       terminal: f.terminal,
       seat: f.seat,

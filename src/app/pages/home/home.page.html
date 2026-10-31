@@ -77,7 +77,7 @@
           <div class="route">
             <div>
               <div class="code">{{ n.flight.from.code }}</div>
-              <div class="meta">{{ n.flight.departure | clock: n.flight.from.timezone }} · {{ n.flight.from.city }}</div>
+              <div class="meta">{{ n.flight.departure | clock: n.flight.from.timezone }}@if (n.flight.delayMinutes && n.flight.scheduledDeparture) { <s>{{ n.flight.scheduledDeparture | clock: n.flight.from.timezone }}</s>} · {{ n.flight.from.city }}</div>
             </div>
             <gm-route-arc class="arc" [progress]="flightProgress()" />
             <div class="right">

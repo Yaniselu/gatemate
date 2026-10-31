@@ -12,7 +12,8 @@ public final class TripDtos {
 
     public record FlightDto(String id, String airline, String airlineCode, String number, AirportDto from, AirportDto to, String departure,
             String arrival, String boardingTime, String gate, String terminal, String seat, String cabin, String bookingRef, String passengerName,
-            String status, int durationMinutes, int distanceKm, String fareName, JsonNode baggage, JsonNode verification) {}
+            String status, int durationMinutes, int distanceKm, String fareName, JsonNode baggage, JsonNode verification,
+            String scheduledDeparture, String scheduledArrival, int delayMinutes) {}
 
     public record Traveller(String id, String name, String initials, String color) {}
 

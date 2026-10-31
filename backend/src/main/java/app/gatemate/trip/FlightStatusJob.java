@@ -1,11 +1,13 @@
 package app.gatemate.trip;
 
+import app.gatemate.airport.AirportCatalog;
 import app.gatemate.alert.AlertService;
 import app.gatemate.common.Messages;
 import app.gatemate.config.GatemateProperties;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -28,12 +30,14 @@ public class FlightStatusJob {
     private static final DateTimeFormatter LOCAL = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mmX", Locale.ROOT);
     private final Repos.Flights flights;
     private final AlertService alerts;
+    private final AirportCatalog airports;
     private final String key;
     private final RestClient http = app.gatemate.common.Http.builder().baseUrl("https://aerodatabox.p.rapidapi.com").build();
 
-    public FlightStatusJob(Repos.Flights flights, AlertService alerts, GatemateProperties props) {
+    public FlightStatusJob(Repos.Flights flights, AlertService alerts, AirportCatalog airports, GatemateProperties props) {
         this.flights = flights;
         this.alerts = alerts;
+        this.airports = airports;
         this.key = props.integrations().aeroDataBoxKey();
     }
 
@@ -77,13 +81,10 @@ public class FlightStatusJob {
                     f.status = "cancelled";
                     alerts.notifyTrip(f.tripId, f.id, "delay", l -> Messages.get(l, "cancelled.title", "flight", f.flightNumber), l -> Messages.get(l, "cancelled.body"));
                 }
-            } else if (revised != null && Duration.between(f.departureAt, revised).toMinutes() >= 15) {
-                long late = Duration.between(f.departureAt, revised).toMinutes();
-                if (!"delayed".equals(f.status)) {
-                    String time = revised.atOffset(ZoneOffset.UTC).toLocalTime().toString();
-                    alerts.notifyTrip(f.tripId, f.id, "delay", l -> Messages.get(l, "delayed.title", "flight", f.flightNumber, "min", late), l -> Messages.get(l, "delayed.body", "time", time));
-                }
-                f.status = "delayed";
+            } else if (revised != null) {
+                Instant arrival = parse(s.path("arrival").path("revisedTime").path("utc").asString(null));
+                if (arrival == null) arrival = parse(s.path("arrival").path("predictedTime").path("utc").asString(null));
+                applyDelay(f, revised, arrival);
             } else if ("Boarding".equalsIgnoreCase(status) && !Objects.equals(f.status, "boarding")) {
                 f.status = "boarding";
                 String atGate = f.gate;
@@ -95,6 +96,40 @@ public class FlightStatusJob {
             flights.save(f);
             return;
         }
+    }
+
+    public void applyDelay(FlightEntity f, Instant departure, Instant arrival) {
+        int late = (int) Math.max(0, Duration.between(f.departureAt, departure).toMinutes());
+        if (late < 5) late = 0;
+        int lateIn = arrival != null ? (int) Math.max(0, Duration.between(f.arrivalAt, arrival).toMinutes()) : late;
+        int before = f.delayMinutes;
+        f.delayMinutes = late;
+        f.arrivalDelayMinutes = lateIn;
+        if (late >= 15) {
+            boolean news = !"delayed".equals(f.status) || Math.abs(late - before) >= 10;
+            f.status = "delayed";
+            if (news) {
+                String dep = local(f.departs(), f.fromIata), arr = local(f.arrives(), f.toIata), board = local(f.boards(), f.fromIata);
+                int min = late;
+                alerts.notifyTrip(f.tripId, f.id, "delay", l -> Messages.get(l, "delayed.title", "flight", f.flightNumber, "min", min),
+                        l -> Messages.get(l, "delayed.body", "dep", dep, "arr", arr, "board", board));
+            }
+        } else if ("delayed".equals(f.status)) {
+            f.status = "scheduled";
+            String dep = local(f.departs(), f.fromIata);
+            alerts.notifyTrip(f.tripId, f.id, "delay", l -> Messages.get(l, "ontime.title", "flight", f.flightNumber), l -> Messages.get(l, "ontime.body", "dep", dep));
+        }
+    }
+
+    private String local(Instant t, String iata) {
+        ZoneId zone = airports.get(iata).map(a -> {
+            try {
+                return ZoneId.of(a.tz());
+            } catch (Exception e) {
+                return ZoneOffset.UTC;
+            }
+        }).orElse(ZoneOffset.UTC);
+        return t.atZone(zone).toLocalTime().withSecond(0).withNano(0).toString();
     }
 
     private static Instant parse(String s) {

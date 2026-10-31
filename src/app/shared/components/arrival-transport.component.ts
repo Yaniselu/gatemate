@@ -216,7 +216,7 @@ export class ArrivalTransportComponent implements OnInit {
   readonly stops = signal<MapFeature[]>([]);
   private timer?: ReturnType<typeof setTimeout>;
 
-  readonly arrival = computed(() => new Date(new Date(this.flight().arrival).getTime() + (this.flight().delayMinutes ?? 0) * 60_000));
+  readonly arrival = computed(() => new Date(this.flight().arrival));
   readonly arrivalClock = computed(() => {
     try {
       return this.arrival().toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit', timeZone: this.flight().to.timezone });

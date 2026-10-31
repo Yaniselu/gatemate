@@ -211,8 +211,9 @@ public class TripService {
         var to = airports.get(f.toIata);
         int km = from.isPresent() && to.isPresent() ? (int) Math.round(AirportCatalog.distanceKm(from.get(), to.get())) : 0;
         return new TripDtos.FlightDto(f.id.toString(), f.airlineName, f.airlineCode, f.flightNumber, airportDto(f.fromIata), airportDto(f.toIata),
-                f.departureAt.toString(), f.arrivalAt.toString(), f.boardingAt.toString(), f.gate, f.terminal, f.seat, f.cabin, f.bookingRef == null ? "" : f.bookingRef,
-                f.passengerName, f.status, (int) Duration.between(f.departureAt, f.arrivalAt).toMinutes(), km, f.fareName, node(f.baggageJson), node(f.verificationJson));
+                f.departs().toString(), f.arrives().toString(), f.boards().toString(), f.gate, f.terminal, f.seat, f.cabin, f.bookingRef == null ? "" : f.bookingRef,
+                f.passengerName, f.status, (int) Duration.between(f.departs(), f.arrives()).toMinutes(), km, f.fareName, node(f.baggageJson), node(f.verificationJson),
+                f.departureAt.toString(), f.arrivalAt.toString(), f.delayMinutes);
     }
 
     public TripDtos.AirportDto airportDto(String iata) {

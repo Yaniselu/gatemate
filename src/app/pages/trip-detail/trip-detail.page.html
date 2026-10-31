@@ -61,11 +61,12 @@
               <div class="flight card" [gmReveal]="i">
                 <div class="f-head">
                   <span class="gm-chip neutral">{{ f.number }}</span>
-                  <span class="gm-chip" [class.success]="f.status === 'on-time' || f.status === 'landed'" [class.warning]="f.status === 'delayed'">{{ f.status | flightStatus }}</span>
+                  <span class="gm-chip" [class.success]="f.status === 'on-time' || f.status === 'landed'" [class.warning]="f.status === 'delayed'">{{ f.status | flightStatus }}@if (f.status === 'delayed' && f.delayMinutes) { · +{{ f.delayMinutes }} min}</span>
                 </div>
                 <div class="timeline">
                   <div class="tl-point">
                     <b>{{ f.departure | clock: f.from.timezone }}</b>
+                    @if (f.delayMinutes && f.scheduledDeparture) { <s class="was">{{ f.scheduledDeparture | clock: f.from.timezone }}</s> }
                     <span class="code">{{ f.from.code }}</span>
                     <small>{{ f.from.city }} · {{ f.terminal ?? '—' }}</small>
                   </div>
@@ -75,6 +76,7 @@
                   </div>
                   <div class="tl-point right">
                     <b>@if (f.verification?.method === 'manual') {<span class="est" [title]="'Estimated from distance' | t">≈</span>}{{ f.arrival | clock: f.to.timezone }}</b>
+                    @if (f.delayMinutes && f.scheduledArrival) { <s class="was">{{ f.scheduledArrival | clock: f.to.timezone }}</s> }
                     <span class="code">{{ f.to.code }}</span>
                     <small>{{ f.to.city }}</small>
                   </div>

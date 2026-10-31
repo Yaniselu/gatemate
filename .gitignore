@@ -48,3 +48,17 @@ Thumbs.db
 
 # i18n-extract.py output
 i18n-src/missing-*.json
+
+# Secrets: these live in the host's secret store, never in git
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.p12
+*.key
+*.keystore
+*.jks
+*.mobileprovision
+GoogleService-Info.plist
+google-services.json

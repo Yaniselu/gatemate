@@ -75,6 +75,79 @@
       }
     </section>
 
+    <section id="ex-plan" class="block">
+      <header>
+        <h2>{{ 'Travel plan' | t }}</h2>
+        <small>{{ planFromTrip() ? ('Built around your flights' | t) : ('Nearby sights grouped by day' | t) }}</small>
+      </header>
+      @if (plan().length) {
+        <div class="plan-bar">
+          @if (!planFromTrip()) {
+            <div class="stepper">
+              <button (click)="morePlanDays(-1)" [disabled]="planDays() <= 1" [attr.aria-label]="'Fewer days' | t"><ion-icon name="remove" /></button>
+              <span>{{ planDays() === 1 ? ('1 day' | t) : ('{n} days' | t: { n: planDays() }) }}</span>
+              <button (click)="morePlanDays(1)" [disabled]="planDays() >= 7" [attr.aria-label]="'More days' | t"><ion-icon name="add" /></button>
+            </div>
+          }
+          <button class="share" (click)="sharePlan()"><ion-icon name="share-outline" />{{ 'Share plan' | t }}</button>
+        </div>
+        <div class="plan">
+          @for (d of plan(); track d.date; let i = $index) {
+            <article class="day card" [gmReveal]="i">
+              <div class="day-head">
+                <span class="num">{{ d.index }}</span>
+                <div>
+                  <b>{{ 'Day {n}' | t: { n: d.index } }}</b>
+                  <small>{{ dayLabel(d) }}</small>
+                </div>
+                @if (d.weather; as w) {
+                  <span class="wx"><ion-icon [name]="wl(w.code).icon" />{{ w.max | number: '1.0-0' }}°</span>
+                }
+              </div>
+              @if (d.holiday; as h) {
+                <p class="hint"><ion-icon name="flag-outline" />{{ 'Public holiday: {name}. Some shops and museums may close early.' | t: { name: h.localName } }}</p>
+              }
+              @if (d.weather && d.weather.code >= 51) {
+                <p class="hint wet"><ion-icon name="umbrella-outline" />{{ 'Rain likely: take an umbrella and swap outdoor stops for indoor ones.' | t }}</p>
+              }
+              <ol class="stops">
+                @for (s of d.stops; track $index) {
+                  @if (s.travelMin) {
+                    <li class="move"><ion-icon [name]="s.travelMode === 'walk' ? 'walk-outline' : 'car-outline'" />{{ (s.travelMode === 'walk' ? '{n} min walk' : '{n} min by taxi or transit') | t: { n: s.travelMin } }}</li>
+                  }
+                  <li class="stop" [attr.data-kind]="s.kind">
+                    <time>{{ s.time }}</time>
+                    <span class="dot"></span>
+                    @switch (s.kind) {
+                      @case ('sight') {
+                        <a [href]="mapsUrl(s.sight!)" target="_blank" rel="noopener">
+                          <b>{{ s.sight!.name }}</b>
+                          @if (s.sight!.description) { <small>{{ s.sight!.description }}</small> }
+                        </a>
+                      }
+                      @case ('lunch') { <span><b>{{ 'Lunch nearby' | t }}</b><small>{{ 'Around {place}' | t: { place: s.near } }}</small></span> }
+                      @case ('arrive') { <span><b>{{ 'Landing' | t }}</b><small>{{ 'Drop your bags, then start here' | t }}</small></span> }
+                      @case ('free') { <span><b>{{ 'Free day' | t }}</b><small>{{ 'Wander a neighbourhood, a local market or take a day trip' | t }}</small></span> }
+                      @case ('leave') { <span><b>{{ 'Leave for the airport' | t }}</b><small>{{ 'About 2½ h before departure' | t }}</small></span> }
+                    }
+                  </li>
+                }
+              </ol>
+              @if (routeUrl(d); as url) {
+                <a class="route" [href]="url" target="_blank" rel="noopener"><ion-icon name="navigate" />{{ 'Open the route in Maps' | t }}@if (d.walkKm) { <span>· {{ '{n} km on foot' | t: { n: d.walkKm } }}</span> }</a>
+              }
+            </article>
+          }
+        </div>
+      } @else if (sightsError() || infoError()) {
+        <div class="card notice"><ion-icon name="cloud-offline-outline" /><p>{{ 'Sights need an internet connection. Pull down to retry when you’re online.' | t }}</p></div>
+      } @else if (sights()) {
+        <div class="card notice"><ion-icon name="map-outline" /><p>{{ 'No well-known landmarks are mapped near this airport’s city yet.' | t }}</p></div>
+      } @else {
+        <div class="card"><gm-skeleton height="160px" radius="16px" /></div>
+      }
+    </section>
+
     <!-- Days & holidays -->
     <section id="ex-when" class="block">
       <header><h2>{{ 'Days & holidays' | t }}</h2><small>{{ tripData() ? ('During your trip' | t) : ('Next 30 days' | t) }}</small></header>
