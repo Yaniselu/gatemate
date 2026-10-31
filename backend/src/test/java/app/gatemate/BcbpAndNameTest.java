@@ -52,6 +52,10 @@ class BcbpAndNameTest {
         assertFalse(NameMatcher.match("JOHN", "DOE", "Ana", "Popescu").ok());
         assertFalse(NameMatcher.match("ANA", "POP", "Ana", "Popescu").ok());
         assertTrue(NameMatcher.match("YANIS", "SERBAN", "Yanis", "Mihai Serban").ok());
+        LocalDate oct31 = LocalDate.of(2026, 10, 31);
+        org.junit.jupiter.api.Assertions.assertEquals(LocalDate.of(2026, 8, 22), Bcbp.parse(pass("POP/ANA", "ABC123", "OTP", "BCN", "W6", "3101", 234, "012A"), oct31).flightDate());
+        org.junit.jupiter.api.Assertions.assertEquals(LocalDate.of(2027, 1, 5), Bcbp.parse(pass("POP/ANA", "ABC123", "OTP", "BCN", "W6", "3101", 5, "012A"), oct31).flightDate());
+        org.junit.jupiter.api.Assertions.assertEquals(LocalDate.of(2026, 11, 3), Bcbp.parse(pass("POP/ANA", "ABC123", "OTP", "BCN", "W6", "3101", 307, "012A"), oct31).flightDate());
         assertTrue(NameMatcher.match("YANISMIHAI", "SERBAN", "Serban", "Yanis Mihai").ok());
         assertTrue(NameMatcher.match("ANAMARIAMRS", "POPESCU", "Ana Maria", "Popescu").ok());
         assertTrue(NameMatcher.quality("IONUT", "POPESCU", "Ionut", "Popescu") > NameMatcher.quality("IONUT", "POPESCU", "Ion", "Popescu"));

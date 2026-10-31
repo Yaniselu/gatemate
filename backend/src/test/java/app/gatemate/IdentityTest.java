@@ -197,4 +197,16 @@ class IdentityTest {
         var res = post("/api/v1/flights/" + flight + "/passengers", access, "{\"companionId\":\"" + ids.get(2) + "\"}", 402);
         assertThat(res.path("code").asString()).isEqualTo("pro_required");
     }
+
+    @Test
+    void inviteSomeoneToATripByEmail() throws Exception {
+        String access = register("inv+" + UUID.randomUUID() + "@example.com", "Ana Popescu").get("accessToken").asString();
+        var trip = post("/api/v1/flights", access, "{\"carrier\":\"RO\",\"flightNumber\":\"301\",\"date\":\"" + LocalDate.now().plusDays(8) + "T08:00:00\",\"from\":\"CRA\",\"to\":\"BCN\"}", 200);
+        var res = post("/api/v1/invites/email", access, "{\"targetId\":\"" + trip.path("id").asString() + "\",\"email\":\"friend@example.com\"}", 200);
+        assertThat(res.path("url").asString()).contains("/invite/");
+        assertThat(res.path("sent").asBoolean()).isFalse();
+        post("/api/v1/invites/email", access, "{\"targetId\":\"" + trip.path("id").asString() + "\",\"email\":\"not-an-email\"}", 400);
+        String stranger = register("inv2+" + UUID.randomUUID() + "@example.com").get("accessToken").asString();
+        post("/api/v1/invites/email", stranger, "{\"targetId\":\"" + trip.path("id").asString() + "\",\"email\":\"x@example.com\"}", 404);
+    }
 }

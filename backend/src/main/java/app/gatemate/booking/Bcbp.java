@@ -21,10 +21,37 @@ public record Bcbp(String raw, String firstName, String lastName, String booking
         }
         String[] name = f(d, 2, 20).split("/", 2);
         String last = name[0].trim(), first = name.length > 1 ? name[1].trim() : "";
-        LocalDate date = Year.of(today.getYear()).atDay(Math.min(julian, Year.of(today.getYear()).length()));
-        if (date.isBefore(today.minusDays(60))) date = Year.of(today.getYear() + 1).atDay(Math.min(julian, Year.of(today.getYear() + 1).length()));
+        LocalDate date = flightDate(d, julian, today);
         return new Bcbp(d, first, last, f(d, 23, 7), from, to, f(d, 36, 3), f(d, 39, 5).replaceFirst("^0+", ""), julian, date, f(d, 47, 1),
                 f(d, 48, 4).replaceFirst("^0+", ""), f(d, 52, 5).replaceFirst("^0+", ""));
+    }
+
+    static LocalDate flightDate(String d, int julian, LocalDate today) {
+        LocalDate issued = issueDate(d, today);
+        if (issued != null) {
+            LocalDate same = at(issued.getYear(), julian);
+            return same.isBefore(issued.minusDays(1)) ? at(issued.getYear() + 1, julian) : same;
+        }
+        LocalDate best = null;
+        for (int y = today.getYear() - 1; y <= today.getYear() + 1; y++) {
+            LocalDate c = at(y, julian);
+            if (best == null || Math.abs(c.toEpochDay() - today.toEpochDay()) < Math.abs(best.toEpochDay() - today.toEpochDay())) best = c;
+        }
+        return best;
+    }
+
+    private static LocalDate issueDate(String d, LocalDate today) {
+        if (d.length() < 71 || d.charAt(60) != '>') return null;
+        String field = d.substring(67, 71);
+        if (!field.matches("\\d{4}")) return null;
+        int digit = field.charAt(0) - '0', julian = Integer.parseInt(field.substring(1));
+        if (julian < 1 || julian > 366) return null;
+        int year = today.getYear() - Math.floorMod(today.getYear() % 10 - digit, 10);
+        return at(year, julian);
+    }
+
+    private static LocalDate at(int year, int julian) {
+        return Year.of(year).atDay(Math.min(julian, Year.of(year).length()));
     }
 
     private static String f(String d, int start, int len) {

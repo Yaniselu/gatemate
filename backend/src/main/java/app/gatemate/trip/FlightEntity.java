@@ -32,6 +32,8 @@ public class FlightEntity {
     public String passengersJson;
     public String barcodeEnc;
     public boolean ownerFlying = true;
+    public String aircraftType;
+    public String aircraftReg;
     public int delayMinutes;
     public int arrivalDelayMinutes;
     public Instant createdAt = Instant.now();

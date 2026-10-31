@@ -45,6 +45,12 @@ public class LiveStatusJob {
         String city = airports.get(f.toIata).map(AirportCatalog.Airport::city).orElse(f.toIata);
         boolean wasFlying = "departed".equals(f.status);
         if (ac != null) {
+            String type = ac.path("t").asString(""), reg = ac.path("r").asString("");
+            if (!type.isBlank() && !type.equals(f.aircraftType)) {
+                f.aircraftType = type.length() > 40 ? type.substring(0, 40) : type;
+                f.aircraftReg = reg.isBlank() ? null : reg.length() > 12 ? reg.substring(0, 12) : reg;
+                flights.save(f);
+            }
             boolean ground = "ground".equals(ac.path("alt_baro").asString("")) || ac.path("alt_baro").asDouble(0) < 300;
             double knots = ac.path("gs").asDouble(0);
             if (!ground && knots > 120 && !wasFlying) {

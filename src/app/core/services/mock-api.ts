@@ -359,6 +359,11 @@ export class MockApi extends GatemateApi {
 
   private invites = new Map<string, { type: 'trip' | 'chat'; id: string }>();
 
+  async inviteByEmail(targetId: string, email: string): Promise<{ sent: boolean; url: string }> {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new ApiError('Enter a valid email address.', 400, 'bad_email');
+    return { sent: true, url: await this.createInvite(targetId) };
+  }
+
   async createInvite(id: string): Promise<string> {
     const token = randomId().replace(/[^a-zA-Z0-9]/g, '').slice(0, 22);
     this.invites.set(token, { type: this.ensureTrips().some((t) => t.id === id) ? 'trip' : 'chat', id });

@@ -80,6 +80,9 @@ export class HttpApi extends GatemateApi {
   importEmail(text: string) {
     return this.call(this.http.post<Trip>(`${this.base}/bookings/email/import`, { text }));
   }
+  inviteByEmail(targetId: string, email: string) {
+    return this.call(this.http.post<{ sent: boolean; url: string }>(`${this.base}/invites/email`, { targetId, email }));
+  }
   async createInvite(id: string) {
     return (await this.call(this.http.post<{ url: string }>(`${this.base}/invites`, { targetId: id }))).url;
   }

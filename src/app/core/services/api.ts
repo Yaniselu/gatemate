@@ -108,6 +108,7 @@ export abstract class GatemateApi {
   abstract toggleChecklistItem(tripId: string, itemId: string, done: boolean): Promise<void>;
   abstract addExpense(tripId: string, expense: Omit<Expense, 'id' | 'createdAt'>): Promise<Expense>;
   abstract getFlightStatus(flightId: string): Promise<Flight>;
+  abstract inviteByEmail(targetId: string, email: string): Promise<{ sent: boolean; url: string }>;
   abstract addPassenger(flightId: string, companionId: string, seat?: string): Promise<Flight>;
   abstract removePassenger(flightId: string, companionId: string): Promise<Flight>;
   abstract verifyIdentity(lines: string[]): Promise<User>;

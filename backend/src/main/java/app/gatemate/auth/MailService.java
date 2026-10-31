@@ -33,6 +33,22 @@ public class MailService {
         sendCode("mail.reset", to, name, code, lang);
     }
 
+    public void sendInvite(String to, String inviter, String trip, String url, String lang) {
+        String subject = Messages.get(lang, "mail.invite.subject", "name", first(inviter), "trip", trip);
+        String html = """
+            <!doctype html><html><body style="margin:0;background:#f4f8fa;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0b1b2b">
+            <table role="presentation" width="100%%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
+            <table role="presentation" width="100%%" style="max-width:480px;background:#ffffff;border-radius:20px;padding:32px" cellpadding="0" cellspacing="0">
+            <tr><td style="font-size:20px;font-weight:800;color:#0a93a6">Gatemate</td></tr>
+            <tr><td style="padding-top:18px;font-size:22px;font-weight:800">%s</td></tr>
+            <tr><td style="padding-top:10px;font-size:15px;line-height:1.5;color:#3a4a5c">%s</td></tr>
+            <tr><td align="center" style="padding:26px 0"><a href="%s" style="display:inline-block;padding:14px 26px;border-radius:14px;background:#0a93a6;color:#ffffff;font-size:16px;font-weight:800;text-decoration:none">%s</a></td></tr>
+            <tr><td style="font-size:13px;line-height:1.5;color:#74859a">%s</td></tr>
+            </table></td></tr></table></body></html>""".formatted(esc(subject), esc(Messages.get(lang, "mail.invite.intro", "name", first(inviter), "trip", trip)), esc(url),
+                esc(Messages.get(lang, "mail.invite.button")), esc(Messages.get(lang, "mail.invite.note")));
+        send(to, subject, html, Messages.get(lang, "mail.invite.intro", "name", first(inviter), "trip", trip) + "\n\n" + url);
+    }
+
     private void sendCode(String kind, String to, String name, String code, String lang) {
         send(to, Messages.get(lang, kind + ".subject", "code", code),
                 page(Messages.get(lang, kind + ".title"), Messages.get(lang, kind + ".intro", "name", esc(first(name))), code, Messages.get(lang, kind + ".note")),

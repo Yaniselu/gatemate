@@ -42,18 +42,36 @@ export function parseBcbp(raw: string, today = new Date()): BoardingPassData {
     carrier: field(36, 3),
     flightNumber: field(39, 5).replace(/^0+/, ''),
     julianDate,
-    flightDate: dateFromJulian(julianDate, today),
+    flightDate: dateFromJulian(julianDate, today, issueDate(data, today)),
     cabinCode: field(47, 1),
     seat: seatRaw.replace(/^0+/, ''),
     sequence: field(52, 5).replace(/^0+/, ''),
   };
 }
 
-function dateFromJulian(day: number, today: Date): Date {
-  const candidate = (year: number) => new Date(Date.UTC(year, 0, day));
-  const thisYear = candidate(today.getUTCFullYear());
-  const sixtyDays = 60 * 864e5;
-  return thisYear.getTime() < today.getTime() - sixtyDays ? candidate(today.getUTCFullYear() + 1) : thisYear;
+function dateFromJulian(day: number, today: Date, issued: Date | null): Date {
+  const at = (year: number) => new Date(Date.UTC(year, 0, Math.min(day, isLeap(year) ? 366 : 365)));
+  const y = today.getUTCFullYear();
+  if (issued) {
+    const same = at(issued.getUTCFullYear());
+    return same.getTime() >= issued.getTime() - 864e5 ? same : at(issued.getUTCFullYear() + 1);
+  }
+  return [at(y - 1), at(y), at(y + 1)].sort((a, b) => Math.abs(a.getTime() - today.getTime()) - Math.abs(b.getTime() - today.getTime()))[0];
+}
+
+function issueDate(raw: string, today: Date): Date | null {
+  if (raw.length < 71 || raw[60] !== '>') return null;
+  const field = raw.slice(67, 71);
+  if (!/^\d{4}$/.test(field)) return null;
+  const digit = +field[0], julian = +field.slice(1);
+  if (julian < 1 || julian > 366) return null;
+  let year = today.getUTCFullYear() - ((today.getUTCFullYear() % 10) - digit + 10) % 10;
+  if (year > today.getUTCFullYear()) year -= 10;
+  return new Date(Date.UTC(year, 0, julian));
+}
+
+function isLeap(y: number) {
+  return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
 }
 
 function titleCase(s: string): string {

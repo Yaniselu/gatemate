@@ -94,6 +94,7 @@ export interface Flight {
   durationMinutes: number;
   distanceKm: number;
   aircraft?: string;
+  aircraftReg?: string;
   fareName?: string;
   baggage?: BaggageAllowance;
   verification?: FlightVerification;
@@ -229,4 +230,5 @@ export interface NotificationPrefs {
   baggage: boolean;
   chat: boolean;
   tips: boolean;
+  liveActivity: boolean;
 }

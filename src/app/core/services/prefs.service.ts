@@ -10,6 +10,7 @@ const DEFAULT_NOTIFS: NotificationPrefs = {
   baggage: true,
   chat: true,
   tips: false,
+  liveActivity: true,
 };
 
 @Injectable({ providedIn: 'root' })

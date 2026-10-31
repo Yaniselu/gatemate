@@ -328,7 +328,7 @@
               @if (t.chatId) {
                 <a class="gm-btn" [routerLink]="['/chat', t.chatId]"><ion-icon name="chatbubbles-outline" /> {{ 'Open group chat' | t }}</a>
               }
-              <gm-invite-panel [targetId]="t.id" [title]="t.title" />
+              <gm-invite-panel [byEmail]="true" [targetId]="t.id" [title]="t.title" />
             </div>
           </div>
         }

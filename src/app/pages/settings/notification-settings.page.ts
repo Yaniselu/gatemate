@@ -59,7 +59,8 @@ export class NotificationSettingsPage {
   protected platform = inject(PlatformService);
 
   readonly options: { key: keyof NotificationPrefs; label: string; hint: string; icon: string; color: string }[] = [
-    { key: 'boarding', label: 'Boarding calls', hint: '15 min before and when boarding starts', icon: 'airplane', color: '#0FB5C3' },
+    { key: 'liveActivity', label: 'Lock Screen, Dynamic Island & Apple Watch', hint: 'Live countdown from 2½ days before departure', icon: 'phone-portrait-outline', color: '#0B1B2B' },
+    { key: 'boarding', label: 'Boarding calls', hint: '20, 10 and 5 min before, and when boarding starts', icon: 'airplane', color: '#0FB5C3' },
     { key: 'gateChanges', label: 'Gate changes', hint: 'Instantly, with walking time', icon: 'navigate-outline', color: '#8B7CF6' },
     { key: 'delays', label: 'Delays & cancellations', hint: 'Including your passenger rights', icon: 'time-outline', color: '#FFB020' },
     { key: 'checkIn', label: 'Check-in reminders', hint: '24 h before departure', icon: 'checkmark-circle', color: '#2FD18A' },

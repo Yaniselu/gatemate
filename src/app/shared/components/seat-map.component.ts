@@ -1,7 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, input, viewChild } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { Flight } from '../../core/models';
-import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { aircraftFor } from '../../core/data/aircraft';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
 
 interface Cabin {
   cols: string[];
@@ -13,18 +14,14 @@ interface Cabin {
 
 const CELL = 22, NOSE = 92, TAIL = 70;
 
-function cabinFor(aircraft: string | undefined, seatRow: number): Cabin {
-  const a = (aircraft ?? '').toUpperCase();
-  if (/A33|A34|A35|A38|777|787|767|747|B77|B78/.test(a)) {
-    const rows = Math.max(42, seatRow + 3);
-    return { cols: ['A', 'B', 'C', '|', 'D', 'E', 'F', '|', 'H', 'J', 'K'], rows, exits: [1, 12, 26, rows], wing: [14, 26], name: 'wide' };
-  }
-  if (/A321|737 MAX 10|739|73J/.test(a)) {
-    const rows = Math.max(38, seatRow + 2);
-    return { cols: ['A', 'B', 'C', '|', 'D', 'E', 'F'], rows, exits: [1, 11, 12, 25, rows], wing: [11, 20], name: 'long' };
+function cabinFor(aircraft: string | undefined, airline: string | undefined, seatRow: number): Cabin {
+  const found = aircraftFor(aircraft, airline);
+  if (found) {
+    const c = found.model.cabin;
+    return { ...c, rows: Math.max(c.rows, seatRow + 1), exits: c.exits.map((e) => (e === c.rows ? Math.max(c.rows, seatRow + 1) : e)), name: found.model.name };
   }
   const rows = Math.max(30, seatRow + 2);
-  return { cols: ['A', 'B', 'C', '|', 'D', 'E', 'F'], rows, exits: [1, 11, 12, rows], wing: [9, 17], name: 'narrow' };
+  return { cols: ['A', 'B', 'C', '|', 'D', 'E', 'F'], rows, exits: [1, 11, 12, rows], wing: [9, 17], name: '' };
 }
 
 @Component({
@@ -36,7 +33,7 @@ function cabinFor(aircraft: string | undefined, seatRow: number): Cabin {
       <section class="card">
         <header>
           <span class="ic"><ion-icon name="grid-outline" /></span>
-          <div><b>{{ 'Seat map' | t }}</b><small>{{ flight().aircraft ?? '' }}</small></div>
+          <div><b>{{ 'Seat map' | t }}</b><small>{{ plane() }}</small></div>
           <span class="mine">{{ s.row }}{{ s.letter }}</span>
         </header>
 
@@ -132,7 +129,13 @@ export class SeatMapComponent implements AfterViewInit {
     const m = /^(\d{1,2})\s*([A-K])$/i.exec((this.flight().seat ?? '').trim());
     return m ? { row: +m[1], letter: m[2].toUpperCase() } : null;
   });
-  readonly cabin = computed(() => cabinFor(this.flight().aircraft, this.parsed()?.row ?? 1));
+  readonly cabin = computed(() => cabinFor(this.flight().aircraft, this.flight().airlineCode, this.parsed()?.row ?? 1));
+  readonly plane = computed(() => {
+    const f = this.flight();
+    const found = aircraftFor(f.aircraft, f.airlineCode);
+    if (!found) return '';
+    return found.exact ? found.model.name + (f.aircraftReg ? ' · ' + f.aircraftReg : '') : tr('Usually a {plane} on {airline}', { plane: found.model.name, airline: f.airline });
+  });
   readonly rowList = computed(() => Array.from({ length: this.cabin().rows }, (_, i) => i + 1));
   readonly cabinH = computed(() => this.cabin().cols.length * 17 + 4);
   readonly height = computed(() => this.cabinH() + 72);

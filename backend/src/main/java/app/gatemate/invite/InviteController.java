@@ -28,8 +28,15 @@ public class InviteController {
     private final ChatService chat;
     private final GatemateProperties props;
 
+    private final app.gatemate.auth.MailService mail;
+    private final app.gatemate.user.UserRepository users;
+    private final app.gatemate.common.RateLimiter limiter;
+
     public InviteController(InviteEntity.Repo invites, Repos.Trips trips, TripService tripService, ChatRepos.Threads threads, ChatService chat,
-            GatemateProperties props) {
+            GatemateProperties props, app.gatemate.auth.MailService mail, app.gatemate.user.UserRepository users, app.gatemate.common.RateLimiter limiter) {
+        this.mail = mail;
+        this.users = users;
+        this.limiter = limiter;
         this.invites = invites;
         this.trips = trips;
         this.tripService = tripService;
@@ -61,6 +68,24 @@ public class InviteController {
         invites.save(inv);
         String base = props.publicUrl() == null ? "https://gatemate.app" : props.publicUrl();
         return Map.of("url", base + "/invite/" + token);
+    }
+
+    public record ByEmail(@NotNull UUID targetId, @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Email @jakarta.validation.constraints.Size(max = 254) String email) {}
+
+    @PostMapping("/email")
+    @Transactional
+    public Map<String, Object> byEmail(@jakarta.validation.Valid @RequestBody ByEmail in) {
+        UUID me = CurrentUser.id();
+        limiter.check("invite-mail:" + me, 20, Duration.ofDays(1));
+        var trip = trips.findById(in.targetId()).orElseThrow(() -> ApiException.notFound("Trip"));
+        tripService.requireMember(trip.id, me);
+        String url = create(new Create(trip.id)).get("url");
+        var inviter = users.findById(me).orElseThrow();
+        String to = in.email().trim().toLowerCase(java.util.Locale.ROOT);
+        String lang = users.findByEmail(to).map(u -> u.lang).orElse(inviter.lang);
+        boolean sent = mail.enabled();
+        if (sent) mail.sendInvite(to, inviter.displayName, trip.title, url, lang);
+        return Map.of("sent", sent, "url", url);
     }
 
     @PostMapping("/{token}/accept")

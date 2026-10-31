@@ -13,7 +13,7 @@ public final class TripDtos {
     public record FlightDto(String id, String airline, String airlineCode, String number, AirportDto from, AirportDto to, String departure,
             String arrival, String boardingTime, String gate, String terminal, String seat, String cabin, String bookingRef, String passengerName,
             String status, int durationMinutes, int distanceKm, String fareName, JsonNode baggage, JsonNode verification,
-            String scheduledDeparture, String scheduledArrival, int delayMinutes, List<PassengerDto> passengers, boolean ownerFlying, String barcode) {}
+            String scheduledDeparture, String scheduledArrival, int delayMinutes, List<PassengerDto> passengers, boolean ownerFlying, String barcode, String aircraft, String aircraftReg) {}
 
     public record PassengerDto(String companionId, String name, String seat, String relation, boolean verified, String barcode) {}
 

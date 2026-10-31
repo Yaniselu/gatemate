@@ -60,6 +60,12 @@ public class FlightStatusJob {
         for (JsonNode s : list) {
             if (!f.fromIata.equals(s.path("departure").path("airport").path("iata").asString(""))) continue;
             JsonNode dep = s.path("departure");
+            String model = s.path("aircraft").path("model").asString("");
+            if (!model.isBlank()) {
+                f.aircraftType = model.length() > 40 ? model.substring(0, 40) : model;
+                String reg = s.path("aircraft").path("reg").asString("");
+                f.aircraftReg = reg.isBlank() ? f.aircraftReg : reg.length() > 12 ? reg.substring(0, 12) : reg;
+            }
             String gate = dep.path("gate").asString(null);
             String terminal = dep.path("terminal").asString(null);
             String status = s.path("status").asString("");

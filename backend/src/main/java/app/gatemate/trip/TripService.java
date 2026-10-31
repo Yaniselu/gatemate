@@ -346,7 +346,7 @@ public class TripService {
                 f.departs().toString(), f.arrives().toString(), f.boards().toString(), f.gate, f.terminal, f.seat, f.cabin, f.bookingRef == null ? "" : f.bookingRef,
                 f.passengerName, f.status, (int) Duration.between(f.departs(), f.arrives()).toMinutes(), km, f.fareName, node(f.baggageJson), node(f.verificationJson),
                 f.departureAt.toString(), f.arrivalAt.toString(), f.delayMinutes, passengerDtos(f, viewer), f.ownerFlying,
-                viewer != null && viewer.equals(f.claimedBy) ? open(f.barcodeEnc) : null);
+                viewer != null && viewer.equals(f.claimedBy) ? open(f.barcodeEnc) : null, f.aircraftType, f.aircraftReg);
     }
 
     public TripDtos.AirportDto airportDto(String iata) {

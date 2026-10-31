@@ -4,6 +4,7 @@ import { Flight } from '../models';
 import { t } from '../i18n/i18n.service';
 import { FlightStatusPipe } from '../../shared/pipes/status.pipe';
 import { TravelStore } from './travel.store';
+import { PrefsService } from './prefs.service';
 
 interface LiveActivityPlugin {
   isAvailable(): Promise<{ available: boolean }>;
@@ -13,12 +14,13 @@ interface LiveActivityPlugin {
 
 const LiveActivity = registerPlugin<LiveActivityPlugin>('LiveActivity');
 
-const LEAD_MS = 6 * 3_600_000;
+const LEAD_MS = 60 * 3_600_000;
 const AFTER_LANDING_MS = 30 * 60_000;
 
 @Injectable({ providedIn: 'root' })
 export class LiveActivityService {
   private store = inject(TravelStore);
+  private prefs = inject(PrefsService);
   private status = new FlightStatusPipe();
   private readonly enabled = Capacitor.getPlatform() === 'ios' && Capacitor.isPluginAvailable('LiveActivity');
   private last = '';
@@ -27,8 +29,9 @@ export class LiveActivityService {
     if (!this.enabled) return;
     effect(() => {
       const next = this.store.nextFlight();
+      const on = this.prefs.notifications().liveActivity !== false;
       this.store.clock();
-      void this.sync(next?.flight ?? null);
+      void this.sync(on ? next?.flight ?? null : null);
     });
   }
 
@@ -50,8 +53,8 @@ export class LiveActivityService {
   private async sync(f: Flight | null) {
     const now = Date.now();
     if (!f) {
-      if (this.last) await LiveActivity.end({}).catch(() => {});
-      this.last = '';
+      if (this.last !== 'none') await LiveActivity.end({}).catch(() => {});
+      this.last = 'none';
       return;
     }
     const dep = new Date(f.departure).getTime();
@@ -62,7 +65,7 @@ export class LiveActivityService {
       return;
     }
     if (dep - now > LEAD_MS) return;
-    const key = [f.id, f.gate, f.terminal, f.seat, f.status, f.departure, f.arrival].join('|');
+    const key = [f.id, f.gate, f.terminal, f.seat, f.status, f.departure, f.arrival, Math.floor(now / 3_600_000)].join('|');
     if (key === this.last) return;
     try {
       if (!(await LiveActivity.isAvailable()).available) return;
