@@ -111,10 +111,10 @@ export class InflightPage implements OnInit {
     { key: 'dodge', link: '/inflight/dodge', title: 'Sky Dodge', desc: 'Steer through storms, grab stars', icon: 'thunderstorm', bg: '#2f6aa0', bestLabel: 'Best:', wide: true },
     { key: 'memory', link: '/inflight/memory', title: 'Boarding Memory', desc: 'Match the travel pairs', icon: 'albums-outline', bg: '#0a7f8c', bestLabel: 'Best moves:' },
     { key: '2048', link: '/inflight/2048', title: '2048 Altitude', desc: 'Swipe & merge to 2048', icon: 'trending-up', bg: '#c4673a', bestLabel: 'Best:' },
-    { key: 'quiz', link: '/inflight/quiz', title: 'Code Quiz', desc: 'Guess the airport code', icon: 'earth', bg: '#1f3a56', bestLabel: 'Best:' },
+    { key: 'quiz', link: '/inflight/quiz', title: 'Code Quiz', desc: 'Guess the airport code', icon: 'earth', bg: '#2d6390', bestLabel: 'Best:' },
     { key: 'flags', link: '/inflight/flags', title: 'Flag Quiz', desc: 'Name the country', icon: 'flag', bg: '#1f8a68', bestLabel: 'Best:' },
     { key: 'hangman', link: '/inflight/guess-city', title: 'Guess the City', desc: 'Keep the plane in the air', icon: 'search', bg: '#55599e', bestLabel: '' },
-    { key: 'ttt', link: '/inflight/tictactoe', title: 'Planes & Clouds', desc: 'Tic-tac-toe vs the autopilot', icon: 'grid-outline', bg: '#0f2233', bestLabel: 'Wins:', wide: true },
+    { key: 'ttt', link: '/inflight/tictactoe', title: 'Planes & Clouds', desc: 'Tic-tac-toe vs the autopilot', icon: 'grid-outline', bg: '#7a4fb0', bestLabel: 'Wins:', wide: true },
   ];
   readonly wellbeing = [
     { link: '/inflight/breathe', title: 'Calm breathing', desc: 'Box breathing for take-off nerves', icon: 'leaf-outline' },

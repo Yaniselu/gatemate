@@ -16,6 +16,7 @@ import { ProfilePatch, SeatPreference } from '../../core/models';
 import { HasUnsavedChanges } from '../../core/guards/unsaved.guard';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
+import { AvatarBgPipe } from '../../shared/pipes/avatar-bg.pipe';
 
 const PHONE = /^\+?[1-9]\d{6,14}$/;
 const LEGAL = /^[\p{L}][\p{L}\p{M}' -]{0,39}$/u;
@@ -23,7 +24,7 @@ const LEGAL = /^[\p{L}][\p{L}\p{M}' -]{0,39}$/u;
 @Component({
   selector: 'gm-profile-edit',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, ReactiveFormsModule, AirportPickerComponent, RouterLink],
+  imports: [AvatarBgPipe, TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon, ReactiveFormsModule, AirportPickerComponent, RouterLink],
   templateUrl: './profile-edit.page.html',
   styleUrl: './profile-edit.page.scss',
 })

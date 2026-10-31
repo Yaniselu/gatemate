@@ -10,7 +10,7 @@
     <gm-city-image [code]="iata().toUpperCase()" [alt]="airport()?.city ?? ''" [showCredit]="true" />
     <div class="cover-shade"></div>
     <div class="cover-txt" [style.opacity]="1 - scrollY() / 220">
-      <span class="kicker">{{ country()?.name }}</span>
+      <span class="kicker">{{ country()?.name | countryName }}</span>
       <h1>{{ airport()?.city }}</h1>
       @if (localTime()) {
         <span class="sub"><ion-icon name="time-outline" /> {{ '{time} local time' | t: { time: localTime() } }}</span>
@@ -186,7 +186,7 @@
     <section id="ex-phrases" class="block">
       <header>
         <h2>{{ 'Phrases' | t }}</h2>
-        <small>{{ phrases() ? phrases()!.language + ' · ' + phrases()!.set.native : '' }}</small>
+        <small>{{ phrases() ? langName(phrases()!.language) + ' · ' + phrases()!.set.native : '' }}</small>
       </header>
       @if (phrases(); as p) {
         <div class="card list phrases">
@@ -199,9 +199,9 @@
           }
         </div>
         @if (p.set.note) { <p class="hint">{{ p.set.note }}</p> }
-        <p class="hint">{{ 'Tap a phrase to hear it (uses your phone’s voice for {language}).' | t: { language: p.language } }}</p>
+        <p class="hint">{{ 'Tap a phrase to hear it (uses your phone’s voice for {language}).' | t: { language: langName(p.language) } }}</p>
       } @else {
-        <div class="card notice"><ion-icon name="language-outline" /><p>English is widely used here{{ country()?.languages?.length ? ' (' + country()!.languages.slice(0, 3).join(', ') + ')' : '' }}.</p></div>
+        <div class="card notice"><ion-icon name="language-outline" /><p>{{ 'English is widely used here.' | t }}@if (country()?.languages?.length) { ({{ country()!.languages.slice(0, 3).join(', ') }})}</p></div>
       }
     </section>
 

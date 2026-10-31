@@ -107,7 +107,7 @@
 
 .chips {
   position: sticky;
-  top: calc(env(safe-area-inset-top) + 52px);
+  top: calc(env(safe-area-inset-top) + 44px);
   z-index: 5;
   display: flex;
   gap: 8px;

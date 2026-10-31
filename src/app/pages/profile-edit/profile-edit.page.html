@@ -13,7 +13,7 @@
         @if (avatar(); as a) {
           <img [src]="a" alt="" />
         } @else {
-          <span [style.background]="auth.user()?.avatarColor">{{ initials() }}</span>
+          <span [style.background]="auth.user()?.avatarColor | avatarBg">{{ initials() }}</span>
         }
         <i class="cam"><ion-icon name="camera-outline" /></i>
       </button>

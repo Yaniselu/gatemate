@@ -11,11 +11,12 @@ import { ClockPipe, ShortDatePipe } from '../../shared/pipes/time.pipes';
 import { CityImageComponent } from '../../shared/components/city-image.component';
 import { PlatformService } from '../../core/services/platform.service';
 import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
+import { CountryNamePipe } from '../../shared/pipes/country-name.pipe';
 
 @Component({
   selector: 'gm-trips',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, 
+  imports: [TranslatePipe, CountryNamePipe, 
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonFab, IonFabButton, IonRefresher, IonRefresherContent,
     RouterLink, SkeletonComponent, AvatarStackComponent, RevealDirective, PressableDirective, ShortDatePipe, ClockPipe, CityImageComponent,
   ],

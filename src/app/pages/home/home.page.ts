@@ -34,10 +34,11 @@ export const ALERT_ICONS: Record<AlertKind, { icon: string; color: string }> = {
 import { LiveFlightService } from '../../core/services/live-flight.service';
 import { LiveFlightComponent } from '../../shared/components/live-flight.component';
 import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
+import { AvatarBgPipe } from '../../shared/pipes/avatar-bg.pipe';
 @Component({
   selector: 'gm-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, LiveFlightComponent, 
+  imports: [AvatarBgPipe, TranslatePipe, LiveFlightComponent, 
     IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, IonRefresher, IonRefresherContent, RouterLink,
     SkeletonComponent, CountdownComponent, RouteArcComponent, RevealDirective, PressableDirective, CityImageComponent,
     ClockPipe, RelativeTimePipe, FlightStatusPipe,

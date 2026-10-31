@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Traveller } from '../../core/models';
+import { AvatarBgPipe } from '../pipes/avatar-bg.pipe';
 
 @Component({
   selector: 'gm-avatar-stack',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [AvatarBgPipe],
   template: `
     @for (t of people().slice(0, max()); track t.id; let i = $index) {
-      <span class="av" [style.background]="t.color" [style.--i]="i" [attr.title]="t.name">{{ t.initials }}</span>
+      <span class="av" [style.background]="t.color | avatarBg" [style.--i]="i" [attr.title]="t.name">{{ t.initials }}</span>
     }
     @if (people().length > max()) {
       <span class="av more">+{{ people().length - max() }}</span>

@@ -1960,3 +1960,6 @@
 @Couldn’t send the invitation.	Einladung konnte nicht gesendet werden.
 @Enter the 6-digit code from the e-mail.	Gib den 6-stelligen Code aus der E-Mail ein.
 @Couldn’t change the password. Please try again.	Das Passwort konnte nicht geändert werden. Bitte versuche es erneut.
+@Active	Aktiv
+@renews or ends {date}	verlängert sich oder endet am {date}
+@English is widely used here.	Englisch ist hier weit verbreitet.

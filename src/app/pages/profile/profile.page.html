@@ -16,7 +16,7 @@
           @if (u.avatarUrl) {
             <img class="avatar" [src]="u.avatarUrl" alt="" />
           } @else {
-            <div class="avatar" [style.background]="u.avatarColor">{{ initials() }}</div>
+            <div class="avatar" [style.background]="u.avatarColor | avatarBg">{{ initials() }}</div>
           }
         </div>
         <h2>{{ u.name }}</h2>
@@ -34,7 +34,7 @@
       <span class="pro-ic"><ion-icon name="sparkles" /></span>
       <span class="pro-txt">
         @if (pro.isPro()) {
-          <b>{{ 'Gatemate Pro' | t }}</b><small>Active{{ auth.user()?.proUntil ? ' · renews or ends ' + (auth.user()!.proUntil! | shortDate: false) : '' }} · Manage</small>
+          <b>{{ 'Gatemate Pro' | t }}</b><small>{{ 'Active' | t }}@if (auth.user()?.proUntil) { · {{ 'renews or ends {date}' | t: { date: (auth.user()!.proUntil! | shortDate: false) } }}} · {{ 'Manage' | t }}</small>
         } @else {
           <b>{{ 'Upgrade to Gatemate Pro' | t }}</b><small>{{ 'Unlimited tickets, full city guides, settle-up' | t }}</small>
         }

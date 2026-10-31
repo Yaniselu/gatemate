@@ -103,7 +103,7 @@ const RECENT_KEY = 'gm_recent_search';
     .hit:last-child { border-bottom: 0; }
     .ic { width: 36px; height: 36px; flex: none; border-radius: 11px; display: grid; place-items: center; font-size: 19px; color: var(--c);
       background: color-mix(in srgb, var(--c) 15%, transparent); }
-    .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.3; }
     .txt b { font-size: 15px; font-weight: 750; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .txt small { font-size: 12.5px; color: var(--gm-ink-3); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .chev { color: var(--gm-ink-3); font-size: 16px; }

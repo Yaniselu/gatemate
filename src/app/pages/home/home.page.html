@@ -28,7 +28,7 @@
             @if (auth.user()?.avatarUrl) {
               <img [src]="auth.user()!.avatarUrl" alt="" />
             } @else {
-              <span [style.background]="auth.user()?.avatarColor">{{ initials() }}</span>
+              <span [style.background]="auth.user()?.avatarColor | avatarBg">{{ initials() }}</span>
             }
           </a>
         </div>

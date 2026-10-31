@@ -20,11 +20,12 @@ import { AchievementsService } from '../../core/services/achievements.service';
 import { AirportDbService } from '../../core/services/airport-db.service';
 import { summarize } from '../../core/utils/travel-summary';
 import { I18nService, Lang, LANGUAGES, t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
+import { AvatarBgPipe } from '../../shared/pipes/avatar-bg.pipe';
 
 @Component({
   selector: 'gm-profile',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, RouterLink, SkeletonComponent, CountUpDirective, RevealDirective, PressableDirective, SheenDirective, ShortDatePipe],
+  imports: [AvatarBgPipe, TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonIcon, RouterLink, SkeletonComponent, CountUpDirective, RevealDirective, PressableDirective, SheenDirective, ShortDatePipe],
   templateUrl: './profile.page.html',
   styleUrl: './profile.page.scss',
 })

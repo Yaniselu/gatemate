@@ -35,13 +35,15 @@ import { DestinationService } from '../../core/services/destination.service';
 import { renderTripCard } from '../../core/utils/trip-card';
 import { isShareCancel, shareCanvas } from '../../core/utils/share-image';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { AvatarBgPipe } from '../../shared/pipes/avatar-bg.pipe';
+import { CountryNamePipe } from '../../shared/pipes/country-name.pipe';
 
 type Section = 'flights' | 'pass' | 'bags' | 'guide' | 'checklist' | 'expenses' | 'people';
 
 @Component({
   selector: 'gm-trip-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, 
+  imports: [AvatarBgPipe, CountryNamePipe, TranslatePipe, 
     IonContent, IonHeader, IonToolbar, IonButtons, IonBackButton, IonIcon, RouterLink, FormsModule, DecimalPipe,
     BoardingPassComponent, FlightJourneyComponent, FlightPassengersComponent, SeatMapComponent, CabinAirComponent, ArrivalTransportComponent, AvatarStackComponent, CityImageComponent, InvitePanelComponent, DestinationGuideComponent, SkeletonComponent, AirportDayComponent, LiveFlightComponent, RevealDirective, PressableDirective, ClockPipe, DurationPipe, ShortDatePipe, FlightStatusPipe,
   ],

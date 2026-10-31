@@ -19,7 +19,7 @@
       <div class="title-row anim-fade-up">
         <div>
           <h1>{{ t.title | t }}</h1>
-          <p>{{ t.startDate | shortDate }} – {{ t.endDate | shortDate }} · {{ t.destination.city }}, {{ t.destination.country }}</p>
+          <p>{{ t.startDate | shortDate }} – {{ t.endDate | shortDate }} · {{ t.destination.city }}, {{ t.destination.country | countryName }}</p>
         </div>
         <div class="title-side">
           <gm-avatar-stack [people]="t.travellers" />
@@ -268,7 +268,7 @@
             <h3 class="sub">{{ 'Balances' | t }}</h3>
             @for (b of balances(); track b.person.id; let i = $index) {
               <div class="balance" [gmReveal]="i">
-                <span class="av" [style.background]="b.person.color">{{ b.person.initials }}</span>
+                <span class="av" [style.background]="b.person.color | avatarBg">{{ b.person.initials }}</span>
                 <span class="name">{{ b.person.id === 'me' ? ('You' | t) : b.person.name }}</span>
                 <b [class.pos]="b.amount > 0" [class.neg]="b.amount < 0">
                   {{ b.amount > 0 ? 'gets back' : b.amount < 0 ? 'owes' : 'settled' }}
@@ -320,7 +320,7 @@
           <div class="section">
             @for (p of t.travellers; track p.id; let i = $index) {
               <div class="person" [gmReveal]="i">
-                <span class="av big" [style.background]="p.color">{{ p.initials }}</span>
+                <span class="av big" [style.background]="p.color | avatarBg">{{ p.initials }}</span>
                 <div class="grow"><b>{{ p.id === 'me' ? ('You' | t) : p.name }}</b><small>{{ i === 0 ? ('Organiser' | t) : ('Traveller' | t) }}</small></div>
               </div>
             }

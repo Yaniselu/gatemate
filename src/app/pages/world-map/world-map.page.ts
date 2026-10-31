@@ -264,6 +264,7 @@ export class WorldMapPage implements OnInit {
 
   async ngOnInit() {
     void this.db.load().catch(() => {});
+    void this.store.loadTrips().catch(() => {});
     worldCache ??= fetch('data/world.json').then((r) => r.json() as Promise<World>);
     try {
       this.world.set(await worldCache);

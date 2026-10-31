@@ -21,6 +21,9 @@ import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { PressableDirective } from '../../shared/directives/pressable.directive';
 import { ChecklistItem } from '../../core/models';
 import { locale, t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
+import { CountryNamePipe } from '../../shared/pipes/country-name.pipe';
+
+const LANG_CODES: Record<string, string> = { Spanish: 'es', French: 'fr', Portuguese: 'pt', German: 'de', Italian: 'it', Dutch: 'nl', Romanian: 'ro', Catalan: 'ca', Greek: 'el', Turkish: 'tr', Polish: 'pl', Czech: 'cs', Slovak: 'sk', Hungarian: 'hu', Croatian: 'hr', Serbian: 'sr', Bulgarian: 'bg', Swedish: 'sv', Danish: 'da', Norwegian: 'nb', Finnish: 'fi', Russian: 'ru', Ukrainian: 'uk', Arabic: 'ar', Hebrew: 'he', Japanese: 'ja', Korean: 'ko', Chinese: 'zh-CN', Thai: 'th', Vietnamese: 'vi', Indonesian: 'id', Malay: 'ms', Hindi: 'hi', Albanian: 'sq', Swahili: 'sw' };
 
 type Section = 'sights' | 'plan' | 'when' | 'phrases' | 'money' | 'pack' | 'essentials';
 interface PackItem { label: string; why: string; category: ChecklistItem['category'] }
@@ -28,7 +31,7 @@ interface PackItem { label: string; why: string; category: ChecklistItem['catego
 @Component({
   selector: 'gm-explore',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonHeader, IonToolbar, IonButtons, IonBackButton, IonContent, IonIcon, FormsModule, DecimalPipe, CityImageComponent, SkeletonComponent, RevealDirective, PressableDirective],
+  imports: [TranslatePipe, CountryNamePipe, IonHeader, IonToolbar, IonButtons, IonBackButton, IonContent, IonIcon, FormsModule, DecimalPipe, CityImageComponent, SkeletonComponent, RevealDirective, PressableDirective],
   templateUrl: './explore.page.html',
   styleUrl: './explore.page.scss',
 })
@@ -298,9 +301,20 @@ export class ExplorePage {
     if (c !== null) this.amount.set(Math.round(c * 100) / 100);
   }
 
+  langName(english: string | undefined): string {
+    const code = LANG_CODES[english ?? ''];
+    if (!english || !code) return english ?? '';
+    try {
+      const name = new Intl.DisplayNames([locale()], { type: 'language' }).of(code) ?? english;
+      return name.charAt(0).toLocaleUpperCase(locale()) + name.slice(1);
+    } catch {
+      return english;
+    }
+  }
+
   speak(text: string) {
     try {
-      const lang = { Spanish: 'es', French: 'fr', Portuguese: 'pt', German: 'de', Italian: 'it', Dutch: 'nl', Romanian: 'ro', Catalan: 'ca', Greek: 'el', Turkish: 'tr', Polish: 'pl', Czech: 'cs', Slovak: 'sk', Hungarian: 'hu', Croatian: 'hr', Serbian: 'sr', Bulgarian: 'bg', Swedish: 'sv', Danish: 'da', Norwegian: 'nb', Finnish: 'fi', Russian: 'ru', Ukrainian: 'uk', Arabic: 'ar', Hebrew: 'he', Japanese: 'ja', Korean: 'ko', Chinese: 'zh-CN', Thai: 'th', Vietnamese: 'vi', Indonesian: 'id', Malay: 'ms', Hindi: 'hi', Albanian: 'sq', Swahili: 'sw' }[this.phrases()?.language ?? ''];
+      const lang = LANG_CODES[this.phrases()?.language ?? ''];
       if (!lang || !('speechSynthesis' in window)) {
         void this.toast.show('Audio isn’t available on this device.');
         return;
