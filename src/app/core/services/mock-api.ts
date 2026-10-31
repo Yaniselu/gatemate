@@ -22,7 +22,19 @@ const ACCESS_TTL_MS = 15 * 60_000;
 
 @Injectable()
 export class MockApi extends GatemateApi {
-  private user: User | null = null;
+  private current: User | null = readMockUser();
+  private get user(): User | null {
+    return this.current;
+  }
+  private set user(u: User | null) {
+    this.current = u;
+    try {
+      if (u) localStorage.setItem(MOCK_USER_KEY, JSON.stringify(u));
+      else localStorage.removeItem(MOCK_USER_KEY);
+    } catch {
+      return;
+    }
+  }
   private trips: Trip[] | null = null;
   private alerts = createMockAlerts();
   private threads = createMockThreads();
@@ -51,7 +63,7 @@ export class MockApi extends GatemateApi {
     const palette = ['#0FB5C3', '#8B7CF6', '#FF8A5B', '#2FD18A', '#5EC8FF'];
     const [first, ...rest] = name.trim().split(/\s+/);
     return {
-      id: randomId('usr_'),
+      id: stableId(email),
       name,
       email,
       provider,
@@ -700,5 +712,22 @@ export class MockApi extends GatemateApi {
 
   async getStats(): Promise<TravelStats> {
     return this.delay(createMockStats(), 500, 1000);
+  }
+}
+
+function stableId(email: string): string {
+  let h = 2166136261;
+  for (const ch of email.trim().toLowerCase()) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return 'usr_' + (h >>> 0).toString(36);
+}
+
+const MOCK_USER_KEY = 'gm_mock_user';
+
+function readMockUser(): User | null {
+  try {
+    const u = JSON.parse(localStorage.getItem(MOCK_USER_KEY) || 'null');
+    return u && typeof u.id === 'string' && typeof u.email === 'string' ? u : null;
+  } catch {
+    return null;
   }
 }
