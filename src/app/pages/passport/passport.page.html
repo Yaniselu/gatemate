@@ -44,6 +44,12 @@
         <div class="stat card" gmReveal="3"><b [gmCountUp]="s.hours"></b><small>{{ 'Hours in the air' | t }}</small></div>
       </div>
 
+      <a class="world-cta" routerLink="/world" gmPressable>
+        <span class="globe"><ion-icon name="globe-outline" /></span>
+        <span class="txt"><b>{{ 'My world map' | t }}</b><small>{{ 'See every country you’ve visited light up, and add the ones you went to before Gatemate.' | t }}</small></span>
+        <ion-icon name="chevron-forward" class="chev" />
+      </a>
+
       @if (countries().length) {
         <div class="gm-section-title"><h2>{{ 'Countries' | t }}</h2><span class="src">{{ '{n} so far' | t: { n: countries().length } }}</span></div>
         <div class="flags">
