@@ -1,13 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { AuthService } from '../../core/services/auth.service';
-import { emailValidator } from '../../core/security/validators';
+import { emailValidator, passwordStrength } from '../../core/security/validators';
 import { PlatformService } from '../../core/services/platform.service';
 import { ApiError } from '../../core/services/api';
 import { CodeInputComponent } from '../../shared/components/code-input.component';
-import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { t, TranslatePipe } from '../../core/i18n/i18n.service';
 
 @Component({
   selector: 'gm-forgot',
@@ -43,21 +43,27 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
           <div class="stagger">
             <h1 style="--i: 0">{{ 'Enter the code' | t }}</h1>
             <p class="lead" style="--i: 1">{{ 'If an account exists for' | t }} <b>{{ form.controls.email.value }}</b>{{ ', we e-mailed it a 6-digit code. It expires in 30 minutes.' | t }}</p>
-            <div style="--i: 2"><gm-code-input [(value)]="code" [error]="!!error()" /></div>
+            <div style="--i: 2"><gm-code-input [(value)]="code" [error]="codeError()" (complete)="focusPassword()" /></div>
             <div class="gm-field" style="--i: 3; margin-top: 18px">
               <label for="np">{{ 'New password' | t }}</label>
               <div class="gm-input-wrap">
                 <ion-icon name="lock-closed-outline" />
-                <input id="np" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="password()" (input)="password.set($any($event.target).value)" maxlength="128" />
+                <input #np id="np" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="password()" (input)="password.set($any($event.target).value); error.set('')" (keydown.enter)="confirm()" maxlength="128" enterkeyhint="done" />
                 <button type="button" class="eye" (click)="show.set(!show())" [attr.aria-label]="show() ? ('Hide password' | t) : ('Show password' | t)"><ion-icon [name]="show() ? 'eye-off-outline' : 'eye-outline'" /></button>
               </div>
-              <span class="gm-hint">{{ 'At least 10 characters, with letters and a number or symbol.' | t }}</span>
+              @let s = strength();
+              <div class="checks">
+                <span [class.ok]="s.checks.length"><ion-icon [name]="s.checks.length ? 'checkmark' : 'remove-outline'" />{{ '10+ chars' | t }}</span>
+                <span [class.ok]="s.checks.upper && s.checks.lower"><ion-icon [name]="s.checks.upper && s.checks.lower ? 'checkmark' : 'remove-outline'" />{{ 'Aa' | t }}</span>
+                <span [class.ok]="s.checks.digit"><ion-icon [name]="s.checks.digit ? 'checkmark' : 'remove-outline'" />123</span>
+                <span [class.ok]="s.checks.symbol"><ion-icon [name]="s.checks.symbol ? 'checkmark' : 'remove-outline'" />#!?</span>
+              </div>
             </div>
             @if (error()) { <p class="err" role="alert"><ion-icon name="alert-circle" /> {{ error() }}</p> }
-            <button class="gm-btn" style="--i: 4" (click)="confirm()" [disabled]="loading() || code().length !== 6 || password().length < 10">
+            <button class="gm-btn" style="--i: 4" (click)="confirm()" [disabled]="loading()">
               @if (loading()) { <span class="spinner"></span> } @else { {{ 'Set new password' | t }} <ion-icon name="checkmark" /> }
             </button>
-            <button class="link" (click)="sent.set(false); code.set('')">{{ 'Use another e-mail or send a new code' | t }}</button>
+            <button class="link" (click)="restart()">{{ 'Use another e-mail or send a new code' | t }}</button>
           </div>
         } @else {
           <div class="sent">
@@ -79,6 +85,9 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
     .gm-btn { margin-top: 16px; text-decoration: none; }
     .err { display: flex; gap: 6px; align-items: center; margin: 12px 2px 0; color: #c0392b; font-weight: 600; font-size: 14px; }
     .link { display: block; margin: 16px auto 0; background: none; color: var(--gm-accent-strong); font-weight: 700; font-size: 14px; }
+    .checks { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+    .checks span { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 9px; border-radius: 999px; background: var(--gm-surface); color: var(--gm-ink-3); transition: background .3s, color .3s; }
+    .checks span.ok { background: rgba(47, 209, 138, .14); color: #138a57; }
     .eye { background: none; color: var(--gm-ink-3); font-size: 20px; display: flex; }
   `,
 })
@@ -94,6 +103,22 @@ export class ForgotPage {
   readonly show = signal(false);
   readonly error = signal('');
   readonly changed = signal(false);
+  readonly codeError = signal(false);
+  readonly strength = computed(() => passwordStrength(this.password()));
+  private np = viewChild<ElementRef<HTMLInputElement>>('np');
+
+  focusPassword() {
+    this.codeError.set(false);
+    this.error.set('');
+    setTimeout(() => this.np()?.nativeElement.focus(), 50);
+  }
+
+  restart() {
+    this.sent.set(false);
+    this.code.set('');
+    this.error.set('');
+    this.codeError.set(false);
+  }
 
   async submit() {
     this.submitted.set(true);
@@ -116,15 +141,30 @@ export class ForgotPage {
   }
 
   async confirm() {
-    this.loading.set(true);
+    if (this.loading()) return;
     this.error.set('');
+    this.codeError.set(false);
+    if (this.code().length !== 6) {
+      this.codeError.set(true);
+      this.error.set(t('Enter the 6-digit code from the e-mail.'));
+      this.platform.error();
+      return;
+    }
+    if (!Object.values(this.strength().checks).every(Boolean)) {
+      this.error.set(t('Use at least 10 characters with upper and lower case letters, a number and a symbol.'));
+      this.platform.error();
+      this.np()?.nativeElement.focus();
+      return;
+    }
+    this.loading.set(true);
     try {
       await this.auth.confirmPasswordReset(this.form.getRawValue().email, this.code(), this.password());
       this.changed.set(true);
       this.platform.success();
     } catch (e) {
       this.platform.error();
-      this.error.set(e instanceof ApiError ? e.message : 'Couldn’t change the password. Please try again.');
+      if (e instanceof ApiError && e.code === 'invalid_code') this.codeError.set(true);
+      this.error.set(e instanceof ApiError ? e.message : t('Couldn’t change the password. Please try again.'));
     } finally {
       this.loading.set(false);
     }

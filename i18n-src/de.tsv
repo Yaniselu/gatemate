@@ -1958,3 +1958,5 @@
 @Join my trip “{trip}” on Gatemate	Komm mit auf meine Reise „{trip}“ in Gatemate
 @Join my trip on Gatemate: {url}	Komm mit auf meine Reise in Gatemate: {url}
 @Couldn’t send the invitation.	Einladung konnte nicht gesendet werden.
+@Enter the 6-digit code from the e-mail.	Gib den 6-stelligen Code aus der E-Mail ein.
+@Couldn’t change the password. Please try again.	Das Passwort konnte nicht geändert werden. Bitte versuche es erneut.

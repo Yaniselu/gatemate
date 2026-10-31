@@ -1959,3 +1959,5 @@
 @Join my trip “{trip}” on Gatemate	Intră în călătoria mea „{trip}” pe Gatemate
 @Join my trip on Gatemate: {url}	Intră în călătoria mea pe Gatemate: {url}
 @Couldn’t send the invitation.	Nu am putut trimite invitația.
+@Enter the 6-digit code from the e-mail.	Scrie codul de 6 cifre din e-mail.
+@Couldn’t change the password. Please try again.	Parola nu a putut fi schimbată. Încearcă din nou.

@@ -1959,3 +1959,5 @@
 @Join my trip “{trip}” on Gatemate	Unisciti al mio viaggio «{trip}» su Gatemate
 @Join my trip on Gatemate: {url}	Unisciti al mio viaggio su Gatemate: {url}
 @Couldn’t send the invitation.	Impossibile inviare l’invito.
+@Enter the 6-digit code from the e-mail.	Inserisci il codice di 6 cifre dell’e-mail.
+@Couldn’t change the password. Please try again.	Impossibile cambiare la password. Riprova.
