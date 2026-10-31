@@ -32,7 +32,7 @@ Optional: `ASSISTANT_MODEL` (default `claude-opus-5-5`) and `ASSISTANT_EFFORT` (
 2. In Render → gatemate-api → Environment, add `GEMINI_API_KEY` and leave `ANTHROPIC_API_KEY` unset (when both are set,
    Claude is used). Redeploy; the log says `Velo runs on Gemini (…)`.
 
-Optional: `GEMINI_MODEL` (default `gemini-flash-latest`). Same tools, streaming and limits; there's no web search on
+Optional: `GEMINI_MODEL` (default `gemini-flash-lite-latest`, which answers in about a second; Flash is tried next). Same tools, streaming and limits; there's no web search on
 Gemini, so Velo points to the official source for things that change. On Google's free tier, prompts may be used by
 Google to improve its products and the per-minute and per-day quotas are low: when they run out, Velo answers
 "busy" until the quota resets. A billing-enabled Google project lifts both.

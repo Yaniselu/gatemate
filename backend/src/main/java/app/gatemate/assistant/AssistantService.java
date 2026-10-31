@@ -80,7 +80,7 @@ public class AssistantService {
             @Value("${gatemate.assistant.model:claude-opus-5-5}") String model,
             @Value("${gatemate.assistant.effort:low}") String effort,
             @Value("${gatemate.assistant.gemini-key:}") String geminiKey,
-            @Value("${gatemate.assistant.gemini-model:gemini-flash-latest}") String geminiModel,
+            @Value("${gatemate.assistant.gemini-model:gemini-flash-lite-latest}") String geminiModel,
             @Value("${gatemate.assistant.gemini-base-url:}") String geminiBaseUrl,
             @Value("${gatemate.assistant.gemini-timeout-seconds:75}") int geminiTimeoutSeconds) {
         this.tools = tools;

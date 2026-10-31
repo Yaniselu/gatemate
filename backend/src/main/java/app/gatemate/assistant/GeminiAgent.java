@@ -58,8 +58,9 @@ final class GeminiAgent {
         // the same request. The model alias may not exist on both, so fall back to a pinned model.
         List<String> endpoints = baseUrl != null && !baseUrl.isBlank() ? List.of(baseUrl.replaceAll("/+$", "") + "/v1beta/models/")
                 : List.of(STUDIO, VERTEX);
-        // Overloaded (503) or out of quota (429) on one model: the next one usually answers (quotas are per model).
-        var models = new java.util.LinkedHashSet<>(List.of(model, "gemini-flash-latest", "gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash-lite"));
+        // Overloaded (503), out of quota (429) or silent on one model: the next one usually answers (quotas are per model).
+        // Flash-Lite comes first: it answers in about a second, while Flash often hangs for minutes when Google is busy.
+        var models = new java.util.LinkedHashSet<>(List.of(model, "gemini-flash-lite-latest", "gemini-flash-latest", "gemini-3.5-flash-lite"));
         for (String e : endpoints) for (String m : models) routes.add(e + URLEncoder.encode(m, StandardCharsets.UTF_8) + ":generateContent");
         this.declarations = declarations;
         this.json = json;
@@ -122,6 +123,7 @@ final class GeminiAgent {
     private volatile int thinking;
     /** Longest wait for one model reply before the traveller gets an error instead of an endless spinner. */
     private final Duration timeout;
+    private static final Duration ATTEMPT = Duration.ofSeconds(25);
 
     /**
      * One model reply, as a whole (Gemini's streaming proved unreliable from our host: replies stalled mid-stream). Text
@@ -140,8 +142,13 @@ final class GeminiAgent {
             body.put("contents", contents);
             body.put("tools", List.of(Map.of("functionDeclarations", declarations)));
             body.put("generationConfig", config);
+            // The whole reply has `timeout`; a model silent for 25 s is overloaded, so the next one gets the rest of it.
+            boolean last = r + 1 >= routes.size();
+            Duration left = timeout.minusNanos(System.nanoTime() - started);
+            if (left.toMillis() < 500) throw new Failure(504, "no reply from Gemini within " + timeout.toSeconds() + " s");
+            Duration wait = last || left.compareTo(ATTEMPT) < 0 ? left : ATTEMPT;
             var req = HttpRequest.newBuilder(URI.create(routes.get(r)))
-                    .timeout(timeout)
+                    .timeout(wait)
                     .header("Content-Type", "application/json")
                     .header("x-goog-api-key", key)
                     .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)))
@@ -149,7 +156,10 @@ final class GeminiAgent {
             try {
                 res = http.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             } catch (java.net.http.HttpTimeoutException e) {
-                throw new Failure(504, "no reply from Gemini within " + timeout.toSeconds() + " s");
+                if (last) throw new Failure(504, "no reply from Gemini within " + timeout.toSeconds() + " s");
+                log.warn("Gemini route {} silent for {} s, trying the next one", routes.get(r).replaceAll(":generate.*", ""), wait.toSeconds());
+                r++;
+                continue;
             }
             if (res.statusCode() == 200) {
                 if (r != route) log.info("Velo on Gemini uses {}", routes.get(r).replaceAll(":generate.*", ""));

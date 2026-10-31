@@ -131,7 +131,7 @@ class GeminiAssistantTest {
         assertThat(json.readTree(bodies.get(1)).path("generationConfig").path("thinkingConfig").path("thinkingBudget").asInt()).isZero();
 
         // First request: streaming endpoint, key in a header (never in the URL), Gemini-style tool schemas.
-        assertThat(paths.get(0)).isEqualTo("/v1beta/models/gemini-flash-latest:generateContent");
+        assertThat(paths.get(0)).isEqualTo("/v1beta/models/gemini-flash-lite-latest:generateContent");
         assertThat(keys.get(0)).isEqualTo("gemini-test-key");
         JsonNode first = json.readTree(bodies.get(1));
         String decl = first.path("tools").get(0).path("functionDeclarations").toString();
@@ -151,8 +151,8 @@ class GeminiAssistantTest {
         List<Map<String, Object>> retried = new ArrayList<>();
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Salut")), retried::add);
         assertThat(retried.get(retried.size() - 1)).containsEntry("type", "done");
-        assertThat(paths.get(3)).contains("gemini-flash-latest");
-        assertThat(paths.get(4)).contains("/gemini-2.5-flash:");
+        assertThat(paths.get(3)).contains("/gemini-flash-lite-latest:");
+        assertThat(paths.get(4)).contains("/gemini-flash-latest:");
 
         List<Map<String, Object>> later = new ArrayList<>();
         assistant.chat(u.id, List.of(new AssistantService.Turn("user", "Și vremea?")), later::add);
