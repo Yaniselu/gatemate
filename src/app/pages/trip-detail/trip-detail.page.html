@@ -46,9 +46,10 @@
             @if (upcomingFlights().at(0) ?? t.flights.at(0); as jf) {
               @for (x of [jf]; track x.id) { <gm-flight-journey [flight]="x" /> }
               @if (liveActivity.supported) {
-                <button class="lock-btn" (click)="showOnLockScreen(jf)" gmPressable>
-                  <ion-icon [name]="lockShown() ? 'checkmark-circle' : 'phone-portrait-outline'" />
-                  <span><b>{{ (lockShown() ? 'On your lock screen' : 'Show on lock screen') | t }}</b><small>{{ 'Countdown on the lock screen, Dynamic Island and Apple Watch' | t }}</small></span>
+                @let onLock = liveActivity.shown().has(jf.id);
+                <button class="lock-btn" [class.on]="onLock" (click)="toggleLockScreen(jf)" [attr.aria-pressed]="onLock" gmPressable>
+                  <ion-icon [name]="onLock ? 'checkmark-circle' : 'phone-portrait-outline'" />
+                  <span><b>{{ (onLock ? 'On your lock screen' : 'Show on lock screen') | t }}</b><small>{{ (onLock ? 'Tap to remove it' : 'Countdown on the lock screen, Dynamic Island and Apple Watch') | t }}</small></span>
                 </button>
               }
             }

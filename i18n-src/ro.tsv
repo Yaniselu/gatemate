@@ -1964,3 +1964,8 @@
 @Active	Activ
 @renews or ends {date}	se reînnoiește sau expiră pe {date}
 @English is widely used here.	Engleza e folosită pe scară largă aici.
+@Tap to remove it	Atinge ca să-l scoți
+@Removed from your lock screen.	Scos de pe ecranul blocat.
+@Lock your phone to see it.	Blochează telefonul ca să-l vezi.
+@Live Activities are off. Turn them on in Settings → Gatemate → Live Activities.	Live Activities sunt oprite. Pornește-le din Setări → Gatemate → Live Activities.
+@Couldn’t show it on the lock screen. Needs iOS 16.2 or later.	Nu am putut afișa pe ecranul blocat. E nevoie de iOS 16.2 sau mai nou.

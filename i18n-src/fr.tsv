@@ -1963,3 +1963,8 @@
 @Active	Actif
 @renews or ends {date}	se renouvelle ou se termine le {date}
 @English is widely used here.	L’anglais est largement utilisé ici.
+@Tap to remove it	Touche pour le retirer
+@Removed from your lock screen.	Retiré de l’écran verrouillé.
+@Lock your phone to see it.	Verrouille ton téléphone pour le voir.
+@Live Activities are off. Turn them on in Settings → Gatemate → Live Activities.	Les Activités en direct sont désactivées. Active-les dans Réglages → Gatemate → Activités en direct.
+@Couldn’t show it on the lock screen. Needs iOS 16.2 or later.	Impossible de l’afficher sur l’écran verrouillé. iOS 16.2 ou plus récent requis.

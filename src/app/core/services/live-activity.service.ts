@@ -1,4 +1,4 @@
-import { effect, inject, Injectable } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { Flight } from '../models';
 import { t } from '../i18n/i18n.service';
@@ -15,6 +15,9 @@ interface LiveActivityPlugin {
 const LiveActivity = registerPlugin<LiveActivityPlugin>('LiveActivity');
 
 const LEAD_MS = 60 * 3_600_000;
+const HIDDEN_KEY = 'gm_la_hidden';
+
+export type LockScreenResult = 'shown' | 'disabled' | 'unsupported' | 'failed';
 const AFTER_LANDING_MS = 30 * 60_000;
 
 @Injectable({ providedIn: 'root' })
@@ -24,6 +27,8 @@ export class LiveActivityService {
   private status = new FlightStatusPipe();
   private readonly enabled = Capacitor.getPlatform() === 'ios' && Capacitor.isPluginAvailable('LiveActivity');
   private last = '';
+  private hidden = new Set<string>(readHidden());
+  readonly shown = signal<ReadonlySet<string>>(new Set());
 
   constructor() {
     if (!this.enabled) return;
@@ -35,15 +40,34 @@ export class LiveActivityService {
     });
   }
 
-  async show(f: Flight): Promise<boolean> {
-    if (!this.enabled) return false;
+  async show(f: Flight): Promise<LockScreenResult> {
+    if (!this.enabled) return 'unsupported';
+    this.hidden.delete(f.id);
+    saveHidden(this.hidden);
     try {
-      if (!(await LiveActivity.isAvailable()).available) return false;
+      if (!(await LiveActivity.isAvailable()).available) return 'disabled';
       await LiveActivity.start(this.payload(f));
-      return true;
+      this.mark(f.id, true);
+      return 'shown';
     } catch {
-      return false;
+      return 'failed';
     }
+  }
+
+  async hide(f: Flight): Promise<void> {
+    this.hidden.add(f.id);
+    saveHidden(this.hidden);
+    this.mark(f.id, false);
+    if (this.enabled) await LiveActivity.end({ flightId: f.id }).catch(() => {});
+  }
+
+  isShown(id: string) {
+    return this.shown().has(id);
+  }
+
+  private mark(id: string, on: boolean) {
+    const next = new Set(on ? [id] : [...this.shown()].filter((x) => x !== id));
+    this.shown.set(next);
   }
 
   get supported() {
@@ -52,15 +76,17 @@ export class LiveActivityService {
 
   private async sync(f: Flight | null) {
     const now = Date.now();
-    if (!f) {
+    if (!f || this.hidden.has(f.id)) {
       if (this.last !== 'none') await LiveActivity.end({}).catch(() => {});
       this.last = 'none';
+      this.shown.set(new Set());
       return;
     }
     const dep = new Date(f.departure).getTime();
     const arr = new Date(f.arrival).getTime();
     if (now > arr + AFTER_LANDING_MS) {
       await LiveActivity.end({ flightId: f.id }).catch(() => {});
+      this.mark(f.id, false);
       this.last = '';
       return;
     }
@@ -70,6 +96,7 @@ export class LiveActivityService {
     try {
       if (!(await LiveActivity.isAvailable()).available) return;
       await LiveActivity.start(this.payload(f));
+      this.mark(f.id, true);
       this.last = key;
     } catch {
     }
@@ -102,5 +129,22 @@ export class LiveActivityService {
         landed: t('Landed'),
       },
     };
+  }
+}
+
+function readHidden(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]');
+    return Array.isArray(v) ? v.filter((x) => typeof x === 'string').slice(-20) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHidden(ids: Set<string>) {
+  try {
+    localStorage.setItem(HIDDEN_KEY, JSON.stringify([...ids].slice(-20)));
+  } catch {
+    return;
   }
 }

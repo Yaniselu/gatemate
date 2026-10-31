@@ -89,7 +89,6 @@ export class TripDetailPage implements OnInit {
   });
 
   protected liveActivity = inject(LiveActivityService);
-  readonly lockShown = signal(false);
   private live = inject(LiveFlightService);
   private clockTick = signal(Date.now());
   readonly liveFlight = computed(() => {
@@ -300,7 +299,21 @@ export class TripDetailPage implements OnInit {
     }
   }
 
-  async showOnLockScreen(f: Flight) {
-    this.lockShown.set(await this.liveActivity.show(f));
+  async toggleLockScreen(f: Flight) {
+    this.platform.selection();
+    if (this.liveActivity.isShown(f.id)) {
+      await this.liveActivity.hide(f);
+      void this.toast.show('Removed from your lock screen.');
+      return;
+    }
+    const r = await this.liveActivity.show(f);
+    if (r === 'shown') {
+      this.platform.success();
+      void this.toast.show('Lock your phone to see it.', 'success');
+    } else if (r === 'disabled') {
+      void this.toast.show('Live Activities are off. Turn them on in Settings → Gatemate → Live Activities.', 'error');
+    } else {
+      void this.toast.show('Couldn’t show it on the lock screen. Needs iOS 16.2 or later.', 'error');
+    }
   }
 }
