@@ -266,3 +266,7 @@ npm test                   # testele aplicației
 ---
 
 <p align="center">Făcut de <b>Velosyntech</b> · <a href="mailto:contact@velosyntech.com">contact@velosyntech.com</a></p>
+
+## Echipa
+
+- **Serban Yanis**
