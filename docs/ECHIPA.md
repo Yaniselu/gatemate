@@ -48,11 +48,6 @@ la un singur zbor folosești 5–8 aplicații diferite, iar dacă mergi cu famil
 **Rol:** [ex. Backend & Data · Design & UX · QA & Pitch]
 **GitHub:** [@username](https://github.com/username)
 
-**De ce a răspuns:**
-- [ex. Serverul Spring Boot și baza de date PostgreSQL]
-- [ex. Designul interfeței, tema luminoasă și cea întunecată]
-- [ex. Testarea aplicației pe iOS și Android]
-- [ex. Prezentarea și materialele video]
 
 **Module la care a lucrat:**
 | Modul | Ce a făcut |
