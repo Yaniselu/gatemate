@@ -44,9 +44,9 @@ la un singur zbor folosești 5–8 aplicații diferite, iar dacă mergi cu famil
 
 ---
 
-### [Numele colegului]
+### Vlagiu Natalia
 **Rol:** [ex. Backend & Data · Design & UX · QA & Pitch]
-**GitHub:** [@username](https://github.com/username)
+**GitHub:** [@NataliaVlagiu](https://github.com/NataliaVlagiu)
 
 
 **Module la care a lucrat:**
