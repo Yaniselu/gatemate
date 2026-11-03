@@ -1,5 +1,7 @@
 import { addIcons } from 'ionicons';
 import {
+  remove,
+  umbrellaOutline,
   accessibilityOutline,
   qrCode,
   trailSign,
@@ -208,6 +210,8 @@ import {
 
 export function registerIcons(): void {
   addIcons({
+    remove,
+    umbrellaOutline,
     accessibilityOutline,
     qrCode,
     trailSign,

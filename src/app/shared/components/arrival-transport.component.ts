@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { IonIcon } from '@ionic/angular/standalone';
@@ -9,6 +9,8 @@ import { GatesService, MapFeature } from '../../core/services/gates.service';
 import { TravelStore } from '../../core/services/travel.store';
 import { locale, t, TranslatePipe } from '../../core/i18n/i18n.service';
 import { publicFetch } from '../../core/utils/public-fetch';
+import { rideApps } from '../../core/data/ride-apps';
+import { localCountryName } from '../pipes/country-name.pipe';
 
 interface Place {
   name: string;
@@ -72,28 +74,46 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
         </div>
       }
 
+      <div class="party">
+        <span><ion-icon name="people-outline" />{{ 'How many of you?' | t }}</span>
+        <div class="step">
+          <button (click)="setParty(party() - 1)" [disabled]="party() <= 1" [attr.aria-label]="'Fewer people' | t"><ion-icon name="remove" /></button>
+          <b aria-live="polite">{{ party() }}</b>
+          <button (click)="setParty(party() + 1)" [disabled]="party() >= 12" [attr.aria-label]="'More people' | t"><ion-icon name="add" /></button>
+        </div>
+      </div>
+
       @if (plan(); as p) {
         <div class="verdict" [class.ride]="p.best === 'ride'">
           <ion-icon [name]="p.best === 'ride' ? 'car-sport' : 'bus'" />
           <div>
-            <b>{{ (p.best === 'ride' ? 'Take an Uber or Bolt' : 'Take public transport') | t }}</b>
+            <b>{{ p.best === 'ride' ? ('Take a ride: {apps}' | t: { apps: rideLabel() }) : ('Take public transport' | t) }}</b>
             <small>{{ p.reason | t: p.reasonArgs }}</small>
           </div>
         </div>
         <div class="options">
           <div class="opt" [class.best]="p.best === 'ride'">
-            <span class="o-h"><ion-icon name="car-outline" />Uber / Bolt</span>
+            <span class="o-h"><ion-icon name="car-outline" />{{ rideLabel() }}</span>
             <b>≈ {{ p.rideMin }} min</b>
-            <small>≈ €{{ p.rideCost | number: '1.0-0' }}@if (people() > 1) { · €{{ p.ridePer | number: '1.0-0' }} {{ 'each' | t }} }</small>
+            <small>≈ €{{ p.rideCost | number: '1.0-0' }} {{ 'total' | t }}@if (party() > 1) { · €{{ p.ridePer | number: '1.0-0' }} {{ 'each' | t }} }</small>
+            @if (p.cars > 1) { <small class="cars">{{ '{n} cars for {people} people' | t: { n: p.cars, people: party() } }}</small> }
+            @else if (p.xl) { <small class="cars">{{ 'A large car (XL) for {people} people' | t: { people: party() } }}</small> }
           </div>
           <div class="opt" [class.best]="p.best === 'transit'">
             <span class="o-h"><ion-icon name="bus-outline" />{{ 'Public transport' | t }}</span>
             <b>≈ {{ p.transitMin }} min</b>
-            <small>≈ €{{ p.transitCost | number: '1.0-2' }} {{ 'each' | t }}@if (p.night) { · {{ 'may not run at night' | t }} }</small>
+            <small>≈ €{{ p.transitCost | number: '1.0-2' }} {{ 'each' | t }}@if (party() > 1) { · €{{ p.transitTotal | number: '1.0-0' }} {{ 'total' | t }} }@if (p.night) { · {{ 'may not run at night' | t }} }</small>
           </div>
         </div>
         <p class="dist">{{ '{km} km from the airport · arriving {time}' | t: { km: (p.km | number: '1.0-1'), time: arrivalClock() } }}</p>
       }
+
+      <div class="apps" [class.warn]="appsWarn()">
+        <ion-icon [name]="appsWarn() ? 'alert-circle-outline' : 'information-circle-outline'" />
+        <div>
+          @for (line of appsNotes(); track line.text) { <p>{{ line.text | t: line.args }}</p> }
+        </div>
+      </div>
 
       <h4>{{ 'Rent a car' | t }}</h4>
       <div class="rent">
@@ -122,8 +142,8 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
       </div>
 
       <div class="links">
-        <a class="btn uber" [href]="uberLink()" target="_blank" rel="noopener"><ion-icon name="car" />Uber</a>
-        <a class="btn bolt" [href]="boltLink()" target="_blank" rel="noopener"><ion-icon name="flash" />Bolt</a>
+        @if (apps()?.uber !== false) { <a class="btn uber" [href]="uberLink()" target="_blank" rel="noopener"><ion-icon name="car" />Uber</a> }
+        @if (apps()?.bolt !== false) { <a class="btn bolt" [href]="boltLink()" target="_blank" rel="noopener"><ion-icon name="flash" />Bolt</a> }
         <a class="btn transit" [href]="transitLink()" target="_blank" rel="noopener"><ion-icon name="navigate" />{{ 'Transit route' | t }}</a>
       </div>
 
@@ -154,11 +174,12 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
     .results button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; text-align: left; font-size: 13.5px; color: var(--gm-ink); background: var(--gm-card-bg, #fff); }
     .results button + button { border-top: 1px solid var(--gm-card-border, #e6eaef); }
     .results span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .verdict { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; color: #0f5132; background: rgba(16,185,129,.12); }
-    .verdict.ride { color: #7c2d12; background: rgba(249,115,22,.12); }
-    .verdict ion-icon { flex: none; font-size: 26px; }
+    .verdict { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border-radius: 16px; color: var(--gm-ink); background: rgba(16,185,129,.14); }
+    .verdict.ride { background: rgba(249,115,22,.14); }
+    .verdict ion-icon { flex: none; font-size: 26px; color: #10b981; }
+    .verdict.ride ion-icon { color: #f97316; }
     .verdict b { display: block; font-size: 15px; }
-    .verdict small { display: block; font-size: 12.5px; line-height: 1.35; opacity: .9; }
+    .verdict small { display: block; font-size: 12.5px; line-height: 1.35; color: var(--gm-ink-2); }
     .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
     .opt { padding: 10px 12px; border-radius: 16px; background: var(--gm-surface); border: 2px solid transparent; }
     .opt.best { border-color: #0fb5c3; background: rgba(15,181,195,.08); }
@@ -166,6 +187,20 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
     .opt b { display: block; margin-top: 4px; font-size: 19px; font-weight: 850; }
     .opt small { font-size: 12px; color: var(--gm-ink-2); }
     .dist { margin: 8px 2px 0; font-size: 12px; color: var(--gm-ink-3); }
+    .party { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding: 8px 8px 8px 12px; border-radius: 14px; background: var(--gm-surface); }
+    .party > span { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--gm-ink); }
+    .party > span ion-icon { font-size: 18px; color: var(--gm-ink-3); }
+    .step { display: flex; align-items: center; gap: 4px; }
+    .step b { min-width: 28px; text-align: center; font-size: 17px; font-weight: 850; color: var(--gm-ink); }
+    .step button { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font-size: 18px; color: var(--gm-accent-strong); background: var(--gm-card-bg); border: 1px solid var(--gm-card-border); }
+    .step button:disabled { opacity: .35; }
+    .cars { display: block; margin-top: 2px; font-weight: 700; color: var(--gm-ink-2); }
+    .apps { display: flex; gap: 8px; margin-top: 10px; padding: 10px 12px; border-radius: 14px; font-size: 12.5px; line-height: 1.4; color: var(--gm-ink-2); background: var(--gm-surface); }
+    .apps p { margin: 0; }
+    .apps p + p { margin-top: 3px; }
+    .apps ion-icon { flex: none; margin-top: 1px; font-size: 16px; color: var(--gm-ink-3); }
+    .apps.warn { color: var(--gm-ink); background: rgba(245,158,11,.14); }
+    .apps.warn ion-icon { color: #d97706; }
     .links { display: flex; gap: 8px; margin-top: 12px; }
     .btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 42px; border-radius: 14px; font-size: 13.5px; font-weight: 750; text-decoration: none; color: #fff; }
     .btn.uber { background: #0f0f0f; }
@@ -193,6 +228,7 @@ export class ArrivalTransportComponent implements OnInit {
   readonly flight = input.required<Flight>();
   readonly tripId = input.required<string>();
   readonly people = input(1);
+  readonly party = linkedSignal(() => Math.max(1, Math.min(12, this.people())));
   private db = inject(AirportDbService);
   private gates = inject(GatesService);
   private store = inject(TravelStore);
@@ -223,11 +259,15 @@ export class ArrivalTransportComponent implements OnInit {
     const d = km(a, s) * 1.3;
     const price = PRICES[a.country] ?? DEFAULT_PRICE;
     const rideMin = Math.round(d / 32 * 60 + 8);
-    const rideCost = Math.max(price.floor, price.base + price.km * d + price.min * rideMin);
-    const n = Math.max(1, Math.min(4, this.people()));
+    const oneCar = Math.max(price.floor, price.base + price.km * d + price.min * rideMin);
+    const n = this.party();
+    const xl = n >= 5 && n <= 6;
+    const cars = n <= 4 ? 1 : xl ? 1 : Math.ceil(n / 4);
+    const rideCost = xl ? oneCar * 1.5 : oneCar * cars;
     const ridePer = rideCost / n;
     const transitMin = Math.round(d / 20 * 60 + 18);
     const transitCost = price.ticket * (d > 25 ? 2 : 1);
+    const transitTotal = transitCost * n;
     let hour = this.arrival().getUTCHours();
     try {
       hour = +new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: this.flight().to.timezone }).format(this.arrival()) % 24;
@@ -252,8 +292,41 @@ export class ArrivalTransportComponent implements OnInit {
       reasonArgs = { eur: Math.round(ridePer - transitCost) };
       reason = 'Saves about €{eur} each for a slightly longer trip.';
     }
-    return { km: d, rideMin, rideCost, ridePer, transitMin, transitCost, night, best, reason, reasonArgs };
+    return { km: d, rideMin, rideCost, ridePer, transitMin, transitCost, transitTotal, cars, xl, night, best, reason, reasonArgs };
   });
+
+  readonly apps = computed(() => rideApps(this.airport()?.country));
+  readonly rideLabel = computed(() => {
+    const a = this.apps();
+    if (!a) return 'Uber / Bolt';
+    const names = [a.uber !== false && a.uber !== undefined ? 'Uber' : '', a.bolt !== false && a.bolt !== undefined ? 'Bolt' : '', ...(a.local ?? [])].filter(Boolean);
+    return names.slice(0, 2).join(' / ') || 'Taxi';
+  });
+  readonly appsWarn = computed(() => {
+    const a = this.apps();
+    return !!a && (a.uber === false || a.bolt === false || a.uber === 'taxi' || a.bolt === 'taxi');
+  });
+  readonly appsNotes = computed(() => {
+    const a = this.apps();
+    const country = localCountryName(this.flight().to.country) || this.flight().to.city;
+    const out: { text: string; args?: Record<string, string> }[] = [];
+    if (!a) {
+      out.push({ text: 'Uber and Bolt don’t work in every country. Open the app before you land to check it works in {country}.', args: { country } });
+      return out;
+    }
+    const missing = [a.uber === false ? 'Uber' : '', a.bolt === false ? 'Bolt' : ''].filter(Boolean);
+    const taxiOnly = [a.uber === 'taxi' ? 'Uber' : '', a.bolt === 'taxi' ? 'Bolt' : ''].filter(Boolean);
+    if (missing.length) out.push({ text: '{apps} doesn’t operate in {country}.', args: { apps: missing.join(' / '), country } });
+    if (taxiOnly.length) out.push({ text: 'In {country}, {apps} only books licensed taxis, at taxi prices.', args: { apps: taxiOnly.join(' / '), country } });
+    if (a.local?.length) out.push({ text: 'Locals use: {apps}.', args: { apps: a.local.join(', ') } });
+    if (a.uber === true && a.bolt === true) out.push({ text: 'Uber and Bolt both work in {country}.', args: { country } });
+    else if (!missing.length && !taxiOnly.length) out.push({ text: 'Open the app before you land to check it works in {country}.', args: { country } });
+    return out;
+  });
+
+  setParty(n: number) {
+    this.party.set(Math.max(1, Math.min(12, n)));
+  }
 
   readonly uberLink = computed(() => {
     const a = this.airport(), s = this.stay();

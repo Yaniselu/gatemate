@@ -1969,3 +1969,16 @@
 @Lock your phone to see it.	Blochează telefonul ca să-l vezi.
 @Live Activities are off. Turn them on in Settings → Gatemate → Live Activities.	Live Activities sunt oprite. Pornește-le din Setări → Gatemate → Live Activities.
 @Couldn’t show it on the lock screen. Needs iOS 16.2 or later.	Nu am putut afișa pe ecranul blocat. E nevoie de iOS 16.2 sau mai nou.
+@How many of you?	Câți sunteți?
+@Fewer people	Mai puține persoane
+@More people	Mai multe persoane
+@Take a ride: {apps}	Ia o mașină: {apps}
+@total	total
+@{n} cars for {people} people	{n} mașini pentru {people} persoane
+@A large car (XL) for {people} people	O mașină mare (XL) pentru {people} persoane
+@Uber and Bolt don’t work in every country. Open the app before you land to check it works in {country}.	Uber și Bolt nu funcționează în toate țările. Deschide aplicația înainte să aterizezi ca să verifici că merge în {country}.
+@{apps} doesn’t operate in {country}.	{apps} nu funcționează în {country}.
+@In {country}, {apps} only books licensed taxis, at taxi prices.	În {country}, {apps} comandă doar taxiuri autorizate, la preț de taxi.
+@Locals use: {apps}.	Localnicii folosesc: {apps}.
+@Uber and Bolt both work in {country}.	Uber și Bolt funcționează amândouă în {country}.
+@Open the app before you land to check it works in {country}.	Deschide aplicația înainte să aterizezi ca să verifici că merge în {country}.

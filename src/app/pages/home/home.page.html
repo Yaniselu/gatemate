@@ -37,9 +37,14 @@
   </ion-header>
 
   <div class="page">
-    <a class="search-pill anim-fade-up" routerLink="/search" gmPressable>
-      <ion-icon name="search-outline" /><span>{{ 'Search flights, rules, airports, tools…' | t }}</span>
-    </a>
+    <div class="search-row anim-fade-up">
+      <a class="search-pill" routerLink="/search" gmPressable>
+        <ion-icon name="search-outline" /><span>{{ 'Search flights, rules, airports, tools…' | t }}</span>
+      </a>
+      <a class="add-pill" routerLink="/add-flight" gmPressable [attr.aria-label]="'Add a flight' | t">
+        <ion-icon name="add" /><span>{{ 'Flight' | t }}</span>
+      </a>
+    </div>
     @if (verifyReminder()) {
       <a class="verify card anim-fade-up" routerLink="/verify-email" gmPressable>
         <span class="gm-well tint" style="--c: #f59e0b"><ion-icon name="mail-unread-outline" /></span>

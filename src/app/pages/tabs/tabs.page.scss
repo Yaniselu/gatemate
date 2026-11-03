@@ -7,7 +7,7 @@ ion-tab-bar.gm-tabbar {
   position: absolute;
   left: 14px;
   right: 14px;
-  bottom: calc(10px + env(safe-area-inset-bottom));
+  bottom: max(6px, calc(env(safe-area-inset-bottom) * 0.5 + 2px));
   height: 66px;
   padding: 6px;
   border-radius: 30px;

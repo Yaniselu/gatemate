@@ -735,13 +735,39 @@
   }
 }
 
+.search-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.add-pill {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 46px;
+  padding: 0 16px 0 12px;
+  border-radius: 16px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 750;
+  color: #fff;
+  background: var(--gm-on-accent-bg);
+  box-shadow: 0 8px 20px rgba(10, 135, 150, 0.28);
+  ion-icon {
+    font-size: 22px;
+  }
+}
+
 .search-pill {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
   height: 46px;
   padding: 0 16px;
-  margin-bottom: 14px;
   border-radius: 16px;
   text-decoration: none;
   font-size: 15px;

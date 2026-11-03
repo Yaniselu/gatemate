@@ -1969,3 +1969,16 @@
 @Lock your phone to see it.	Blocca il telefono per vederlo.
 @Live Activities are off. Turn them on in Settings → Gatemate → Live Activities.	Le Attività in tempo reale sono disattivate. Attivale in Impostazioni → Gatemate → Attività in tempo reale.
 @Couldn’t show it on the lock screen. Needs iOS 16.2 or later.	Impossibile mostrarlo sulla schermata di blocco. Serve iOS 16.2 o successivo.
+@How many of you?	Quanti siete?
+@Fewer people	Meno persone
+@More people	Più persone
+@Take a ride: {apps}	Prendi un’auto: {apps}
+@total	totale
+@{n} cars for {people} people	{n} auto per {people} persone
+@A large car (XL) for {people} people	Un’auto grande (XL) per {people} persone
+@Uber and Bolt don’t work in every country. Open the app before you land to check it works in {country}.	Uber e Bolt non funzionano in tutti i paesi. Apri l’app prima di atterrare per verificare che funzioni in {country}.
+@{apps} doesn’t operate in {country}.	{apps} non opera in {country}.
+@In {country}, {apps} only books licensed taxis, at taxi prices.	In {country}, {apps} prenota solo taxi autorizzati, a prezzo di taxi.
+@Locals use: {apps}.	La gente del posto usa: {apps}.
+@Uber and Bolt both work in {country}.	Uber e Bolt funzionano entrambi in {country}.
+@Open the app before you land to check it works in {country}.	Apri l’app prima di atterrare per verificare che funzioni in {country}.
