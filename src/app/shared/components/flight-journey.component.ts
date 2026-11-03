@@ -109,7 +109,12 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
   private scrollTimer?: ReturnType<typeof setTimeout>;
   private unlisten?: () => void;
   private resizer?: ResizeObserver;
-  private readonly reduced = (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) || document.documentElement.classList.contains('gm-lite');
+  private get reduced(): boolean {
+    return (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) || document.documentElement.classList.contains('gm-lite');
+  }
+  private cost = 0;
+  private skip = false;
+  private odd = false;
 
   async ngAfterViewInit() {
     await new Promise<void>((done) => {
@@ -130,6 +135,8 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
       if (!cv) return;
       this.scene = new mod.FlightJourneyScene(cv, end(f.from.code, f.from.city), end(f.to.code, f.to.city));
       this.duration = mod.JOURNEY_SECONDS;
+      await this.scene.warm();
+      if (this.destroyed) return;
       this.resize();
       this.resizer = new ResizeObserver(() => this.resize());
       this.resizer.observe(cv);
@@ -181,9 +188,36 @@ export class FlightJourneyComponent implements AfterViewInit, OnDestroy {
     if (this.raf || !this.scene || this.elapsed >= this.duration) return;
     this.started = performance.now() - this.elapsed * 1000;
     this.zone.runOutsideAngular(() => {
+      let prev = 0;
+      let frames = 0;
       const loop = (now: number) => {
         this.elapsed = Math.min(this.duration, (now - this.started) / 1000);
-        this.draw(now, false);
+        if (prev) {
+          this.cost = frames < 3 ? now - prev : this.cost * 0.88 + (now - prev) * 0.12;
+          frames++;
+        }
+        prev = now;
+        if (frames > 8 && this.cost > 24) {
+          if (this.cost > 70) {
+            this.raf = 0;
+            this.elapsed = this.duration;
+            this.draw(performance.now(), true);
+            return;
+          }
+          if (this.scene!.lowerQuality()) {
+            frames = 0;
+          } else if (!this.skip) {
+            this.skip = true;
+            frames = 0;
+          } else if (this.cost > 34) {
+            this.raf = 0;
+            this.elapsed = this.duration;
+            this.draw(performance.now(), true);
+            return;
+          }
+        }
+        this.odd = !this.odd;
+        if (!this.skip || this.odd || this.elapsed >= this.duration) this.draw(now, false);
         if (this.elapsed >= this.duration || !this.visible) {
           this.raf = 0;
           return;

@@ -38,8 +38,9 @@ export class FlightJourneyScene {
 
   constructor(private canvas: HTMLCanvasElement, from: JourneyEnd, to: JourneyEnd) {
     const dpr = window.devicePixelRatio || 1;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: dpr < 2, alpha: false, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(dpr, 1.5));
+    const lite = document.documentElement.classList.contains('gm-lite');
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: dpr < 2 && !lite, alpha: false, powerPreference: lite ? 'low-power' : 'high-performance' });
+    this.renderer.setPixelRatio(lite ? 1 : Math.min(dpr, 1.5));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
@@ -56,7 +57,31 @@ export class FlightJourneyScene {
     }
   }
 
+  private size = { w: 0, h: 0 };
+
+  async warm(): Promise<void> {
+    const r = this.renderer as THREE.WebGLRenderer & { compileAsync?: (s: THREE.Object3D, c: THREE.Camera) => Promise<unknown> };
+    if (!r.compileAsync) return;
+    for (const sc of [this.origin.scene, this.globe.scene, this.dest.scene]) {
+      try {
+        await r.compileAsync(sc, this.camera);
+      } catch {
+        return;
+      }
+      await new Promise((done) => setTimeout(done, 0));
+    }
+  }
+
+  lowerQuality(): boolean {
+    const now = this.renderer.getPixelRatio();
+    if (now <= 0.75) return false;
+    this.renderer.setPixelRatio(now > 1 ? 1 : 0.75);
+    if (this.size.w) this.renderer.setSize(this.size.w, this.size.h, false);
+    return true;
+  }
+
   resize(w: number, h: number) {
+    this.size = { w, h };
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.fov = w / h < 1.2 ? 52 : 42;
@@ -90,9 +115,9 @@ export class FlightJourneyScene {
     }
     this.camera.position.copy(this.camPos);
     this.camera.lookAt(this.camLook);
-    this.origin.tick(now);
-    this.dest.tick(now);
-    this.globe.tick(now);
+    if (act === 'origin') this.origin.tick(now);
+    else if (act === 'dest') this.dest.tick(now);
+    else this.globe.tick(now);
     this.renderer.render(scene, this.camera);
     frame.progress = clamp01(t / T.end);
     return frame;
