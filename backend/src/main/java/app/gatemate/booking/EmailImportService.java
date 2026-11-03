@@ -30,15 +30,13 @@ public class EmailImportService {
     private final EmailBookingParser parser;
     private final AirportCatalog airports;
     private final Repos.Flights flights;
-    private final Repos.Trips trips;
     private final TripService tripService;
     private final JsonMapper json;
 
-    public EmailImportService(EmailBookingParser parser, AirportCatalog airports, Repos.Flights flights, Repos.Trips trips, TripService tripService, JsonMapper json) {
+    public EmailImportService(EmailBookingParser parser, AirportCatalog airports, Repos.Flights flights, TripService tripService, JsonMapper json) {
         this.parser = parser;
         this.airports = airports;
         this.flights = flights;
-        this.trips = trips;
         this.tripService = tripService;
         this.json = json;
     }
@@ -75,11 +73,7 @@ public class EmailImportService {
             if (trip == null) {
                 trip = tripService.createWithFlight(u.id, f);
             } else {
-                f.tripId = trip.id;
-                f.claimedBy = u.id;
-                flights.save(f);
-                if (f.arrivalAt.isAfter(trip.endAt)) trip.endAt = f.arrivalAt;
-                trips.save(trip);
+                tripService.joinTrip(trip, f, u.id);
             }
         }
         if (trip == null) throw new ApiException(HttpStatus.CONFLICT, "already_added", "You already added the flights in this e-mail.");

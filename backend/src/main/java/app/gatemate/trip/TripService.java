@@ -67,10 +67,17 @@ public class TripService {
         if (!members.existsByTripIdAndUserId(tripId, me)) throw ApiException.notFound("Trip");
     }
 
+    static final Duration TRIP_GAP = Duration.ofDays(14);
+
     @Transactional
     public TripEntity createWithFlight(UUID me, FlightEntity f) {
         requireTickets(me, (f.ownerFlying ? 1 : 0) + passengers(f).size());
         var to = airports.get(f.toIata).orElseThrow(() -> ApiException.badRequest("unknown_airport", "Unknown airport " + f.toIata + "."));
+        var near = nearbyTrip(me, f.departureAt);
+        if (near.isPresent()) {
+            joinTrip(near.get(), f, me);
+            return near.get();
+        }
         String lang = users.findById(me).map(u -> u.lang).orElse("en");
         var t = new TripEntity();
         t.ownerId = me;
@@ -99,6 +106,38 @@ public class TripService {
         }
         t.chatId = chat.createForTrip(t, me);
         return trips.save(t);
+    }
+
+    Optional<TripEntity> nearbyTrip(UUID me, Instant departure) {
+        return trips.findForMember(me).stream()
+                .filter(t -> me.equals(t.ownerId) && t.startAt != null && t.endAt != null)
+                .filter(t -> !departure.isBefore(t.startAt.minus(TRIP_GAP)) && !departure.isAfter(t.endAt.plus(TRIP_GAP)))
+                .min(Comparator.comparing(t -> gap(t, departure)));
+    }
+
+    private static Duration gap(TripEntity t, Instant at) {
+        if (at.isBefore(t.startAt)) return Duration.between(at, t.startAt);
+        if (at.isAfter(t.endAt)) return Duration.between(t.endAt, at);
+        return Duration.ZERO;
+    }
+
+    @Transactional
+    public void joinTrip(TripEntity t, FlightEntity f, UUID me) {
+        f.tripId = t.id;
+        f.claimedBy = me;
+        flights.save(f);
+        if (f.departureAt.isBefore(t.startAt)) {
+            String lang = users.findById(me).map(u -> u.lang).orElse("en");
+            String oldTitle = airports.get(t.destinationIata).map(a -> Messages.get(lang, "trip.title", "city", a.city())).orElse(null);
+            var to = airports.get(f.toIata);
+            if (to.isPresent() && !f.toIata.equals(t.destinationIata)) {
+                if (t.title == null || t.title.equals(oldTitle)) t.title = Messages.get(lang, "trip.title", "city", to.get().city());
+                t.destinationIata = f.toIata;
+            }
+            t.startAt = f.departureAt;
+        }
+        if (f.arrivalAt.isAfter(t.endAt)) t.endAt = f.arrivalAt;
+        trips.save(t);
     }
 
     public void requireTickets(UUID me, int adding) {

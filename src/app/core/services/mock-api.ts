@@ -267,7 +267,7 @@ export class MockApi extends GatemateApi {
         this.requireTripAllowance();
         const dep = new Date(p.flightDate);
         dep.setUTCHours(9, 0);
-        const trip = this.tripFor({
+        const trip = this.place({
           id: randomId('fl_'), airline: AIRLINES.find((a) => a.code === p.carrier)?.name ?? p.carrier, airlineCode: p.carrier, number: `${p.carrier} ${p.flightNumber}`,
           from: AIRPORTS[p.from] ?? { code: p.from, city: p.from, name: `${p.from} Airport`, country: '', timezone: 'UTC' },
           to: AIRPORTS[p.to] ?? { code: p.to, city: p.to, name: `${p.to} Airport`, country: '', timezone: 'UTC' },
@@ -276,7 +276,6 @@ export class MockApi extends GatemateApi {
           ownerFlying: false, passengers: [passenger],
           verification: { status: 'verified', method: 'boarding-pass', checkedAt: new Date().toISOString(), checks: [{ label: 'Passenger name matches a family member', ok: true }] },
         });
-        this.ensureTrips().push(trip);
         return this.delay(trip, 0, 0);
       }
       if (this.claimed.has(key)) throw new ApiError('This flight is already linked to another account.', 409, 'already_claimed');
@@ -322,8 +321,7 @@ export class MockApi extends GatemateApi {
     }
     flight.verification = { status: 'verified', method: req.method === 'pass' ? 'boarding-pass' : 'airline', checkedAt: new Date().toISOString(), checks };
     this.requireTripAllowance();
-    const trip = this.tripFor(flight);
-    this.ensureTrips().push(trip);
+    const trip = this.place(flight);
     return this.delay(trip, 0, 0);
   }
 
@@ -354,19 +352,19 @@ export class MockApi extends GatemateApi {
 
   async previewEmail(text: string): Promise<EmailPreview> {
     const r = await this.readEmail(text);
-    const trip = await this.addFlight(r.input);
-    this.trips = this.ensureTrips().filter((t) => t.id !== trip.id);
-    return this.delay({ flights: trip.flights, bookingRef: r.ref ?? null, nameFound: r.nameFound }, 300, 600);
+    const flight = await this.buildFlight(r.input);
+    return this.delay({ flights: [flight], bookingRef: r.ref ?? null, nameFound: r.nameFound }, 300, 600);
   }
 
   async importEmail(text: string): Promise<Trip> {
     const r = await this.readEmail(text);
-    const trip = await this.addFlight(r.input);
-    trip.flights[0].verification = { status: r.nameFound ? 'pending' : 'unverified', method: 'email', checkedAt: new Date().toISOString(), checks: [
+    this.requireTripAllowance();
+    const flight = await this.buildFlight(r.input);
+    flight.verification = { status: r.nameFound ? 'pending' : 'unverified', method: 'email', checkedAt: new Date().toISOString(), checks: [
       { label: 'Flights read from the airline’s confirmation e-mail', ok: true },
       { label: r.nameFound ? 'Your legal name appears on the booking' : 'Your legal name wasn’t found in the e-mail', ok: r.nameFound },
     ] };
-    return this.delay(trip, 400, 700);
+    return this.delay(this.place(flight), 400, 700);
   }
 
   private invites = new Map<string, { type: 'trip' | 'chat'; id: string }>();
@@ -421,8 +419,12 @@ export class MockApi extends GatemateApi {
   private airportDb = inject(AirportDbService);
 
   async addFlight(input: NewFlightInput): Promise<Trip> {
-    const trips = this.ensureTrips();
     this.requireTripAllowance();
+    const trip = this.place(await this.buildFlight(input));
+    return this.delay(trip, 700, 1000);
+  }
+
+  private async buildFlight(input: NewFlightInput): Promise<Flight> {
     await this.airportDb.load();
     const ra = this.airportDb.get(input.from), rb = this.airportDb.get(input.to);
     if (!ra || !rb) throw new ApiError('Unknown airport code.', 400, 'unknown_airport');
@@ -452,24 +454,28 @@ export class MockApi extends GatemateApi {
       verification: { status: 'unverified', method: 'manual', checkedAt: new Date().toISOString(), checks: [] },
       passengers: (input.passengers ?? []).map((p) => this.passenger(p.companionId, p.seat)),
     };
-    const trip: Trip = {
-      id: randomId('trip_'),
-      title: `Trip to ${to.city}`,
-      destination: to,
-      coverGradient: 'linear-gradient(135deg, #22C7D3 0%, #8B7CF6 100%)',
-      emoji: '🧳',
-      startDate: flight.departure,
-      endDate: flight.arrival,
-      flights: [flight],
-      travellers: [{ id: 'me', name: 'You', initials: 'ME', color: '#0FB5C3' }],
-      checklist: [
-        { id: randomId(), label: 'Passport or ID card', done: false, category: 'documents' },
-        { id: randomId(), label: 'Online check-in', done: false, category: 'tasks' },
-      ],
-      expenses: [],
-    };
-    trips.push(trip);
-    return this.delay(trip, 700, 1000);
+    return flight;
+  }
+
+  private place(flight: Flight): Trip {
+    const gap = 14 * 86_400_000;
+    const at = +new Date(flight.departure);
+    const trips = this.ensureTrips();
+    const distance = (t: Trip) => Math.max(0, +new Date(t.startDate) - at, at - +new Date(t.endDate));
+    const near = trips.filter((t) => distance(t) <= gap).sort((a, b) => distance(a) - distance(b))[0];
+    if (!near) {
+      const trip = this.tripFor(flight);
+      trips.push(trip);
+      return trip;
+    }
+    near.flights = [...near.flights, flight].sort((a, b) => +new Date(a.departure) - +new Date(b.departure));
+    if (at < +new Date(near.startDate)) {
+      if (near.title === `Trip to ${near.destination.city}` && flight.to.code !== near.destination.code) near.title = `Trip to ${flight.to.city}`;
+      near.destination = flight.to;
+      near.startDate = flight.departure;
+    }
+    if (+new Date(flight.arrival) > +new Date(near.endDate)) near.endDate = flight.arrival;
+    return near;
   }
 
   async addChecklistItem(tripId: string, label: string, category: ChecklistItem['category']): Promise<ChecklistItem> {
