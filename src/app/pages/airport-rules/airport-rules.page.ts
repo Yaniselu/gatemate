@@ -93,7 +93,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
     .hero h2 { margin: 12px 0 6px; font-size: 26px; font-weight: 850; letter-spacing: -.02em; }
     .hero p { margin: 0; max-width: 460px; line-height: 1.45; font-size: 14.5px; opacity: .94; }
     .stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-    .stats span { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 650; background: rgba(255,255,255,.18); }
+    .stats span { display: inline-flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 650; background: rgba(8,20,40,.22); }
     .stats b { font-size: 14px; font-weight: 850; }
     @keyframes spin { to { rotate: 360deg; } }
 

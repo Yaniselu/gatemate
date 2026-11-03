@@ -204,7 +204,7 @@ function km(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
     .links { display: flex; gap: 8px; margin-top: 12px; }
     .btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 42px; border-radius: 14px; font-size: 13.5px; font-weight: 750; text-decoration: none; color: #fff; }
     .btn.uber { background: #0f0f0f; }
-    .btn.bolt { background: #2a9d5c; }
+    .btn.bolt { background: #1f7f49; }
     .btn.transit { background: #2563eb; }
     h4 { margin: 16px 0 6px; font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--gm-ink-3); }
     .tips { margin: 0; padding: 0; list-style: none; }
