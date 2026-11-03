@@ -415,7 +415,7 @@ export class AddFlightPage {
       this.confetti.burst(0.5, 0.3, 120);
       void this.review.positiveMoment(2500);
       void this.achievements.track('booking_verified');
-      void this.notifications.requestPermission().then(() => this.notifications.scheduleForFlight(trip.flights[0]));
+      void this.notifications.requestPermission();
     } catch (e) {
       this.checks.update((cs) => cs.map((c) => (c.state === 'run' ? { ...c, state: 'bad' } : c)));
       const err = e instanceof ApiError ? e : null;

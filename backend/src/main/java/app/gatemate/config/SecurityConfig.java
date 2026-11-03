@@ -30,6 +30,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
     @Bean
+    @org.springframework.core.annotation.Order(1)
+    SecurityFilterChain legal(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/legal/**")
+            .csrf(c -> c.disable())
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .headers(h -> h
+                .contentSecurityPolicy(c -> c.policyDirectives("default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"))
+                .referrerPolicy(r -> r.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+                .frameOptions(f -> f.deny())
+                .httpStrictTransportSecurity(s -> s.includeSubDomains(true).maxAgeInSeconds(31536000)))
+            .authorizeHttpRequests(a -> a.requestMatchers(HttpMethod.GET, "/legal/**").permitAll().anyRequest().denyAll());
+        return http.build();
+    }
+
+    @Bean
+    @org.springframework.core.annotation.Order(2)
     SecurityFilterChain api(HttpSecurity http, RateLimitFilter rateLimit) throws Exception {
         http
             .csrf(c -> c.disable())

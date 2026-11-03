@@ -1,6 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { InAppReview } from '@capacitor-community/in-app-review';
+import { Router } from '@angular/router';
+import { AlertController } from '@ionic/angular/standalone';
+import { t } from '../i18n/i18n.service';
 import { PlatformService } from './platform.service';
 
 const KEY = 'gm_review';
@@ -8,7 +11,7 @@ const MIN_SESSIONS = 3;
 const MIN_POSITIVE = 2;
 const COOLDOWN_DAYS = 120;
 const STORE_URL = {
-  ios: 'https://apps.apple.com/app/id0000000000?action=write-review',
+  ios: '',
   android: 'https://play.google.com/store/apps/details?id=app.gatemate&showAllReviews=true',
 };
 
@@ -21,6 +24,8 @@ interface State {
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
   private platform = inject(PlatformService);
+  private alerts = inject(AlertController);
+  private router = inject(Router);
   private state: State = { sessions: 0, positive: 0, lastAsked: 0 };
   private ready: Promise<void> | null = null;
 
@@ -44,19 +49,28 @@ export class ReviewService {
     const days = (Date.now() - this.state.lastAsked) / 86_400_000;
     if (this.state.sessions < MIN_SESSIONS || this.state.positive < MIN_POSITIVE || days < COOLDOWN_DAYS) return;
     if (!this.platform.isNative) return;
-    setTimeout(async () => {
-      try {
-        await InAppReview.requestReview();
-        this.state.lastAsked = Date.now();
-        await this.save();
-      } catch {
-      }
-    }, delayMs);
+    this.state.lastAsked = Date.now();
+    await this.save();
+    setTimeout(() => void this.ask(), delayMs);
+  }
+
+  private async ask(): Promise<void> {
+    const alert = await this.alerts.create({
+      header: t('Your opinion counts'),
+      message: t('Leave a review in the store, or tell us directly what we should improve. Both help us a lot.'),
+      cssClass: 'gm-review-alert',
+      buttons: [
+        { text: t('Leave a review'), handler: () => void InAppReview.requestReview().catch(() => this.openStorePage()) },
+        { text: t('Send a suggestion'), handler: () => void this.router.navigateByUrl('/feedback') },
+        { text: t('Not now'), role: 'cancel' },
+      ],
+    });
+    await alert.present();
   }
 
   openStorePage(): void {
     const url = this.platform.platform === 'android' ? STORE_URL.android : STORE_URL.ios;
-    window.open(url, '_blank', 'noopener');
+    if (url) window.open(url, '_blank', 'noopener');
   }
 
   private async save() {

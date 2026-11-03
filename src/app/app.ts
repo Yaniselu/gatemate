@@ -50,7 +50,7 @@ export class App {
     let scheduled = '';
     effect(() => {
       const due = this.store.upcomingReminders().filter((a) => a.source === 'device');
-      const key = due.map((a) => a.id + '@' + a.scheduledFor).join('|');
+      const key = JSON.stringify(this.prefs.notifications()) + due.map((a) => a.id + '@' + a.scheduledFor + '#' + a.title).join('|');
       if (key === scheduled) return;
       scheduled = key;
       void this.notifications.syncReminders(due);

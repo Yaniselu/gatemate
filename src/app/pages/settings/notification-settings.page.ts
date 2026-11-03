@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToggle, IonToolbar } from '@ionic/angular/standalone';
 import { PrefsService } from '../../core/services/prefs.service';
 import { NotificationsService } from '../../core/services/notifications.service';
@@ -31,6 +31,13 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
             </div>
           }
         </div>
+        @if (!exact()) {
+          <div class="exact">
+            <ion-icon name="alarm-outline" />
+            <div><b>{{ 'Let boarding calls arrive on time' | t }}</b><small>{{ 'Android may delay reminders by a few minutes unless Gatemate can use “Alarms & reminders”.' | t }}</small></div>
+            <button class="gm-btn small" (click)="allowExact()">{{ 'Allow' | t }}</button>
+          </div>
+        }
         @if (platform.isNative) {
           <button class="gm-btn ghost" (click)="notifications.requestPermission()"><ion-icon name="notifications-outline" /> {{ 'Allow notifications' | t }}</button>
         }
@@ -39,6 +46,11 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
   `,
   styles: `
     .page { padding: 8px 18px 40px; }
+    .exact { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; padding: 12px; border-radius: 16px; background: rgba(245,158,11,.14); color: var(--gm-ink); }
+    .exact > ion-icon { flex: none; font-size: 22px; color: #d97706; }
+    .exact b { display: block; font-size: 14px; }
+    .exact small { display: block; font-size: 12.5px; line-height: 1.35; color: var(--gm-ink-2); }
+    .exact .gm-btn { flex: none; }
     .bell { width: 76px; height: 76px; margin: 10px auto 14px; border-radius: 26px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #fff; background: linear-gradient(135deg,#22c7d3,#0a93a6); box-shadow: 0 14px 30px var(--gm-accent-glow); }
     .bell ion-icon { animation: ring 2.6s ease-in-out infinite; transform-origin: 50% 10%; }
     @keyframes ring { 0%, 60%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(14deg); } 20%, 40% { transform: rotate(-14deg); } 50% { transform: rotate(6deg); } }
@@ -57,6 +69,17 @@ export class NotificationSettingsPage {
   protected prefs = inject(PrefsService);
   protected notifications = inject(NotificationsService);
   protected platform = inject(PlatformService);
+  readonly exact = signal(true);
+
+  constructor() {
+    void this.notifications.exactAlarmsAllowed().then((ok) => this.exact.set(ok));
+  }
+
+  async allowExact() {
+    const ok = await this.notifications.allowExactAlarms();
+    this.exact.set(ok || (await this.notifications.exactAlarmsAllowed()));
+    void this.notifications.refresh();
+  }
 
   readonly options: { key: keyof NotificationPrefs; label: string; hint: string; icon: string; color: string }[] = [
     { key: 'liveActivity', label: 'Lock Screen, Dynamic Island & Apple Watch', hint: 'Live countdown from 2½ days before departure', icon: 'phone-portrait-outline', color: '#3B6FE0' },
@@ -71,6 +94,6 @@ export class NotificationSettingsPage {
 
   set(key: keyof NotificationPrefs, value: boolean) {
     this.platform.selection();
-    void this.prefs.setNotifications({ ...this.prefs.notifications(), [key]: value });
+    void this.prefs.setNotifications({ ...this.prefs.notifications(), [key]: value }).then(() => this.notifications.refresh());
   }
 }

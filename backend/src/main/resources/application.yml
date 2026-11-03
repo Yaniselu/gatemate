@@ -66,10 +66,10 @@ gatemate:
     private-key-pem: ${JWT_PRIVATE_KEY:}
     public-key-pem: ${JWT_PUBLIC_KEY:}
   apple:
-    audiences: ${APPLE_AUDIENCES:app.gatemate.ios,app.gatemate.web}
+    audiences: ${APPLE_AUDIENCES:com.velosyntech.gatemate,app.gatemate.signin,app.gatemate.ios}
     team-id: ${APPLE_TEAM_ID:}
     key-id: ${APPLE_KEY_ID:}
-    client-id: ${APPLE_CLIENT_ID:app.gatemate.ios}
+    client-id: ${APPLE_CLIENT_ID:com.velosyntech.gatemate}
     private-key-pem: ${APPLE_PRIVATE_KEY:}
   google:
     audiences: ${GOOGLE_AUDIENCES:}

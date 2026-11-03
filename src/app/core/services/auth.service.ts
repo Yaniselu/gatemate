@@ -195,7 +195,7 @@ export class AuthService {
   providerAvailable(provider: SocialCredential['provider']): boolean {
     if (environment.useMocks && !this.platform.isNative) return true;
     const a = environment.auth;
-    if (provider === 'apple') return a.appleEnabled && !!a.appleServiceId && (this.platform.isNative || !!a.appleRedirectUrl);
+    if (provider === 'apple') return a.appleEnabled && !!a.appleServiceId && (this.platform.isNative ? this.platform.isIos : !!a.appleRedirectUrl);
     const id = this.platform.isNative && this.platform.isIos ? a.googleIosClientId : a.googleWebClientId;
     return !!id && !id.startsWith('REPLACE_ME');
   }
