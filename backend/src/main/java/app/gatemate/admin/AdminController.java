@@ -28,7 +28,7 @@ public class AdminController {
 
     public record ReportView(String id, String reason, String createdAt, String messageId, String text, String authorId, int reportCount, boolean hidden) {}
 
-    public record Resolve(@Pattern(regexp = "dismiss|hide|ban") String action) {}
+    public record Resolve(@jakarta.validation.constraints.NotNull @Pattern(regexp = "dismiss|hide|ban") String action) {}
 
     @GetMapping("/reports")
     public List<ReportView> open() {
@@ -41,7 +41,7 @@ public class AdminController {
 
     @PostMapping("/reports/{id}/resolve")
     @Transactional
-    public ResponseEntity<Void> resolve(@PathVariable UUID id, @RequestBody Resolve in) {
+    public ResponseEntity<Void> resolve(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody Resolve in) {
         var r = reports.findById(id).orElseThrow(() -> ApiException.notFound("Report"));
         var msg = messages.findById(r.messageId).orElse(null);
         switch (in.action()) {

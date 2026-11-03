@@ -39,7 +39,10 @@ public class SecurityConfig {
                 .contentSecurityPolicy(c -> c.policyDirectives("default-src 'none'; frame-ancestors 'none'"))
                 .referrerPolicy(r -> r.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                 .frameOptions(f -> f.deny())
-                .httpStrictTransportSecurity(s -> s.includeSubDomains(true).maxAgeInSeconds(31536000)))
+                .httpStrictTransportSecurity(s -> s.includeSubDomains(true).maxAgeInSeconds(31536000))
+                .addHeaderWriter(new org.springframework.security.web.header.writers.StaticHeadersWriter("Permissions-Policy",
+                        "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"))
+                .addHeaderWriter(new org.springframework.security.web.header.writers.StaticHeadersWriter("Cross-Origin-Opener-Policy", "same-origin")))
             .authorizeHttpRequests(a -> a
                 .requestMatchers("/api/v1/auth/**", "/actuator/health", "/api/v1/airports/**", "/api/v1/destinations/**", "/api/v1/countries/**", "/api/v1/fx").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/inbound/email", "/api/v1/billing/revenuecat").permitAll()

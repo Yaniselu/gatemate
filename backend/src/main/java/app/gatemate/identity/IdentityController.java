@@ -17,7 +17,7 @@ public class IdentityController {
     }
 
     @PostMapping("/identity")
-    public UserDto verify(@RequestBody IdentityService.Scan scan) {
+    public UserDto verify(@jakarta.validation.Valid @RequestBody IdentityService.Scan scan) {
         return identity.verifySelf(CurrentUser.id(), scan);
     }
 
@@ -27,17 +27,17 @@ public class IdentityController {
     }
 
     @PostMapping("/companions")
-    public IdentityService.CompanionDto add(@RequestBody IdentityService.NewCompanion in) {
+    public IdentityService.CompanionDto add(@jakarta.validation.Valid @RequestBody IdentityService.NewCompanion in) {
         return identity.add(CurrentUser.id(), in);
     }
 
     @PatchMapping("/companions/{id}")
-    public IdentityService.CompanionDto update(@PathVariable UUID id, @RequestBody IdentityService.NewCompanion in) {
+    public IdentityService.CompanionDto update(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody IdentityService.NewCompanion in) {
         return identity.update(CurrentUser.id(), id, in);
     }
 
     @PostMapping("/companions/{id}/identity")
-    public IdentityService.CompanionDto verifyCompanion(@PathVariable UUID id, @RequestBody IdentityService.Scan scan) {
+    public IdentityService.CompanionDto verifyCompanion(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody IdentityService.Scan scan) {
         return identity.verifyCompanion(CurrentUser.id(), id, scan);
     }
 

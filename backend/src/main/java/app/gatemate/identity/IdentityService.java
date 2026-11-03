@@ -28,9 +28,10 @@ public class IdentityService {
 
     public record CompanionDto(String id, String firstName, String lastName, String relation, boolean verified, String docCountry, String docExpiry) {}
 
-    public record NewCompanion(String firstName, String lastName, String relation) {}
+    public record NewCompanion(@jakarta.validation.constraints.Size(max = 40) String firstName, @jakarta.validation.constraints.Size(max = 40) String lastName,
+            @jakarta.validation.constraints.Size(max = 20) String relation) {}
 
-    public record Scan(List<String> lines) {}
+    public record Scan(@jakarta.validation.constraints.Size(max = 12) List<@jakarta.validation.constraints.Size(max = 120) String> lines) {}
 
     private final UserRepository users;
     private final CompanionEntity.Repo companions;

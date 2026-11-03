@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -43,6 +43,7 @@ function readDraft(): { country?: string; firstName?: string; lastName?: string;
   styleUrls: ['./auth.scss', './register.page.scss'],
 })
 export class RegisterPage {
+  private hp = viewChild<ElementRef<HTMLInputElement>>('hp');
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   readonly socialAvailable = this.auth.providerAvailable('apple') || this.auth.providerAvailable('google');
@@ -132,7 +133,7 @@ export class RegisterPage {
     try {
       const { firstName, lastName, email, password, country } = this.form.getRawValue();
       const first = firstName.trim().replace(/\s+/g, ' '), last = lastName.trim().replace(/\s+/g, ' ');
-      await this.auth.register(`${first} ${last}`, email, password, { firstName: first, lastName: last, country: country || undefined });
+      await this.auth.register(`${first} ${last}`, email, password, { firstName: first, lastName: last, country: country || undefined, website: this.hp()?.nativeElement.value || undefined });
       try {
         sessionStorage.removeItem(DRAFT);
       } catch {

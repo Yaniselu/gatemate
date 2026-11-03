@@ -49,7 +49,7 @@ public class InviteController {
 
     @PostMapping
     @Transactional
-    public Map<String, String> create(@RequestBody Create in) {
+    public Map<String, String> create(@jakarta.validation.Valid @RequestBody Create in) {
         UUID me = CurrentUser.id();
         var inv = new InviteEntity();
         if (trips.existsById(in.targetId())) {

@@ -44,7 +44,7 @@ public class TripController {
     public TripDtos.FlightDto status(@PathVariable UUID id) {
         var f = flights.findById(id).orElseThrow(() -> app.gatemate.common.ApiException.notFound("Flight"));
         trips.requireMember(f.tripId, CurrentUser.id());
-        return trips.flightDto(f);
+        return trips.flightDto(f, CurrentUser.id());
     }
 
     @GetMapping("/flights/{id}/live")

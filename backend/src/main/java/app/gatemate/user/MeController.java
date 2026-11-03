@@ -35,7 +35,7 @@ public class MeController {
     }
 
     @PatchMapping
-    public UserDto update(@RequestBody MeService.Patch patch) {
+    public UserDto update(@jakarta.validation.Valid @RequestBody MeService.Patch patch) {
         return me.update(CurrentUser.id(), patch);
     }
 

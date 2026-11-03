@@ -20,7 +20,8 @@ public final class AuthDtos {
             @Size(max = 5) String lang,
             @Size(max = 40) @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\p{M}' -]{0,39}$") String firstName,
             @Size(max = 40) @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\p{M}' -]{0,39}$") String lastName,
-            @Pattern(regexp = "^$|^[A-Z]{2}$") String country) {}
+            @Pattern(regexp = "^$|^[A-Z]{2}$") String country,
+            @Size(max = 0) String website) {}
 
     public record SocialRequest(
             @NotBlank @Size(max = 8192) String idToken,

@@ -30,7 +30,7 @@ public class AlertController {
 
     @PostMapping("/read")
     @Transactional
-    public ResponseEntity<Void> read(@RequestBody ReadRequest r) {
+    public ResponseEntity<Void> read(@jakarta.validation.Valid @RequestBody ReadRequest r) {
         if (r.ids() != null && !r.ids().isEmpty()) {
             var list = alerts.findByUserIdAndIdIn(CurrentUser.id(), r.ids());
             list.forEach(a -> a.read = true);

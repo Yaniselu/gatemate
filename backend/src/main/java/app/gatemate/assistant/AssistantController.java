@@ -28,7 +28,7 @@ public class AssistantController {
         this.limiter = limiter;
     }
 
-    public record ChatRequest(List<AssistantService.Turn> messages) {}
+    public record ChatRequest(@jakarta.validation.constraints.NotNull @jakarta.validation.constraints.Size(max = 60) List<AssistantService.Turn> messages) {}
 
     @GetMapping
     public AssistantService.Status status() {
@@ -36,7 +36,7 @@ public class AssistantController {
     }
 
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter chat(@RequestBody ChatRequest in) {
+    public SseEmitter chat(@jakarta.validation.Valid @RequestBody ChatRequest in) {
         var me = CurrentUser.id();
         limiter.check("assistant:" + me, 6, Duration.ofMinutes(1));
         assistant.reserve(me);

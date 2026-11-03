@@ -12,6 +12,7 @@ export interface RegisterExtra {
   firstName?: string;
   lastName?: string;
   country?: string;
+  website?: string;
 }
 
 export interface NewFlightInput {

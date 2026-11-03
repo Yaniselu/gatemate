@@ -56,8 +56,11 @@ public class MeService {
         this.props = props;
     }
 
-    public record Patch(String name, String homeAirport, String legalFirstName, String legalLastName, String phone, String seatPreference, String bio,
-            String avatarUrl, String lang) {}
+    public record Patch(@jakarta.validation.constraints.Size(max = 60) String name, @jakarta.validation.constraints.Size(max = 4) String homeAirport,
+            @jakarta.validation.constraints.Size(max = 40) String legalFirstName, @jakarta.validation.constraints.Size(max = 40) String legalLastName,
+            @jakarta.validation.constraints.Size(max = 20) String phone, @jakarta.validation.constraints.Size(max = 8) String seatPreference,
+            @jakarta.validation.constraints.Size(max = 400) String bio, @jakarta.validation.constraints.Size(max = 400_000) String avatarUrl,
+            @jakarta.validation.constraints.Size(max = 5) String lang) {}
 
     public record Stats(int flights, int distanceKm, int countries, int hoursInAir, List<Object> badges) {}
 

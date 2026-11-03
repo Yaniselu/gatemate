@@ -13,6 +13,7 @@
       }
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate style="--i: 4">
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" #hp />
         @if (error()) {
           <div class="form-error" role="alert"><ion-icon name="alert-circle" /> {{ error() }}</div>
         }
