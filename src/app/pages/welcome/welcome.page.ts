@@ -23,6 +23,10 @@ export class WelcomePage {
 
   readonly takingOff = signal(false);
   readonly title = 'Gatemate'.split('');
+  readonly stars = Array.from({ length: 46 }, (_, i) => {
+    const r = (n: number) => ((Math.sin(i * 12.9898 + n * 78.233) * 43758.5453) % 1 + 1) % 1;
+    return { x: r(1) * 100, y: r(2) * 62, s: 1 + r(3) * 2.2, d: r(4) * 4, t: 2.4 + r(5) * 3 };
+  });
 
   readonly pitches = [
     { icon: '✨', text: 'Velo, your AI travel agent by Velosyntech' },

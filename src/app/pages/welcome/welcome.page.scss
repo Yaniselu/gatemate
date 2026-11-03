@@ -388,3 +388,157 @@ h1 {
     transform: translateX(-80px);
   }
 }
+
+.night-sky {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  i {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+    animation: twinkle ease-in-out infinite;
+  }
+}
+
+.moon {
+  position: absolute;
+  top: 7%;
+  right: 12%;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fffdf4 0%, #f3ecd2 55%, #d9cfae 100%);
+  box-shadow: 0 0 40px 12px rgba(255, 246, 214, 0.28), 0 0 120px 40px rgba(160, 180, 255, 0.12);
+  animation: moon-glow 7s ease-in-out infinite;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(170, 158, 120, 0.35);
+  }
+  &::before {
+    width: 16px;
+    height: 16px;
+    left: 18px;
+    top: 34px;
+  }
+  &::after {
+    width: 10px;
+    height: 10px;
+    left: 42px;
+    top: 18px;
+  }
+}
+
+.shooting {
+  position: absolute;
+  top: 14%;
+  left: 8%;
+  width: 120px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fff);
+  opacity: 0;
+  transform: rotate(18deg);
+  animation: shoot 9s ease-out infinite 3s;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes moon-glow {
+  50% {
+    box-shadow: 0 0 50px 16px rgba(255, 246, 214, 0.34), 0 0 140px 50px rgba(160, 180, 255, 0.16);
+  }
+}
+
+@keyframes shoot {
+  0%,
+  88% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(18deg);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(260px, 84px) rotate(18deg);
+  }
+}
+
+.runway b {
+  display: none;
+}
+
+:host-context(html.gm-dark) {
+  .welcome {
+    --background: linear-gradient(180deg, #040914 0%, #0a1430 40%, #142252 74%, #23356e 100%);
+  }
+  .sun {
+    display: none;
+  }
+  .night-sky {
+    display: block;
+  }
+  .clouds {
+    filter: brightness(0.45) saturate(0.6);
+    &.l1 {
+      opacity: 0.22;
+    }
+    &.l2 {
+      opacity: 0.2;
+    }
+    &.l3 {
+      opacity: 0.28;
+    }
+  }
+  .trail {
+    background: linear-gradient(90deg, rgba(190, 210, 255, 0), rgba(190, 210, 255, 0.6));
+  }
+  .runway {
+    span {
+      background: repeating-linear-gradient(90deg, rgba(255, 236, 170, 0.9) 0 40px, transparent 40px 80px);
+    }
+    b {
+      display: block;
+      position: absolute;
+      left: 0;
+      bottom: 3px;
+      width: 300%;
+      height: 3px;
+      background: repeating-linear-gradient(90deg, #6fb6ff 0 4px, transparent 4px 46px);
+      filter: drop-shadow(0 0 4px #6fb6ff);
+    }
+  }
+  &.taking-off .runway b,
+  .taking-off .runway b {
+    animation: runway 0.35s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .night-sky i,
+  .shooting,
+  .moon {
+    animation: none !important;
+  }
+  .shooting {
+    display: none;
+  }
+}

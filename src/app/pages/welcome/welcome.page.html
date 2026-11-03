@@ -1,6 +1,13 @@
 <ion-content [fullscreen]="true" [scrollY]="false" class="welcome" [class.taking-off]="takingOff()">
   <div class="sky">
     <div class="sun"></div>
+    <div class="night-sky" aria-hidden="true">
+      <div class="moon"></div>
+      @for (st of stars; track $index) {
+        <i [style.left.%]="st.x" [style.top.%]="st.y" [style.width.px]="st.s" [style.height.px]="st.s" [style.animation-delay.s]="st.d" [style.animation-duration.s]="st.t"></i>
+      }
+      <span class="shooting"></span>
+    </div>
 
     @for (layer of [1, 2, 3]; track layer) {
       <div class="clouds" [class]="'clouds l' + layer">
@@ -31,7 +38,7 @@
       </div>
     </div>
 
-    <div class="runway" aria-hidden="true"><span></span></div>
+    <div class="runway" aria-hidden="true"><span></span><b></b></div>
   </div>
 
   <div class="content">
