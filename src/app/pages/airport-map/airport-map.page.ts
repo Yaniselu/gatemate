@@ -9,7 +9,8 @@ import { AirportPlanComponent, levelsOf } from '../../shared/components/airport-
 import { POI_META, POI_ORDER, PoiKind } from '../../core/data/airport-poi';
 import { openState } from '../../core/utils/opening-hours';
 import { AchievementsService } from '../../core/services/achievements.service';
-import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
+import { planRoute, Pt, WalkGraph } from '../../core/utils/walk-route';
 
 @Component({
   selector: 'gm-airport-map',
@@ -65,6 +66,33 @@ export class AirportMapPage implements OnInit, OnDestroy {
     const f = this.location.fix();
     return f ? { lat: f.lat, lon: f.lon } : null;
   });
+  readonly meAccuracy = computed(() => this.location.fix()?.accuracy ?? null);
+  private graph = computed(() => {
+    const f = this.features();
+    return f?.length ? new WalkGraph(f) : null;
+  });
+  readonly route = computed(() => {
+    const a = this.airport(), f = this.features();
+    const t = this.placeFeature() ?? this.target();
+    if (!a || !f || !t) return null;
+    const me = this.me();
+    const g = this.graph();
+    let from: Pt | null = null;
+    let fromMe = false;
+    if (me && haversineKm(me.lat, me.lon, a.lat, a.lon) < 3) {
+      const acc = this.meAccuracy() ?? 99;
+      from = g && acc <= 25 ? g.snap([me.lat, me.lon], acc) : [me.lat, me.lon];
+      fromMe = true;
+    } else {
+      const doors = f.filter((x) => x.kind === 'entrance');
+      const door = doors.sort((x, y) => haversineKm(x.lat, x.lon, t.lat, t.lon) - haversineKm(y.lat, y.lon, t.lat, t.lon))[0];
+      if (door) from = [door.lat, door.lon];
+    }
+    if (!from) return null;
+    return { ...planRoute(g, f, from, [t.lat, t.lon]), fromMe };
+  });
+  readonly routePoints = computed(() => this.route()?.points ?? null);
+  readonly routeLevels = computed(() => this.route()?.levels ?? null);
   readonly distance = computed(() => {
     const me = this.me(), a = this.airport();
     if (!me || !a) return null;
@@ -109,6 +137,8 @@ export class AirportMapPage implements OnInit, OnDestroy {
     this.platform.selection();
     this.placeId.set(null);
     this.selected.set(this.selected() === ref ? null : ref);
+    const lv = this.gateList().find((g) => g.ref === ref)?.level?.split(';')[0]?.trim();
+    if (this.selected() && lv && this.levels().includes(lv)) this.pickedLevel.set(lv);
   }
 
   pickPlace(id: string) {
@@ -133,8 +163,8 @@ export class AirportMapPage implements OnInit, OnDestroy {
 
   targetLabel(): string {
     const p = this.placeFeature();
-    if (p) return 'To ' + p.ref;
-    return this.selected() ? 'To gate ' + this.selected() : 'To the airport';
+    if (p) return tr('To {place}', { place: tr(p.ref) });
+    return this.selected() ? tr('To gate {gate}', { gate: this.selected()! }) : tr('To the airport');
   }
 
   async locateMe() {

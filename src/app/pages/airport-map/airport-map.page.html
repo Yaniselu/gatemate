@@ -7,7 +7,7 @@
 
 <ion-content [fullscreen]="true" [scrollY]="false">
   @if (airport(); as a) {
-    <gm-airport-plan class="full" [center]="view(a)" [features]="features() ?? []" [me]="me()" [selectedGate]="selected()" [selectedPlace]="placeId()" [category]="category()" [level]="level()" [zoom]="planZoom(a, 15.5)" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
+    <gm-airport-plan class="full" [center]="view(a)" [features]="features() ?? []" [me]="me()" [accuracy]="meAccuracy()" [route]="routePoints()" [routeLevels]="routeLevels()" [selectedGate]="selected()" [selectedPlace]="placeId()" [category]="category()" [level]="level()" [zoom]="planZoom(a, 15.5)" (gateTap)="pick($event)" (placeTap)="pickPlace($event)" />
 
     <div class="gate-bar glass" slot="fixed">
       @if (categories().length) {
@@ -59,7 +59,19 @@
           <button class="x" (click)="placeId.set(null)" [aria-label]="'Close' | t"><ion-icon name="close" /></button>
         </div>
       }
-      @if (distance(); as d) {
+      @if (route(); as r) {
+        <div class="sum">
+          <div>
+            <span class="gm-label">{{ targetLabel() }} · {{ (r.fromMe ? 'from you' : 'from the entrance') | t }}</span>
+            <b class="big">{{ r.minutes }} min</b>
+            <small>{{ fmt(r.meters) }} · {{ (r.onPaths ? 'along the walkways' : r.viaEntrance ? 'through the nearest entrance' : 'in a straight line') | t }}</small>
+          </div>
+          <ion-icon name="walk-outline" class="walk" />
+        </div>
+        @if (r.levelChange) { <p class="note"><ion-icon name="swap-vertical-outline" /> {{ 'The route changes floor: use the stairs, escalator or lift shown on the map.' | t }}</p> }
+        @if (!r.onPaths) { <p class="note">{{ 'Walkways inside this terminal aren’t mapped yet, so this is the direction, not the exact path. Follow the gate signs.' | t }}</p> }
+        @if (!r.fromMe && !location.denied()) { <button class="gm-btn small ghost loc-btn" (click)="locateMe()"><ion-icon name="navigate-outline" /> {{ 'Start from where I am' | t }}</button> }
+      } @else if (distance(); as d) {
         @if (d.far) {
           <div class="sum">
             <div><span class="gm-label">{{ 'You are' | t }}</span><b class="big">{{ fmt(d.meters) }}</b><small>{{ 'from {name}' | t: { name: a.name } }}</small></div>
@@ -69,7 +81,7 @@
           <div class="sum">
             <div>
               <span class="gm-label">{{ targetLabel() }}</span>
-              <b class="big">{{ d.minutes }} min</b><small>{{ fmt(d.meters) }} straight line · walking estimate</small>
+              <b class="big">{{ d.minutes }} min</b><small>{{ fmt(d.meters) }} · {{ 'in a straight line' | t }}</small>
             </div>
             <ion-icon name="walk-outline" class="walk" />
           </div>

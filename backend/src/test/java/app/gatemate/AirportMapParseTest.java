@@ -51,4 +51,23 @@ class AirportMapParseTest {
         assertThat(features.get(4).poi()).isEqualTo("dutyfree");
         assertThat(features.get(0).outline()).hasSize(1);
     }
+
+    @Test
+    void keepsWalkwaysWithEveryJunction() throws Exception {
+        String sample = """
+            [
+              {"type":"way","id":20,"tags":{"highway":"corridor","indoor":"yes","level":"1"},
+               "geometry":[{"lat":44.5713,"lon":26.0830},{"lat":44.57131,"lon":26.0840},{"lat":44.57132,"lon":26.0850},{"lat":44.5713,"lon":26.0870}]},
+              {"type":"way","id":21,"tags":{"highway":"steps","level":"0;1"},
+               "geometry":[{"lat":44.57131,"lon":26.0840},{"lat":44.5720,"lon":26.0840}]},
+              {"type":"way","id":22,"tags":{"highway":"footway","access":"private"},
+               "geometry":[{"lat":44.5730,"lon":26.0840},{"lat":44.5740,"lon":26.0840}]}
+            ]""";
+        var walks = AirportMapService.parse(JsonMapper.builder().build().readTree(sample)).stream().filter(f -> f.kind().equals("walk")).toList();
+        assertThat(walks).hasSize(2);
+        assertThat(walks.get(0).line()).hasSize(4);
+        assertThat(walks.get(0).cls()).isEqualTo("corridor");
+        assertThat(walks.get(1).cls()).isEqualTo("steps");
+        assertThat(walks.get(1).level()).isEqualTo("0;1");
+    }
 }

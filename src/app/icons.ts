@@ -1,5 +1,6 @@
 import { addIcons } from 'ionicons';
 import {
+  swapVerticalOutline,
   remove,
   umbrellaOutline,
   accessibilityOutline,
@@ -210,6 +211,7 @@ import {
 
 export function registerIcons(): void {
   addIcons({
+    swapVerticalOutline,
     remove,
     umbrellaOutline,
     accessibilityOutline,

@@ -29,6 +29,9 @@ export class AirportPlanComponent {
   readonly center = input.required<LL>();
   readonly features = input<MapFeature[]>([]);
   readonly me = input<LL | null>(null);
+  readonly accuracy = input<number | null>(null);
+  readonly route = input<[number, number][] | null>(null);
+  readonly routeLevels = input<(string | undefined)[] | null>(null);
   readonly selectedGate = input<string | null>(null);
   readonly selectedPlace = input<string | null>(null);
   readonly category = input<PoiKind | null>(null);
@@ -58,8 +61,9 @@ export class AirportPlanComponent {
       void this.ensure().then(() => this.drawBase(f, c, lv));
     });
     effect(() => {
-      const f = this.features(), me = this.me(), gate = this.selectedGate(), place = this.selectedPlace();
-      void this.ensure().then(() => this.drawTop(f, me, gate, place));
+      const f = this.features(), me = this.me(), gate = this.selectedGate(), place = this.selectedPlace(), route = this.route(), acc = this.accuracy();
+      const lv = this.level(), rl = this.routeLevels();
+      void this.ensure().then(() => this.drawTop(f, me, gate, place, route, acc, rl, lv));
     });
     inject(DestroyRef).onDestroy(() => {
       this.resize?.disconnect();
@@ -172,6 +176,10 @@ export class AirportPlanComponent {
     }
     for (const c of by('corridor').filter(here)) L.polygon(c.outline!, { color: '#c9d4dd', weight: 1, fillColor: '#ffffff', fillOpacity: 0.95, interactive: false }).addTo(layer);
     for (const r of by('room').filter(here)) L.polygon(r.outline!, { color: '#b9c6d2', weight: 1, fillColor: '#eef2f6', fillOpacity: 1, interactive: false }).addTo(layer);
+    for (const w of by('walk').filter(here)) {
+      const line = L.polyline(w.line!, { color: w.cls === 'steps' ? '#94a3b8' : '#c4cfdb', weight: 2, dashArray: w.cls === 'steps' ? '2 3' : undefined, lineCap: 'round', interactive: false, className: 'gm-walk' }).addTo(layer);
+      this.strips.push({ layer: line, width: w.cls === 'corridor' ? 3 : 2, min: 1 });
+    }
 
     const pois = features.filter((f) => f.kind === 'poi' && here(f) && (!category || f.poi === category));
     for (const p of pois.filter((x) => x.outline)) {
@@ -242,7 +250,8 @@ export class AirportPlanComponent {
     this.onZoom();
   }
 
-  private drawTop(features: MapFeature[], me: LL | null, gate: string | null, place: string | null) {
+  private drawTop(features: MapFeature[], me: LL | null, gate: string | null, place: string | null, route: [number, number][] | null = null, acc: number | null = null,
+    routeLevels: (string | undefined)[] | null = null, level: string | null = null) {
     const L = this.L!, map = this.map!, layer = this.top!;
     layer.clearLayers();
     const g = gate ? features.find((f) => f.kind === 'gate' && f.ref.toUpperCase() === gate.toUpperCase()) : undefined;
@@ -256,18 +265,65 @@ export class AirportPlanComponent {
       }).addTo(layer);
     }
     const target = p ?? g;
-    const key = target ? `${target.kind}:${target.id ?? target.ref}:${me ? 'me' : ''}` : '';
+    const key = target ? `${target.kind}:${target.id ?? target.ref}:${me ? 'me' : ''}:${route?.length ?? 0}` : '';
     const moved = key !== this.focusedOn;
     this.focusedOn = key;
+    if (route && route.length > 1 && target && this.interactive()) {
+      const runs: { pts: [number, number][]; here: boolean }[] = [];
+      for (let i = 1; i < route.length; i++) {
+        const tag = routeLevels?.[i] && !routeLevels[i]!.includes(';') ? routeLevels[i] : routeLevels?.[i - 1];
+        const here = !level || !tag || tag.includes(';') || onLevel(tag, level);
+        const last = runs[runs.length - 1];
+        if (last && last.here === here) last.pts.push(route[i]);
+        else runs.push({ pts: [route[i - 1], route[i]], here });
+      }
+      for (const r of runs.filter((x) => !x.here)) L.polyline(r.pts, { color: '#0a8796', weight: 4, opacity: 0.45, dashArray: '2 9', lineCap: 'round', interactive: false }).addTo(layer);
+      for (const r of runs.filter((x) => x.here)) {
+        L.polyline(r.pts, { color: '#ffffff', weight: 9, opacity: 0.95, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(layer);
+        L.polyline(r.pts, { color: '#0a8796', weight: 5, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(layer);
+      }
+      L.circleMarker(route[0], { radius: 6, color: '#ffffff', weight: 2, fillColor: '#0a8796', fillOpacity: 1, interactive: false }).addTo(layer);
+    }
     if (me && this.interactive()) {
+      if (acc && acc > 8 && acc < 400) L.circle([me.lat, me.lon], { radius: acc, color: '#2f86e6', weight: 1, opacity: 0.5, fillColor: '#2f86e6', fillOpacity: 0.1, interactive: false }).addTo(layer);
       L.marker([me.lat, me.lon], { icon: L.divIcon({ className: 'gm-pin-me', html: '<i></i>', iconSize: [22, 22] }), zIndexOffset: 2000 }).addTo(layer);
-      if (target) {
+      if (target && route && route.length > 1) {
+        if (moved) this.frame(route);
+      } else if (target) {
         L.polyline([[me.lat, me.lon], [target.lat, target.lon]], { color: '#0b1b2b', weight: 3, dashArray: '2 8', lineCap: 'round' }).addTo(layer);
         if (moved) map.fitBounds(L.latLngBounds([[me.lat, me.lon], [target.lat, target.lon]]).pad(0.35), { maxZoom: 18, animate: true });
       }
+    } else if (target && route && route.length > 1 && this.interactive() && moved) {
+      requestAnimationFrame(() => requestAnimationFrame(() => this.frame(route)));
     } else if (target && this.interactive() && moved) {
       requestAnimationFrame(() => requestAnimationFrame(() => this.reveal(target)));
     }
+  }
+
+  private insets(): { top: number; bottom: number; box: DOMRect } {
+    const host = this.host().nativeElement;
+    const box = host.getBoundingClientRect();
+    let top = box.top + 8, bottom = box.bottom - 8;
+    const scope = host.closest('ion-content') ?? document.body;
+    for (const el of Array.from(scope.querySelectorAll<HTMLElement>('[slot=fixed]'))) {
+      const r = el.getBoundingClientRect();
+      if (!r.height || r.width < box.width * 0.5) continue;
+      if (r.top < box.top + box.height / 2) top = Math.max(top, r.bottom + 12);
+      else bottom = Math.min(bottom, r.top - 12);
+    }
+    return { top, bottom, box };
+  }
+
+  private frame(route: [number, number][]) {
+    const map = this.map, L = this.L;
+    if (!map || !L) return;
+    const { top, bottom, box } = this.insets();
+    const padTop = Math.max(24, top - box.top + 16), padBottom = Math.max(24, box.bottom - bottom + 16);
+    if (box.height - padTop - padBottom < 120) {
+      map.fitBounds(L.latLngBounds(route).pad(0.3), { maxZoom: 18.5, animate: true });
+      return;
+    }
+    map.fitBounds(L.latLngBounds(route), { paddingTopLeft: [28, padTop], paddingBottomRight: [72, padBottom], maxZoom: 18.75, animate: true });
   }
 
   private reveal(target: LL) {

@@ -1982,3 +1982,14 @@
 @Locals use: {apps}.	Localnicii folosesc: {apps}.
 @Uber and Bolt both work in {country}.	Uber și Bolt funcționează amândouă în {country}.
 @Open the app before you land to check it works in {country}.	Deschide aplicația înainte să aterizezi ca să verifici că merge în {country}.
+@To {place}	Spre {place}
+@To gate {gate}	Spre poarta {gate}
+@To the airport	Spre aeroport
+@from you	de la tine
+@from the entrance	de la intrare
+@along the walkways	pe culoarele de mers
+@through the nearest entrance	prin cea mai apropiată intrare
+@in a straight line	în linie dreaptă
+@The route changes floor: use the stairs, escalator or lift shown on the map.	Traseul schimbă etajul: folosește scările, scara rulantă sau liftul de pe hartă.
+@Walkways inside this terminal aren’t mapped yet, so this is the direction, not the exact path. Follow the gate signs.	Culoarele din acest terminal nu sunt încă cartografiate, așa că vezi direcția, nu drumul exact. Urmează indicatoarele spre porți.
+@Start from where I am	Pornește de unde sunt

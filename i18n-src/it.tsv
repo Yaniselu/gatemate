@@ -1982,3 +1982,14 @@
 @Locals use: {apps}.	La gente del posto usa: {apps}.
 @Uber and Bolt both work in {country}.	Uber e Bolt funzionano entrambi in {country}.
 @Open the app before you land to check it works in {country}.	Apri l’app prima di atterrare per verificare che funzioni in {country}.
+@To {place}	Verso {place}
+@To gate {gate}	Verso il gate {gate}
+@To the airport	Verso l’aeroporto
+@from you	da te
+@from the entrance	dall’ingresso
+@along the walkways	lungo i percorsi pedonali
+@through the nearest entrance	dall’ingresso più vicino
+@in a straight line	in linea d’aria
+@The route changes floor: use the stairs, escalator or lift shown on the map.	Il percorso cambia piano: usa le scale, la scala mobile o l’ascensore sulla mappa.
+@Walkways inside this terminal aren’t mapped yet, so this is the direction, not the exact path. Follow the gate signs.	I percorsi di questo terminal non sono ancora mappati, quindi vedi la direzione, non il percorso esatto. Segui i cartelli dei gate.
+@Start from where I am	Parti da dove sono

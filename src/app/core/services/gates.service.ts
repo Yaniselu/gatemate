@@ -14,7 +14,7 @@ export interface MapFeature {
   id?: string;
   kind:
     | 'gate' | 'terminal' | 'poi' | 'aerodrome' | 'runway' | 'taxiway' | 'apron' | 'room' | 'corridor'
-    | 'building' | 'road' | 'rail' | 'green' | 'water' | 'parking' | 'jetbridge' | 'escalator' | 'stand' | 'elevator' | 'entrance' | 'tower';
+    | 'building' | 'road' | 'rail' | 'green' | 'water' | 'parking' | 'jetbridge' | 'escalator' | 'stand' | 'elevator' | 'entrance' | 'tower' | 'walk';
   cls?: string;
   ref: string;
   lat: number;
@@ -31,7 +31,7 @@ export interface MapFeature {
 }
 
 interface Cached {
-  v: 5;
+  v: 6;
   savedAt: number;
   features: MapFeature[];
 }
@@ -194,7 +194,7 @@ export class GatesService {
         raw = localStorage.getItem(`gm_osm_${iata}`);
       }
       const c = raw ? (JSON.parse(raw) as Cached) : null;
-      return c?.v === 5 && Array.isArray(c.features) ? c : null;
+      return c?.v === 6 && Array.isArray(c.features) ? c : null;
     } catch {
       return null;
     }
@@ -202,7 +202,7 @@ export class GatesService {
 
   private async save(iata: string, features: MapFeature[]): Promise<void> {
     if (!features.length) return;
-    const data = JSON.stringify({ v: 5, savedAt: Date.now(), features } satisfies Cached);
+    const data = JSON.stringify({ v: 6, savedAt: Date.now(), features } satisfies Cached);
     try {
       if (Capacitor.isNativePlatform()) {
         await Filesystem.writeFile({ path: `osm/${iata}.json`, directory: Directory.Data, encoding: Encoding.UTF8, data, recursive: true });
@@ -251,7 +251,7 @@ function context(scope: string): string {
   return (
     `(way["building"]${scope};way["highway"~"^(${roads})$"]${scope};way["railway"~"^(rail|light_rail|subway|tram|monorail)$"]${scope};` +
     `way["amenity"="parking"]${scope};way["landuse"~"^(grass|meadow|forest|recreation_ground|village_green)$"]${scope};way["natural"~"^(water|wood|scrub|grassland)$"]${scope};` +
-    `way["leisure"="park"]${scope};way["aeroway"~"^(jet_bridge|hangar)$"]${scope};way["highway"="steps"]["conveying"]${scope};way["highway"="footway"]["indoor"="yes"]${scope};);out geom tags;` +
+    `way["leisure"="park"]${scope};way["aeroway"~"^(jet_bridge|hangar)$"]${scope};way["highway"="steps"]["conveying"]${scope};way["highway"~"^(footway|corridor|steps|pedestrian|path)$"]${scope};);out geom tags;` +
     `(node["aeroway"~"^(parking_position|control_tower)$"]${scope};node["highway"="elevator"]${scope};node["entrance"~"^(main|yes)$"]${scope};` +
     `node["man_made"="tower"]["tower:type"="airport_control"]${scope};);out;`
   );
@@ -285,6 +285,11 @@ export function parse(elements: OsmElement[]): MapFeature[] {
       const mid = line[Math.floor(line.length / 2)];
       const width = parseFloat(t['width'] ?? '') || (aw === 'runway' ? 45 : 18);
       shapes.push({ id: key, kind: aw, ref: aw === 'runway' ? t['ref'] ?? '' : '', lat: mid[0], lon: mid[1], line, width });
+    } else if (e.geometry && isWalk(t)) {
+      const line = e.geometry.map((p) => [round(p.lat), round(p.lon)] as [number, number]);
+      if (line.length < 2) continue;
+      const mid = line[Math.floor(line.length / 2)];
+      shapes.push({ id: key, kind: 'walk', ref: '', lat: mid[0], lon: mid[1], line, cls: t['highway'], level: t['level'] || undefined });
     } else if (e.geometry && !classify(t) && !t['indoor'] && contextKind(t)) {
       const kind = contextKind(t)!;
       const pts = simplify(e.geometry.map((p) => [round(p.lat), round(p.lon)] as [number, number]));
@@ -353,6 +358,10 @@ export function parse(elements: OsmElement[]): MapFeature[] {
     out.push({ ...base, kind: 'poi', poi, ref: name || fallbackName(poi, t), hours: t['opening_hours'] || undefined, brand: t['brand'] || undefined, detail, outline: ring ? [ring] : undefined });
   }
   return out;
+}
+
+function isWalk(t: Record<string, string>): boolean {
+  return /^(footway|corridor|steps|pedestrian|path)$/.test(t['highway'] ?? '') && !t['conveying'] && t['access'] !== 'private';
 }
 
 function contextKind(t: Record<string, string>): MapFeature['kind'] | null {

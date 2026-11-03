@@ -75,6 +75,7 @@ public class AirportMapService {
     private static final List<String> MIRRORS = List.of("https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
             "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass-api.de/api/interpreter");
     private static final Duration FRESH = Duration.ofDays(21);
+    private static final Instant FORMAT = Instant.parse("2026-11-03T18:00:00Z");
     private static final int MEMORY = 400;
     private final RestClient http = app.gatemate.common.Http.builder(Duration.ofSeconds(70)).build();
     private final JsonMapper json;
@@ -106,7 +107,7 @@ public class AirportMapService {
         if (stored.isPresent()) {
             var s = stored.get();
             memory.put(a.iata(), s.features());
-            if (s.at().isBefore(Instant.now().minus(FRESH))) refresh(a);
+            if (s.at().isBefore(Instant.now().minus(FRESH)) || s.at().isBefore(FORMAT)) refresh(a);
             return s.features();
         }
         try {
@@ -137,7 +138,7 @@ public class AirportMapService {
         for (int tries = 0; tries < large.size(); tries++) {
             var a = large.get(Math.floorMod(warmCursor.getAndIncrement(), large.size()));
             var s = stored(a.iata());
-            if (s.isEmpty() || s.get().at().isBefore(Instant.now().minus(FRESH))) {
+            if (s.isEmpty() || s.get().at().isBefore(Instant.now().minus(FRESH)) || s.get().at().isBefore(FORMAT)) {
                 refresh(a).whenComplete((ok, err) -> {
                     if (err == null) warmFailures.set(0);
                     else if (warmFailures.incrementAndGet() >= 3) {
@@ -276,7 +277,7 @@ public class AirportMapService {
         return "(way[\"building\"]" + scope + ";way[\"highway\"~\"^(" + roads + ")$\"]" + scope + ";way[\"railway\"~\"^(rail|light_rail|subway|tram|monorail)$\"]" + scope
                 + ";way[\"amenity\"=\"parking\"]" + scope + ";way[\"landuse\"~\"^(grass|meadow|forest|recreation_ground|village_green)$\"]" + scope
                 + ";way[\"natural\"~\"^(water|wood|scrub|grassland)$\"]" + scope + ";way[\"leisure\"=\"park\"]" + scope + ";way[\"aeroway\"~\"^(jet_bridge|hangar)$\"]" + scope
-                + ";way[\"highway\"=\"steps\"][\"conveying\"]" + scope + ";way[\"highway\"=\"footway\"][\"indoor\"=\"yes\"]" + scope + ";);out geom tags;"
+                + ";way[\"highway\"=\"steps\"][\"conveying\"]" + scope + ";way[\"highway\"~\"^(footway|corridor|steps|pedestrian|path)$\"]" + scope + ";);out geom tags;"
                 + "(node[\"aeroway\"~\"^(parking_position|control_tower)$\"]" + scope + ";node[\"highway\"=\"elevator\"]" + scope + ";node[\"entrance\"~\"^(main|yes)$\"]" + scope
                 + ";node[\"man_made\"=\"tower\"][\"tower:type\"=\"airport_control\"]" + scope + ";);out;";
     }
@@ -311,6 +312,12 @@ public class AirportMapService {
                 double[] mid = line.get(line.size() / 2);
                 double width = parseWidth(t.path("width").asString(""), aw.equals("runway") ? 45 : 18);
                 shapes.add(new MapFeature(key, aw, aw.equals("runway") ? t.path("ref").asString("") : "", mid[0], mid[1], null, null, null, null, null, null, null, line, width));
+            } else if (e.has("geometry") && isWalk(t)) {
+                var pts = points(e.path("geometry"));
+                if (pts.size() < 2) continue;
+                double[] mid = pts.get(pts.size() / 2);
+                shapes.add(new MapFeature(key, "walk", "", mid[0], mid[1], null, null, blank(t.path("level").asString("")), null, null, null, null, pts, null,
+                        t.path("highway").asString("footway")));
             } else if (e.has("geometry") && classify(t) == null && !t.has("indoor") && contextKind(t) != null) {
                 String kind = contextKind(t);
                 var pts = simplify(points(e.path("geometry")));
@@ -513,6 +520,10 @@ public class AirportMapService {
             if ((yi > lat) != (yj > lat) && lon < (xj - xi) * (lat - yi) / (yj - yi) + xi) hit = !hit;
         }
         return hit;
+    }
+
+    static boolean isWalk(JsonNode t) {
+        return t.path("highway").asString("").matches("footway|corridor|steps|pedestrian|path") && !t.has("conveying") && !t.path("access").asString("").equals("private");
     }
 
     static String contextKind(JsonNode t) {
