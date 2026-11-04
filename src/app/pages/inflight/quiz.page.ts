@@ -5,6 +5,7 @@ import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { GameTutorialComponent, TutorialStep, tutorialSeen } from './game-tutorial.component';
 
 const CODES: [string, string][] = [
   ['OTP', 'Bucharest'], ['CLJ', 'Cluj-Napoca'], ['IAS', 'Iași'], ['TSR', 'Timișoara'], ['LHR', 'London'], ['CDG', 'Paris'],
@@ -24,14 +25,16 @@ interface Q {
 @Component({
   selector: 'gm-quiz',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, GameTutorialComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ 'Code Quiz' | t }}</ion-title>
+        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
+    <gm-game-tutorial #tut game="quiz" title="Code Quiz" icon="airplane-outline" [steps]="tutorial" (done)="tutorialDone()" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
@@ -87,6 +90,12 @@ interface Q {
   `,
 })
 export class QuizPage {
+  readonly tutorial: TutorialStep[] = [
+    { icon: 'airplane-outline', text: 'You see an airport code, like OTP.' },
+    { icon: 'list-outline', text: 'Pick the city it belongs to from four answers.' },
+    { icon: 'timer-outline', text: 'You have 8 seconds for each question.' },
+    { icon: 'flame-outline', text: 'Answer right in a row to build a streak.' },
+  ];
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   protected scores = inject(ScoresService);
@@ -106,7 +115,11 @@ export class QuizPage {
 
   constructor() {
     void this.scores.load();
-    this.start();
+    if (tutorialSeen('quiz')) this.start();
+  }
+
+  tutorialDone() {
+    if (!this.q()) this.start();
   }
 
   start() {

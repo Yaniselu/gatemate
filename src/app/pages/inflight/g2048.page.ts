@@ -5,6 +5,7 @@ import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { GameTutorialComponent, TutorialStep } from './game-tutorial.component';
 
 interface Tile {
   id: number;
@@ -18,14 +19,16 @@ interface Tile {
 @Component({
   selector: 'gm-2048',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, GameTutorialComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ '2048 Altitude' | t }}</ion-title>
+        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
+    <gm-game-tutorial #tut game="2048" title="2048 Altitude" icon="apps-outline" [steps]="tutorial" />
     <ion-content [fullscreen]="true" [scrollY]="false">
       <div class="page">
         <div class="hud">
@@ -53,12 +56,13 @@ interface Tile {
     .hud b { display: block; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
     .again { display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--gm-ink); }
     .board { --gap: 8px; --size: calc((100% - 5 * var(--gap)) / 4); position: relative; aspect-ratio: 1; padding: var(--gap); border-radius: 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); touch-action: none; }
-    .cell { border-radius: 12px; background: rgba(11,27,43,.06); }
+    .cell { border-radius: 12px; background: var(--gm-surface); }
     .tile { position: absolute; width: var(--size); height: var(--size); left: calc(var(--gap) + var(--c) * (var(--size) + var(--gap))); top: calc(var(--gap) + var(--r) * (var(--size) + var(--gap))); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 850; font-size: 26px; color: var(--gm-ink); background: var(--gm-card-bg); box-shadow: 0 4px 10px rgba(11,40,60,.12); transition: left .14s ease, top .14s ease; z-index: 3; }
     .tile.fresh { animation: gm-scale-in .22s var(--gm-ease-spring); }
     .tile.merged { animation: gm-pop .25s var(--gm-ease-spring); }
-    .tile[data-v="4"] { background: #e6f8fa; }
-    .tile[data-v="8"] { background: #bdeef3; }
+    .tile[data-v="2"] { background: #ffffff; color: #0b3a44; }
+    .tile[data-v="4"] { background: #e6f8fa; color: #0b3a44; }
+    .tile[data-v="8"] { background: #bdeef3; color: #0b3a44; }
     .tile[data-v="16"] { background: #7fdbe4; color: #08404a; }
     .tile[data-v="32"] { background: #3fc9d6; color: #fff; }
     .tile[data-v="64"] { background: #0fb5c3; color: #fff; }
@@ -67,12 +71,17 @@ interface Tile {
     .tile[data-v="512"] { background: #8b7cf6; color: #fff; font-size: 22px; }
     .tile[data-v="1024"] { background: #ff8a5b; color: #fff; font-size: 19px; }
     .tile[data-v="2048"] { background: linear-gradient(135deg, #ffd27a, #ff8a5b); color: #fff; font-size: 19px; box-shadow: 0 0 24px rgba(255,180,90,.7); }
-    .end { position: absolute; inset: 0; z-index: 5; border-radius: inherit; display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; background: rgba(255,255,255,.75); backdrop-filter: blur(6px); animation: gm-fade-in .3s; }
+    .end { position: absolute; inset: 0; z-index: 5; border-radius: inherit; display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; background: color-mix(in srgb, var(--gm-card-bg) 82%, transparent); color: var(--gm-ink); backdrop-filter: blur(6px); animation: gm-fade-in .3s; }
     .end b { font-size: 20px; }
     .hint { text-align: center; color: var(--gm-ink-3); font-size: 13px; margin-top: 14px; }
   `,
 })
 export class G2048Page {
+  readonly tutorial: TutorialStep[] = [
+    { icon: 'swap-horizontal-outline', text: 'Swipe in any direction to move all the tiles.' },
+    { icon: 'git-merge-outline', text: 'Two tiles with the same number merge into one.' },
+    { icon: 'trending-up-outline', text: 'Keep merging to climb from 2 to 2048.' },
+  ];
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   private scores = inject(ScoresService);

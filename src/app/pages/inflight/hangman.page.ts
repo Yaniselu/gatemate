@@ -4,6 +4,8 @@ import { PlatformService } from '../../core/services/platform.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { localCountryName } from '../../shared/pipes/country-name.pipe';
+import { GameTutorialComponent, TutorialStep } from './game-tutorial.component';
 
 const CITIES: [string, string][] = [
   ['BARCELONA', 'Spain'], ['LISBON', 'Portugal'], ['AMSTERDAM', 'Netherlands'], ['ISTANBUL', 'Türkiye'], ['REYKJAVIK', 'Iceland'], ['DUBROVNIK', 'Croatia'],
@@ -18,14 +20,16 @@ const LIVES = 6;
 @Component({
   selector: 'gm-hangman',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, GameTutorialComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ 'Guess the City' | t }}</ion-title>
+        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
+    <gm-game-tutorial #tut game="guess-city" title="Guess the City" icon="business-outline" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="sky glass smoke">
@@ -84,6 +88,12 @@ const LIVES = 6;
   `,
 })
 export class HangmanPage {
+  readonly tutorial: TutorialStep[] = [
+    { icon: 'business-outline', text: 'Guess the hidden city, letter by letter.' },
+    { icon: 'earth-outline', text: 'The country is your clue.' },
+    { icon: 'trending-down-outline', text: 'Every wrong letter makes the plane lose altitude.' },
+    { icon: 'airplane-outline', text: 'Find the city before the plane touches the ground.' },
+  ];
   private platform = inject(PlatformService);
   private achievements = inject(AchievementsService);
   private confetti = inject(ConfettiService);
@@ -105,7 +115,7 @@ export class HangmanPage {
   next() {
     const [city, country] = CITIES[Math.floor(Math.random() * CITIES.length)];
     this.answer.set(city);
-    this.country.set(country);
+    this.country.set(localCountryName(country));
     this.guessed.set(new Set());
   }
 

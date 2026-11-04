@@ -5,6 +5,7 @@ import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { GameTutorialComponent, TutorialStep } from './game-tutorial.component';
 
 interface Card {
   id: number;
@@ -18,14 +19,16 @@ const ICONS = ['airplane', 'earth', 'ticket', 'bag-handle', 'compass', 'camera',
 @Component({
   selector: 'gm-memory',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, GameTutorialComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ 'Boarding Memory' | t }}</ion-title>
+        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
+    <gm-game-tutorial #tut game="memory" title="Boarding Memory" icon="albums-outline" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
@@ -66,6 +69,11 @@ const ICONS = ['airplane', 'earth', 'ticket', 'bag-handle', 'compass', 'camera',
   `,
 })
 export class MemoryPage {
+  readonly tutorial: TutorialStep[] = [
+    { icon: 'albums-outline', text: 'Tap two cards to turn them over.' },
+    { icon: 'copy-outline', text: 'Find all the matching pairs of travel icons.' },
+    { icon: 'timer-outline', text: 'Finish in as few moves and seconds as you can.' },
+  ];
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   protected scores = inject(ScoresService);

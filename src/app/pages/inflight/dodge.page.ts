@@ -5,6 +5,7 @@ import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { GameTutorialComponent, TutorialStep } from './game-tutorial.component';
 
 interface Thing {
   x: number;
@@ -18,14 +19,16 @@ interface Thing {
 @Component({
   selector: 'gm-dodge',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, GameTutorialComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ 'Sky Dodge' | t }}</ion-title>
+        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
+    <gm-game-tutorial #tut game="dodge" title="Sky Dodge" icon="airplane-outline" [steps]="tutorial" />
     <ion-content [fullscreen]="true" [scrollY]="false">
       <div class="wrap" #wrap>
         <canvas #cv (pointerdown)="down($event)" (pointermove)="move($event)" (pointerup)="up()" (pointercancel)="up()"></canvas>
@@ -58,6 +61,12 @@ interface Thing {
   `,
 })
 export class DodgePage implements AfterViewInit {
+  readonly tutorial: TutorialStep[] = [
+    { icon: 'move-outline', text: 'Drag left and right to steer the plane.' },
+    { icon: 'thunderstorm-outline', text: 'Dodge the storms and the birds.' },
+    { icon: 'star-outline', text: 'Grab the stars for extra points.' },
+    { icon: 'speedometer-outline', text: 'The longer you fly, the faster it gets.' },
+  ];
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   private scores = inject(ScoresService);

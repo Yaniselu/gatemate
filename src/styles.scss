@@ -657,3 +657,12 @@ ion-content::part(scroll) {
 .leaflet-container:not(.z-shops) .gm-plan-icon.z17 {
   display: none;
 }
+
+.gm-help {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 24px;
+  color: var(--gm-accent-strong);
+  background: none;
+}

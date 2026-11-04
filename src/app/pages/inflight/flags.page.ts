@@ -6,6 +6,7 @@ import { AchievementsService } from '../../core/services/achievements.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { GameTutorialComponent, TutorialStep } from './game-tutorial.component';
 
 const POOL = ['RO', 'ES', 'FR', 'IT', 'DE', 'GB', 'PT', 'GR', 'NL', 'BE', 'AT', 'CH', 'SE', 'NO', 'DK', 'FI', 'IE', 'PL', 'CZ', 'HU', 'BG', 'HR',
   'US', 'CA', 'MX', 'BR', 'AR', 'CL', 'JP', 'KR', 'CN', 'IN', 'TH', 'VN', 'ID', 'AU', 'NZ', 'ZA', 'EG', 'MA', 'TR', 'AE', 'IL', 'IS', 'MD', 'UA', 'CY', 'MT', 'SG', 'PE'];
@@ -16,14 +17,16 @@ const flag = (cc: string) => String.fromCodePoint(...[...cc].map((c) => 0x1f1e6 
 @Component({
   selector: 'gm-flags',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, GameTutorialComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ 'Flag Quiz' | t }}</ion-title>
+        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
+    <gm-game-tutorial #tut game="flags" title="Flag Quiz" icon="flag-outline" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
@@ -66,6 +69,11 @@ const flag = (cc: string) => String.fromCodePoint(...[...cc].map((c) => 0x1f1e6 
   `,
 })
 export class FlagsPage implements OnInit {
+  readonly tutorial: TutorialStep[] = [
+    { icon: 'flag-outline', text: 'You see a country’s flag.' },
+    { icon: 'list-outline', text: 'Pick the right country from four answers.' },
+    { icon: 'trophy-outline', text: 'Ten flags per round. Try to beat your best score.' },
+  ];
   private platform = inject(PlatformService);
   private db = inject(AirportDbService);
   private achievements = inject(AchievementsService);

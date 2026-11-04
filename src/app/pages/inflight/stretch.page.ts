@@ -4,6 +4,7 @@ import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { GameTutorialComponent, TutorialStep } from './game-tutorial.component';
 
 const MOVES = [
   { title: 'Ankle circles', body: 'Lift your feet slightly and draw circles with your toes — 10 each direction.', icon: 'sync-outline' },
@@ -18,14 +19,16 @@ const SECS = 30;
 @Component({
   selector: 'gm-stretch',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, GameTutorialComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ 'Seat stretches' | t }}</ion-title>
+        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
+    <gm-game-tutorial #tut game="stretch" title="Seat stretches" icon="body-outline" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="dots">@for (m of moves; track m.title; let i = $index) { <span [class.done]="i < index()" [class.on]="i === index()"></span> }</div>
@@ -76,6 +79,11 @@ const SECS = 30;
   `,
 })
 export class StretchPage {
+  readonly tutorial: TutorialStep[] = [
+    { icon: 'body-outline', text: 'Follow each move while you stay seated.' },
+    { icon: 'timer-outline', text: 'Each move has a timer and the next one starts by itself.' },
+    { icon: 'warning-outline', text: 'Stop if anything hurts and keep your seatbelt fastened.' },
+  ];
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   private achievements = inject(AchievementsService);

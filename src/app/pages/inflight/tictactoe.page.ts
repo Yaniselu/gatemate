@@ -5,6 +5,7 @@ import { ConfettiService } from '../../shared/components/confetti.service';
 import { ScoresService } from './scores.service';
 import { AchievementsService } from '../../core/services/achievements.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
+import { GameTutorialComponent, TutorialStep } from './game-tutorial.component';
 
 type Cell = 'P' | 'C' | null;
 const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
@@ -30,14 +31,16 @@ function minimax(b: Cell[], turn: 'C' | 'P'): number {
 @Component({
   selector: 'gm-tictactoe',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
+  imports: [TranslatePipe, GameTutorialComponent, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonIcon],
   template: `
     <ion-header class="gm-glass-header" [translucent]="true">
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ 'Planes & Clouds' | t }}</ion-title>
+        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
+    <gm-game-tutorial #tut game="tictactoe" title="Planes & Clouds" icon="grid-outline" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
@@ -67,7 +70,7 @@ function minimax(b: Cell[], turn: 'C' | 'P'): number {
     .seg button { flex: 1; padding: 9px; border-radius: 12px; background: var(--gm-surface); font-weight: 650; color: var(--gm-ink-3); transition: all .3s var(--gm-ease-spring); }
     .seg button.on { background: var(--gm-navy); color: #fff; }
     .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; border-radius: 26px; }
-    .cell { aspect-ratio: 1; border-radius: 18px; background: rgba(255,255,255,.65); border: 1px solid rgba(11,27,43,.05); font-size: 44px; display: flex; align-items: center; justify-content: center; transition: background .3s, transform .3s var(--gm-ease-spring); }
+    .cell { aspect-ratio: 1; border-radius: 18px; background: var(--gm-card-bg); border: 1px solid var(--gm-card-border); font-size: 44px; display: flex; align-items: center; justify-content: center; transition: background .3s, transform .3s var(--gm-ease-spring); }
     .cell:active { transform: scale(.94); }
     .cell ion-icon { animation: gm-pop .45s var(--gm-ease-spring); }
     .p { color: var(--gm-accent-strong); }
@@ -77,6 +80,12 @@ function minimax(b: Cell[], turn: 'C' | 'P'): number {
   `,
 })
 export class TicTacToePage {
+  readonly tutorial: TutorialStep[] = [
+    { icon: 'grid-outline', text: 'Tap a square to place your plane.' },
+    { icon: 'cloud-outline', text: 'The autopilot plays the clouds.' },
+    { icon: 'trophy-outline', text: 'Get three in a row across, down or diagonally to win.' },
+    { icon: 'options-outline', text: 'Choose how strong the autopilot plays at the top.' },
+  ];
   private platform = inject(PlatformService);
   private confetti = inject(ConfettiService);
   private scores = inject(ScoresService);
