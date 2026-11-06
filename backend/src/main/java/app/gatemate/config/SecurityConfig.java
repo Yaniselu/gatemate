@@ -113,7 +113,7 @@ public class SecurityConfig {
         var c = new CorsConfiguration();
         c.setAllowedOriginPatterns(props.corsOrigins() == null ? List.of() : props.corsOrigins());
         c.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
-        c.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
+        c.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "X-Proof"));
         c.setExposedHeaders(List.of("Retry-After"));
         c.setAllowCredentials(false);
         c.setMaxAge(3600L);

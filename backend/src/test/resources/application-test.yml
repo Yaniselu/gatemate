@@ -13,3 +13,5 @@ gatemate:
   billing:
     webhook-secret: test-webhook-secret
     free-upcoming-trips: 3
+  security:
+    pow-bits: 0

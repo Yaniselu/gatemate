@@ -11,11 +11,18 @@ public class AuthController {
     private final AuthService auth;
     private final TokenService tokens;
     private final EmailVerificationService verification;
+    private final app.gatemate.config.ProofOfWork pow;
 
-    public AuthController(AuthService auth, TokenService tokens, EmailVerificationService verification) {
+    public AuthController(AuthService auth, TokenService tokens, EmailVerificationService verification, app.gatemate.config.ProofOfWork pow) {
+        this.pow = pow;
         this.auth = auth;
         this.tokens = tokens;
         this.verification = verification;
+    }
+
+    @GetMapping("/challenge")
+    public java.util.Map<String, Object> challenge() {
+        return pow.challenge();
     }
 
     @GetMapping("/features")

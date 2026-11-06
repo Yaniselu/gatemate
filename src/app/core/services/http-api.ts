@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable, Injector } from '@angular/core';
 import { firstValueFrom, Observable, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -6,6 +6,7 @@ import { ChatMessage, ChecklistItem, ChatThread, Companion, Expense, Flight, Fli
 import { ApiError, AssistantEvent, AssistantStatus, AssistantTurn, EmailPreview, BookingLookup, BookingLookupResult, ClaimRequest, FeedbackInput, GatemateApi, NewFlightInput, RegisterExtra, SocialCredential } from './api';
 import { currentLang, t } from '../i18n/i18n.service';
 import { AuthService } from './auth.service';
+import { solveProof } from '../security/proof';
 
 const REQUEST_TIMEOUT_MS = 120_000;
 
@@ -23,11 +24,16 @@ export class HttpApi extends GatemateApi {
     }
   }
 
-  loginWithPassword(email: string, password: string) {
-    return this.call(this.http.post<Session>(`${this.base}/auth/login`, { email, password }));
+  private async proof(): Promise<{ headers: HttpHeaders }> {
+    const c = await this.call(this.http.get<{ token: string; bits: number }>(`${this.base}/auth/challenge`));
+    return { headers: new HttpHeaders({ 'X-Proof': await solveProof(c.token, c.bits) }) };
   }
-  register(name: string, email: string, password: string, extra?: RegisterExtra) {
-    return this.call(this.http.post<Session>(`${this.base}/auth/register`, { name, email, password, lang: currentLang(), ...extra }));
+
+  async loginWithPassword(email: string, password: string) {
+    return this.call(this.http.post<Session>(`${this.base}/auth/login`, { email, password }, await this.proof()));
+  }
+  async register(name: string, email: string, password: string, extra?: RegisterExtra) {
+    return this.call(this.http.post<Session>(`${this.base}/auth/register`, { name, email, password, lang: currentLang(), ...extra }, await this.proof()));
   }
   loginWithSocial(c: SocialCredential) {
     return this.call(this.http.post<Session>(`${this.base}/auth/oauth/${c.provider}`, c));
@@ -39,10 +45,10 @@ export class HttpApi extends GatemateApi {
     await this.call(this.http.post<void>(`${this.base}/auth/logout`, { refreshToken }));
   }
   async requestPasswordReset(email: string) {
-    await this.call(this.http.post<void>(`${this.base}/auth/password-reset`, { email }));
+    await this.call(this.http.post<void>(`${this.base}/auth/password-reset`, { email }, await this.proof()));
   }
   async confirmPasswordReset(email: string, code: string, password: string) {
-    await this.call(this.http.post<void>(`${this.base}/auth/password-reset/confirm`, { email, code, password }));
+    await this.call(this.http.post<void>(`${this.base}/auth/password-reset/confirm`, { email, code, password }, await this.proof()));
   }
   getFeatures() {
     return this.call(this.http.get<{ emailCodes: boolean }>(`${this.base}/auth/features`));
