@@ -26,7 +26,7 @@ const flag = (cc: string) => String.fromCodePoint(...[...cc].map((c) => 0x1f1e6 
         <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="flags" title="Flag Quiz" icon="flag-outline" [steps]="tutorial" />
+    <gm-game-tutorial #tut game="flags" title="Flag Quiz" icon="flag-outline" color="#1f8a68" scoreKey="flags" scoreLabel="Best:" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
@@ -87,6 +87,7 @@ export class FlagsPage implements OnInit {
   readonly picked = signal<string | null>(null);
   readonly q = signal<{ cc: string; flag: string; options: { cc: string; name: string }[] } | null>(null);
   private used = new Set<string>();
+  private game = 0;
 
   async ngOnInit() {
     await Promise.all([this.db.load(), this.scores.load()]);
@@ -95,6 +96,7 @@ export class FlagsPage implements OnInit {
   }
 
   start() {
+    this.game++;
     this.round.set(0);
     this.correct.set(0);
     this.used.clear();
@@ -112,12 +114,14 @@ export class FlagsPage implements OnInit {
 
   pick(cc: string) {
     if (this.picked()) return;
+    const game = this.game;
     this.picked.set(cc);
     if (cc === this.q()!.cc) {
       this.correct.update((n) => n + 1);
       this.platform.success();
     } else this.platform.error();
     setTimeout(() => {
+      if (game !== this.game) return;
       this.round.update((r) => r + 1);
       if (this.round() < ROUNDS) return this.next();
       this.achievements.track('game_played');

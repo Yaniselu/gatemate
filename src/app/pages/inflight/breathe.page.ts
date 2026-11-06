@@ -24,7 +24,7 @@ const PHASES = [
         <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="breathe" title="Calm breathing" icon="leaf-outline" [steps]="tutorial" />
+    <gm-game-tutorial #tut game="breathe" title="Calm breathing" icon="leaf-outline" color="#1f9d8b" [steps]="tutorial" />
     <ion-content [fullscreen]="true" class="calm">
       <div class="wrap">
         <div class="orb-wrap">

@@ -28,7 +28,7 @@ const ICONS = ['airplane', 'earth', 'ticket', 'bag-handle', 'compass', 'camera',
         <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="memory" title="Boarding Memory" icon="albums-outline" [steps]="tutorial" />
+    <gm-game-tutorial #tut game="memory" title="Boarding Memory" icon="albums-outline" color="#0a7f8c" scoreKey="memory" scoreLabel="Best moves:" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
@@ -89,6 +89,7 @@ export class MemoryPage {
     return b === undefined ? '—' : b;
   }
   private open: number[] = [];
+  private round = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
@@ -99,6 +100,7 @@ export class MemoryPage {
 
   reset() {
     this.stop();
+    this.round++;
     const deck = [...ICONS, ...ICONS].map((icon, id) => ({ id, icon, flipped: false, matched: false }));
     for (let i = deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -121,8 +123,10 @@ export class MemoryPage {
     if (this.open.length < 2) return;
     this.moves.update((m) => m + 1);
     const [a, b] = this.open;
+    const round = this.round;
     if (this.cards()[a].icon === this.cards()[b].icon) {
       setTimeout(() => {
+        if (round !== this.round) return;
         this.update(a, { matched: true });
         this.update(b, { matched: true });
         this.platform.success();
@@ -131,6 +135,7 @@ export class MemoryPage {
       }, 350);
     } else {
       setTimeout(() => {
+        if (round !== this.round) return;
         this.update(a, { flipped: false });
         this.update(b, { flipped: false });
         this.open = [];

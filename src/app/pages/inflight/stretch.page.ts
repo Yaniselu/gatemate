@@ -28,7 +28,7 @@ const SECS = 30;
         <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="stretch" title="Seat stretches" icon="body-outline" [steps]="tutorial" />
+    <gm-game-tutorial #tut game="stretch" title="Seat stretches" icon="body-outline" color="#d9467a" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="dots">@for (m of moves; track m.title; let i = $index) { <span [class.done]="i < index()" [class.on]="i === index()"></span> }</div>

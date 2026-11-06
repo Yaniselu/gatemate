@@ -40,7 +40,7 @@ function minimax(b: Cell[], turn: 'C' | 'P'): number {
         <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="tictactoe" title="Planes & Clouds" icon="grid-outline" [steps]="tutorial" />
+    <gm-game-tutorial #tut game="tictactoe" title="Planes & Clouds" icon="grid-outline" color="#7a4fb0" scoreKey="ttt" scoreLabel="Wins:" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
@@ -103,6 +103,7 @@ export class TicTacToePage {
     this.result() === 'win' ? 'You win! Smooth landing ✈️' : this.result() === 'loss' ? 'The autopilot wins this time ☁️' : this.result() === 'draw' ? 'Draw — holding pattern.' : 'Your move',
   );
   private busy = false;
+  private round = 0;
 
   constructor() {
     void this.scores.load().then(() => this.wins.set(this.scores.best()['ttt'] ?? 0));
@@ -114,7 +115,9 @@ export class TicTacToePage {
     this.set(i, 'P');
     if (this.check()) return;
     this.busy = true;
+    const round = this.round;
     setTimeout(() => {
+      if (round !== this.round) return;
       this.set(this.aiMove(), 'C');
       this.busy = false;
       this.check();
@@ -122,6 +125,8 @@ export class TicTacToePage {
   }
 
   reset() {
+    this.round++;
+    this.busy = false;
     this.board.set(Array(9).fill(null));
     this.result.set(null);
   }

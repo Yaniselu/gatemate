@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { PlatformService } from '../../core/services/platform.service';
 import { ConfettiService } from '../../shared/components/confetti.service';
@@ -34,7 +34,7 @@ interface Q {
         <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="quiz" title="Code Quiz" icon="airplane-outline" [steps]="tutorial" (done)="tutorialDone()" />
+    <gm-game-tutorial #tut game="quiz" title="Code Quiz" icon="airplane-outline" color="#2d6390" scoreKey="quiz" scoreLabel="Best:" [steps]="tutorial" (done)="tutorialDone()" (opened)="pauseTimer()" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="hud">
@@ -47,7 +47,7 @@ interface Q {
             <div class="board-q glass smoke">
               <span class="gm-label light">{{ 'Which city is' | t }}</span>
               @for (k of [qq.code]; track k + round()) { <div class="code">{{ k }}</div> }
-              <div class="timer"><span [style.animation-duration.s]="8" [class.run]="!picked()"></span></div>
+              <div class="timer"><span [style.animation-duration.s]="8" [class.run]="!picked() && !paused()"></span></div>
             </div>
             <div class="opts">
               @for (o of qq.options; track o + round(); let i = $index) {
@@ -110,19 +110,38 @@ export class QuizPage {
   readonly q = signal<Q | null>(null);
   readonly picked = signal<string | null>(null);
   readonly record = signal(false);
+  readonly paused = signal(false);
   private timeout: ReturnType<typeof setTimeout> | null = null;
   private used = new Set<string>();
+  private game = 0;
+  private gone = false;
 
   constructor() {
     void this.scores.load();
+    inject(DestroyRef).onDestroy(() => {
+      this.gone = true;
+      if (this.timeout) clearTimeout(this.timeout);
+    });
     if (tutorialSeen('quiz')) this.start();
   }
 
   tutorialDone() {
-    if (!this.q()) this.start();
+    this.paused.set(false);
+    if (!this.q()) return this.start();
+    if (!this.picked() && this.round() < ROUNDS) {
+      if (this.timeout) clearTimeout(this.timeout);
+      this.timeout = setTimeout(() => this.pick('__timeout__'), 8000);
+    }
+  }
+
+  pauseTimer() {
+    this.paused.set(true);
+    if (this.timeout) clearTimeout(this.timeout);
+    this.timeout = null;
   }
 
   start() {
+    this.game++;
     this.round.set(0);
     this.score.set(0);
     this.streak.set(0);
@@ -143,7 +162,8 @@ export class QuizPage {
   }
 
   pick(option: string) {
-    if (this.picked()) return;
+    if (this.picked() || this.gone) return;
+    const game = this.game;
     if (this.timeout) clearTimeout(this.timeout);
     const q = this.q()!;
     this.picked.set(option);
@@ -157,6 +177,7 @@ export class QuizPage {
       this.platform.error();
     }
     setTimeout(() => {
+      if (this.gone || game !== this.game) return;
       this.round.update((r) => r + 1);
       if (this.round() < ROUNDS) this.next();
       else {

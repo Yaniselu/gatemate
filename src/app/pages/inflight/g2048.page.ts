@@ -28,7 +28,7 @@ interface Tile {
         <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="2048" title="2048 Altitude" icon="apps-outline" [steps]="tutorial" />
+    <gm-game-tutorial #tut game="2048" title="2048 Altitude" icon="apps-outline" color="#c4673a" scoreKey="2048" scoreLabel="Best:" [steps]="tutorial" />
     <ion-content [fullscreen]="true" [scrollY]="false">
       <div class="page">
         <div class="hud">
@@ -93,6 +93,8 @@ export class G2048Page {
   readonly over = signal(false);
   readonly won = signal(false);
   private id = 0;
+  private ghosts = new Set<number>();
+  private game = 0;
   private sx = 0;
   private sy = 0;
 
@@ -102,6 +104,8 @@ export class G2048Page {
   }
 
   reset() {
+    this.game++;
+    this.ghosts = new Set();
     this.tiles.set([]);
     this.score.set(0);
     this.over.set(false);
@@ -142,7 +146,7 @@ export class G2048Page {
   private move(dr: number, dc: number) {
     if (this.over()) return;
     const grid: (Tile | null)[][] = Array.from({ length: 4 }, () => Array(4).fill(null));
-    const tiles = this.tiles().map((t) => ({ ...t, merged: false, fresh: false }));
+    const tiles = this.tiles().filter((t) => !this.ghosts.has(t.id)).map((t) => ({ ...t, merged: false, fresh: false }));
     tiles.forEach((t) => (grid[t.r][t.c] = t));
     const order = [0, 1, 2, 3];
     const rows = dr === 1 ? [...order].reverse() : order;
@@ -188,18 +192,23 @@ export class G2048Page {
     if (!moved) return;
     this.platform.selection();
     this.tiles.set(tiles);
+    this.ghosts = removed;
+    const game = this.game;
     setTimeout(() => {
+      if (game !== this.game) return;
       this.tiles.update((ts) => ts.filter((t) => !removed.has(t.id)));
+      if (this.ghosts === removed) this.ghosts = new Set();
       this.add();
       this.score.update((s) => s + gained);
       if (gained) this.platform.tap();
       if (this.tiles().some((t) => t.v >= 2048) && !this.won()) {
         this.won.set(true);
         this.over.set(true);
+        if (this.scores.submit('2048', this.score())) this.best.set(this.score());
         this.confetti.burst();
         this.achievements.track('g2048_win');
       }
-      if (!this.canMove()) this.finish();
+      if (!this.over() && !this.canMove()) this.finish();
     }, 140);
   }
 

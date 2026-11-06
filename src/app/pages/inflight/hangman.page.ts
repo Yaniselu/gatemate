@@ -29,7 +29,7 @@ const LIVES = 6;
         <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="guess-city" title="Guess the City" icon="business-outline" [steps]="tutorial" />
+    <gm-game-tutorial #tut game="guess-city" title="Guess the City" icon="business-outline" color="#55599e" [steps]="tutorial" />
     <ion-content [fullscreen]="true">
       <div class="page">
         <div class="sky glass smoke">
@@ -113,7 +113,8 @@ export class HangmanPage {
   }
 
   next() {
-    const [city, country] = CITIES[Math.floor(Math.random() * CITIES.length)];
+    const pool = CITIES.filter(([c]) => c !== this.answer());
+    const [city, country] = pool[Math.floor(Math.random() * pool.length)];
     this.answer.set(city);
     this.country.set(localCountryName(country));
     this.guessed.set(new Set());

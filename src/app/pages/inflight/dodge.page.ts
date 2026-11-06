@@ -25,10 +25,10 @@ interface Thing {
       <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/inflight" text="" icon="chevron-back" /></ion-buttons>
         <ion-title>{{ 'Sky Dodge' | t }}</ion-title>
-        <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons>
+        @if (state() !== 'playing') { <ion-buttons slot="end"><button class="gm-help" (click)="tut.open()" [attr.aria-label]="'How to play' | t"><ion-icon name="help-circle-outline" /></button></ion-buttons> }
       </ion-toolbar>
     </ion-header>
-    <gm-game-tutorial #tut game="dodge" title="Sky Dodge" icon="airplane-outline" [steps]="tutorial" />
+    <gm-game-tutorial #tut game="dodge" title="Sky Dodge" icon="airplane-outline" color="#2f6aa0" scoreKey="dodge" scoreLabel="Best:" [steps]="tutorial" />
     <ion-content [fullscreen]="true" [scrollY]="false">
       <div class="wrap" #wrap>
         <canvas #cv (pointerdown)="down($event)" (pointermove)="move($event)" (pointerup)="up()" (pointercancel)="up()"></canvas>
