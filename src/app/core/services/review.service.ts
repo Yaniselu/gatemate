@@ -12,7 +12,7 @@ const MIN_POSITIVE = 2;
 const COOLDOWN_DAYS = 120;
 const STORE_URL = {
   ios: '',
-  android: 'https://play.google.com/store/apps/details?id=app.gatemate&showAllReviews=true',
+  android: 'https://play.google.com/store/apps/details?id=com.velosyntech.gatemate&showAllReviews=true',
 };
 
 interface State {

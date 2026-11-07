@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const isProd = process.env['NODE_ENV'] === 'production';
 
 const config: CapacitorConfig = {
-  appId: 'app.gatemate',
+  appId: 'com.velosyntech.gatemate',
   appName: 'Gatemate',
   webDir: 'www',
   loggingBehavior: isProd ? 'none' : 'debug',
