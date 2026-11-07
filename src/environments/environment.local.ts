@@ -14,7 +14,7 @@ export const environment: AppEnvironment = {
     appleServiceId: 'app.gatemate.signin',
     appleRedirectUrl: '',
     googleWebClientId: '672185328276-svrdqt9jnkm8g8nm7ske2divdu85jral.apps.googleusercontent.com',
-    googleIosClientId: '',
+    googleIosClientId: '672185328276-5tlngg2iq8und9nk1dhhfmscgktqtt5v.apps.googleusercontent.com',
   },
   push: false,
   purchases: { iosApiKey: '', androidApiKey: '' },
