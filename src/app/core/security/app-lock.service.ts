@@ -1,7 +1,7 @@
 import { inject, Injectable, NgZone, signal } from '@angular/core';
 import { App } from '@capacitor/app';
 import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
-import { PrivacyScreen } from '@capacitor/privacy-screen';
+import { privacyOn } from './privacy';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../services/auth.service';
 import { PlatformService } from '../services/platform.service';
@@ -23,7 +23,7 @@ export class AppLockService {
 
   async init(): Promise<void> {
     if (!this.platform.isNative) return;
-    await PrivacyScreen.enable({ android: { preventScreenshots: false, privacyModeOnActivityHidden: 'splash' }, ios: { blurEffect: 'light' } }).catch(() => {});
+    await privacyOn();
     await this.detectBiometry();
 
     App.addListener('appStateChange', ({ isActive }) =>

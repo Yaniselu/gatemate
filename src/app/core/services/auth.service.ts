@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { privacyOff, privacyOn } from '../security/privacy';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { environment } from '../../../environments/environment';
 import { ProfilePatch, Session, User } from '../models';
@@ -44,7 +45,12 @@ export class AuthService {
     if (cached) {
       this.session.set({ user: cached, accessToken: '', expiresAt: 0, refreshToken });
       this.status.set('signed-in');
-      void this.refresh().then((s) => { if (!s) void this.forceSignOut(); }, () => {});
+      void this.refresh().then(
+        (s) => {
+          if (!s) void this.forceSignOut();
+        },
+        () => {},
+      );
       return;
     }
     try {
@@ -62,13 +68,21 @@ export class AuthService {
       this.failedAttempts = 0;
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) this.registerFailure();
-      if (e instanceof ApiError && e.status === 429) this.lockedUntil.set(Date.now() + (e.retryAfterSeconds ?? 60) * 1000);
+      if (e instanceof ApiError && e.status === 429)
+        this.lockedUntil.set(Date.now() + (e.retryAfterSeconds ?? 60) * 1000);
       throw e;
     }
   }
 
-  async register(name: string, email: string, password: string, extra?: RegisterExtra): Promise<void> {
-    await this.accept(await this.api.register(name.trim(), email.trim().toLowerCase(), password, extra));
+  async register(
+    name: string,
+    email: string,
+    password: string,
+    extra?: RegisterExtra,
+  ): Promise<void> {
+    await this.accept(
+      await this.api.register(name.trim(), email.trim().toLowerCase(), password, extra),
+    );
   }
 
   async loginWithApple(): Promise<void> {
@@ -145,9 +159,11 @@ export class AuthService {
     const token = await this.storage.get(REFRESH_KEY).catch(() => null);
     await this.clearLocal().catch(() => {});
     await this.router.navigateByUrl('/auth/login', { replaceUrl: true });
-    const quiet = (p: Promise<unknown>) => Promise.race([p, new Promise((done) => setTimeout(done, 15000))]).catch(() => {});
+    const quiet = (p: Promise<unknown>) =>
+      Promise.race([p, new Promise((done) => setTimeout(done, 15000))]).catch(() => {});
     if (token) void quiet(this.api.logout(token));
-    if (this.platform.isNative && this.providerAvailable('google')) void quiet(this.initSocial().then(() => SocialLogin.logout({ provider: 'google' })));
+    if (this.platform.isNative && this.providerAvailable('google'))
+      void quiet(this.initSocial().then(() => SocialLogin.logout({ provider: 'google' })));
   }
 
   async deleteAccount(): Promise<void> {
@@ -174,20 +190,51 @@ export class AuthService {
       credential = { provider, idToken: 'mock-id-token', nonce, displayName: 'Alex Morgan' };
     } else {
       if (!this.providerAvailable(provider)) {
-        throw new ApiError(`${provider === 'apple' ? 'Apple' : 'Google'} sign-in isn’t set up for this build yet. Use email for now.`, 0, 'provider_not_configured');
+        throw new ApiError(
+          `${provider === 'apple' ? 'Apple' : 'Google'} sign-in isn’t set up for this build yet. Use email for now.`,
+          0,
+          'provider_not_configured',
+        );
       }
       await this.initSocial();
-      if (provider === 'apple') {
-        const res = await SocialLogin.login({ provider: 'apple', options: { scopes: ['email', 'name'], nonce } });
-        const r = res.result as { idToken: string | null; authorizationCode?: string | null; profile?: { givenName?: string | null; familyName?: string | null } };
-        if (!r.idToken) throw new ApiError('Apple sign-in was cancelled.', 0, 'cancelled');
-        const displayName = [r.profile?.givenName, r.profile?.familyName].filter(Boolean).join(' ') || undefined;
-        credential = { provider, idToken: r.idToken, nonce, displayName, authorizationCode: r.authorizationCode ?? undefined };
-      } else {
-        const res = await SocialLogin.login({ provider: 'google', options: { scopes: ['email', 'profile'], nonce } });
-        const r = res.result as { idToken?: string | null; profile?: { name?: string | null } };
-        if (!r.idToken) throw new ApiError('Google sign-in was cancelled.', 0, 'cancelled');
-        credential = { provider, idToken: r.idToken, nonce, displayName: r.profile?.name ?? undefined };
+      await privacyOff();
+      try {
+        if (provider === 'apple') {
+          const res = await SocialLogin.login({
+            provider: 'apple',
+            options: { scopes: ['email', 'name'], nonce },
+          });
+          const r = res.result as {
+            idToken: string | null;
+            authorizationCode?: string | null;
+            profile?: { givenName?: string | null; familyName?: string | null };
+          };
+          if (!r.idToken) throw new ApiError('Apple sign-in was cancelled.', 0, 'cancelled');
+          const displayName =
+            [r.profile?.givenName, r.profile?.familyName].filter(Boolean).join(' ') || undefined;
+          credential = {
+            provider,
+            idToken: r.idToken,
+            nonce,
+            displayName,
+            authorizationCode: r.authorizationCode ?? undefined,
+          };
+        } else {
+          const res = await SocialLogin.login({
+            provider: 'google',
+            options: { scopes: ['email', 'profile'], nonce },
+          });
+          const r = res.result as { idToken?: string | null; profile?: { name?: string | null } };
+          if (!r.idToken) throw new ApiError('Google sign-in was cancelled.', 0, 'cancelled');
+          credential = {
+            provider,
+            idToken: r.idToken,
+            nonce,
+            displayName: r.profile?.name ?? undefined,
+          };
+        }
+      } finally {
+        void privacyOn();
       }
     }
     await this.accept(await this.api.loginWithSocial(credential));
@@ -196,15 +243,28 @@ export class AuthService {
   providerAvailable(provider: SocialCredential['provider']): boolean {
     if (environment.useMocks && !this.platform.isNative) return true;
     const a = environment.auth;
-    if (provider === 'apple') return a.appleEnabled && !!a.appleServiceId && (this.platform.isNative ? this.platform.isIos : !!a.appleRedirectUrl);
-    const id = this.platform.isNative && this.platform.isIos ? a.googleIosClientId : a.googleWebClientId;
+    if (provider === 'apple')
+      return (
+        a.appleEnabled &&
+        !!a.appleServiceId &&
+        (this.platform.isNative ? this.platform.isIos : !!a.appleRedirectUrl)
+      );
+    const id =
+      this.platform.isNative && this.platform.isIos ? a.googleIosClientId : a.googleWebClientId;
     return !!id && !id.startsWith('REPLACE_ME');
   }
 
   private initSocial(): Promise<void> {
     this.socialReady ??= SocialLogin.initialize({
-      apple: { clientId: environment.auth.appleServiceId, redirectUrl: environment.auth.appleRedirectUrl },
-      google: { webClientId: environment.auth.googleWebClientId, iOSClientId: environment.auth.googleIosClientId, mode: 'online' },
+      apple: {
+        clientId: environment.auth.appleServiceId,
+        redirectUrl: environment.auth.appleRedirectUrl,
+      },
+      google: {
+        webClientId: environment.auth.googleWebClientId,
+        iOSClientId: environment.auth.googleIosClientId,
+        mode: 'online',
+      },
     });
     return this.socialReady;
   }
@@ -224,10 +284,13 @@ export class AuthService {
   private syncLanguage(user: User): void {
     const lang = currentLang();
     if (user.lang === lang) return;
-    void this.api.updateProfile({ lang }).then((u) => {
-      const s = this.session();
-      if (s && s.user.id === u.id) this.session.set({ ...s, user: u });
-    }, () => {});
+    void this.api.updateProfile({ lang }).then(
+      (u) => {
+        const s = this.session();
+        if (s && s.user.id === u.id) this.session.set({ ...s, user: u });
+      },
+      () => {},
+    );
   }
 
   private async cachedUser(): Promise<User | null> {
@@ -257,7 +320,8 @@ export class AuthService {
 
   private assertNotThrottled(): void {
     const left = this.throttleSecondsLeft();
-    if (left > 0) throw new ApiError(`Too many attempts. Try again in ${left}s.`, 429, 'throttled', left);
+    if (left > 0)
+      throw new ApiError(`Too many attempts. Try again in ${left}s.`, 429, 'throttled', left);
   }
 }
 
