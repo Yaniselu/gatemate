@@ -10,7 +10,7 @@ export const environment: AppEnvironment = {
     appleEnabled: false,
     appleServiceId: 'app.gatemate.signin',
     appleRedirectUrl: '',
-    googleWebClientId: 'REPLACE_ME.apps.googleusercontent.com',
+    googleWebClientId: '672185328276-svrdqt9jnkm8g8nm7ske2divdu85jral.apps.googleusercontent.com',
     googleIosClientId: 'REPLACE_ME.apps.googleusercontent.com',
   },
   push: false,
