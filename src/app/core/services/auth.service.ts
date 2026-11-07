@@ -142,11 +142,12 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
-    const token = await this.storage.get(REFRESH_KEY);
-    if (token) await this.api.logout(token).catch(() => {});
-    if (this.platform.isNative) await SocialLogin.logout({ provider: 'google' }).catch(() => {});
-    await this.clearLocal();
+    const token = await this.storage.get(REFRESH_KEY).catch(() => null);
+    await this.clearLocal().catch(() => {});
     await this.router.navigateByUrl('/auth/login', { replaceUrl: true });
+    const quiet = (p: Promise<unknown>) => Promise.race([p, new Promise((done) => setTimeout(done, 15000))]).catch(() => {});
+    if (token) void quiet(this.api.logout(token));
+    if (this.platform.isNative && this.providerAvailable('google')) void quiet(this.initSocial().then(() => SocialLogin.logout({ provider: 'google' })));
   }
 
   async deleteAccount(): Promise<void> {
