@@ -27,7 +27,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
             }
           </section>
         }
-        <p class="contact">{{ 'Questions? Write to' | t }} <b class="selectable">privacy&#64;gatemate.app</b></p>
+        <p class="contact">{{ 'Questions? Write to' | t }} <b class="selectable">contact&#64;velosyntech.com</b></p>
       </article>
     </ion-content>
   `,

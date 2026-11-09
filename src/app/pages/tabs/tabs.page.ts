@@ -98,6 +98,9 @@ export class TabsPage {
 
   changed(tab: string) {
     if (tab !== this.active()) {
+      const from = this.index();
+      const to = Math.max(0, this.tabs.findIndex((t) => t.id === tab));
+      requestAnimationFrame(() => slideIn(to > from ? 1 : -1));
       this.platform.selection();
       this.moving.set(false);
       requestAnimationFrame(() => this.moving.set(true));
@@ -106,4 +109,18 @@ export class TabsPage {
     }
     this.active.set(tab);
   }
+}
+
+function slideIn(dir: number) {
+  const root = document.documentElement;
+  if (root.classList.contains('gm-lite') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const page = document.querySelector('ion-tabs ion-router-outlet > .ion-page:not(.ion-page-hidden)');
+  const target = page?.querySelector(':scope > ion-content > :not(ion-refresher):not(ion-fab):not([slot])') as HTMLElement | null;
+  target?.animate(
+    [
+      { opacity: 0.35, transform: `translate3d(${dir * 18}px, 0, 0)` },
+      { opacity: 1, transform: 'none' },
+    ],
+    { duration: 320, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+  );
 }

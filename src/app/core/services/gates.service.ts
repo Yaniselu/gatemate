@@ -40,7 +40,6 @@ const OVERPASS = [
   'https://overpass-api.de/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
-  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
 ];
 const STAGGER_MS = 2000;
 export const CURATED_MAPS = new Set(['CRA']);

@@ -9,56 +9,85 @@ export interface LegalDoc {
 export const LEGAL_DOCS: Record<string, LegalDoc> = {
   privacy: {
     title: 'Privacy Policy',
-    updated: '27 October 2026',
+    updated: '9 November 2026',
     intro:
-      'Gatemate helps you manage flights and travel with friends. This policy explains what data we collect, why, and the choices you have. We follow the EU General Data Protection Regulation (GDPR).',
+      'Gatemate helps you manage flights and travel with friends. This policy explains what data we collect, why, who receives it and the choices you have. We follow the EU General Data Protection Regulation (GDPR) and apply the same protections to everyone, wherever you live.',
     sections: [
+      {
+        heading: 'Who we are',
+        body: [
+          'Gatemate is operated by Velosyntech, Romania, the controller of your personal data. Contact us about privacy at contact@velosyntech.com.',
+        ],
+      },
       {
         heading: 'Data we collect',
         body: [
-          'Account data: your name, email address and, if you use Sign in with Apple or Google, the identifier those services provide. Apple may give us a private relay email instead of your real address.',
-          'Travel data you add: flight numbers, airports, dates, seat, booking reference and the contents of boarding passes you scan. Scans are processed on your device; only the parsed details are uploaded when you save.',
-          'Chat content: messages you send in trip groups and flight lounges, and reports you submit.',
-          'Device data: push notification tokens, app version and crash diagnostics without personal content.',
+          'Account data: your name, email address, language and, if you use Sign in with Apple or Google, the identifier those services provide. Apple may give us a private relay email instead of your real address. Passwords are stored only as a salted Argon2 hash.',
+          'Travel data you add: flight numbers, airports, dates, seat, booking reference, the contents of boarding passes you scan, trips you create and the travel companions you add to your family list.',
+          'Identity check (optional): when you scan a passport or ID card, the scan is read on your device. We keep only the name, issuing country and expiry date, plus a one-way hash of the document number to stop the same document being used by two accounts. We never store the image or the document number itself.',
+          'Chat and assistant content: messages you send in trip groups and flight lounges, reports you submit, and the questions you ask the Velo assistant.',
+          'Location: if you allow it, your location is used on your device to find the nearest airport and show your position on airport maps. It is not sent to or stored on our servers.',
+          'Device and purchase data: push notification tokens, app version, crash diagnostics without personal content and, if you buy Gatemate Pro, your subscription status.',
         ],
       },
       {
         heading: 'How we use it',
         body: [
-          'To provide the service: show your trips, send boarding and gate alerts, sync across your devices and deliver chat messages.',
-          'To keep the community safe: moderate public lounges, investigate reports and prevent abuse.',
-          'We do not sell your personal data, show third-party ads or track you across other companies’ apps and websites.',
+          'To provide the service: show your trips, send boarding and gate alerts, sync across your devices, deliver chat messages and answer assistant questions.',
+          'To keep the community and your account safe: moderate public lounges, investigate reports, block automated attacks and prevent abuse.',
+          'We do not sell or share your personal data for advertising, show third-party ads, build advertising profiles or track you across other companies’ apps and websites. We do not use your data to train AI models.',
         ],
       },
       {
         heading: 'Legal bases',
-        body: ['Performance of our contract with you (core features), legitimate interest (security and abuse prevention) and your consent (optional notifications), which you can withdraw at any time.'],
+        body: [
+          'Performance of our contract with you (core features), legitimate interest (security, abuse prevention and service improvement) and your consent (location, notifications, camera and the optional identity check), which you can withdraw at any time in your device settings or in the app.',
+        ],
       },
       {
-        heading: 'Sharing',
+        heading: 'Who receives your data',
         body: [
           'Trip members see the trip details and messages you share with that group. Lounge participants see your first name and messages.',
-          'We use carefully selected processors for hosting, push delivery and flight-status data, bound by data processing agreements. Data is stored in the European Union.',
+          'Service providers acting on our instructions under data processing agreements: Render (hosting and database, EU region in Frankfurt), Brevo (account emails, EU), Anthropic and Google (answering Velo assistant questions; only the conversation and the trip details needed to answer are sent), RevenueCat (subscription status), Apple and Google (sign-in and push notifications).',
+          'Public data services such as weather, map, currency and flight-tracking providers receive only airport codes, coordinates of airports or flight identifiers, never your account details.',
+          'We disclose data to authorities only when the law requires it.',
+        ],
+      },
+      {
+        heading: 'International transfers',
+        body: [
+          'Your data is stored in the European Union. Some providers listed above are based in the United States; transfers to them rely on the EU-US Data Privacy Framework or the European Commission’s Standard Contractual Clauses.',
         ],
       },
       {
         heading: 'Retention & deletion',
         body: [
-          'We keep your data while your account is active. Delete your account anytime in Profile → Delete account; we erase your data within 30 days, except where the law requires us to keep records.',
+          'We keep your data while your account is active. Delete your account anytime in Profile → Delete account, or at gatemate-api-2n16.onrender.com/legal/delete-account.html. We erase your data within 30 days, except where the law requires us to keep records. Server logs are kept for up to 30 days.',
           'You can export a copy of your data from Profile → Export my data.',
         ],
       },
       {
         heading: 'Your rights',
-        body: ['You can access, correct, delete, restrict or port your data and object to processing. You may also complain to your local data protection authority.'],
+        body: [
+          'You can access, correct, delete, restrict or port your data, object to processing and withdraw consent. Write to contact@velosyntech.com; we answer within one month. You may also complain to your local data protection authority (in Romania, ANSPDCP).',
+          'If you live in a US state with a consumer privacy law (such as California), you have similar rights to know, correct and delete your data. We do not sell or share personal information and do not use sensitive personal information to infer characteristics about you. We will not treat you differently for exercising your rights.',
+        ],
       },
       {
         heading: 'Security',
-        body: ['Data is encrypted in transit (TLS) and at rest. Sign-in tokens are kept in your device’s secure enclave storage. No system is perfect, so please use a strong, unique password.'],
+        body: [
+          'Data is encrypted in transit (TLS) and at rest. Sign-in tokens are kept in your device’s secure storage. No system is perfect, so please use a strong, unique password. If a breach affects you, we will notify you and the authorities as the law requires.',
+        ],
       },
       {
         heading: 'Children',
-        body: ['Gatemate is not directed to children under 16, and we do not knowingly collect their data.'],
+        body: [
+          'Gatemate is not directed to children under 16, and we do not knowingly collect their data without a parent’s consent. Companions you add to your family list are added by you, and you should only add people who have agreed or whose parent or guardian you are. If you believe a child has given us data, contact us and we will delete it.',
+        ],
+      },
+      {
+        heading: 'Changes',
+        body: ['We will tell you in the app before any material change to this policy takes effect.'],
       },
     ],
   },
