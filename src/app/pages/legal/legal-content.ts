@@ -82,7 +82,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Children',
         body: [
-          'Gatemate is not directed to children under 16, and we do not knowingly collect their data without a parent’s consent. Companions you add to your family list are added by you, and you should only add people who have agreed or whose parent or guardian you are. If you believe a child has given us data, contact us and we will delete it.',
+          'Gatemate is not directed to children under 16, and we do not knowingly collect their data without a parent’s consent. Companions you add to your family list are added by you, and you should only add people who have agreed or whose parent or guardian you are. If you believe a child has given us data, contact us and we will delete it. The Velo assistant is available only to users who confirm they are 18 or older.',
         ],
       },
       {
@@ -109,7 +109,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       },
       {
         heading: 'Your account',
-        body: ['You must be at least 16, give accurate information and keep your credentials secure. You are responsible for activity on your account.'],
+        body: ['You must be at least 16, give accurate information and keep your credentials secure. You are responsible for activity on your account. The Velo AI assistant is available only if you are 18 or older; its answers can be wrong, so check important details with your airline or official sources.'],
       },
       {
         heading: 'User content',

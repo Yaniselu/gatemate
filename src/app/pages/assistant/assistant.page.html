@@ -13,6 +13,19 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  @if (adult() === false) {
+    <div class="page">
+      <section class="hero">
+        <div class="orb big" aria-hidden="true"><i></i><i></i><i></i></div>
+        <h1 class="anim-fade-up">{{ 'Velo is for adults' | t }}</h1>
+        <p class="lead anim-fade-up" style="--i: 1">{{ 'Velo uses an AI service whose terms require users to be 18 or older. Everything else in Gatemate works for you as usual.' | t }}</p>
+      </section>
+      <div class="age-actions anim-fade-up" style="--i: 2">
+        <button class="gm-btn block" (click)="confirmAdult()">{{ 'I’m 18 or older' | t }}</button>
+        <a class="gm-btn ghost block" routerLink="/tabs/home">{{ 'Back to Gatemate' | t }}</a>
+      </div>
+    </div>
+  } @else if (adult()) {
   <div class="page">
     @if (!velo.messages().length) {
       <section class="hero">
@@ -91,8 +104,10 @@
       </div>
     }
   </div>
+  }
 </ion-content>
 
+@if (adult()) {
 <ion-footer class="composer-wrap">
   @if (left() !== null && left()! <= 5 && !off()) {
     <div class="quota">
@@ -126,3 +141,4 @@
   </div>
   <small class="fine">{{ 'Velo can make mistakes. Check important details with your airline.' | t }}</small>
 </ion-footer>
+}

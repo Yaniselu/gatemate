@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Preferences } from '@capacitor/preferences';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
@@ -44,6 +45,8 @@ export class AssistantPage implements OnInit {
     return s ? Math.max(0, s.limit - s.used) : null;
   });
   readonly off = computed(() => this.status()?.enabled === false);
+  readonly adult = signal<boolean | null>(null);
+  private pending: string | null = null;
 
   constructor() {
     effect(() => {
@@ -58,20 +61,40 @@ export class AssistantPage implements OnInit {
     const q = this.route.snapshot.queryParamMap;
     const trip = q.get('trip') ? this.store.trips().find((x) => x.id === q.get('trip')) : undefined;
     const prompt = q.get('prompt');
-    if (prompt) {
-      this.velo.reset();
-      void this.velo.send(trip ? `${tr(prompt)} (${trip.title})` : tr(prompt));
-    }
+    this.pending = prompt ? (trip ? `${tr(prompt)} (${trip.title})` : tr(prompt)) : null;
+    void Preferences.get({ key: this.ageKey() })
+      .then(({ value }) => this.adult.set(value === '1'))
+      .catch(() => this.adult.set(false))
+      .then(() => this.adult() && this.flush());
+  }
+
+  confirmAdult(): void {
+    this.platform.tap();
+    this.adult.set(true);
+    void Preferences.set({ key: this.ageKey(), value: '1' }).catch(() => {});
+    this.flush();
+  }
+
+  private flush(): void {
+    if (!this.pending) return;
+    this.velo.reset();
+    void this.velo.send(this.pending);
+    this.pending = null;
+  }
+
+  private ageKey(): string {
+    return `gm_velo_adult_${this.auth.user()?.id ?? 'anon'}`;
   }
 
   run(prompt: string): void {
+    if (!this.adult()) return;
     this.platform.tap();
     void this.velo.send(tr(prompt));
   }
 
   send(): void {
     const text = this.draft().trim();
-    if (!text || this.velo.busy()) return;
+    if (!text || this.velo.busy() || !this.adult()) return;
     this.platform.tap();
     this.draft.set('');
     void this.velo.send(text);

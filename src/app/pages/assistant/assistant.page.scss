@@ -570,3 +570,12 @@
     animation: none;
   }
 }
+
+.age-actions {
+  display: grid;
+  gap: 10px;
+  margin: 8px 4px 0;
+}
+.age-actions a {
+  text-decoration: none;
+}
