@@ -1255,9 +1255,9 @@
 @Checking your rights	Revisando tus derechos
 @Adding to your checklist	Añadiendo a tu lista
 @Searching the web	Buscando en la web
-@Plan more with Velo: 200 messages a day.	Planifica más con Velo: 200 mensajes al día.
-@10× more Velo	10× más Velo
-@200 messages a day with your AI travel agent, instead of 20.	200 mensajes al día con tu agente de viajes con IA, en lugar de 20.
+@Plan more with Velo: 60 messages a day.	Planifica más con Velo: 60 mensajes al día.
+@12× more Velo	12× más Velo
+@60 messages a day with your AI travel agent, instead of 5.	60 mensajes al día con tu agente de viajes con IA, en lugar de 5.
 @Prepare my next trip	Prepara mi próximo viaje
 @Plan my airport day	Planifica mi día en el aeropuerto
 @Destination briefing	Info del destino
@@ -1303,7 +1303,7 @@
 @Your next flight is **{flight}** {from} → {to}, **{time}** local time, gate **{gate}**. I can prepare your checklist, plan the airport day or check your rights if it’s delayed.	Tu próximo vuelo es **{flight}** {from} → {to}, **{time}** hora local, puerta **{gate}**. Puedo preparar tu lista, planificar el día en el aeropuerto o revisar tus derechos si se retrasa.
 @Velo isn’t switched on on this server yet.	Velo aún no está activado en este servidor.
 @You’ve used today’s Velo messages. They reset at midnight UTC.	Has usado los mensajes de Velo de hoy. Se renuevan a medianoche (UTC).
-@You’ve used today’s free Velo messages. Gatemate Pro has 10× more.	Has usado los mensajes gratuitos de Velo de hoy. Gatemate Pro tiene 10× más.
+@You’ve used today’s free Velo messages. Gatemate Pro has 12× more.	Has usado los mensajes gratuitos de Velo de hoy. Gatemate Pro tiene 12× más.
 @Start a new conversation.	Empieza una conversación nueva.
 @Ask Velo something.	Pregúntale algo a Velo.
 @Velo, your AI travel agent by Velosyntech	Velo, tu agente de viajes con IA, de Velosyntech

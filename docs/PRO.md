@@ -1,6 +1,6 @@
 # Gatemate Pro – cum activezi plățile reale
 
-Abonamentul **Gatemate Pro** costă **2,99 €/lună** sau **19,99 €/an**, cu **7 zile gratuite**.
+Abonamentul **Gatemate Pro** costă **4,99 €/lună** sau **34,99 €/an** (adică 2,92 €/lună, cu 42% mai ieftin), cu **7 zile gratuite**.
 
 **Ce primește utilizatorul Pro:**
 - călătorii nelimitate (contul gratuit: 3 călătorii viitoare);
@@ -20,8 +20,8 @@ Codul e gata. Plata trece obligatoriu prin App Store / Google Play (cerință Ap
 1. App Store Connect → **Agreements, Tax and Banking**: semnezi „Paid Apps” și adaugi contul bancar.
 2. Creezi aplicația cu Bundle ID `com.velosyntech.gatemate`.
 3. **Subscriptions** → creezi un grup „Gatemate Pro”, cu două produse:
-   - `gatemate_pro_monthly`: 1 lună, 2,99 €, introductory offer 7 zile gratuit;
-   - `gatemate_pro_yearly`: 1 an, 19,99 €, introductory offer 7 zile gratuit.
+   - `gatemate_pro_monthly`: 1 lună, 4,99 €, introductory offer 7 zile gratuit;
+   - `gatemate_pro_yearly`: 1 an, 34,99 €, introductory offer 7 zile gratuit.
 4. **Users and Access → Integrations → In-App Purchase**: generezi o cheie (.p8) pentru RevenueCat.
 
 ### 2. Google Play (25 $ o singură dată)
@@ -48,3 +48,10 @@ Codul e gata. Plata trece obligatoriu prin App Store / Google Play (cerință Ap
 - Există butoanele „Restore purchases”, Terms și Privacy.
 - Abonamentul se gestionează din setările magazinului („Manage subscription”).
 - La ștergerea contului, utilizatorul e avertizat că abonamentul se anulează separat, din magazin.
+
+## Limite Velo
+
+- gratuit: 5 mesaje pe zi;
+- Pro: 60 de mesaje pe zi.
+
+La Gemini Flash-Lite, un mesaj costă aproximativ 0,003 $, deci un abonat Pro care folosește tot ce are costă cel mult ~5,40 $/lună; un abonat obișnuit costă câțiva cenți.

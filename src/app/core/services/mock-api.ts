@@ -597,7 +597,7 @@ export class MockApi extends GatemateApi {
   private veloUsed = 0;
 
   async assistantStatus(): Promise<AssistantStatus> {
-    return this.delay({ enabled: true, used: this.veloUsed, limit: 20 }, 100, 250);
+    return this.delay({ enabled: true, used: this.veloUsed, limit: this.user?.pro ? 60 : 5 }, 100, 250);
   }
 
   async assistantChat(messages: AssistantTurn[], onEvent: (e: AssistantEvent) => void, signal: AbortSignal): Promise<void> {

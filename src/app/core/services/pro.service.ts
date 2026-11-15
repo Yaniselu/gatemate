@@ -73,8 +73,8 @@ export class ProService {
     if (this.state() === 'ready' || this.state() === 'loading') return;
     if (this.demo) {
       this.plans.set([
-        { id: 'annual', title: 'Yearly', price: tr('{price} / year', { price: '€19.99' }), perMonth: tr('{price} / month', { price: '€1.67' }), trial: tr('{n}-day free trial', { n: 7 }) },
-        { id: 'monthly', title: 'Monthly', price: tr('{price} / month', { price: '€2.99' }), trial: tr('{n}-day free trial', { n: 7 }) },
+        { id: 'annual', title: 'Yearly', price: tr('{price} / year', { price: '€34.99' }), perMonth: tr('{price} / month', { price: '€2.92' }), trial: tr('{n}-day free trial', { n: 7 }) },
+        { id: 'monthly', title: 'Monthly', price: tr('{price} / month', { price: '€4.99' }), trial: tr('{n}-day free trial', { n: 7 }) },
       ]);
       this.state.set('ready');
       return;

@@ -117,9 +117,9 @@ class AssistantTest {
     @Test
     void dailyAllowanceIsEnforced() {
         var u = user();
-        for (int i = 0; i < 20; i++) assistant.reserve(u.id);
+        for (int i = 0; i < AssistantService.FREE_DAILY; i++) assistant.reserve(u.id);
         assertThatThrownBy(() -> assistant.reserve(u.id)).isInstanceOf(ApiException.class).hasMessageContaining("Gatemate Pro");
-        assertThat(assistant.status(u.id).used()).isEqualTo(20);
+        assertThat(assistant.status(u.id).used()).isEqualTo(AssistantService.FREE_DAILY);
     }
 
     private UserEntity user() {

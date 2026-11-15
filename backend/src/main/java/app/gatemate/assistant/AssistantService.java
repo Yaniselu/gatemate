@@ -46,7 +46,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class AssistantService {
     private static final Logger log = LoggerFactory.getLogger(AssistantService.class);
 
-    static final int FREE_DAILY = 20, PRO_DAILY = 200;
+    public static final int FREE_DAILY = 5, PRO_DAILY = 60;
     private static final int MAX_STEPS = 10, MAX_TURNS = 40, MAX_CHARS = 4000;
 
     public record Turn(String role, String text) {}
@@ -112,7 +112,7 @@ public class AssistantService {
         if (u.aiCount >= limit(u)) {
             long reset = Duration.between(Instant.now(), today().plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)).toSeconds();
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "assistant_limit",
-                    u.isPro() ? "You’ve used today’s Velo messages. They reset at midnight UTC." : "You’ve used today’s free Velo messages. Gatemate Pro has 10× more.",
+                    u.isPro() ? "You’ve used today’s Velo messages. They reset at midnight UTC." : "You’ve used today’s free Velo messages. Gatemate Pro has 12× more.",
                     Math.max(60, reset));
         }
         u.aiCount++;
