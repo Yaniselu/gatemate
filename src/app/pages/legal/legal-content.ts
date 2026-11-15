@@ -93,9 +93,13 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   terms: {
     title: 'Terms of Use',
-    updated: '27 October 2026',
+    updated: '15 November 2026',
     intro: 'These terms govern your use of Gatemate. By creating an account you agree to them.',
     sections: [
+      {
+        heading: 'Who we are',
+        body: ['Gatemate is provided by Velosyntech, Romania. Contact: contact@velosyntech.com.'],
+      },
       {
         heading: 'The service',
         body: [
@@ -115,6 +119,18 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
         ],
       },
       {
+        heading: 'Reporting illegal content',
+        body: [
+          'Report a message or user in the app (long-press the message) or write to contact@velosyntech.com, explaining where the content is and why you believe it is illegal. We review reports promptly, tell you what we decided and, if we remove your content or restrict your account, we tell you why and how to appeal by replying to our message.',
+        ],
+      },
+      {
+        heading: 'Gatemate Pro',
+        body: [
+          'Gatemate Pro is an optional subscription sold through the App Store or Google Play. Price and period are shown before you buy. It renews automatically until you cancel in your store account settings at least 24 hours before renewal. Refunds are handled by Apple or Google under their policies. By starting the subscription you ask for the service to begin immediately and acknowledge that this affects your EU right of withdrawal as permitted by law.',
+        ],
+      },
+      {
         heading: 'Boarding passes',
         body: ['The pass shown in Gatemate is a convenience copy. Carry the official boarding pass issued by your airline; we are not responsible for denied boarding.'],
       },
@@ -125,6 +141,12 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Changes & termination',
         body: ['We may update these terms and will notify you of material changes. You can stop using Gatemate and delete your account at any time.'],
+      },
+      {
+        heading: 'Governing law',
+        body: [
+          'These terms are governed by Romanian law. If you are a consumer, you keep the protection of the mandatory laws of the country where you live and may bring claims in your local courts. Romanian consumers can also contact ANPC (anpc.ro).',
+        ],
       },
       {
         heading: 'Apple',

@@ -25,6 +25,7 @@ import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
             <button class="link" (click)="expanded.set(!expanded())">{{ expanded() ? ('Show less' | t) : ('Read more' | t) }}</button>
             <a class="link" [href]="s.pageUrl" target="_blank" rel="noopener">{{ 'Wikipedia' | t }} <ion-icon name="open-outline" /></a>
           </div>
+          <small class="lic">{{ 'Text: Wikipedia (CC BY-SA 4.0)' | t }}</small>
         </section>
       }
 
@@ -136,6 +137,7 @@ import { locale, TranslatePipe } from '../../core/i18n/i18n.service';
     .day b { font-size: 14px; }
     .day small { font-size: 12px; color: var(--gm-ink-3); }
     .src { position: absolute; right: 14px; top: 14px; font-size: 10.5px; color: var(--gm-ink-3); }
+    .lic { display: block; margin-top: 8px; font-size: 10.5px; color: var(--gm-ink-3); }
     .facts { padding: 4px 14px; }
     .fact { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--gm-line); }
     .fact:last-child { border-bottom: 0; }

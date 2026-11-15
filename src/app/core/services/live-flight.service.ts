@@ -23,7 +23,7 @@ export interface LiveState {
   updatedAt: number;
 }
 
-const ADSB = ['https://opendata.adsb.fi/api/v2/callsign/', 'https://api.adsb.lol/v2/callsign/'];
+const ADSB = ['https://api.adsb.lol/v2/callsign/'];
 
 interface Aircraft {
   flight?: string;

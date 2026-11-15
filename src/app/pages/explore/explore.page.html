@@ -30,7 +30,7 @@
     }
 
     @if (info()?.summary; as s) {
-      <p class="lead anim-fade-up">{{ s.description ? s.description + '. ' : '' }}{{ s.extract.split('. ').slice(0, 2).join('. ') }}{{ s.extract.split('. ').length > 2 ? '.' : '' }}</p>
+      <p class="lead anim-fade-up">{{ s.description ? s.description + '. ' : '' }}{{ s.extract.split('. ').slice(0, 2).join('. ') }}{{ s.extract.split('. ').length > 2 ? '.' : '' }} <a class="wiki-src" [href]="s.pageUrl" target="_blank" rel="noopener">{{ 'Text: Wikipedia (CC BY-SA 4.0)' | t }}</a></p>
     }
 
     <section id="ex-sights" class="block">
@@ -237,7 +237,7 @@
     </section>
 
     <section id="ex-pack" class="block">
-      <header><h2>{{ 'Pack for the weather' | t }}</h2><small>{{ 'From the 5-day forecast' | t }}</small></header>
+      <header><h2>{{ 'Pack for the weather' | t }}</h2><small>{{ 'From the 5-day forecast' | t }} · Open-Meteo</small></header>
       @if (info(); as d) {
         @if (d.weather; as w) {
           <div class="days card">

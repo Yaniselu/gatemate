@@ -45,7 +45,7 @@ const LABEL: Record<LiveState['phase'], string> = {
       }
       <small class="foot">
         @if (s.aircraft || s.registration) { {{ s.aircraft }} {{ s.registration }} · }
-        {{ s.callsign ? s.callsign + ' · ' : '' }}{{ 'ADS-B, updated {ago}' | t: { ago: ago() | t } }}
+        {{ s.callsign ? s.callsign + ' · ' : '' }}{{ 'ADS-B, updated {ago}' | t: { ago: ago() | t } }} · adsb.lol (ODbL)
       </small>
     }
   `,
