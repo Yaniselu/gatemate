@@ -180,6 +180,11 @@ export class PassportPage {
     ctx.fillStyle = '#0a93a6';
     ctx.font = font(700, 28);
     ctx.fillText('Track every flight with Gatemate', 72, 1282);
+    ctx.fillStyle = '#74859a';
+    ctx.font = font(600, 24);
+    ctx.textAlign = 'right';
+    ctx.fillText('by Velosyntech', W - 72, 1282);
+    ctx.textAlign = 'left';
     return c;
   }
 

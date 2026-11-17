@@ -44,7 +44,9 @@ public class MailService {
             <tr><td style="padding-top:10px;font-size:15px;line-height:1.5;color:#3a4a5c">%s</td></tr>
             <tr><td align="center" style="padding:26px 0"><a href="%s" style="display:inline-block;padding:14px 26px;border-radius:14px;background:#0a93a6;color:#ffffff;font-size:16px;font-weight:800;text-decoration:none">%s</a></td></tr>
             <tr><td style="font-size:13px;line-height:1.5;color:#74859a">%s</td></tr>
-            </table></td></tr></table></body></html>""".formatted(esc(subject), esc(Messages.get(lang, "mail.invite.intro", "name", first(inviter), "trip", trip)), esc(url),
+            </table>
+            <p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:#8a99ab">Gatemate by Velosyntech · Craiova, Romania<br><a href="mailto:contact@velosyntech.com" style="color:#8a99ab">contact@velosyntech.com</a></p>
+            </td></tr></table></body></html>""".formatted(esc(subject), esc(Messages.get(lang, "mail.invite.intro", "name", first(inviter), "trip", trip)), esc(url),
                 esc(Messages.get(lang, "mail.invite.button")), esc(Messages.get(lang, "mail.invite.note")));
         send(to, subject, html, Messages.get(lang, "mail.invite.intro", "name", first(inviter), "trip", trip) + "\n\n" + url);
     }
@@ -88,7 +90,9 @@ public class MailService {
             <tr><td style="padding-top:10px;font-size:15px;line-height:1.5;color:#3a4a5c">%s</td></tr>
             <tr><td align="center" style="padding:24px 0"><div style="display:inline-block;padding:14px 22px;border-radius:14px;background:#e6f8fa;font-size:32px;font-weight:800;letter-spacing:8px;color:#08707f">%s</div></td></tr>
             <tr><td style="font-size:13px;line-height:1.5;color:#74859a">%s</td></tr>
-            </table></td></tr></table></body></html>""".formatted(esc(title), intro, code, esc(outro));
+            </table>
+            <p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:#8a99ab">Gatemate by Velosyntech · Craiova, Romania<br><a href="mailto:contact@velosyntech.com" style="color:#8a99ab">contact@velosyntech.com</a></p>
+            </td></tr></table></body></html>""".formatted(esc(title), intro, code, esc(outro));
     }
 
     private static String first(String name) {
