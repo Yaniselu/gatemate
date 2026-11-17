@@ -47,9 +47,11 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Gatemate uses Face ID to unlock the app and protect your boarding passes and chats.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Gatemate uses your location only while the app is open, to show where you are in the airport and route you to your gate.</string>
+	<string>Gatemate uses your location only while the app is open, to find the airport you are at, show where you are on the airport map and guide you to your gate. Your location stays on your device.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Gatemate saves images you choose to keep, such as your travel card, to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Choose a profile photo or a screenshot of your boarding pass to import it.</string>
+	<string>Gatemate lets you pick a photo, such as a screenshot of your boarding pass to import your flight or a photo of your passport to confirm your name.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
