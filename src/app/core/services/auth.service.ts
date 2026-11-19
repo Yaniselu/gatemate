@@ -1,6 +1,7 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { Injectable, Injector, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { privacyOff, privacyOn } from '../security/privacy';
+import { NotificationsService } from './notifications.service';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { environment } from '../../../environments/environment';
 import { ProfilePatch, Session, User } from '../models';
@@ -23,6 +24,7 @@ export class AuthService {
   private storage = inject(SecureStorageService);
   private platform = inject(PlatformService);
   private router = inject(Router);
+  private injector = inject(Injector);
 
   private session = signal<Session | null>(null);
   private refreshing: Promise<Session | null> | null = null;
@@ -304,6 +306,10 @@ export class AuthService {
   }
 
   private async clearLocal(): Promise<void> {
+    try {
+      this.injector.get(NotificationsService).forgetPush();
+    } catch {
+    }
     this.session.set(null);
     this.status.set('signed-out');
     await Promise.all([REFRESH_KEY, USER_KEY, TRIPS_CACHE_KEY].map((k) => this.storage.remove(k)));

@@ -38,7 +38,7 @@ public class AlertService {
             a.title = title;
             a.body = body;
             alerts.save(a);
-            push.send(m.userId, title, body);
+            push.send(m.userId, kind, title, body, flightId == null ? null : flightId.toString());
         }
     }
 }

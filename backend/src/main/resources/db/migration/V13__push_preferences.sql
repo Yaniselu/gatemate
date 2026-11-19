@@ -1,0 +1,2 @@
+ALTER TABLE push_tokens ADD COLUMN muted VARCHAR(200) NOT NULL DEFAULT '';
+ALTER TABLE push_tokens ADD COLUMN apns_env VARCHAR(8);

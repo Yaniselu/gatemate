@@ -16,7 +16,7 @@ export const environment: AppEnvironment = {
     googleWebClientId: '672185328276-svrdqt9jnkm8g8nm7ske2divdu85jral.apps.googleusercontent.com',
     googleIosClientId: '672185328276-5tlngg2iq8und9nk1dhhfmscgktqtt5v.apps.googleusercontent.com',
   },
-  push: false,
+  push: true,
   purchases: { iosApiKey: '', androidApiKey: '' },
   maps: {
     satelliteTiles: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',

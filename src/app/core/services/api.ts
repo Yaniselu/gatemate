@@ -103,7 +103,7 @@ export abstract class GatemateApi {
   abstract previewEmail(text: string): Promise<EmailPreview>;
   abstract importEmail(text: string): Promise<Trip>;
   abstract createInvite(tripOrChatId: string): Promise<string>;
-  abstract registerPushToken(token: string, platform: 'ios' | 'android'): Promise<void>;
+  abstract registerPushToken(token: string, platform: 'ios' | 'android', muted?: string): Promise<void>;
   abstract acceptInvite(token: string): Promise<{ type: 'trip' | 'chat'; id: string }>;
   abstract addChecklistItem(tripId: string, label: string, category: ChecklistItem['category']): Promise<ChecklistItem>;
   abstract toggleChecklistItem(tripId: string, itemId: string, done: boolean): Promise<void>;

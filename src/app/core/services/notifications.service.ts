@@ -26,19 +26,49 @@ export class NotificationsService {
     return granted;
   }
 
+  private pushToken: string | null = null;
+  private sentMuted: string | null = null;
+
+  private muted(): string {
+    const p = this.prefs.notifications();
+    const off: [boolean, string][] = [[p.boarding, 'boarding'], [p.gateChanges, 'gate'], [p.delays, 'delay'], [p.baggage, 'baggage']];
+    return off.filter(([on]) => !on).map(([, k]) => k).join(',');
+  }
+
+  private sendToken(): void {
+    if (!this.pushToken) return;
+    const muted = this.muted();
+    if (muted === this.sentMuted) return;
+    this.sentMuted = muted;
+    void this.api.registerPushToken(this.pushToken, 'ios', muted).catch(() => (this.sentMuted = null));
+  }
+
   private async registerPush(): Promise<void> {
-    if (!environment.push || this.pushRegistered) return;
+    if (!environment.push || !this.platform.isNative || !this.platform.isIos) return;
+    if (this.pushRegistered) return this.sendToken();
     this.pushRegistered = true;
     try {
       const perm = await PushNotifications.requestPermissions();
-      if (perm.receive !== 'granted') return;
+      if (perm.receive !== 'granted') {
+        this.pushRegistered = false;
+        return;
+      }
       await PushNotifications.addListener('registration', ({ value }) => {
-        void this.api.registerPushToken(value, Capacitor.getPlatform() === 'ios' ? 'ios' : 'android').catch(() => {});
+        if (value !== this.pushToken) this.sentMuted = null;
+        this.pushToken = value;
+        this.sendToken();
       });
       await PushNotifications.register();
     } catch {
       this.pushRegistered = false;
     }
+  }
+
+  forgetPush(): void {
+    this.pushToken = null;
+    this.sentMuted = null;
+    this.pushRegistered = false;
+    if (this.platform.isNative && this.platform.isIos) void PushNotifications.removeAllListeners().then(() => PushNotifications.unregister()).catch(() => {});
   }
 
   private last: FlightAlert[] = [];
@@ -75,6 +105,7 @@ export class NotificationsService {
     if (!this.platform.isNative) return;
     const perm = await LocalNotifications.checkPermissions().catch(() => null);
     if (perm?.display !== 'granted') return;
+    void this.registerPush();
     const prefs = this.prefs.notifications();
     const pref: Record<AlertKind, keyof NotificationPrefs> = {
       boarding: 'boarding', leave: 'boarding', gate: 'gateChanges', delay: 'delays', weather: 'delays', checkin: 'checkIn',
