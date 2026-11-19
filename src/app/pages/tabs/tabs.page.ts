@@ -45,7 +45,7 @@ interface TabDef {
           <i class="grab"></i>
           <h2>{{ 'How should Gatemate look?' | t }}</h2>
           <p>{{ 'Pick a look. You can change it any time in Profile → Accessibility.' | t }}</p>
-          <gm-theme-picker />
+          <gm-theme-picker [preview]="true" />
           <button class="gm-btn block" (click)="confirmTheme()">{{ 'Continue' | t }}</button>
         </div>
       </div>

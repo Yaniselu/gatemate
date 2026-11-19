@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { PrefsService } from '../../core/services/prefs.service';
 import { TranslatePipe } from '../../core/i18n/i18n.service';
@@ -46,7 +46,10 @@ export class ThemePickerComponent {
     { id: 'dark', label: 'Dark', icon: 'moon-outline' },
   ];
 
+  readonly preview = input(false);
+
   pick(t: Theme) {
-    void this.prefs.setTheme(t);
+    if (this.preview()) this.prefs.theme.set(t);
+    else void this.prefs.setTheme(t);
   }
 }

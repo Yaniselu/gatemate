@@ -786,3 +786,34 @@
     white-space: nowrap;
   }
 }
+
+.alerts-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+
+  .gm-well {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    flex: none;
+  }
+
+  .grow {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .t {
+    font-weight: 650;
+    font-size: 14.5px;
+  }
+
+  .b {
+    color: var(--gm-ink-3);
+    font-size: 13px;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+}

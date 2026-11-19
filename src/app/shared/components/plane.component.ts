@@ -57,14 +57,17 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
     </svg>
   `,
   styles: `
-    :host { display: block; }
-    svg { width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 18px 24px rgba(0, 60, 80, 0.28)); }
+    :host { display: block; position: relative; }
+    :host::after { content: ''; position: absolute; left: 14%; right: 18%; bottom: -16px; height: 26px; border-radius: 50%; pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(0, 60, 80, .26), rgba(0, 60, 80, 0) 70%); }
+    :host-context(html.gm-dark)::after { background: radial-gradient(ellipse at center, rgba(0, 0, 0, .5), rgba(0, 0, 0, 0) 70%); }
+    svg { position: relative; z-index: 1; width: 100%; height: auto; overflow: visible; }
     .lights { display: none; }
     :host-context(html.gm-dark) .lights { display: inline; }
-    :host-context(html.gm-dark) svg { filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55)) brightness(.9); }
-    .nav.red { fill: #ff3b3b; filter: drop-shadow(0 0 4px #ff3b3b); }
-    .nav.beacon { fill: #ff4d4d; animation: beacon 1.2s steps(1) infinite; filter: drop-shadow(0 0 5px #ff4d4d); }
-    .nav.strobe { fill: #fff; opacity: 0; animation: strobe 1.6s infinite; filter: drop-shadow(0 0 6px #fff); }
+    :host-context(html.gm-dark) svg { opacity: .92; }
+    .nav.red { fill: #ff3b3b; }
+    .nav.beacon { fill: #ff4d4d; animation: beacon 1.2s steps(1) infinite; }
+    .nav.strobe { fill: #fff; opacity: 0; animation: strobe 1.6s steps(1) infinite; }
     .nav.strobe.tail { animation-delay: .1s; }
     .beam { fill: url(#gm-beam); opacity: .55; }
     @keyframes beacon { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }

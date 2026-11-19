@@ -195,13 +195,21 @@
       <a routerLink="/alerts">{{ 'See all' | t }}</a>
     </div>
     <div class="alerts card">
-      @if (store.alertsState() !== 'ready') {
+      @if (store.alertsState() === 'loading') {
         @for (i of [1, 2, 3]; track i) {
           <div class="alert">
             <gm-skeleton width="40px" height="40px" radius="12px" />
             <div class="grow"><gm-skeleton width="60%" height="14px" /><gm-skeleton width="90%" height="12px" style="margin-top: 8px" /></div>
           </div>
         }
+      } @else if (!store.dueAlerts().length) {
+        <div class="alerts-empty">
+          <span class="gm-well accent"><ion-icon [name]="store.alertsState() === 'error' ? 'cloud-offline-outline' : 'notifications-outline'" /></span>
+          <div class="grow">
+            <div class="t">{{ (store.alertsState() === 'error' ? 'Updates are not available right now' : 'No updates yet') | t }}</div>
+            <div class="b">{{ (store.alertsState() === 'error' ? 'Pull down to try again.' : 'Gate changes, delays and boarding reminders for your flights will show up here.') | t }}</div>
+          </div>
+        </div>
       } @else {
         @for (a of store.dueAlerts().slice(0, 3); track a.id; let i = $index) {
           <div class="alert" [gmReveal]="i" [class.unread]="!a.read">

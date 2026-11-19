@@ -58,7 +58,6 @@
     height: 150px;
     opacity: 0.4;
     animation-duration: 28s;
-    filter: blur(0.5px);
   }
 }
 
@@ -307,7 +306,6 @@ h1 {
   from {
     opacity: 0;
     transform: translateY(10px);
-    filter: blur(4px);
   }
 }
 :host-context(.gm-reduce-motion) .pitch .line {
@@ -398,8 +396,7 @@ h1 {
   i {
     position: absolute;
     border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+    background: radial-gradient(circle, #fff 0 45%, rgba(255, 255, 255, 0) 70%);
     animation: twinkle ease-in-out infinite;
   }
 }
@@ -413,7 +410,6 @@ h1 {
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #fffdf4 0%, #f3ecd2 55%, #d9cfae 100%);
   box-shadow: 0 0 40px 12px rgba(255, 246, 214, 0.28), 0 0 120px 40px rgba(160, 180, 255, 0.12);
-  animation: moon-glow 7s ease-in-out infinite;
 
   &::before,
   &::after {
@@ -453,19 +449,12 @@ h1 {
   0%,
   100% {
     opacity: 0.25;
-    transform: scale(0.8);
   }
   50% {
     opacity: 1;
-    transform: scale(1.15);
   }
 }
 
-@keyframes moon-glow {
-  50% {
-    box-shadow: 0 0 50px 16px rgba(255, 246, 214, 0.34), 0 0 140px 50px rgba(160, 180, 255, 0.16);
-  }
-}
 
 @keyframes shoot {
   0%,
@@ -497,7 +486,9 @@ h1 {
     display: block;
   }
   .clouds {
-    filter: brightness(0.45) saturate(0.6);
+    svg > g {
+      fill: #6f7a98;
+    }
     &.l1 {
       opacity: 0.22;
     }
@@ -523,7 +514,6 @@ h1 {
       width: 300%;
       height: 3px;
       background: repeating-linear-gradient(90deg, #6fb6ff 0 4px, transparent 4px 46px);
-      filter: drop-shadow(0 0 4px #6fb6ff);
     }
   }
   &.taking-off .runway b,
