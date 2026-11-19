@@ -26,7 +26,7 @@ nav { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px; font-size:
 </style>
 </head>
 <body><main>
-<nav><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Use</a><a href="guidelines.html">Community Guidelines</a><a href="delete-account.html">Delete your account</a></nav>
+<nav><a href="support.html">Support</a><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Use</a><a href="guidelines.html">Community Guidelines</a><a href="delete-account.html">Delete your account</a></nav>
 <div class="card">
 ${body}
 </div>
@@ -43,11 +43,24 @@ for (const [key, doc] of Object.entries(LEGAL_DOCS)) {
 writeFileSync(`${out}/delete-account.html`, page('Delete your Gatemate account', `<h1>Delete your Gatemate account</h1>
 <p class="meta">Gatemate · Velosyntech</p>
 <h2>From the app (immediate)</h2>
-<p>Open Gatemate → Profile → Security &amp; privacy → Delete account, then confirm. Your account is deleted straight away.</p>
+<p>Open Gatemate → Profile, scroll to the bottom, tap Delete account and confirm. Your account is deleted straight away.</p>
 <h2>Without the app</h2>
 <p>Email <a href="mailto:contact@velosyntech.com?subject=Delete%20my%20Gatemate%20account">contact@velosyntech.com</a> from the address you signed up with and ask us to delete your account. We confirm and delete it within 30 days.</p>
 <h2>What is deleted</h2>
 <p>Your profile, trips, flights, boarding passes, family members, alerts, chat messages and device tokens. A trip you share with other people stays with them, without you. If you signed in with Apple, we also revoke Gatemate’s access to your Apple ID.</p>
 <h2>What we keep</h2>
 <p>Nothing that identifies you, except records we are legally required to keep (for example payment records handled by Apple or Google), for the period the law requires.</p>`));
+writeFileSync(`${out}/support.html`, page('Gatemate support', `<h1>Gatemate support</h1>
+<p class="meta">Gatemate · Velosyntech · Craiova, Romania</p>
+<p>Need help with Gatemate? Write to <a href="mailto:contact@velosyntech.com?subject=Gatemate%20support">contact@velosyntech.com</a>. We usually answer within two working days. You can also send feedback from the app: Profile → Send feedback.</p>
+<h2>I did not get the verification e-mail</h2>
+<p>Check your spam folder and wait a few minutes. In the app you can ask for a new code. If you used Sign in with Apple and chose to hide your e-mail, our messages arrive through Apple’s private relay.</p>
+<h2>I forgot my password</h2>
+<p>On the sign-in screen tap Forgot password, enter your e-mail and follow the code we send you.</p>
+<h2>My flight details look wrong</h2>
+<p>Flight times and gates come from public data sources and can be late or inaccurate. Always follow the airport displays and your airline. You can edit any flight in the app.</p>
+<h2>Gatemate Pro</h2>
+<p>Pro is billed by the App Store or Google Play. Manage or cancel it in your store account settings. Refunds are handled by Apple or Google. Tap Restore purchases in the app after changing phones.</p>
+<h2>Delete your account</h2>
+<p>See <a href="delete-account.html">how to delete your account</a>.</p>`));
 console.log('legal pages written');
