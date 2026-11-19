@@ -22,7 +22,7 @@ Ce e deja făcut în cod și ce trebuie făcut manual în conturile Apple și Go
 
 ## De făcut o singură dată în Xcode
 
-1. **PrivacyInfo:** File → Add Files to "App"… → `ios/App/App/PrivacyInfo.xcprivacy`, bifat doar ținta **App**.
+1. **PrivacyInfo:** File → Add Files to "App"… → `ios/App/PrivacyInfo.xcprivacy` (e deja adăugat în proiect, la ținta **App**).
 2. **Ținta de widget:** verifică să fie în proiect (GatemateWidgetsExtension, iOS 16.2, aceeași echipă).
 3. Salvează în git: `git add ios/App && git commit -m "Xcode project: widget target and privacy manifest" && git push`.
 
