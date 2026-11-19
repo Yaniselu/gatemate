@@ -13,16 +13,17 @@ Texte gata de copiat în App Store Connect (App Information și pagina versiunii
 
 ## Informații generale
 
-- **Name:** Gatemate
+- **Name (App Store):** Gatemate: Flights & Trips (sub iconiță rămâne „Gatemate”)
 - **Category:** Travel (principală), Navigation (secundară)
 - **Bundle ID / Package:** com.velosyntech.gatemate
 - **Copyright:** 2026 Velosyntech
 - **Age rating:** răspunde sincer la chestionar. Aplicația are chat între utilizatori, cu raportare și blocare, și asistent AI. Rezultatul așteptat e 16+, la fel ca vârsta minimă din Termeni.
 - **Price:** gratuit, cu abonamentul Gatemate Pro.
+- **Availability:** toate țările, mai puțin China continentală (cere evaluare de securitate separată).
 
 ## English
 
-**Subtitle (max 30):** Flights, trips & airport maps
+**Subtitle (max 30):** Boarding pass & airport maps
 
 **Promotional text (max 170):** Every flight, gate and trip in one calm place. Scan your boarding pass, follow your plane live and find your gate with walking directions.
 
@@ -73,7 +74,7 @@ Privacy: https://gatemate-api-2n16.onrender.com/legal/privacy.html
 
 ## Română
 
-**Subtitlu (max 30):** Zboruri, călătorii și aeroport
+**Subtitlu (max 30):** Bilete și hărți de aeroport
 
 **Text promoțional (max 170):** Toate zborurile, porțile și călătoriile tale într-un singur loc. Scanează biletul, urmărește avionul live și găsește-ți poarta cu indicații pas cu pas.
 
