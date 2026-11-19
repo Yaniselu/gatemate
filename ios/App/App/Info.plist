@@ -46,6 +46,8 @@
 	<string>Gatemate uses the camera to scan the barcode on your boarding pass and, if you choose, the code lines of your passport to confirm the name on your tickets.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Gatemate uses Face ID to unlock the app and protect your boarding passes and chats.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Gatemate uses your location only while the app is open, to find the airport you are at, show where you are on the airport map and guide you to your gate. It never tracks you in the background and your location stays on your device.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Gatemate uses your location only while the app is open, to find the airport you are at, show where you are on the airport map and guide you to your gate. Your location stays on your device.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
