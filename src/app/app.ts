@@ -84,8 +84,10 @@ export class App {
       void CapApp.addListener('appUrlOpen', ({ url }) => {
         try {
           const u = new URL(url);
-          const m = u.pathname.match(/^\/invite\/([A-Za-z0-9_-]{16,64})$/);
-          if (u.hostname === 'gatemate.app' && m) zone.run(() => void router.navigateByUrl(`/invite/${m[1]}`));
+          const path = u.protocol === 'gatemate:' ? `/${u.hostname}${u.pathname}` : u.pathname;
+          const m = path.match(/^\/invite\/([A-Za-z0-9_-]{16,64})$/);
+          const trusted = u.protocol === 'gatemate:' || (u.protocol === 'https:' && u.hostname === 'gatemate-api-2n16.onrender.com');
+          if (trusted && m) zone.run(() => void router.navigateByUrl(`/invite/${m[1]}`));
         } catch {
         }
       });

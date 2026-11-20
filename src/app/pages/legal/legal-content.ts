@@ -9,14 +9,14 @@ export interface LegalDoc {
 export const LEGAL_DOCS: Record<string, LegalDoc> = {
   privacy: {
     title: 'Privacy Policy',
-    updated: '9 November 2026',
+    updated: '20 November 2026',
     intro:
       'Gatemate helps you manage flights and travel with friends. This policy explains what data we collect, why, who receives it and the choices you have. We follow the EU General Data Protection Regulation (GDPR) and apply the same protections to everyone, wherever you live.',
     sections: [
       {
         heading: 'Who we are',
         body: [
-          'Gatemate is operated by Velosyntech, Romania, the controller of your personal data. Contact us about privacy at contact@velosyntech.com.',
+          'Gatemate is operated by Florin Irinel Șerban, trading as Velosyntech, Craiova, Romania, who is the controller of your personal data and the seller of the app on the App Store. Contact us about privacy at contact@velosyntech.com.',
         ],
       },
       {
@@ -93,12 +93,12 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
   },
   terms: {
     title: 'Terms of Use',
-    updated: '15 November 2026',
+    updated: '20 November 2026',
     intro: 'These terms govern your use of Gatemate. By creating an account you agree to them.',
     sections: [
       {
         heading: 'Who we are',
-        body: ['Gatemate is provided by Velosyntech, Romania. Contact: contact@velosyntech.com.'],
+        body: ['Gatemate is provided by Florin Irinel Șerban, trading as Velosyntech, Craiova, Romania. Contact: contact@velosyntech.com.'],
       },
       {
         heading: 'The service',
@@ -127,7 +127,7 @@ export const LEGAL_DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Gatemate Pro',
         body: [
-          'Gatemate Pro is an optional subscription sold through the App Store or Google Play. Price and period are shown before you buy. It renews automatically until you cancel in your store account settings at least 24 hours before renewal. Refunds are handled by Apple or Google under their policies. By starting the subscription you ask for the service to begin immediately and acknowledge that this affects your EU right of withdrawal as permitted by law.',
+          'If we offer Gatemate Pro, it is an optional subscription sold through the App Store or Google Play. Price and period are shown before you buy. It renews automatically until you cancel in your store account settings at least 24 hours before renewal. Refunds are handled by Apple or Google under their policies. By starting the subscription you ask for the service to begin immediately and acknowledge that this affects your EU right of withdrawal as permitted by law.',
         ],
       },
       {

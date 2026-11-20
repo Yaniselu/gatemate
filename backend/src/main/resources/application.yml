@@ -57,7 +57,7 @@ management:
       show-details: never
 
 gatemate:
-  public-url: ${PUBLIC_URL:https://gatemate.app}
+  public-url: ${PUBLIC_URL:https://gatemate-api-2n16.onrender.com}
   cors-origins: ${CORS_ORIGINS:capacitor://localhost,https://localhost,http://localhost,http://localhost:4200,http://localhost:8100}
   jwt:
     issuer: ${JWT_ISSUER:https://api.gatemate.app}

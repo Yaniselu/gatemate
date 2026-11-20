@@ -66,7 +66,7 @@ public class InviteController {
         inv.createdBy = me;
         inv.expiresAt = Instant.now().plus(TTL);
         invites.save(inv);
-        String base = props.publicUrl() == null ? "https://gatemate.app" : props.publicUrl();
+        String base = props.publicUrl() == null || props.publicUrl().isBlank() ? "https://gatemate-api-2n16.onrender.com" : props.publicUrl().replaceAll("/+$", "");
         return Map.of("url", base + "/invite/" + token);
     }
 

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import { IonIcon, NavController } from '@ionic/angular/standalone';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiError } from '../../core/services/api';
 import { ToastService } from '../../core/services/toast.service';
@@ -8,7 +9,7 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
 @Component({
   selector: 'gm-social-buttons',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe, IonIcon],
+  imports: [TranslatePipe, IonIcon, RouterLink],
   template: `
     <div class="social">
       @if (apple) {
@@ -33,10 +34,19 @@ import { TranslatePipe } from '../../core/i18n/i18n.service';
       </button>
       }
     </div>
+    @if (any) {
+      <p class="agree">
+        {{ 'By continuing with Apple or Google you confirm you are at least 16 and agree to the' | t }}
+        <a routerLink="/legal/terms">{{ 'Terms of Use' | t }}</a> {{ 'and' | t }} <a routerLink="/legal/guidelines">{{ 'Community Guidelines' | t }}</a>.
+        {{ 'See how we handle your data in the' | t }} <a routerLink="/legal/privacy">{{ 'Privacy Policy' | t }}</a>.
+      </p>
+    }
   `,
   styleUrl: '../../pages/auth/auth.scss',
   styles: `
     .spin { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; animation: gm-spin .8s linear infinite; }
+    .agree { margin: 10px 4px 0; font-size: 12px; line-height: 1.45; color: var(--gm-ink-3); text-align: center; }
+    .agree a { color: var(--gm-accent-strong); font-weight: 600; }
     .spin.dark { border-color: rgba(0,0,0,.12); border-top-color: #1f1f1f; }
   `,
 })
