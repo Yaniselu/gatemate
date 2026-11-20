@@ -112,7 +112,7 @@
   @if (left() !== null && left()! <= 5 && !off()) {
     <div class="quota">
       @if (left() === 0) {
-        {{ 'You’ve used today’s Velo messages.' | t }} <a routerLink="/pro" [queryParams]="{ reason: 'velo' }">{{ 'Get more with Pro' | t }}</a>
+        {{ 'You’ve used today’s Velo messages.' | t }} @if (pro.enabled) { <a routerLink="/pro" [queryParams]="{ reason: 'velo' }">{{ 'Get more with Pro' | t }}</a> }
       } @else {
         {{ '{n} Velo messages left today' | t: { n: left()! } }}
       }

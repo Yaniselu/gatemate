@@ -13,6 +13,7 @@ export const environment: AppEnvironment = {
     googleWebClientId: '672185328276-svrdqt9jnkm8g8nm7ske2divdu85jral.apps.googleusercontent.com',
     googleIosClientId: '672185328276-5tlngg2iq8und9nk1dhhfmscgktqtt5v.apps.googleusercontent.com',
   },
+  proEnabled: true,
   push: false,
   purchases: { iosApiKey: '', androidApiKey: '' },
   maps: {

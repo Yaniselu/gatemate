@@ -32,7 +32,9 @@ export class ProService {
   private managementUrl: string | null = null;
   private configuredFor: string | null = null;
 
+  readonly enabled = environment.proEnabled;
   readonly isPro = computed(() => !!this.auth.user()?.pro || this.storeActive());
+  readonly unlocked = computed(() => !this.enabled || this.isPro());
   readonly demo = environment.useMocks;
 
   private get apiKey(): string {
@@ -152,6 +154,7 @@ export class ProService {
   }
 
   open(reason: ProReason) {
+    if (!this.enabled) return;
     void this.nav.navigateForward('/pro', { queryParams: { reason } });
   }
 

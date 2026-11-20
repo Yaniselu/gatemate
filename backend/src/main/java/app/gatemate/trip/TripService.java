@@ -143,7 +143,7 @@ public class TripService {
     public void requireTickets(UUID me, int adding) {
         if (adding <= 0) return;
         var u = users.findById(me).orElseThrow();
-        if (u.isPro()) return;
+        if (u.isPro() || props.billing() == null || !props.billing().enabled()) return;
         int limit = props.billing() == null || props.billing().freeUpcomingTrips() <= 0 ? 5 : props.billing().freeUpcomingTrips();
         Instant now = Instant.now();
         long tickets = 0;

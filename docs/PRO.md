@@ -2,8 +2,17 @@
 
 Abonamentul **Gatemate Pro** costă **4,99 €/lună** sau **34,99 €/an** (adică 2,92 €/lună, cu 42% mai ieftin), cu **7 zile gratuite**.
 
+## Comutatorul Pro
+
+Pro e acum **oprit**: aplicația e complet gratuită, fără ecran de plată, cu bilete nelimitate, ghiduri complete și decontare pentru toți. Velo rămâne la 5 mesaje pe zi.
+
+Ca să pornești Pro, după ce faci pașii de mai jos:
+1. în `src/environments/environment.prod.ts` pui `proEnabled: true` și cheia `appl_…` la `purchases.iosApiKey`;
+2. pe Render pui `PRO_ENABLED=true`;
+3. urci un build nou.
+
 **Ce primește utilizatorul Pro:**
-- călătorii nelimitate (contul gratuit: 3 călătorii viitoare);
+- bilete nelimitate (contul gratuit: 5 bilete viitoare);
 - toate obiectivele din Explore (gratuit: primele 8);
 - „Settle up” (cine cui îi datorează) și export CSV pentru cheltuieli.
 

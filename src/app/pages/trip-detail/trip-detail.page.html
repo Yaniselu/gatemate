@@ -280,8 +280,8 @@
 
             @if (t.expenses.length) {
               <div class="pro-actions">
-                <button class="gm-btn ghost small" (click)="openSettleUp()"><ion-icon name="swap-horizontal-outline" /> Settle up @if (!pro.isPro()) { <span class="pro-tag">{{ 'PRO' | t }}</span> }</button>
-                <button class="gm-btn ghost small" (click)="exportCsv()"><ion-icon name="download-outline" /> Export CSV @if (!pro.isPro()) { <span class="pro-tag">{{ 'PRO' | t }}</span> }</button>
+                <button class="gm-btn ghost small" (click)="openSettleUp()"><ion-icon name="swap-horizontal-outline" /> Settle up @if (!pro.unlocked()) { <span class="pro-tag">{{ 'PRO' | t }}</span> }</button>
+                <button class="gm-btn ghost small" (click)="exportCsv()"><ion-icon name="download-outline" /> Export CSV @if (!pro.unlocked()) { <span class="pro-tag">{{ 'PRO' | t }}</span> }</button>
               </div>
               @if (showSettle()) {
                 <div class="settle card anim-fade-up">

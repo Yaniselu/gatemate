@@ -18,7 +18,7 @@ Texte gata de copiat în App Store Connect (App Information și pagina versiunii
 - **Bundle ID / Package:** com.velosyntech.gatemate
 - **Copyright:** 2026 Velosyntech
 - **Age rating:** răspunde sincer la chestionar. Aplicația are chat între utilizatori, cu raportare și blocare, și asistent AI. Rezultatul așteptat e 16+, la fel ca vârsta minimă din Termeni.
-- **Price:** gratuit, cu abonamentul Gatemate Pro.
+- **Price:** gratuit. Prima versiune nu are abonament: Pro se activează mai târziu (vezi docs/PRO.md).
 - **Availability:** toate țările, mai puțin China continentală (cere evaluare de securitate separată).
 
 ## English
@@ -63,9 +63,6 @@ AND MORE
 - In-flight games that work offline.
 - Your travel map and a shareable travel card.
 - Dark mode, Face ID lock and 6 languages.
-
-GATEMATE PRO
-Unlimited tickets, full city guides, 12× more Velo messages and one-tap settle-up. Gatemate Pro is an auto-renewing subscription, billed to your Apple ID. It renews unless you cancel at least 24 hours before the end of the period, in your App Store account settings.
 
 Gatemate is independent and not affiliated with any airline or airport. Always follow official airport displays and your airline’s instructions.
 
@@ -115,9 +112,6 @@ VELO, AGENTUL TĂU AI (18+)
 - Harta călătoriilor tale și un card de distribuit.
 - Temă întunecată, blocare cu Face ID și 6 limbi.
 
-GATEMATE PRO
-Bilete nelimitate, ghiduri complete, de 12× mai multe mesaje cu Velo și decontare dintr-o atingere. Gatemate Pro e un abonament cu reînnoire automată, plătit prin contul Apple. Se reînnoiește dacă nu îl anulezi cu cel puțin 24 de ore înainte de sfârșitul perioadei, din setările contului App Store.
-
 Gatemate e o aplicație independentă, fără legătură cu vreo companie aeriană sau vreun aeroport. Urmează mereu afișajele oficiale din aeroport și instrucțiunile companiei aeriene.
 
 ## App Review Information (în engleză)
@@ -137,7 +131,6 @@ The Velo AI assistant asks users to confirm they are 18 or older before use.
 
 Chat between trip members and in public flight lounges supports reporting messages and blocking users (long-press a message). Reports are reviewed within 24 hours.
 
-Gatemate Pro is an auto-renewing subscription through In-App Purchase. Restore purchases is on the Pro screen.
 ```
 
 ## Capturi de ecran

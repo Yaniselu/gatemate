@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PlatformService } from '../../core/services/platform.service';
 import { TravelStore } from '../../core/services/travel.store';
 import { VELO_STEPS, VeloService } from '../../core/services/velo.service';
+import { ProService } from '../../core/services/pro.service';
 import { RichTextPipe } from '../../shared/pipes/rich-text.pipe';
 
 const AUTOMATIONS = [
@@ -28,6 +29,7 @@ const AUTOMATIONS = [
 })
 export class AssistantPage implements OnInit {
   readonly velo = inject(VeloService);
+  protected pro = inject(ProService);
   private auth = inject(AuthService);
   private store = inject(TravelStore);
   private route = inject(ActivatedRoute);

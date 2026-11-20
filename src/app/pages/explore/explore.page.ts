@@ -272,7 +272,7 @@ export class ExplorePage {
   }
 
   toggleAllSights() {
-    if (!this.showAllSights() && !this.pro.isPro()) {
+    if (!this.showAllSights() && !this.pro.unlocked()) {
       this.pro.open('explore');
       return;
     }

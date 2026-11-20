@@ -30,6 +30,7 @@
       </div>
     }
 
+    @if (pro.enabled) {
     <button class="pro-card card" [class.on]="pro.isPro()" (click)="pro.isPro() ? pro.manage() : pro.open('profile')" gmPressable gmReveal>
       <span class="pro-ic"><ion-icon name="sparkles" /></span>
       <span class="pro-txt">
@@ -41,6 +42,7 @@
       </span>
       <ion-icon name="chevron-forward" class="chev" />
     </button>
+    }
 
     <a class="level card" routerLink="/achievements" gmPressable gmReveal>
       <div class="lv-ring" [style.--p]="ach.level().progress"><b>{{ ach.level().index }}</b></div>

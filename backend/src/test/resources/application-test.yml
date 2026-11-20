@@ -11,6 +11,7 @@ gatemate:
   integrations:
     public-data-enabled: false
   billing:
+    enabled: true
     webhook-secret: test-webhook-secret
     free-upcoming-trips: 3
   security:

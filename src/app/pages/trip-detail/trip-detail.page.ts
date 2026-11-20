@@ -133,7 +133,7 @@ export class TripDetailPage implements OnInit {
   });
 
   openSettleUp() {
-    if (!this.pro.isPro()) {
+    if (!this.pro.unlocked()) {
       this.pro.open('expenses');
       return;
     }
@@ -144,7 +144,7 @@ export class TripDetailPage implements OnInit {
   async exportCsv() {
     const t = this.trip();
     if (!t) return;
-    if (!this.pro.isPro()) {
+    if (!this.pro.unlocked()) {
       this.pro.open('expenses');
       return;
     }

@@ -144,6 +144,10 @@ export class ProPage implements OnInit {
   });
 
   ngOnInit() {
+    if (!this.pro.enabled) {
+      this.close();
+      return;
+    }
     void this.pro.loadPlans();
   }
 

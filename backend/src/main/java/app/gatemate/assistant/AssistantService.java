@@ -64,6 +64,7 @@ public class AssistantService {
     private final AirportCatalog airports;
     private final JsonMapper json;
     private final Semaphore slots = new Semaphore(24);
+    private final boolean proEnabled;
 
     public AssistantService(AssistantTools tools, UserRepository users, AirportCatalog airports, JsonMapper json,
             @Value("${gatemate.assistant.api-key:}") String apiKey,
@@ -73,7 +74,9 @@ public class AssistantService {
             @Value("${gatemate.assistant.gemini-key:}") String geminiKey,
             @Value("${gatemate.assistant.gemini-model:gemini-flash-lite-latest}") String geminiModel,
             @Value("${gatemate.assistant.gemini-base-url:}") String geminiBaseUrl,
-            @Value("${gatemate.assistant.gemini-timeout-seconds:75}") int geminiTimeoutSeconds) {
+            @Value("${gatemate.assistant.gemini-timeout-seconds:75}") int geminiTimeoutSeconds,
+            @Value("${gatemate.billing.enabled:false}") boolean proEnabled) {
+        this.proEnabled = proEnabled;
         this.tools = tools;
         this.users = users;
         this.airports = airports;
@@ -112,7 +115,7 @@ public class AssistantService {
         if (u.aiCount >= limit(u)) {
             long reset = Duration.between(Instant.now(), today().plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)).toSeconds();
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "assistant_limit",
-                    u.isPro() ? "You’ve used today’s Velo messages. They reset at midnight UTC." : "You’ve used today’s free Velo messages. Gatemate Pro has 12× more.",
+                    u.isPro() || !proEnabled ? "You’ve used today’s Velo messages. They reset at midnight UTC." : "You’ve used today’s free Velo messages. Gatemate Pro has 12× more.",
                     Math.max(60, reset));
         }
         u.aiCount++;
@@ -298,7 +301,7 @@ public class AssistantService {
     }
 
     private int limit(UserEntity u) {
-        return u.isPro() ? PRO_DAILY : FREE_DAILY;
+        return u.isPro() && proEnabled ? PRO_DAILY : FREE_DAILY;
     }
 
     private static LocalDate today() {

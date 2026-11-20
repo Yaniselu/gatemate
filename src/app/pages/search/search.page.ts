@@ -7,7 +7,10 @@ import { TravelStore } from '../../core/services/travel.store';
 import { PlatformService } from '../../core/services/platform.service';
 import { AIRPORT_RULES } from '../airport-rules/airport-rules.data';
 import { t as tr, TranslatePipe } from '../../core/i18n/i18n.service';
-import { FEATURES, POPULAR, score, SearchEntry } from './search.index';
+import { FEATURES as ALL_FEATURES, POPULAR, score, SearchEntry } from './search.index';
+import { environment } from '../../../environments/environment';
+
+const FEATURES = ALL_FEATURES.filter((f) => environment.proEnabled || f.route !== '/pro');
 
 interface Hit {
   title: string;

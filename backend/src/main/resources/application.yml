@@ -90,6 +90,7 @@ gatemate:
     api-key: ${MAIL_API_KEY:}
     reset-url: ${RESET_URL:https://gatemate.app/reset}
   billing:
+    enabled: ${PRO_ENABLED:false}
     webhook-secret: ${REVENUECAT_WEBHOOK_SECRET:}
     secret-api-key: ${REVENUECAT_SECRET_KEY:}
     entitlement: pro

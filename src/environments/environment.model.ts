@@ -12,6 +12,7 @@ export interface AppEnvironment {
     googleIosClientId: string;
   };
   push: boolean;
+  proEnabled: boolean;
   purchases: { iosApiKey: string; androidApiKey: string };
   maps: {
     satelliteTiles: string;

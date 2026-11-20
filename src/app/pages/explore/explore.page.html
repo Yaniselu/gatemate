@@ -57,7 +57,7 @@
           </div>
           @if (list.length > 8) {
             <button class="more" (click)="toggleAllSights()">
-              @if (showAllSights()) { {{ 'Show fewer' | t }} } @else { {{ 'Show all {n}' | t: { n: list.length } }} @if (!pro.isPro()) { <span class="pro-tag">{{ 'PRO' | t }}</span> } }
+              @if (showAllSights()) { {{ 'Show fewer' | t }} } @else { {{ 'Show all {n}' | t: { n: list.length } }} @if (!pro.unlocked()) { <span class="pro-tag">{{ 'PRO' | t }}</span> } }
             </button>
           }
           <p class="src">{{ 'Data: Wikidata (CC0) · Photos: Wikimedia Commons · Opens in Maps' | t }}</p>
