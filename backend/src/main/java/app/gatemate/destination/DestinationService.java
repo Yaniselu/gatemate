@@ -20,7 +20,7 @@ import tools.jackson.databind.JsonNode;
 @Service
 public class DestinationService {
     private static final Logger log = LoggerFactory.getLogger(DestinationService.class);
-    private static final String UA = "Gatemate/1.0 (support@gatemate.app)";
+    private static final String UA = "Gatemate/1.0 (contact@velosyntech.com)";
     private final AirportCatalog airports;
     private final GatemateProperties.Integrations cfg;
     private final RestClient http = app.gatemate.common.Http.builder().build();

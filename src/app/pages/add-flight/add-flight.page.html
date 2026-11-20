@@ -155,20 +155,20 @@
             </div>
           }
 
+          @if (forwardState() === 'ready' || forwardState() === 'loading') {
           <div class="forward">
             <span class="gm-label">{{ 'Or forward it' | t }}</span>
-            @switch (forwardState()) {
-              @case ('ready') {
+            @if (forwardState() === 'ready') {
                 <p class="muted">{{ 'Forward the e-mail from' | t }} <b>{{ auth.user()?.email }}</b> {{ 'to your private address. We check it really came from you, then the trip appears here.' | t }}</p>
                 <div class="addr glass" gmSheen>
                   <span class="selectable">{{ importEmail() }}</span>
                   <button class="gm-btn small" (click)="copyEmail()"><ion-icon name="copy-outline" /> {{ 'Copy' | t }}</button>
                 </div>
-              }
-              @case ('loading') { <p class="muted">{{ 'Getting your private address…' | t }}</p> }
-              @default { <p class="muted">{{ 'Forwarding to a private address isn’t switched on for this server yet. Pasting works right away.' | t }}</p> }
+            } @else {
+              <p class="muted">{{ 'Getting your private address…' | t }}</p>
             }
           </div>
+          }
         </div>
       }
 

@@ -5,7 +5,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 public final class Http {
-    public static final String USER_AGENT = "Gatemate/1.0 (support@gatemate.app)";
+    public static final String USER_AGENT = "Gatemate/1.0 (contact@velosyntech.com)";
 
     private Http() {}
 

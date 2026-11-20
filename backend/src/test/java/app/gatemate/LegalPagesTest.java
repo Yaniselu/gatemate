@@ -35,6 +35,12 @@ class LegalPagesTest {
                     .andExpect(header().string("Content-Security-Policy", containsString("default-src 'none'")))
                     .andExpect(header().string("X-Frame-Options", "DENY"));
         }
+        mvc.perform(get("/invite/abcdefghijklmnopqrstuv"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("gatemate://invite/abcdefghijklmnopqrstuv")))
+                .andExpect(header().string("Content-Security-Policy", containsString("default-src 'none'")));
+        mvc.perform(get("/invite/bad<token>")).andExpect(status().is4xxClientError());
+        mvc.perform(post("/invite/abcdefghijklmnopqrstuv")).andExpect(status().is4xxClientError());
         mvc.perform(post("/legal/privacy.html")).andExpect(status().is4xxClientError());
         mvc.perform(get("/api/v1/trips")).andExpect(status().isUnauthorized());
     }

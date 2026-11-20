@@ -33,7 +33,7 @@ public class SecurityConfig {
     @org.springframework.core.annotation.Order(1)
     SecurityFilterChain legal(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/legal/**")
+            .securityMatcher("/legal/**", "/invite/**")
             .csrf(c -> c.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(h -> h
@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .referrerPolicy(r -> r.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
                 .frameOptions(f -> f.deny())
                 .httpStrictTransportSecurity(s -> s.includeSubDomains(true).maxAgeInSeconds(31536000)))
-            .authorizeHttpRequests(a -> a.requestMatchers(HttpMethod.GET, "/legal/**").permitAll().anyRequest().denyAll());
+            .authorizeHttpRequests(a -> a.requestMatchers(HttpMethod.GET, "/legal/**", "/invite/*").permitAll().anyRequest().denyAll());
         return http.build();
     }
 
