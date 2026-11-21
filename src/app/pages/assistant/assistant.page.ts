@@ -1,3 +1,4 @@
+import { openExternal } from '../../core/utils/open-external';
 import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Preferences } from '@capacitor/preferences';
@@ -127,11 +128,11 @@ export class AssistantPage implements OnInit {
     const a = (ev.target as HTMLElement).closest('a');
     if (!a) return;
     ev.preventDefault();
-    if (/^https:\/\//.test(a.href)) window.open(a.href, '_blank', 'noopener');
+    if (/^https:\/\//.test(a.href)) openExternal(a.href);
   }
 
   open(url: string): void {
-    window.open(url, '_blank', 'noopener');
+    openExternal(url);
   }
 
   host(url: string): string {

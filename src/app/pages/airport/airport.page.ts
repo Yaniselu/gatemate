@@ -1,3 +1,4 @@
+import { openExternal } from '../../core/utils/open-external';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonHeader, IonIcon, IonRefresher, IonRefresherContent, IonTitle, IonToolbar } from '@ionic/angular/standalone';
@@ -214,7 +215,7 @@ export class AirportPage implements OnInit {
 
   directions() {
     const a = this.airport();
-    if (a) window.open(directionsUrl(a.lat, a.lon, a.name, this.platform.platform === 'ios'), '_blank', 'noopener');
+    if (a) openExternal(directionsUrl(a.lat, a.lon, a.name, this.platform.platform === 'ios'));
   }
 
   km(n: number) {

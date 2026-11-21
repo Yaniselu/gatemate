@@ -1,3 +1,4 @@
+import { openExternal } from '../utils/open-external';
 import { inject, Injectable } from '@angular/core';
 import { Share } from '@capacitor/share';
 import { GatemateApi } from './api';
@@ -24,7 +25,7 @@ export class InviteService {
     this.platform.tap();
     void this.achievements.track('invite_sent');
     const wa = `https://wa.me/?text=${encodeURIComponent(this.message(title, url))}`;
-    window.open(wa, '_blank', 'noopener');
+    openExternal(wa);
   }
 
   async share(title: string, url: string): Promise<void> {

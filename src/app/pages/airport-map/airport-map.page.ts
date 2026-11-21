@@ -1,3 +1,4 @@
+import { openExternal } from '../../core/utils/open-external';
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular/standalone';
 import { AirportDbService, AirportRecord, haversineKm } from '../../core/services/airport-db.service';
@@ -174,7 +175,7 @@ export class AirportMapPage implements OnInit, OnDestroy {
 
   directions() {
     const a = this.airport();
-    if (a) window.open(directionsUrl(a.lat, a.lon, a.name, this.platform.platform === 'ios'), '_blank', 'noopener');
+    if (a) openExternal(directionsUrl(a.lat, a.lon, a.name, this.platform.platform === 'ios'));
   }
 
   zoom(d: number) {

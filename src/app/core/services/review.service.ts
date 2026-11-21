@@ -1,3 +1,4 @@
+import { openExternal } from '../utils/open-external';
 import { inject, Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { InAppReview } from '@capacitor-community/in-app-review';
@@ -70,7 +71,7 @@ export class ReviewService {
 
   openStorePage(): void {
     const url = this.platform.platform === 'android' ? STORE_URL.android : STORE_URL.ios;
-    if (url) window.open(url, '_blank', 'noopener');
+    if (url) openExternal(url);
   }
 
   private async save() {

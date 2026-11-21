@@ -1,3 +1,4 @@
+import { openExternal } from '../utils/open-external';
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { NavController } from '@ionic/angular/standalone';
@@ -150,7 +151,7 @@ export class ProService {
 
   manage() {
     const url = this.managementUrl ?? (Capacitor.getPlatform() === 'android' ? 'https://play.google.com/store/account/subscriptions' : 'https://apps.apple.com/account/subscriptions');
-    window.open(url, '_system');
+    openExternal(url);
   }
 
   open(reason: ProReason) {
